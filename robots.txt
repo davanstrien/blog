@@ -1,1 +1,1 @@
-Sitemap: https://davanstrien.github.io/test-blog/sitemap.xml
+Sitemap: https://davanstrien.github.io/blog/sitemap.xml
