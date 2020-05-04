@@ -7,15 +7,15 @@
 <meta name="generator" content="Jekyll v4.0.0" />
 <meta property="og:title" content="Multi-model metadata generation" />
 <meta property="og:locale" content="en_US" />
-<meta name="description" content="combining text and tabular models to generate web archive metadata" />
-<meta property="og:description" content="combining text and tabular models to generate web archive metadata" />
+<meta name="description" content="experiment in combining text and tabular models to generate web archive metadata" />
+<meta property="og:description" content="experiment in combining text and tabular models to generate web archive metadata" />
 <link rel="canonical" href="https://danielvanstrien.xyz/metadata/multi-model/2020/05/03/multi-model.html" />
 <meta property="og:url" content="https://danielvanstrien.xyz/metadata/multi-model/2020/05/03/multi-model.html" />
 <meta property="og:site_name" content="Daniel van Strien" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2020-05-03T00:00:00-05:00" />
 <script type="application/ld+json">
-{"description":"combining text and tabular models to generate web archive metadata","mainEntityOfPage":{"@type":"WebPage","@id":"https://danielvanstrien.xyz/metadata/multi-model/2020/05/03/multi-model.html"},"@type":"BlogPosting","url":"https://danielvanstrien.xyz/metadata/multi-model/2020/05/03/multi-model.html","headline":"Multi-model metadata generation","dateModified":"2020-05-03T00:00:00-05:00","datePublished":"2020-05-03T00:00:00-05:00","@context":"https://schema.org"}</script>
+{"description":"experiment in combining text and tabular models to generate web archive metadata","mainEntityOfPage":{"@type":"WebPage","@id":"https://danielvanstrien.xyz/metadata/multi-model/2020/05/03/multi-model.html"},"@type":"BlogPosting","url":"https://danielvanstrien.xyz/metadata/multi-model/2020/05/03/multi-model.html","headline":"Multi-model metadata generation","dateModified":"2020-05-03T00:00:00-05:00","datePublished":"2020-05-03T00:00:00-05:00","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://danielvanstrien.xyz/feed.xml" title="Daniel van Strien" /><!-- the google_analytics_id gets auto inserted from the config file -->
 
@@ -28,15 +28,15 @@
 <meta name="generator" content="Jekyll v4.0.0" />
 <meta property="og:title" content="Multi-model metadata generation" />
 <meta property="og:locale" content="en_US" />
-<meta name="description" content="combining text and tabular models to generate web archive metadata" />
-<meta property="og:description" content="combining text and tabular models to generate web archive metadata" />
+<meta name="description" content="experiment in combining text and tabular models to generate web archive metadata" />
+<meta property="og:description" content="experiment in combining text and tabular models to generate web archive metadata" />
 <link rel="canonical" href="https://danielvanstrien.xyz/metadata/multi-model/2020/05/03/multi-model.html" />
 <meta property="og:url" content="https://danielvanstrien.xyz/metadata/multi-model/2020/05/03/multi-model.html" />
 <meta property="og:site_name" content="Daniel van Strien" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2020-05-03T00:00:00-05:00" />
 <script type="application/ld+json">
-{"description":"combining text and tabular models to generate web archive metadata","mainEntityOfPage":{"@type":"WebPage","@id":"https://danielvanstrien.xyz/metadata/multi-model/2020/05/03/multi-model.html"},"@type":"BlogPosting","url":"https://danielvanstrien.xyz/metadata/multi-model/2020/05/03/multi-model.html","headline":"Multi-model metadata generation","dateModified":"2020-05-03T00:00:00-05:00","datePublished":"2020-05-03T00:00:00-05:00","@context":"https://schema.org"}</script>
+{"description":"experiment in combining text and tabular models to generate web archive metadata","mainEntityOfPage":{"@type":"WebPage","@id":"https://danielvanstrien.xyz/metadata/multi-model/2020/05/03/multi-model.html"},"@type":"BlogPosting","url":"https://danielvanstrien.xyz/metadata/multi-model/2020/05/03/multi-model.html","headline":"Multi-model metadata generation","dateModified":"2020-05-03T00:00:00-05:00","datePublished":"2020-05-03T00:00:00-05:00","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
 <link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
@@ -130,7 +130,7 @@ window.onload = wrap_img;
         <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
 
   <header class="post-header">
-    <h1 class="post-title p-name" itemprop="name headline">Multi-model metadata generation</h1><p class="page-description">combining text and tabular models to generate web archive metadata</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2020-05-03T00:00:00-05:00" itemprop="datePublished">
+    <h1 class="post-title p-name" itemprop="name headline">Multi-model metadata generation</h1><p class="page-description">experiment in combining text and tabular models to generate web archive metadata</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2020-05-03T00:00:00-05:00" itemprop="datePublished">
         May 3, 2020
       </time>
        • <span class="read-time" title="Estimated read time">
@@ -159,7 +159,12 @@ window.onload = wrap_img;
     <ul class="section-nav">
 <li class="toc-entry toc-h1"><a href="#Learning-from-multiple-input-types">Learning from multiple input types </a>
 <ul>
-<li class="toc-entry toc-h2"><a href="#Looking-at-the-data">Looking at the data </a></li>
+<li class="toc-entry toc-h2"><a href="#Looking-at-the-data">Looking at the data </a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#Unique-primary-categories">Unique primary categories </a></li>
+<li class="toc-entry toc-h3"><a href="#Unique-secondary-categories">Unique secondary categories </a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toc-entry toc-h1"><a href="#Multi-input-model">Multi-input model </a>
@@ -205,7 +210,7 @@ window.onload = wrap_img;
 </h1>
 <p>Deep learning models usually take one type of input (image, text etc.) to predict output labels (category, entities etc). This usually makes sense if the data you are using to make predictions contains a lot of information. i.e. a chunk of text from a movie review or an image.</p>
 <p>Recently I have been playing around with a Website Classification Dataset from the UK web archive. The dataset is derived from a manually curated web archive which contains a primary and secondary category for each web page. The UK web archive has made a <a href="https://data.webarchive.org.uk/opendata/ukwa.ds.1/classification/">dataset</a> available based on this archive which contains the manually classified subject categories alongside the page URL and the page title.</p>
-<p>As part of playing around with this dataset I was keen to see if a multi-input model would work well. In this case exploring a model that takes both text and tabular data as input.</p>
+<p>As part of playing around with this dataset I was keen to see if a multi-input model would work well. In this case exploring a model that takes both text and tabular data as input. A preview of the data:</p>
 
 </div>
 </div>
@@ -239,7 +244,6 @@ window.onload = wrap_img;
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>Unnamed: 0</th>
       <th>Primary Category</th>
       <th>Secondary Category</th>
       <th>Title</th>
@@ -249,7 +253,6 @@ window.onload = wrap_img;
   <tbody>
     <tr>
       <th>0</th>
-      <td>0</td>
       <td>Arts &amp; Humanities</td>
       <td>Architecture</td>
       <td>68 Dean Street</td>
@@ -257,7 +260,6 @@ window.onload = wrap_img;
     </tr>
     <tr>
       <th>1</th>
-      <td>1</td>
       <td>Arts &amp; Humanities</td>
       <td>Architecture</td>
       <td>Abandoned Communities</td>
@@ -265,7 +267,6 @@ window.onload = wrap_img;
     </tr>
     <tr>
       <th>2</th>
-      <td>2</td>
       <td>Arts &amp; Humanities</td>
       <td>Architecture</td>
       <td>Alexander Thomson Society</td>
@@ -273,7 +274,6 @@ window.onload = wrap_img;
     </tr>
     <tr>
       <th>3</th>
-      <td>3</td>
       <td>Arts &amp; Humanities</td>
       <td>Architecture</td>
       <td>Arab British Centre, The</td>
@@ -281,7 +281,6 @@ window.onload = wrap_img;
     </tr>
     <tr>
       <th>4</th>
-      <td>4</td>
       <td>Arts &amp; Humanities</td>
       <td>Architecture</td>
       <td>Architectural Association School of Architecture</td>
@@ -307,7 +306,7 @@ window.onload = wrap_img;
 <blockquote>
 <p>"in understanding whether high-level metadata like this can be used to train an appropriate automatic classification system so that we might use this manually generated dataset to partially automate the categorisation of our larger archives."</p>
 </blockquote>
-<p>This is going to be fairly tricky but offers an excuse to try to use models with multiple inputs to predict our categories.</p>
+<p>This is going to be fairly tricky but offers a nice excuse to try to use models with multiple inputs to predict our categories.</p>
 
 </div>
 </div>
@@ -330,6 +329,15 @@ window.onload = wrap_img;
 </div>
     
 
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Unique-primary-categories">
+<a class="anchor" href="#Unique-primary-categories" aria-hidden="true"><span class="octicon octicon-link"></span></a>Unique primary categories<a class="anchor-link" href="#Unique-primary-categories"> </a>
+</h3>
+</div>
+</div>
+</div>
     
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -363,6 +371,15 @@ window.onload = wrap_img;
 </div>
     
 
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Unique-secondary-categories">
+<a class="anchor" href="#Unique-secondary-categories" aria-hidden="true"><span class="octicon octicon-link"></span></a>Unique secondary categories<a class="anchor-link" href="#Unique-secondary-categories"> </a>
+</h3>
+</div>
+</div>
+</div>
     
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -694,7 +711,7 @@ http://www.monarchit.co.uk/
 <h3 id="SentencePiece-tokenization">
 <a class="anchor" href="#SentencePiece-tokenization" aria-hidden="true"><span class="octicon octicon-link"></span></a>SentencePiece tokenization<a class="anchor-link" href="#SentencePiece-tokenization"> </a>
 </h3>
-<p>By default fastai uses SpaCy to do tokenization with a few additional special tokens added by fastai. I wanted to see if using <a href="https://github.com/google/sentencepiece">sentencepiece</a> would work better for processing title fields. SentencePiece allows for various sub-word tokeinzation. This can be useful for agglutinative languages but could also be useful when you have a lot of out of vocabulary words in your corpus. I wanted to see if this also was useful for processing titles since these may contain domain specific terms. I only tried using SentencePiece with 'unigram' tokenization. The best score I got for this was:</p>
+<p>By default fastai uses SpaCy to do tokenization with a few additional special tokens added by fastai. I wanted to see if using <a href="https://github.com/google/sentencepiece">sentencePiece</a> would work better for processing title fields. SentencePiece allows for various sub-word tokeinzation. This can be useful for agglutinative languages but could also be useful when you have a lot of out of vocabulary words in your corpus. I wanted to see if this also was useful for processing titles since these may contain domain specific terms. I only tried using SentencePiece with 'unigram' tokenization. The best score I got for this was:</p>
 <p><code>Better model found at epoch 1 with f_beta value: 0.21195338666439056.</code></p>
 <h3 id="Default-SpaCy-tokenization">
 <a class="anchor" href="#Default-SpaCy-tokenization" aria-hidden="true"><span class="octicon octicon-link"></span></a>Default SpaCy tokenization<a class="anchor-link" href="#Default-SpaCy-tokenization"> </a>
