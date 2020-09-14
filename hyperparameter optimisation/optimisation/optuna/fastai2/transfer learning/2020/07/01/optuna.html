@@ -3,9 +3,9 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="twitter:card" content="summary" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
 <title>Hyperparameter Optimization for Transfer Learning | Daniel van Strien</title>
-<meta name="generator" content="Jekyll v4.0.0" />
+<meta name="generator" content="Jekyll v4.1.1" />
 <meta property="og:title" content="Hyperparameter Optimization for Transfer Learning" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="optimising Hyperparameters using optuna and fastai2" />
@@ -17,7 +17,7 @@
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2020-07-01T00:00:00-05:00" />
 <script type="application/ld+json">
-{"description":"optimising Hyperparameters using optuna and fastai2","@type":"BlogPosting","headline":"Hyperparameter Optimization for Transfer Learning","url":"https://danielvanstrien.xyz/hyperparameter%20optimisation/optimisation/optuna/fastai2/transfer%20learning/2020/07/01/optuna.html","datePublished":"2020-07-01T00:00:00-05:00","dateModified":"2020-07-01T00:00:00-05:00","image":"https://danielvanstrien.xyz/images/optuna.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://danielvanstrien.xyz/hyperparameter%20optimisation/optimisation/optuna/fastai2/transfer%20learning/2020/07/01/optuna.html"},"@context":"https://schema.org"}</script>
+{"url":"https://danielvanstrien.xyz/hyperparameter%20optimisation/optimisation/optuna/fastai2/transfer%20learning/2020/07/01/optuna.html","@type":"BlogPosting","headline":"Hyperparameter Optimization for Transfer Learning","dateModified":"2020-07-01T00:00:00-05:00","datePublished":"2020-07-01T00:00:00-05:00","image":"https://danielvanstrien.xyz/images/optuna.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://danielvanstrien.xyz/hyperparameter%20optimisation/optimisation/optuna/fastai2/transfer%20learning/2020/07/01/optuna.html"},"description":"optimising Hyperparameters using optuna and fastai2","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://danielvanstrien.xyz/feed.xml" title="Daniel van Strien" /><!-- the google_analytics_id gets auto inserted from the config file -->
 
@@ -25,31 +25,8 @@
 
 <script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-59247814-2','auto');ga('require','displayfeatures');ga('send','pageview');</script>
 
-<link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"><!-- Begin Jekyll SEO tag v2.6.1 -->
-<title>Hyperparameter Optimization for Transfer Learning | Daniel van Strien</title>
-<meta name="generator" content="Jekyll v4.0.0" />
-<meta property="og:title" content="Hyperparameter Optimization for Transfer Learning" />
-<meta property="og:locale" content="en_US" />
-<meta name="description" content="optimising Hyperparameters using optuna and fastai2" />
-<meta property="og:description" content="optimising Hyperparameters using optuna and fastai2" />
-<link rel="canonical" href="https://danielvanstrien.xyz/hyperparameter%20optimisation/optimisation/optuna/fastai2/transfer%20learning/2020/07/01/optuna.html" />
-<meta property="og:url" content="https://danielvanstrien.xyz/hyperparameter%20optimisation/optimisation/optuna/fastai2/transfer%20learning/2020/07/01/optuna.html" />
-<meta property="og:site_name" content="Daniel van Strien" />
-<meta property="og:image" content="https://danielvanstrien.xyz/images/optuna.png" />
-<meta property="og:type" content="article" />
-<meta property="article:published_time" content="2020-07-01T00:00:00-05:00" />
-<script type="application/ld+json">
-{"description":"optimising Hyperparameters using optuna and fastai2","@type":"BlogPosting","headline":"Hyperparameter Optimization for Transfer Learning","url":"https://danielvanstrien.xyz/hyperparameter%20optimisation/optimisation/optuna/fastai2/transfer%20learning/2020/07/01/optuna.html","datePublished":"2020-07-01T00:00:00-05:00","dateModified":"2020-07-01T00:00:00-05:00","image":"https://danielvanstrien.xyz/images/optuna.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://danielvanstrien.xyz/hyperparameter%20optimisation/optimisation/optuna/fastai2/transfer%20learning/2020/07/01/optuna.html"},"@context":"https://schema.org"}</script>
-<!-- End Jekyll SEO tag -->
-
-<link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
-<link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css"><link type="application/atom+xml" rel="alternate" href="https://danielvanstrien.xyz/feed.xml" title="Daniel van Strien" /><!-- the google_analytics_id gets auto inserted from the config file -->
-
-
-
-<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-59247814-2','auto');ga('require','displayfeatures');ga('send','pageview');</script>
-
-
+<link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"><link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
+<link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
@@ -255,13 +232,6 @@ window.onload = wrap_img;
 
 <div class="container" id="notebook-container">
         
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-
-</div>
-    
-
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
@@ -334,8 +304,7 @@ The approach taken to classifying these trials will be to follow the "Universal 
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#collapse-hide</span>
-<span class="o">!</span>wget -q https://zenodo.org/record/3689444/files/humancats.zip?download<span class="o">=</span><span class="m">1</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span>wget -q https://zenodo.org/record/3689444/files/humancats.zip?download<span class="o">=</span><span class="m">1</span>
 <span class="o">!</span>unzip -q *humancats.zip* -d data/
 </pre></div>
 
@@ -678,8 +647,7 @@ The approach taken to classifying these trials will be to follow the "Universal 
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#collapse-hide</span>
-<span class="n">df_1830</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">'https://gist.githubusercontent.com/davanstrien/4bc85d8a4127a2791732280ffaa43293/raw/cd1a3cc53674b64c8f130edbcb34e835afa665fb/1830trial.csv'</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df_1830</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">'https://gist.githubusercontent.com/davanstrien/4bc85d8a4127a2791732280ffaa43293/raw/cd1a3cc53674b64c8f130edbcb34e835afa665fb/1830trial.csv'</span><span class="p">)</span>
 <span class="n">df_1730</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">'https://gist.githubusercontent.com/davanstrien/4bc85d8a4127a2791732280ffaa43293/raw/cd1a3cc53674b64c8f130edbcb34e835afa665fb/1730trial.csv'</span><span class="p">)</span>
 </pre></div>
 
@@ -789,8 +757,7 @@ The approach taken to classifying these trials will be to follow the "Universal 
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># collapse-show</span>
-<span class="k">def</span> <span class="nf">load_lm_data</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">load_lm_data</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
     <span class="n">data_lm</span> <span class="o">=</span> <span class="n">TextDataLoaders</span><span class="o">.</span><span class="n">from_df</span><span class="p">(</span>
         <span class="n">df</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">frac</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span> <span class="n">text_col</span><span class="o">=</span><span class="s2">"text"</span><span class="p">,</span> <span class="n">is_lm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bs</span><span class="o">=</span><span class="mi">128</span>
     <span class="p">)</span>
@@ -878,8 +845,7 @@ The approach taken to classifying these trials will be to follow the "Universal 
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># collapse-show</span>
-<span class="k">def</span> <span class="nf">create_lm</span><span class="p">():</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">create_lm</span><span class="p">():</span>
     <span class="k">return</span> <span class="n">language_model_learner</span><span class="p">(</span><span class="n">data_lm</span><span class="p">,</span> <span class="n">AWD_LSTM</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">to_fp16</span><span class="p">()</span>
 
 
@@ -1836,8 +1802,7 @@ enqueue_trial is experimental (supported from v1.2.0). The interface can change 
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#collapse-show</span>
-<span class="n">data_lm</span> <span class="o">=</span> <span class="n">load_lm_data</span><span class="p">(</span><span class="n">df_1730</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">data_lm</span> <span class="o">=</span> <span class="n">load_lm_data</span><span class="p">(</span><span class="n">df_1730</span><span class="p">)</span>
 <span class="n">data_class</span> <span class="o">=</span> <span class="n">load_class_data</span><span class="p">(</span><span class="n">df_1730</span><span class="p">,</span> <span class="n">data_lm</span><span class="p">)</span>
 <span class="n">lm_learn</span> <span class="o">=</span> <span class="n">create_lm</span><span class="p">()</span>
 <span class="n">lm_learn</span><span class="o">.</span><span class="n">unfreeze</span><span class="p">()</span>
@@ -1905,8 +1870,7 @@ enqueue_trial is experimental (supported from v1.2.0). The interface can change 
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># collapse-hide</span>
-<span class="k">def</span> <span class="nf">objective</span><span class="p">(</span><span class="n">trial</span><span class="p">):</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">objective</span><span class="p">(</span><span class="n">trial</span><span class="p">):</span>
     <span class="n">lm_learn</span> <span class="o">=</span> <span class="n">create_lm</span><span class="p">()</span>
     <span class="n">lr_frozen</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">suggest_loguniform</span><span class="p">(</span><span class="s2">"learning_rate_frozen"</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">,</span> <span class="mf">1e-1</span><span class="p">)</span>
     <span class="n">head_epochs</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">suggest_int</span><span class="p">(</span><span class="s2">"head_epochs"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
@@ -1950,8 +1914,7 @@ enqueue_trial is experimental (supported from v1.2.0). The interface can change 
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># collapse-hide</span>
-<span class="n">study_name</span> <span class="o">=</span> <span class="s2">"tunelm1730"</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">study_name</span> <span class="o">=</span> <span class="s2">"tunelm1730"</span>
 <span class="n">study</span> <span class="o">=</span> <span class="n">optuna</span><span class="o">.</span><span class="n">create_study</span><span class="p">(</span>
     <span class="n">study_name</span><span class="o">=</span><span class="n">study_name</span><span class="p">,</span>
     <span class="n">direction</span><span class="o">=</span><span class="s2">"maximize"</span><span class="p">,</span>
