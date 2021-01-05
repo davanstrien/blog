@@ -4,7 +4,7 @@ Hello :wave: @davanstrien!  Thank you for using fastpages!
 
 1. Create an ssh key-pair.  Open <a href="https://8gwifi.org/sshfunctions.jsp" target="_blank">this utility</a>. Select: `RSA` and `4096` and leave `Passphrase` blank.  Click the blue button `Generate-SSH-Keys`.
 
-2. Navigate to <a href="https://github.com/davanstrien/blog/settings/secrets" target="_blank">this link</a> and click `Add a new secret`.  Copy and paste the **Private Key** into the `Value` field. This includes the "---BEGIN RSA PRIVATE KEY---" and "--END RSA PRIVATE KEY---" portions. **In the `Name` field, name the secret `SSH_DEPLOY_KEY`.**
+2. Navigate to <a href="https://github.com/davanstrien/blog/settings/secrets" target="_blank">this link</a> and click `New repository secret`.  Copy and paste the **Private Key** into the `Value` field. This includes the "---BEGIN RSA PRIVATE KEY---" and "--END RSA PRIVATE KEY---" portions. **In the `Name` field, name the secret `SSH_DEPLOY_KEY`.**
 
 3. Navigate to <a href="https://github.com/davanstrien/blog/settings/keys" target="_blank">this link</a> and click the `Add deploy key` button.  Paste your **Public Key** from step 1 into the `Key` box.  In the `Title`, name the key anything you want, for example `fastpages-key`.  Finally, **make sure you click the checkbox next to `Allow write access`** (pictured below), and click `Add key` to save the key.
 
@@ -14,7 +14,7 @@ Hello :wave: @davanstrien!  Thank you for using fastpages!
 ### What to Expect After Merging This PR
 
 - GitHub Actions will build your site, which will take 2-3 minutes to complete.  **This will happen anytime you push changes to the master branch of your repository.**  You can monitor the logs of this if you like on the [Actions tab of your repo](https://github.com/davanstrien/blog/actions).
-- Your GH-Pages Status badge on your README will eventually appear and be green, indicating your first sucessfull build.
+- Your GH-Pages Status badge on your README will eventually appear and be green, indicating your first successful build.
 - You can monitor the status of your site in the GitHub Pages section of your [repository settings](https://github.com/davanstrien/blog/settings).
 
 If you are not using a custom domain, your website will appear at: 
