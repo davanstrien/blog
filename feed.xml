@@ -1,4 +1,66 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://danielvanstrien.xyz/feed.xml" rel="self" type="application/atom+xml" /><link href="https://danielvanstrien.xyz/" rel="alternate" type="text/html" /><updated>2021-01-05T07:39:22-06:00</updated><id>https://danielvanstrien.xyz/feed.xml</id><title type="html">Daniel van Strien</title><subtitle>digital collections + computational methods</subtitle><entry><title type="html">Image labeling vs classification models</title><link href="https://danielvanstrien.xyz/models/labels/loss%20functions/2020/10/12/labelling_vs_classification_models.html" rel="alternate" type="text/html" title="Image labeling vs classification models" /><published>2020-10-12T00:00:00-05:00</published><updated>2020-10-12T00:00:00-05:00</updated><id>https://danielvanstrien.xyz/models/labels/loss%20functions/2020/10/12/labelling_vs_classification_models</id><content type="html" xml:base="https://danielvanstrien.xyz/models/labels/loss%20functions/2020/10/12/labelling_vs_classification_models.html">&lt;!--
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://danielvanstrien.xyz/feed.xml" rel="self" type="application/atom+xml" /><link href="https://danielvanstrien.xyz/" rel="alternate" type="text/html" /><updated>2021-01-05T10:36:17-06:00</updated><id>https://danielvanstrien.xyz/feed.xml</id><title type="html">Daniel van Strien</title><subtitle>digital collections + computational methods</subtitle><entry><title type="html">Power, Ethics and AI for GLAMs</title><link href="https://danielvanstrien.xyz/fastai%20course/ethics/2020/11/05/power-ethics-and-ai-in-glams.html" rel="alternate" type="text/html" title="Power, Ethics and AI for GLAMs" /><published>2020-11-05T00:00:00-06:00</published><updated>2020-11-05T00:00:00-06:00</updated><id>https://danielvanstrien.xyz/fastai%20course/ethics/2020/11/05/power-ethics-and-ai-in-glams</id><content type="html" xml:base="https://danielvanstrien.xyz/fastai%20course/ethics/2020/11/05/power-ethics-and-ai-in-glams.html">&lt;p&gt;This is a very quick rambling post on ethics/power and ai in a GLAM setting.&lt;/p&gt;
+
+&lt;p&gt;On a recent(ish) call for the &lt;a href=&quot;https://github.com/AI4LAM/fastai4GLAMS&quot;&gt;fastai4fglams study group&lt;/a&gt; we discussed &lt;a href=&quot;https://course.fast.ai/videos/?lesson=5&quot;&gt;Lecture 5&lt;/a&gt; of the fast.ai course which focuses on Ethics.&lt;/p&gt;
+
+&lt;p&gt;A question we discussed in the call was about the more specific ethical issues that could emerge when using AI in a library context.&lt;/p&gt;
+
+&lt;p&gt;Some of the topics we touched on in the discussion included:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;The Provenance of collection items&lt;/li&gt;
+  &lt;li&gt;How this provenance is represented (or not) in metadata&lt;/li&gt;
+  &lt;li&gt;The use of Black Box commercial solutions for working with GLAM data&lt;/li&gt;
+  &lt;li&gt;The alternatives (or lack of) to using machine learning for some tasks&lt;/li&gt;
+  &lt;li&gt;How much to document the provenance of a label produced by ml&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;how-to-present-labels-produced-via-machine-learning&quot;&gt;How to present labels produced via machine learning&lt;/h1&gt;
+
+&lt;p&gt;I should preface this discussion by saying I am not an expert in cataloging or the associated literature.&lt;/p&gt;
+
+&lt;p&gt;Instead of trying to cover all of these issues I will focus on one particular question for GLAMs using machine learning: how to display the labels produced by these models in library systems i.e. catalogues?&lt;/p&gt;
+
+&lt;p&gt;One of the main uses cases of Machine Learning models is to produce labels for collections items. These labels could either seek to ‘augment’ or ‘replace’ existing metadata records fields. A question for either of these is how to display, store and manage labels produced via machine learning models in library systems. For example a model which is trained to predict the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;year&lt;/code&gt; field for items in a particular collection.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-model&quot;&gt;The model&lt;/h2&gt;
+
+&lt;p&gt;Knowing the model which produced a label including:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;the architecture&lt;/li&gt;
+  &lt;li&gt;the year in which the model was trained/inference made&lt;/li&gt;
+  &lt;li&gt;version of the model&lt;/li&gt;
+  &lt;li&gt;…&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;There is a danger of replicated the granularity of tools like &lt;a href=&quot;https://wandb.ai/&quot;&gt;Weights and Biases&lt;/a&gt;. Whilst this information is useful for training and provenance for people familiar with machine learning methods, some of the information in these systems is going to be less relevant for a typical library catalog user e.g. GPU memory consumption during training. There are potentially some other fields which will be more relevant to a broader number of people.&lt;/p&gt;
+
+&lt;h2 id=&quot;possible-labels&quot;&gt;Possible labels&lt;/h2&gt;
+
+&lt;p&gt;The first question for this type of task might be to know how the original model task was defined. Predicting labels for ‘year’ could be treated as a classification task. For example if you have a collection where you a certain that all items in that collection will have been produced between certain dates the task may be to predict classify whether the item belong to the 80s or 50s decade. In this case the model has a restricted range of possible outputs i.e. each decade in the original training data.&lt;/p&gt;
+
+&lt;p&gt;Another approach would be to instead make this a ‘regression’ task, where the model predicts a continuous value. In this case the model is not bound by a particular set of possible years.&lt;/p&gt;
+
+&lt;p&gt;The distinction between a classification and a regression model, and the possible bound of values for a label might give the end-user of that label a better sense of how it should be ‘read’. Using this information will also provide some way of contextualizing the confidence of the label, and what this might mean. An F1 score will mean different things if a model had to choose between one five possible decades for a year label or choose one of a 100 possible years.&lt;/p&gt;
+
+&lt;p&gt;Alongside knowing the potential labels, it may be useful for a user of a catalog to know something about the distribution of these labels i.e. how many times does a certain label appear both during the inference and training steps.&lt;/p&gt;
+
+&lt;h2 id=&quot;training-data&quot;&gt;Training data&lt;/h2&gt;
+
+&lt;p&gt;Having at least a minimal way of interrogating the original training data could allow for more interrogation of models even by those who aren’t experts in machine learning and in fact domain experts might pick up on important features of a training dataset that might have been missed during it’s construction. Including some information about:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;number of training examples&lt;/li&gt;
+  &lt;li&gt;label distribution&lt;/li&gt;
+  &lt;li&gt;min, max values&lt;/li&gt;
+  &lt;li&gt;etc.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Ideally this dataset would be available for open use by others but this might not always be possible for collections which aren’t fully open.&lt;/p&gt;
+
+&lt;h2 id=&quot;how-to-present-this-information&quot;&gt;How to present this information?&lt;/h2&gt;
+
+&lt;p&gt;To be continued…&lt;/p&gt;</content><author><name></name></author><category term="fastai course" /><category term="ethics" /><summary type="html">This is a very quick rambling post on ethics/power and ai in a GLAM setting.</summary></entry><entry><title type="html">Image labeling vs classification models</title><link href="https://danielvanstrien.xyz/models/labels/loss%20functions/2020/10/12/labelling_vs_classification_models.html" rel="alternate" type="text/html" title="Image labeling vs classification models" /><published>2020-10-12T00:00:00-05:00</published><updated>2020-10-12T00:00:00-05:00</updated><id>https://danielvanstrien.xyz/models/labels/loss%20functions/2020/10/12/labelling_vs_classification_models</id><content type="html" xml:base="https://danielvanstrien.xyz/models/labels/loss%20functions/2020/10/12/labelling_vs_classification_models.html">&lt;!--
 #################################################
 ### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
 #################################################

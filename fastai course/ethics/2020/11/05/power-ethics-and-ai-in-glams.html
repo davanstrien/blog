@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Power, Ethics and AI for GLAMs | Daniel van Strien</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Power, Ethics and AI for GLAMs" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="This is a very quick rambling post on ethics/power and ai in a GLAM setting." />
+<meta property="og:description" content="This is a very quick rambling post on ethics/power and ai in a GLAM setting." />
+<link rel="canonical" href="https://danielvanstrien.xyz/fastai%20course/ethics/2020/11/05/power-ethics-and-ai-in-glams.html" />
+<meta property="og:url" content="https://danielvanstrien.xyz/fastai%20course/ethics/2020/11/05/power-ethics-and-ai-in-glams.html" />
+<meta property="og:site_name" content="Daniel van Strien" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-11-05T00:00:00-06:00" />
+<script type="application/ld+json">
+{"url":"https://danielvanstrien.xyz/fastai%20course/ethics/2020/11/05/power-ethics-and-ai-in-glams.html","@type":"BlogPosting","headline":"Power, Ethics and AI for GLAMs","dateModified":"2020-11-05T00:00:00-06:00","datePublished":"2020-11-05T00:00:00-06:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://danielvanstrien.xyz/fastai%20course/ethics/2020/11/05/power-ethics-and-ai-in-glams.html"},"description":"This is a very quick rambling post on ethics/power and ai in a GLAM setting.","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://danielvanstrien.xyz/feed.xml" title="Daniel van Strien" /><!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-59247814-2','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+
+<link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" integrity="sha512-h7nl+xz8wgDlNM4NqKEM4F1NkIRS17M9+uJwIGwuo8vGqIl4BhuCKdxjWEINm+xyrUjNCnK5dCrhM0sj+wTIXw==" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js" integrity="sha512-/CMIhXiDA3m2c9kzRyd97MTb3MC6OVnx4TElQ7fkkoRghwDf6gi41gaT1PwF270W6+J60uTmwgeRpNpJdRV6sg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js" integrity="sha512-Do7uJAaHZm5OLrIv/yN4w0iG1dbu01kzdMNnFfu/mAqgUk6Nniv2JYHcwH+cNwjqgLcqcuBBk+JRvprLVI8azg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha512-0doc9hKxR3PYwso42RD1p5ySZpzzuDiOwMrdCEh2WdJZCjcmFKc/wEnL+z8fBQrnHoiNWbo+3fiGkOYXBdQp4A==" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Daniel van Strien</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About Me</a><a class="page-link" href="/search/">Search</a><a class="page-link" href="/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Power, Ethics and AI for GLAMs</h1><p class="post-meta post-meta-title"><time class="dt-published" datetime="2020-11-05T00:00:00-06:00" itemprop="datePublished">
+        Nov 5, 2020
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      3 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/categories/#fastai course">fastai course</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/categories/#ethics">ethics</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>This is a very quick rambling post on ethics/power and ai in a GLAM setting.</p>
+
+<p>On a recent(ish) call for the <a href="https://github.com/AI4LAM/fastai4GLAMS">fastai4fglams study group</a> we discussed <a href="https://course.fast.ai/videos/?lesson=5">Lecture 5</a> of the fast.ai course which focuses on Ethics.</p>
+
+<p>A question we discussed in the call was about the more specific ethical issues that could emerge when using AI in a library context.</p>
+
+<p>Some of the topics we touched on in the discussion included:</p>
+
+<ul>
+  <li>The Provenance of collection items</li>
+  <li>How this provenance is represented (or not) in metadata</li>
+  <li>The use of Black Box commercial solutions for working with GLAM data</li>
+  <li>The alternatives (or lack of) to using machine learning for some tasks</li>
+  <li>How much to document the provenance of a label produced by ml</li>
+</ul>
+
+<h1 id="how-to-present-labels-produced-via-machine-learning">How to present labels produced via machine learning</h1>
+
+<p>I should preface this discussion by saying I am not an expert in cataloging or the associated literature.</p>
+
+<p>Instead of trying to cover all of these issues I will focus on one particular question for GLAMs using machine learning: how to display the labels produced by these models in library systems i.e. catalogues?</p>
+
+<p>One of the main uses cases of Machine Learning models is to produce labels for collections items. These labels could either seek to ‘augment’ or ‘replace’ existing metadata records fields. A question for either of these is how to display, store and manage labels produced via machine learning models in library systems. For example a model which is trained to predict the <code class="language-plaintext highlighter-rouge">year</code> field for items in a particular collection.</p>
+
+<h2 id="the-model">The model</h2>
+
+<p>Knowing the model which produced a label including:</p>
+
+<ul>
+  <li>the architecture</li>
+  <li>the year in which the model was trained/inference made</li>
+  <li>version of the model</li>
+  <li>…</li>
+</ul>
+
+<p>There is a danger of replicated the granularity of tools like <a href="https://wandb.ai/">Weights and Biases</a>. Whilst this information is useful for training and provenance for people familiar with machine learning methods, some of the information in these systems is going to be less relevant for a typical library catalog user e.g. GPU memory consumption during training. There are potentially some other fields which will be more relevant to a broader number of people.</p>
+
+<h2 id="possible-labels">Possible labels</h2>
+
+<p>The first question for this type of task might be to know how the original model task was defined. Predicting labels for ‘year’ could be treated as a classification task. For example if you have a collection where you a certain that all items in that collection will have been produced between certain dates the task may be to predict classify whether the item belong to the 80s or 50s decade. In this case the model has a restricted range of possible outputs i.e. each decade in the original training data.</p>
+
+<p>Another approach would be to instead make this a ‘regression’ task, where the model predicts a continuous value. In this case the model is not bound by a particular set of possible years.</p>
+
+<p>The distinction between a classification and a regression model, and the possible bound of values for a label might give the end-user of that label a better sense of how it should be ‘read’. Using this information will also provide some way of contextualizing the confidence of the label, and what this might mean. An F1 score will mean different things if a model had to choose between one five possible decades for a year label or choose one of a 100 possible years.</p>
+
+<p>Alongside knowing the potential labels, it may be useful for a user of a catalog to know something about the distribution of these labels i.e. how many times does a certain label appear both during the inference and training steps.</p>
+
+<h2 id="training-data">Training data</h2>
+
+<p>Having at least a minimal way of interrogating the original training data could allow for more interrogation of models even by those who aren’t experts in machine learning and in fact domain experts might pick up on important features of a training dataset that might have been missed during it’s construction. Including some information about:</p>
+
+<ul>
+  <li>number of training examples</li>
+  <li>label distribution</li>
+  <li>min, max values</li>
+  <li>etc.</li>
+</ul>
+
+<p>Ideally this dataset would be available for open use by others but this might not always be possible for collections which aren’t fully open.</p>
+
+<h2 id="how-to-present-this-information">How to present this information?</h2>
+
+<p>To be continued…</p>
+
+  </div><a class="u-url" href="/fastai%20course/ethics/2020/11/05/power-ethics-and-ai-in-glams.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>digital collections + computational methods</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/davanstrien" title="davanstrien"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/vanstriendaniel" title="vanstriendaniel"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
