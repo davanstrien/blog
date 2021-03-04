@@ -1,0 +1,2175 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Writing a fastai callback | Daniel van Strien</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Writing a fastai callback" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Maybe the real implementation was the implementation details learned along the way…" />
+<meta property="og:description" content="Maybe the real implementation was the implementation details learned along the way…" />
+<link rel="canonical" href="https://danielvanstrien.xyz/fastai/callbacks/learning/2021/03/04/callbacks-and-debugging-part-one.html" />
+<meta property="og:url" content="https://danielvanstrien.xyz/fastai/callbacks/learning/2021/03/04/callbacks-and-debugging-part-one.html" />
+<meta property="og:site_name" content="Daniel van Strien" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-03-04T00:00:00-06:00" />
+<script type="application/ld+json">
+{"url":"https://danielvanstrien.xyz/fastai/callbacks/learning/2021/03/04/callbacks-and-debugging-part-one.html","@type":"BlogPosting","headline":"Writing a fastai callback","dateModified":"2021-03-04T00:00:00-06:00","datePublished":"2021-03-04T00:00:00-06:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://danielvanstrien.xyz/fastai/callbacks/learning/2021/03/04/callbacks-and-debugging-part-one.html"},"description":"Maybe the real implementation was the implementation details learned along the way…","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://danielvanstrien.xyz/feed.xml" title="Daniel van Strien" /><!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-59247814-2','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+
+<link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" integrity="sha512-h7nl+xz8wgDlNM4NqKEM4F1NkIRS17M9+uJwIGwuo8vGqIl4BhuCKdxjWEINm+xyrUjNCnK5dCrhM0sj+wTIXw==" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js" integrity="sha512-/CMIhXiDA3m2c9kzRyd97MTb3MC6OVnx4TElQ7fkkoRghwDf6gi41gaT1PwF270W6+J60uTmwgeRpNpJdRV6sg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js" integrity="sha512-Do7uJAaHZm5OLrIv/yN4w0iG1dbu01kzdMNnFfu/mAqgUk6Nniv2JYHcwH+cNwjqgLcqcuBBk+JRvprLVI8azg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha512-0doc9hKxR3PYwso42RD1p5ySZpzzuDiOwMrdCEh2WdJZCjcmFKc/wEnL+z8fBQrnHoiNWbo+3fiGkOYXBdQp4A==" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Daniel van Strien</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About Me</a><a class="page-link" href="/search/">Search</a><a class="page-link" href="/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Writing a fastai callback</h1><p class="page-description">Maybe the real implementation was the implementation details learned along the way...</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2021-03-04T00:00:00-06:00" itemprop="datePublished">
+        Mar 4, 2021
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      16 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/categories/#fastai">fastai</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/categories/#callbacks">callbacks</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/categories/#learning">learning</a>
+        
+      
+      </p>
+    
+
+    
+      
+        <div class="pb-5 d-flex flex-wrap flex-justify-end">
+          <div class="px-2">
+
+    <a href="https://github.com/davanstrien/blog/tree/master/_notebooks/2021-03-04--callbacks-and-debugging-part-one.ipynb" role="button" target="_blank">
+<img class="notebook-badge-image" src="/assets/badges/github.svg" alt="View On GitHub">
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://mybinder.org/v2/gh/davanstrien/blog/master?filepath=_notebooks%2F2021-03-04--callbacks-and-debugging-part-one.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/assets/badges/binder.svg" alt="Open In Binder"/>
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://colab.research.google.com/github/davanstrien/blog/blob/master/_notebooks/2021-03-04--callbacks-and-debugging-part-one.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/assets/badges/colab.svg" alt="Open In Colab"/>
+    </a>
+</div>
+        </div>
+      </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h2"><a href="#Intro">Intro </a></li>
+<li class="toc-entry toc-h2"><a href="#A-callback-to-generate-a-rule-of-thumb-about-how-much-more-data-will-help">A callback to generate a rule of thumb about how much more data will help </a></li>
+<li class="toc-entry toc-h2"><a href="#Part-1...">Part 1... </a></li>
+<li class="toc-entry toc-h2"><a href="#Dynamically-altering-the-training-data-size">Dynamically altering the training data size </a></li>
+<li class="toc-entry toc-h2"><a href="#Using-callbacks">Using callbacks </a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#How-to-use-callbacks-basics">How to use callbacks basics </a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h2"><a href="#Maybe-we-want-to-do-our-setup-before-fit?">Maybe we want to do our setup before fit? </a></li>
+<li class="toc-entry toc-h2"><a href="#I'm-not-limited-by-my-own-brain...">I&#39;m not limited by my own brain... </a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#To-be-continued...">To be continued... </a></li>
+<li class="toc-entry toc-h3"><a href="#Summary-so-far">Summary so far </a></li>
+</ul>
+</li>
+</ul><!--
+#################################################
+### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
+#################################################
+# file to edit: _notebooks/2021-03-04--callbacks-and-debugging-part-one.ipynb
+-->
+
+<div class="container" id="notebook-container">
+        
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Intro">
+<a class="anchor" href="#Intro" aria-hidden="true"><span class="octicon octicon-link"></span></a>Intro<a class="anchor-link" href="#Intro"> </a>
+</h2>
+<p>I sometimes feel like the process of me writing working code is analogous to the thing about monkeys writing <a href="https://en.wikipedia.org/wiki/Infinite_monkey_theorem">Shakespeare</a>, although in my case the end result of probably more like a Donald Trump tweet. My process for debugging or trying to work out how to implement something I'm not completely familiar with seems to not always be efficient. This is something I'm keen to work on.</p>
+<p>This blog post is an attempt to try and do this 'in public'. What I've tried to do here is to use this blog post <a href="https://fastpages.fast.ai/">(which is also a notebook)</a> as a place to record the steps I tried on the process of trying to implement a new callback in fastai. In particular I try and record my though process and the steps I took. This probably makes for an unreadable mess but I thought it might be useful as a record for myself.</p>
+<p>This blog post isn't intended to be a guide on how to best solve a problem. It's more a cry for help 😂</p>
+<p>If anyone does read this, I would be really grateful to get any suggestions on:</p>
+<ul>
+<li>whether you have suggestions to tackling a problem like this</li>
+<li>if you think the 'come back to it later' approach is sensible or not </li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="A-callback-to-generate-a-rule-of-thumb-about-how-much-more-data-will-help">
+<a class="anchor" href="#A-callback-to-generate-a-rule-of-thumb-about-how-much-more-data-will-help" aria-hidden="true"><span class="octicon octicon-link"></span></a>A callback to generate a rule of thumb about how much more data will help<a class="anchor-link" href="#A-callback-to-generate-a-rule-of-thumb-about-how-much-more-data-will-help"> </a>
+</h2>
+<p>I've recently been doing a lot more annotation of data for various computer vision projects. Since I'm doing all of the annotating myself I often want to have some sense of whether it is worth trying to get some more data.</p>
+<p>Prodigy/Prodigy has a 'recipe' for doing something that tries to answer this question. <code>train_curve</code> trains:</p>
+<blockquote>
+<p>a model component with different portions of the training examples and print the accuracy figures and accuracy improvements with more data. This recipe takes pretty much the same arguments as train. --n-samples sets the number of sample models to train at different stages. For instance, 10 will train models for 10% of the examples, 20%, 30% and so on. This recipe is useful to determine the quality of the collected annotations, and whether more training examples will improve the accuracy. As a rule of thumb, if accuracy improves within the last 25%, training with more examples will likely result in better accuracy. <a href="https://prodi.gy/docs/recipes#train-curve">Source</a> 
+There is also a nice example of this in action in this youtube video</p>
+</blockquote>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>
+</p>
+<center>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/59BKHO_xBPA?t=1370" frameborder="0" allowfullscreen=""></iframe>
+</center>
+
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>I wanted to implement something similar in fastai. My stretch goal was to make something that would be useful enough and be implemented cleanly enough that I could make a pull request to fastai proposing this. I am not sure if this will actually get there but I wanted to have this in mind as an end goal so that I:</p>
+<ul>
+<li>force myself to not take hacky shortcuts</li>
+<li>force myself to be exposed to more of the inner functionality of fastai</li>
+<li>learn about the callbacks system in a lot more detail</li>
+</ul>
+<p>Regarding the second point, I am particularly keen to do this 'inside' fastai rather than 'wrapping' something around fastai. If you are familiar with callbacks already this distinction will probably be clear already. If not, hopefully it will make sense later.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Part-1...">
+<a class="anchor" href="#Part-1..." aria-hidden="true"><span class="octicon octicon-link"></span></a>Part 1...<a class="anchor-link" href="#Part-1..."> </a>
+</h2>
+<p>This part goes through most of the steps I took, some of the notebook has been tidied so it's not even longer than this will already be...</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">fastai.vision.all</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">fastai.callback</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">fastai.test_utils</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Dynamically-altering-the-training-data-size">
+<a class="anchor" href="#Dynamically-altering-the-training-data-size" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dynamically altering the training data size<a class="anchor-link" href="#Dynamically-altering-the-training-data-size"> </a>
+</h2>
+<p>What I want to be able to do is to dynamically alter the training data. i.e. modify the data attached to a learner dynamically rather than recreating the dataloaders outside of the training loop. Try to do this with example data</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#hide_show</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">untar_data</span><span class="p">(</span><span class="n">URLs</span><span class="o">.</span><span class="n">IMAGEWANG_160</span><span class="p">)</span>
+<span class="n">dls</span> <span class="o">=</span> <span class="n">ImageDataLoaders</span><span class="o">.</span><span class="n">from_folder</span><span class="p">(</span><span class="n">data</span><span class="o">/</span><span class="s1">'train'</span><span class="p">,</span> <span class="n">valid_pct</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">item_tfms</span><span class="o">=</span><span class="p">[</span><span class="n">Resize</span><span class="p">(</span><span class="mi">64</span><span class="p">)])</span>
+<span class="nb">len</span><span class="p">(</span><span class="n">dls</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>I think <code>train_ds</code> is probably the the thing I want to modify</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dls</span><span class="o">.</span><span class="n">train_ds</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(#4401) [(PILImage mode=RGB size=213x160, TensorCategory(8)),(PILImage mode=RGB size=213x160, TensorCategory(16)),(PILImage mode=RGB size=213x160, TensorCategory(6)),(PILImage mode=RGB size=213x160, TensorCategory(15)),(PILImage mode=RGB size=202x160, TensorCategory(14)),(PILImage mode=RGB size=240x160, TensorCategory(18)),(PILImage mode=RGB size=213x160, TensorCategory(15)),(PILImage mode=RGB size=160x457, TensorCategory(17)),(PILImage mode=RGB size=240x160, TensorCategory(19)),(PILImage mode=RGB size=160x240, TensorCategory(8))...]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">learn</span> <span class="o">=</span> <span class="n">cnn_learner</span><span class="p">(</span><span class="n">dls</span><span class="p">,</span> <span class="n">squeezenet1_0</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="n">accuracy</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">learn</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: left;">
+      <th>epoch</th>
+      <th>train_loss</th>
+      <th>valid_loss</th>
+      <th>accuracy</th>
+      <th>time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>3.584931</td>
+      <td>3.637918</td>
+      <td>0.131671</td>
+      <td>01:05</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>I think it will probably be safer to make a <code>deepcopy</code> of things.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">copy</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p></p>
+<div class="flash">
+    <svg class="octicon octicon-info" viewbox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm6.5-.25A.75.75 0 017.25 7h1a.75.75 0 01.75.75v2.75h.25a.75.75 0 010 1.5h-2a.75.75 0 010-1.5h.25v-2h-.25a.75.75 0 01-.75-.75zM8 6a1 1 0 100-2 1 1 0 000 2z"></path></svg>
+    <strong>Note: </strong>I’m not quite sure whether this is the best way of handling this, it seems to be very hacky.
+</div>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">d_original</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">learn</span><span class="o">.</span><span class="n">dls</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span>
+<span class="n">d_original</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(#4401) [(PILImage mode=RGB size=213x160, TensorCategory(8)),(PILImage mode=RGB size=213x160, TensorCategory(16)),(PILImage mode=RGB size=213x160, TensorCategory(6)),(PILImage mode=RGB size=213x160, TensorCategory(15)),(PILImage mode=RGB size=202x160, TensorCategory(14)),(PILImage mode=RGB size=240x160, TensorCategory(18)),(PILImage mode=RGB size=213x160, TensorCategory(15)),(PILImage mode=RGB size=160x457, TensorCategory(17)),(PILImage mode=RGB size=240x160, TensorCategory(19)),(PILImage mode=RGB size=160x240, TensorCategory(8))...]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Grab a smaller part of the dataset</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">dls</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>2200.5</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Pass this back in.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">learn</span><span class="o">.</span><span class="n">dls</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">L</span><span class="p">(</span><span class="n">dls</span><span class="o">.</span><span class="n">dataset</span><span class="p">[:</span><span class="mi">100</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">learn</span><span class="o">.</span><span class="n">dls</span><span class="o">.</span><span class="n">dataset</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(#100) [(PILImage mode=RGB size=213x160, TensorCategory(8)),(PILImage mode=RGB size=213x160, TensorCategory(16)),(PILImage mode=RGB size=213x160, TensorCategory(6)),(PILImage mode=RGB size=213x160, TensorCategory(15)),(PILImage mode=RGB size=202x160, TensorCategory(14)),(PILImage mode=RGB size=240x160, TensorCategory(18)),(PILImage mode=RGB size=213x160, TensorCategory(15)),(PILImage mode=RGB size=160x457, TensorCategory(17)),(PILImage mode=RGB size=240x160, TensorCategory(19)),(PILImage mode=RGB size=160x240, TensorCategory(8))...]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">learn</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: left;">
+      <th>epoch</th>
+      <th>train_loss</th>
+      <th>valid_loss</th>
+      <th>accuracy</th>
+      <th>time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>3.035343</td>
+      <td>2.480581</td>
+      <td>0.215037</td>
+      <td>01:04</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>2.913207</td>
+      <td>2.479565</td>
+      <td>0.212115</td>
+      <td>01:01</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>2.817269</td>
+      <td>2.409176</td>
+      <td>0.240066</td>
+      <td>01:05</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>2.696751</td>
+      <td>2.442177</td>
+      <td>0.211044</td>
+      <td>01:02</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>2.664056</td>
+      <td>3.162136</td>
+      <td>0.254967</td>
+      <td>01:04</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>check our data again, (I'm paranoid)</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">learn</span><span class="o">.</span><span class="n">dls</span><span class="o">.</span><span class="n">dataset</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(#100) [(PILImage mode=RGB size=213x160, TensorCategory(8)),(PILImage mode=RGB size=213x160, TensorCategory(16)),(PILImage mode=RGB size=213x160, TensorCategory(6)),(PILImage mode=RGB size=213x160, TensorCategory(15)),(PILImage mode=RGB size=202x160, TensorCategory(14)),(PILImage mode=RGB size=240x160, TensorCategory(18)),(PILImage mode=RGB size=213x160, TensorCategory(15)),(PILImage mode=RGB size=160x457, TensorCategory(17)),(PILImage mode=RGB size=240x160, TensorCategory(19)),(PILImage mode=RGB size=160x240, TensorCategory(8))...]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now try and shove in the original data.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">learn</span><span class="o">.</span><span class="n">dls</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">d_original</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">learn</span><span class="o">.</span><span class="n">dls</span><span class="o">.</span><span class="n">dataset</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(#4401) [(PILImage mode=RGB size=213x160, TensorCategory(8)),(PILImage mode=RGB size=213x160, TensorCategory(16)),(PILImage mode=RGB size=213x160, TensorCategory(6)),(PILImage mode=RGB size=213x160, TensorCategory(15)),(PILImage mode=RGB size=202x160, TensorCategory(14)),(PILImage mode=RGB size=240x160, TensorCategory(18)),(PILImage mode=RGB size=213x160, TensorCategory(15)),(PILImage mode=RGB size=160x457, TensorCategory(17)),(PILImage mode=RGB size=240x160, TensorCategory(19)),(PILImage mode=RGB size=160x240, TensorCategory(8))...]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>check that this fit still</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">learn</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: left;">
+      <th>epoch</th>
+      <th>train_loss</th>
+      <th>valid_loss</th>
+      <th>accuracy</th>
+      <th>time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>2.512241</td>
+      <td>2.247095</td>
+      <td>0.284184</td>
+      <td>01:02</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">learn</span><span class="o">.</span><span class="n">dls</span><span class="o">.</span><span class="n">dataset</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(#4401) [(PILImage mode=RGB size=213x160, TensorCategory(8)),(PILImage mode=RGB size=213x160, TensorCategory(16)),(PILImage mode=RGB size=213x160, TensorCategory(6)),(PILImage mode=RGB size=213x160, TensorCategory(15)),(PILImage mode=RGB size=202x160, TensorCategory(14)),(PILImage mode=RGB size=240x160, TensorCategory(18)),(PILImage mode=RGB size=213x160, TensorCategory(15)),(PILImage mode=RGB size=160x457, TensorCategory(17)),(PILImage mode=RGB size=240x160, TensorCategory(19)),(PILImage mode=RGB size=160x240, TensorCategory(8))...]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This seemed to work with a few attempts but it seemed like a bad idea. I asked if anyone could see if this was an issue in the fastai discord 
+<img src="/images/copied_from_nb/../images/discord1.png" alt=""></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>I kind of felt unsure about how best to approach the data issue so for now I'll move on to playing around with the callbacks.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p></p>
+<div class="flash flash-error">
+    <svg class="octicon octicon-alert" viewbox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.22 1.754a.25.25 0 00-.44 0L1.698 13.132a.25.25 0 00.22.368h12.164a.25.25 0 00.22-.368L8.22 1.754zm-1.763-.707c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0114.082 15H1.918a1.75 1.75 0 01-1.543-2.575L6.457 1.047zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z"></path></svg>
+    <strong>Warning: </strong>this seemed like a bad idea (spoiler alert it was. I’ll come back to this later...
+</div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Using-callbacks">
+<a class="anchor" href="#Using-callbacks" aria-hidden="true"><span class="octicon octicon-link"></span></a>Using callbacks<a class="anchor-link" href="#Using-callbacks"> </a>
+</h2>
+<p>Since I'm not completely sure about how to approach the dynamic resizing of data I'll move on to getting stuck into the callbacks and coming back to this issue later.</p>
+<p>I'm not sure if moving on when I get stuck is the best approach. I feel like I sometimes end up trying to 'brute force' a solution at some point rather thanking thinking it through carefully. I feel like coming back to it later sometimes helps but it could also be kicking the can down the road...</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="How-to-use-callbacks-basics">
+<a class="anchor" href="#How-to-use-callbacks-basics" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to use callbacks basics<a class="anchor-link" href="#How-to-use-callbacks-basics"> </a>
+</h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>First when can where can a call back be used? The docs for the callbacks gave me a good starting point. One of the things I need to work out is where callbacks can be called, the second where I would want to use callbacks in this example.</p>
+<p>The callbacks can helpfully be found under <code>event</code></p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">event</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">e</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'__'</span><span class="p">)]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>['after_backward',
+ 'after_batch',
+ 'after_cancel_batch',
+ 'after_cancel_epoch',
+ 'after_cancel_fit',
+ 'after_cancel_train',
+ 'after_cancel_validate',
+ 'after_create',
+ 'after_epoch',
+ 'after_fit',
+ 'after_loss',
+ 'after_pred',
+ 'after_step',
+ 'after_train',
+ 'after_validate',
+ 'before_backward',
+ 'before_batch',
+ 'before_epoch',
+ 'before_fit',
+ 'before_train',
+ 'before_validate']</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Maybe-we-want-to-do-our-setup-before-fit?">
+<a class="anchor" href="#Maybe-we-want-to-do-our-setup-before-fit?" aria-hidden="true"><span class="octicon octicon-link"></span></a>Maybe we want to do our setup before fit?<a class="anchor-link" href="#Maybe-we-want-to-do-our-setup-before-fit?"> </a>
+</h2>
+<p>My first though is that it was likely that I would want to do some stuff before fitting so I wanted to start here. The other things which the docs page helped is in understanding the attributes <a href="https://docs.fast.ai/callback.core.html#Attributes-available-to-callbacks">available</a> using callbacks. To get more familiar I'll try printing out some of these attributes. This will hopefully also clarify they are what they think I are.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">ShowTrainInfo</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">before_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Number of Epochs:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_epoch</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This (hopefully) will print out the number of epochs before the model fit</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">learn</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">cbs</span><span class="o">=</span><span class="n">ShowTrainInfo</span><span class="p">())</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Number of Epochs:1
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: left;">
+      <th>epoch</th>
+      <th>train_loss</th>
+      <th>valid_loss</th>
+      <th>accuracy</th>
+      <th>time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>2.478273</td>
+      <td>2.763863</td>
+      <td>0.145014</td>
+      <td>01:04</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This seems to work! Try to do something a bit closer to what I want to achieve...</p>
+<p>One thing that I need to be able to do is manipulate the number of epochs. I want to basically run the epochs passed by the user multiple times with different subsets of the data. This will simulate running the training loop multiple times inside the training loop.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Maybe it's easier to call <code>after_create</code> so that instead of having to try and capture all of the info about the learner and recreating it we do the following:</p>
+<p>after create:</p>
+<ul>
+<li>multiply the number of epochs by the number of 'trials' (maybe with some added options later e.g. early stopping, terminate on NaN)</li>
+<li>create first trial using (len(fulldata))/number of trials i.e. for 4 trials get 25% of data</li>
+<li>pass first trial data to model</li>
+<li>train model</li>
+<li>if epoch number % epochs per trial==0:<ul>
+<li>record the information about best result, last result etc. </li>
+<li>reset the model weights </li>
+<li>create new updated size of training data i.e. next step for 4 trials = 50%</li>
+<li>? not sure how to best record that this is a different trial and record other info -&gt; maybe store in an attribute of the callback?</li>
+<li>? not sure about what the log/print at the end, will do some baby print statements for now, this is obviously where I want to sink loads of time into choosing emojis to print...</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Try out the manipulation of the number of epochs. I think it should be possible to just update this value. I'll do it in <code>before_fit</code> for now.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">ShowTrainInfo</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">before_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_epoch</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">learn</span><span class="o">.</span><span class="n">n_epoch</span> <span class="o">*=</span><span class="mi">4</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">learn</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">cbs</span><span class="o">=</span><span class="n">ShowTrainInfo</span><span class="p">())</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>1
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+
+    <div>
+        <style>
+            /* Turns off some styling */
+            progress {
+                /* gets rid of default border in Firefox and Opera. */
+                border: none;
+                /* Needs to be in here for Safari polyfill so background images work as expected. */
+                background-size: auto;
+            }
+            .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+                background: #F44336;
+            }
+        </style>
+      <progress value="1" class="" max="1" style="width:300px; height:20px; vertical-align: middle;"></progress>
+      100.00% [1/1 01:01&lt;00:00]
+    </div>
+    
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: left;">
+      <th>epoch</th>
+      <th>train_loss</th>
+      <th>valid_loss</th>
+      <th>accuracy</th>
+      <th>time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>2.445697</td>
+      <td>2.376423</td>
+      <td>0.281457</td>
+      <td>01:01</td>
+    </tr>
+  </tbody>
+</table>
+
+    <div>
+        <style>
+            /* Turns off some styling */
+            progress {
+                /* gets rid of default border in Firefox and Opera. */
+                border: none;
+                /* Needs to be in here for Safari polyfill so background images work as expected. */
+                background-size: auto;
+            }
+            .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+                background: #F44336;
+            }
+        </style>
+      <progress value="161" class="" max="161" style="width:300px; height:20px; vertical-align: middle;"></progress>
+      100.00% [161/161 00:27&lt;00:00 2.3999]
+    </div>
+    
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+
+    <div>
+        <style>
+            /* Turns off some styling */
+            progress {
+                /* gets rid of default border in Firefox and Opera. */
+                border: none;
+                /* Needs to be in here for Safari polyfill so background images work as expected. */
+                background-size: auto;
+            }
+            .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+                background: #F44336;
+            }
+        </style>
+      <progress value="2" class="" max="1" style="width:300px; height:20px; vertical-align: middle;"></progress>
+      200.00% [2/1 02:06&lt;-1:58:57]
+    </div>
+    
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: left;">
+      <th>epoch</th>
+      <th>train_loss</th>
+      <th>valid_loss</th>
+      <th>accuracy</th>
+      <th>time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>2.445697</td>
+      <td>2.376423</td>
+      <td>0.281457</td>
+      <td>01:01</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>2.399856</td>
+      <td>2.251869</td>
+      <td>0.281457</td>
+      <td>01:04</td>
+    </tr>
+  </tbody>
+</table>
+
+    <div>
+        <style>
+            /* Turns off some styling */
+            progress {
+                /* gets rid of default border in Firefox and Opera. */
+                border: none;
+                /* Needs to be in here for Safari polyfill so background images work as expected. */
+                background-size: auto;
+            }
+            .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+                background: #F44336;
+            }
+        </style>
+      <progress value="161" class="" max="161" style="width:300px; height:20px; vertical-align: middle;"></progress>
+      100.00% [161/161 00:27&lt;00:00 2.3335]
+    </div>
+    
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: left;">
+      <th>epoch</th>
+      <th>train_loss</th>
+      <th>valid_loss</th>
+      <th>accuracy</th>
+      <th>time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>2.445697</td>
+      <td>2.376423</td>
+      <td>0.281457</td>
+      <td>01:01</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>2.399856</td>
+      <td>2.251869</td>
+      <td>0.281457</td>
+      <td>01:04</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>2.333455</td>
+      <td>2.175574</td>
+      <td>0.308142</td>
+      <td>01:01</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>2.291610</td>
+      <td>2.286107</td>
+      <td>0.277854</td>
+      <td>01:04</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Is this actually training four times? The progress bar makes things a little tricky to read. Let's print out the epochs to check, and get rid of the progress bar for now so it's easier to see what's going on</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">ShowTrainInfo</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">before_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"number epochs passed by user:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_epoch</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">learn</span><span class="o">.</span><span class="n">n_epoch</span> <span class="o">*=</span><span class="mi">4</span>
+    <span class="k">def</span> <span class="nf">after_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"just finished epoch:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">epoch</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">with</span> <span class="n">learn</span><span class="o">.</span><span class="n">no_bar</span><span class="p">():</span>
+    <span class="n">learn</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">cbs</span><span class="o">=</span><span class="n">ShowTrainInfo</span><span class="p">())</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>number epochs passed by user:1
+[0, 2.2561960220336914, 2.186687469482422, 0.31038177013397217, '01:02']
+just finished epoch:0
+[1, 2.263982057571411, 3.9907848834991455, 0.2859368920326233, '01:03']
+just finished epoch:1
+[2, 2.234278917312622, 2.299966812133789, 0.3186599016189575, '01:04']
+just finished epoch:2
+[3, 2.1652183532714844, 2.047651529312134, 0.36112192273139954, '01:26']
+just finished epoch:3
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>That seems to be okay, we have 4 total epochs. I'll get back to the logging issue later...</p>
+<p>Let's try the idea of breaking for each point in the trial i.e in this case after each epoch. Maybe should also add an init to the callback and give it a more sensible name. I will also now add something that will 'reset' the model after each trial. i.e. after the original epochs passed by the user. For now, I'll just add some print statements to see where things are being called. I'm hoping this will let me confirm I'm planning to execute callbacks in the right place.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">DSetSizeTrials</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_trials</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_trials</span> <span class="o">=</span> <span class="n">n_trials</span>
+    <span class="k">def</span> <span class="nf">before_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epoch_per_trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_epoch</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"number epochs passed by user:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_epoch</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">learn</span><span class="o">.</span><span class="n">n_epoch</span> <span class="o">*=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_trials</span>
+    <span class="k">def</span> <span class="nf">after_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"just finished epoch:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">epoch</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">epoch</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">epoch_per_trial</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'reset model'</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">with</span> <span class="n">learn</span><span class="o">.</span><span class="n">no_bar</span><span class="p">():</span>
+    <span class="n">learn</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">cbs</span><span class="o">=</span><span class="n">DSetSizeTrials</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>number epochs passed by user:3
+[0, 2.108391761779785, 3.002286672592163, 0.30103233456611633, '01:22']
+just finished epoch:0
+[1, 2.0375003814697266, 2.582606792449951, 0.2694779932498932, '01:09']
+just finished epoch:1
+[2, 2.0219476222991943, 2.2244386672973633, 0.3190494775772095, '01:15']
+just finished epoch:2
+reset model
+[3, 1.9379000663757324, 2.5143325328826904, 0.37748345732688904, '01:04']
+just finished epoch:3
+[4, 1.939262866973877, 2.207705020904541, 0.33180755376815796, '01:07']
+just finished epoch:4
+[5, 1.894189715385437, 10.37093448638916, 0.3005453944206238, '01:04']
+just finished epoch:5
+reset model
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="I'm-not-limited-by-my-own-brain...">
+<a class="anchor" href="#I'm-not-limited-by-my-own-brain..." aria-hidden="true"><span class="octicon octicon-link"></span></a>I'm not limited by my own brain...<a class="anchor-link" href="#I'm-not-limited-by-my-own-brain..."> </a>
+</h2>
+<p>Getting back to the issue of whether passing in a new subset of data by doing <code>learn.dls.dataset = L(dls.dataset[:100])</code> was a bad idea. It turns out it was. Although this worked without issue for the first dataset I worked with when I tried with data loaded via a DataFrame I got errors even at the indexing stage. Since I had asked the question in the discord I thought it was worth responding:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="/images/copied_from_nb/../images/discord2.png" alt=""></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>My initial response wasn't super helpful in hindsight. Saying something is a bad idea isn't very useful for anyone else. This is often super obvious when you see someone else do it but I think it's easy to forget. One of the things I love about fastai is the community around it which is super focused on helping people out. I'm glad Zach asked followed up here since this exchange also ended up being super useful. My follow up reply:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<blockquote>
+<p>For context, what I am trying to work out is how to dynamically change my training data size during training, i.e. first use 25%, then 50% of the training data. I thought this might be possible by indexing the dls.dataset attribute and updating it to a slice of that. This worked out when the original dataloaders was defined via a from_folder. When I just tried the same thing using a dls originally created via a DataFrame I get a FileNotFoundError. I'm still trying to wrap my head around exactly why one works but not the other, but I'm assuming that the dataset attribute doesn't contain all the information that is needed to get to an item in all cases?</p>
+</blockquote>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p></p>
+<div class="flash flash-success">
+    <svg class="octicon octicon-checklist" viewbox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M2.5 1.75a.25.25 0 01.25-.25h8.5a.25.25 0 01.25.25v7.736a.75.75 0 101.5 0V1.75A1.75 1.75 0 0011.25 0h-8.5A1.75 1.75 0 001 1.75v11.5c0 .966.784 1.75 1.75 1.75h3.17a.75.75 0 000-1.5H2.75a.25.25 0 01-.25-.25V1.75zM4.75 4a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5h-4.5zM4 7.75A.75.75 0 014.75 7h2a.75.75 0 010 1.5h-2A.75.75 0 014 7.75zm11.774 3.537a.75.75 0 00-1.048-1.074L10.7 14.145 9.281 12.72a.75.75 0 00-1.062 1.058l1.943 1.95a.75.75 0 001.055.008l4.557-4.45z"></path></svg>
+    <strong>Tip: </strong>Say both what you are trying to do and <strong>why</strong> you are trying to do something. This gives a much better insight for people who might want to help. 
+</div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Although my response doesn't say exactly what is going wrong it offer my best guess and also gives some insight into my motivations. In this case since it seems like a slightly weird thing without the wider context/motivations outlined above.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="/images/copied_from_nb/../images/discord3.png" alt=""></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This led to a super helpful exchange with a few people in the discord which honed in on a few possible solutions to this problem.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="/images/copied_from_nb/../images/discord4.png" alt="">
+<img src="/images/copied_from_nb/../images/discord5.png" alt=""></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>I don't want to reproduce the whole exchange but what was super nice is that:</p>
+<ul>
+<li>a bunch of people tried to help. Even if nothing else it gives you warm fuzzies that people are happy to help you with this kind of thing</li>
+<li>people offered a bunch of different approaches all of which offered potential things for me to follow up </li>
+<li>this fast tracked my progress, particularly since it might have got super annoying to be stuck on this problem on my own for ages. </li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p></p>
+<div class="flash flash-success">
+    <svg class="octicon octicon-checklist octicon octicon-checklist" viewbox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M2.5 1.75a.25.25 0 01.25-.25h8.5a.25.25 0 01.25.25v7.736a.75.75 0 101.5 0V1.75A1.75 1.75 0 0011.25 0h-8.5A1.75 1.75 0 001 1.75v11.5c0 .966.784 1.75 1.75 1.75h3.17a.75.75 0 000-1.5H2.75a.25.25 0 01-.25-.25V1.75zM4.75 4a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5h-4.5zM4 7.75A.75.75 0 014.75 7h2a.75.75 0 010 1.5h-2A.75.75 0 014 7.75zm11.774 3.537a.75.75 0 00-1.048-1.074L10.7 14.145 9.281 12.72a.75.75 0 00-1.062 1.058l1.943 1.95a.75.75 0 001.055.008l4.557-4.45z"></path></svg>
+    <strong>Tip: </strong>other people are happy to help but you should try and make it easy for them to help you (and I should reciprocate where I can) 
+</div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Following this input from  other people I followed up on <code>shuffle_fn</code> as a way to achieve what I'm trying to do (inside of a callback). Again, I'll try modifying this outside of a callback to see how it works</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dls</span> <span class="o">=</span> <span class="n">ImageDataLoaders</span><span class="o">.</span><span class="n">from_folder</span><span class="p">(</span><span class="n">data</span><span class="o">/</span><span class="s1">'train'</span><span class="p">,</span> <span class="n">valid_pct</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">item_tfms</span><span class="o">=</span><span class="p">[</span><span class="n">Resize</span><span class="p">(</span><span class="mi">64</span><span class="p">)])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dls</span><span class="o">.</span><span class="n">train_ds</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(#10269) [(PILImage mode=RGB size=239x160, TensorCategory(19)),(PILImage mode=RGB size=160x240, TensorCategory(19)),(PILImage mode=RGB size=160x357, TensorCategory(17)),(PILImage mode=RGB size=213x160, TensorCategory(19)),(PILImage mode=RGB size=290x160, TensorCategory(0)),(PILImage mode=RGB size=213x160, TensorCategory(17)),(PILImage mode=RGB size=160x213, TensorCategory(17)),(PILImage mode=RGB size=160x263, TensorCategory(9)),(PILImage mode=RGB size=213x160, TensorCategory(14)),(PILImage mode=RGB size=213x160, TensorCategory(18))...]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Looking at what it does at the moment</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">??</span>dls.train.shuffle_fn
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea ">
+<pre><span class="ansi-red-fg">Signature:</span> dls<span class="ansi-blue-fg">.</span>train<span class="ansi-blue-fg">.</span>shuffle_fn<span class="ansi-blue-fg">(</span>idxs<span class="ansi-blue-fg">)</span>
+<span class="ansi-red-fg">Docstring:</span> Returns a random permutation of `idxs`.
+<span class="ansi-red-fg">Source:</span>        <span class="ansi-green-fg">def</span> shuffle_fn<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> idxs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span> <span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>rng<span class="ansi-blue-fg">.</span>sample<span class="ansi-blue-fg">(</span>idxs<span class="ansi-blue-fg">,</span> len<span class="ansi-blue-fg">(</span>idxs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-red-fg">File:</span>      /usr/local/anaconda3/envs/blog/lib/python3.8/site-packages/fastai/data/load.py
+<span class="ansi-red-fg">Type:</span>      method
+</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can easily patch the functionality, in this case we'll just return 128 items</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nd">@patch_to</span><span class="p">(</span><span class="n">DataLoader</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">shuffle_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idxs</span><span class="p">):</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">idxs</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Check this has changes as expected</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">??</span>dls.train.shuffle_fn
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea ">
+<pre><span class="ansi-red-fg">Signature:</span> dls<span class="ansi-blue-fg">.</span>train<span class="ansi-blue-fg">.</span>shuffle_fn<span class="ansi-blue-fg">(</span>idxs<span class="ansi-blue-fg">)</span>
+<span class="ansi-red-fg">Docstring:</span> &lt;no docstring&gt;
+<span class="ansi-red-fg">Source:</span>   
+<span class="ansi-blue-fg">@</span>patch_to<span class="ansi-blue-fg">(</span>DataLoader<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">def</span> shuffle_fn<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> idxs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span> <span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>rng<span class="ansi-blue-fg">.</span>sample<span class="ansi-blue-fg">(</span>idxs<span class="ansi-blue-fg">,</span> <span class="ansi-cyan-fg">128</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-red-fg">File:</span>      ~/Documents/daniel/blog/_notebooks/&lt;ipython-input-29-99a68b7fe249&gt;
+<span class="ansi-red-fg">Type:</span>      method
+</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now try training...</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">learn</span> <span class="o">=</span> <span class="n">cnn_learner</span><span class="p">(</span><span class="n">dls</span><span class="p">,</span> <span class="n">squeezenet1_0</span><span class="p">)</span>
+<span class="n">learn</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: left;">
+      <th>epoch</th>
+      <th>train_loss</th>
+      <th>valid_loss</th>
+      <th>time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>4.615644</td>
+      <td>6.038196</td>
+      <td>00:17</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This seemed to do the training step very quickly so it's probably only getting 128 items but I don't know that for sure. If only there was some way of getting access to the training loop in fastai 😜</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">PrintItems</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">items_done</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">def</span> <span class="nf">after_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iter</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">items_done</span> <span class="o">+=</span> <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iter</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">learn</span><span class="o">.</span><span class="n">dls</span><span class="o">.</span><span class="n">bs</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">before_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">items_done</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">CancelFitException</span><span class="p">(</span><span class="s1">'stopped before valid'</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">learn</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">cbs</span><span class="o">=</span><span class="n">PrintItems</span><span class="p">())</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: left;">
+      <th>epoch</th>
+      <th>train_loss</th>
+      <th>valid_loss</th>
+      <th>time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>4.113161</td>
+      <td>None</td>
+      <td>00:00</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+</div>
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>0
+1
+128
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>With some more guidance I update this function to accept an input parameter that we can then easily update during training.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nd">@patch</span>
+<span class="k">def</span> <span class="nf">my_shuffle_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span><span class="n">DataLoader</span><span class="p">,</span> <span class="n">idxs</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">128</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">idxs</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dls</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">shuffle_fn</span> <span class="o">=</span> <span class="n">dls</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">my_shuffle_fn</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">??</span>dls.train.shuffle_fn
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea ">
+<pre><span class="ansi-red-fg">Signature:</span> dls<span class="ansi-blue-fg">.</span>train<span class="ansi-blue-fg">.</span>shuffle_fn<span class="ansi-blue-fg">(</span>idxs<span class="ansi-blue-fg">,</span> size<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">128</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-red-fg">Docstring:</span> &lt;no docstring&gt;
+<span class="ansi-red-fg">Source:</span>   
+<span class="ansi-blue-fg">@</span>patch
+<span class="ansi-green-fg">def</span> my_shuffle_fn<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">:</span>DataLoader<span class="ansi-blue-fg">,</span> idxs<span class="ansi-blue-fg">,</span> size<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">128</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+    <span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>rng<span class="ansi-blue-fg">.</span>sample<span class="ansi-blue-fg">(</span>idxs<span class="ansi-blue-fg">,</span> size<span class="ansi-blue-fg">)</span>
+<span class="ansi-red-fg">File:</span>      ~/Documents/daniel/blog/_notebooks/&lt;ipython-input-34-95358dde961e&gt;
+<span class="ansi-red-fg">Type:</span>      method
+</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Defining roughly what I want to do with some print statements again...</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">PrintItems</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">items_done</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">def</span> <span class="nf">before_train</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'calculating partial data sizes...'</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'updating shuffle_fn....'</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">learn</span><span class="o">.</span><span class="n">dls</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">shuffle_fn</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">learn</span><span class="o">.</span><span class="n">dls</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">my_shuffle_fn</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">after_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iter</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">items_done</span> <span class="o">+=</span> <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iter</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">learn</span><span class="o">.</span><span class="n">dls</span><span class="o">.</span><span class="n">bs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">before_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">items_done</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">CancelFitException</span><span class="p">(</span><span class="s1">'stopped before valid'</span><span class="p">)</span>  
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">learn</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">cbs</span><span class="o">=</span><span class="n">PrintItems</span><span class="p">())</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: left;">
+      <th>epoch</th>
+      <th>train_loss</th>
+      <th>valid_loss</th>
+      <th>time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>2.966318</td>
+      <td>None</td>
+      <td>00:00</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+</div>
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>calculating partial data sizes...
+updating shuffle_fn....
+0
+1
+128
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="To-be-continued...">
+<a class="anchor" href="#To-be-continued..." aria-hidden="true"><span class="octicon octicon-link"></span></a>To be continued...<a class="anchor-link" href="#To-be-continued..."> </a>
+</h3>
+<p>To avoid this becoming even longer I'll pick up the next steps of trying to get this callback working in another blog post.</p>
+<h3 id="Summary-so-far">
+<a class="anchor" href="#Summary-so-far" aria-hidden="true"><span class="octicon octicon-link"></span></a>Summary so far<a class="anchor-link" href="#Summary-so-far"> </a>
+</h3>
+<p>How this doing this help with my original goals.</p>
+<ul>
+<li>
+<p>I've definitely got a much better grasp on the callback system in fastai. Even though the specific callback I'm working on is still a work in progress, I now know much better where the entry points for callbacks are and what can be accessed/modified. I would feel more confident implementing callbacks than before.</p>
+</li>
+<li>
+<p>my 'process' is still a work in progress but having in mind that I should try and record the steps was actually super helpful and something I'll try and do better next time.</p>
+</li>
+<li>
+<p>Asking other people for help can move progress forward quickly. I think there is a skill in asking questions in the best way possible and this is something I'll continue to work on...</p>
+</li>
+</ul>
+
+</div>
+</div>
+</div>
+</div>
+
+
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="davanstrien/blog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/fastai/callbacks/learning/2021/03/04/callbacks-and-debugging-part-one.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>digital collections + computational methods</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/davanstrien" title="davanstrien"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/vanstriendaniel" title="vanstriendaniel"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
