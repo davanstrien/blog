@@ -1,4 +1,298 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://danielvanstrien.xyz/feed.xml" rel="self" type="application/atom+xml" /><link href="https://danielvanstrien.xyz/" rel="alternate" type="text/html" /><updated>2021-03-05T02:08:49-06:00</updated><id>https://danielvanstrien.xyz/feed.xml</id><title type="html">Daniel van Strien</title><subtitle>digital collections + computational methods</subtitle><entry><title type="html">Writing a fastai callback</title><link href="https://danielvanstrien.xyz/fastai/callbacks/learning/2021/03/04/callbacks-and-debugging-part-one.html" rel="alternate" type="text/html" title="Writing a fastai callback" /><published>2021-03-04T00:00:00-06:00</published><updated>2021-03-04T00:00:00-06:00</updated><id>https://danielvanstrien.xyz/fastai/callbacks/learning/2021/03/04/-callbacks-and-debugging-part-one</id><content type="html" xml:base="https://danielvanstrien.xyz/fastai/callbacks/learning/2021/03/04/callbacks-and-debugging-part-one.html">&lt;!--
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://danielvanstrien.xyz/feed.xml" rel="self" type="application/atom+xml" /><link href="https://danielvanstrien.xyz/" rel="alternate" type="text/html" /><updated>2021-03-06T10:17:19-06:00</updated><id>https://danielvanstrien.xyz/feed.xml</id><title type="html">Daniel van Strien</title><subtitle>digital collections + computational methods</subtitle><entry><title type="html">Full Stack Deep Learning notes on machine learning projects</title><link href="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/06/full-stack-deep-learning-glam-notes-5.html" rel="alternate" type="text/html" title="Full Stack Deep Learning notes on machine learning projects" /><published>2021-03-06T00:00:00-06:00</published><updated>2021-03-06T00:00:00-06:00</updated><id>https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/06/full-stack-deep-learning-glam-notes-5</id><content type="html" xml:base="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/06/full-stack-deep-learning-glam-notes-5.html">&lt;h1 id=&quot;introduction-to-my-notes&quot;&gt;Introduction to my notes&lt;/h1&gt;
+
+&lt;p&gt;These are my notes from the &lt;a href=&quot;https://fullstackdeeplearning.com/&quot;&gt;full-stack deep learning course&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;They have a  focus on the GLAM setting, which might have different requirements, incentives and resources compared to business deployments of ML projects. These notes are for my use primarily. I am posting them to make myself more accountable for making semi-coherent notes.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;These are my notes, written in a personal capacity - my employer denounces all my views&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;lecture-5-machine-learning-projects&quot;&gt;Lecture 5: Machine learning projects&lt;/h1&gt;
+
+&lt;p&gt;This is the first ’proper’ lesson of the course with the previous ones focused on a review of deep learning approaches. This lecture focused on an overview of machine learning projects (beyond training a model)&lt;/p&gt;
+
+&lt;h2 id=&quot;85-of-machine-learning-projects-fail&quot;&gt;85% of machine learning projects fail&lt;/h2&gt;
+
+&lt;p&gt;This stat might be a bit questionable in general but likely has some truth to it. How does this differ in a GLAM setting? It might be more evident in a business setting if a project is successful or not based on a business need. In a GLAM setting, a project that is never “deployed”  might still by deemed successful. It is also my impression that there is a much closer overlap between academic/research projects and “business” projects in a GLAM setting. This might mean that the successful outcome is a published paper rather than a deployed model solving a “business” problem.&lt;/p&gt;
+
+&lt;h2 id=&quot;lifecycle-of-a-machine-learning-project&quot;&gt;Lifecycle of a machine learning project&lt;/h2&gt;
+
+&lt;p&gt;Covered in this lecture:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;How to think about all of the activities in an ML project&lt;/li&gt;
+  &lt;li&gt;Prioritising projects: what is feasible?&lt;/li&gt;
+  &lt;li&gt;Archetypes: categories of projects and the implications for project management&lt;/li&gt;
+  &lt;li&gt;Metrics: how to pick a single number to optimise&lt;/li&gt;
+  &lt;li&gt;Baselines: how to know if a model is performing well&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Stages in the lifecycle are not linear but loop back and forth. i.e. you go back to project planning once you’ve started collecting data/labels because you realise the labels you collected aren’t feasible to collect. This might be more important in a GLAM setting? Data collection usually takes place in a different way; for example, I don’t know of any GLAMS that have extensively used paid crowdsource workers to collect training labels. This means that the label collection options might have to factor in more considerations around what is easy enough/fun enough.&lt;/p&gt;
+
+&lt;p&gt;Managing trade-offs between, e.g. accuracy and model latency&lt;/p&gt;
+
+&lt;h2 id=&quot;cross-project-infrastructure-and-staffing&quot;&gt;Cross-project infrastructure and staffing&lt;/h2&gt;
+
+&lt;p&gt;Should there be a separate team? Where should they sit in an organisation?&lt;/p&gt;
+
+&lt;p&gt;Domain expertise is particularly important in a GLAM setting, so there might be risks with creating a team that does ML without this subject/domain expertise. On this point, I’m persuaded a lot by what fastai suggest about making deep learning accessible to domain experts. GLAMs should probably have some people who can support these efforts, but having a bunch of people hired as “the data science people” might be a bad idea if they don’t work closely with others across an institution. Maybe I’m naive here that GLAMs would be willing to invest in broad training of many staff rather than hiring a few people. 🤷‍♂️&lt;/p&gt;
+
+&lt;h2 id=&quot;prioritising-machine-learning-projects&quot;&gt;Prioritising machine learning projects&lt;/h2&gt;
+
+&lt;p&gt;How to decide what a suitable candidate for an ML project is?&lt;/p&gt;
+
+&lt;h3 id=&quot;a-general-framework-for-prioritising-projects&quot;&gt;A (general) framework for prioritising projects&lt;/h3&gt;
+
+&lt;p&gt;One way to identify projects is to try and find things that have a high impact and relatively low cost.&lt;/p&gt;
+
+&lt;h3 id=&quot;mental-models-for-high-impact-ml-projects&quot;&gt;Mental models for high-impact ML projects&lt;/h3&gt;
+
+&lt;p&gt;Four mental models introduced for thinking about impact:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Where can you take advantage of cheap prediction&lt;/li&gt;
+  &lt;li&gt;Where is there friction in your product?&lt;/li&gt;
+  &lt;li&gt;Where can you automate complicated manual processes?&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;What are other people doing?&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Cheap predictions (1)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;For number 1, the idea of “cheap predictions” is useful even if the economics are different. Cheap predictions might be more about unlocking tasks that wouldn’t otherwise be possible to do. Rather than using ML to replace something, it might make it feasible to do something which otherwise would be too expensive for the relative benefit.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Where is there friction in your product? (2)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;This objective seems important, but my examples of where GLAMS could make things easier for users would often not be simple projects to implement. They may also sit outside of what would be simple for a single institution to do on their own, or they may have already outsourced these systems. For example, cataloguing/discovery systems.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Where can you automate complicated manual processes? (3)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;For number 3, I would adjust this slightly to “where can you automate simple/boring manual processes” I think this is an area where there is a bunch of low hanging fruit for GLAMs. It is tempting to jump to more jazzy end-to-end models that will fully revolutionise cataloguing etc., but there are loads of tasks that GLAM staff have to do that:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;might be boring&lt;/li&gt;
+  &lt;li&gt;are probably difficult to solve using “traditional” programming i.e. writing a rules-based system would be difficult&lt;/li&gt;
+  &lt;li&gt;which has enough ’volume’ that it’s worth automating.&lt;/li&gt;
+  &lt;li&gt;these are often also “staff facing” I think this reduced the potential risks of things going wrong versus something user-facing, for example, showing users a bunch of automatically generated tags for collection items?&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;What is ML good at?&lt;/p&gt;
+
+    &lt;p&gt;I think this is a lovely consideration. I also believe this is something where energy shoud be spent in spreading the gospel of what ML is good at to staff working in GLAMS. This will make it much easier for people to self diagnose that something they are working with could be a good candidate for ml to help with and also helps demystify.&lt;/p&gt;
+
+    &lt;p&gt;The mental model of software 2.0 is a bit of a meme, but I think there is a lot of truth in there. The rules you would need to write to solve, for example, a relatively simple computer vision classification task, could be super complicated. Going back to my domain experts should use ml point:  I think that there are places where ml could be used as a “tool” in a glam setting in a much more mundane way for much more modest things. The actual coding ability level is potentially lower for this than creating complex rules-based approaches to the same task.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;What are other people doing?&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;This should be an obvious one and ideally this will become more feasible as GLAMS get better at collaborating on sharing code/data (particularly labelled training data).&lt;/p&gt;
+
+&lt;p&gt;An interesting point here about how to find out what others are doing. I think GLAMs are good at shouting about ML stuff at the moment because it’s super trendy. Still, there might be a lack of shouting about unsuccessful projects that others could learn from and/or shouting about more boring applications of ml that might be high impact but are not as obviously glamorous (pardon the pun).&lt;/p&gt;
+
+&lt;h3 id=&quot;feasability&quot;&gt;Feasability&lt;/h3&gt;
+
+&lt;p&gt;What drives the feasibility of a project?&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;Data availability&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;how much data do you need?&lt;/li&gt;
+      &lt;li&gt;how stable is the data - if data updates in the real world all the time this will need to be replicated in the training data. This might be an argument for starting with more contained ’collections’ even if these collections are slightly arbitrary.&lt;/li&gt;
+      &lt;li&gt;how secure does the data need to be. Copyright might be a challenge. GLAMs should push Text and Data Mining Exemptions more forcefully for machine learning projects&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Accuracy requirements&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;how costly are wrong predictions? This obviously depends on the problem, but it might be an argument for starting with “staff facing” or “stand alone” projects where there is either more human checking involved or the system’s limitations can be made more explicit.&lt;/li&gt;
+      &lt;li&gt;how frequently does the system need to be correct to be useful?&lt;/li&gt;
+      &lt;li&gt;ethical implications of the model’s accuracy - what is the harm of a model getting things wrong. Particularly important if the accuracy is not evenly distributed. For example, using Named Entity Recognition across a multi-language dataset with accuracy much higher for English compared to other results.&lt;/li&gt;
+      &lt;li&gt;pushing up accuracy tends to push up project costs because of more training data required, better label quality.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Feasibility of the method&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;What is still hard for ML? One rule of thumb suggested for what is possible with ml given:&lt;/li&gt;
+    &lt;/ul&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;“Pretty much anything that a normal (sic) person can do in &amp;lt;1 sec, we can now automate with ai”&lt;/p&gt;
+    &lt;/blockquote&gt;
+
+    &lt;p&gt;Leaving aside the loaded “normal person” this rule doesn’t seem to work in many cases, as is pointed out in the lecture. There are a bunch of things that are easy for many people to do but aren’t easy at all for an ML system. Jokes, sarcasm etc. are all challenigng for ml.&lt;/p&gt;
+
+    &lt;p&gt;Still challenging:&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;Pure unsupervised learning  difficult&lt;/li&gt;
+      &lt;li&gt;Reinforcement learning (outside of academia)&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;how-to-run-a-feasibility-assessment&quot;&gt;How to run a feasibility assessment?&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Are you sure you need ML at all? Many problems can still be solved with regex…&lt;/li&gt;
+  &lt;li&gt;Put in work up-front to define success criteria with all of the stakeholders: think this one is super important. It could be tempting to be a bit hazy on this and make the success criteria “we did a cool ml project”. This might be okay if the output is a paper/blog post but probably not if you’re going to deploy something into ’production’&lt;/li&gt;
+  &lt;li&gt;Consider the ethics: consider what weird/bad results commercial black box APIs might give with heritage data. Consider whether you are pilling onto existing biases in your collection. Some of the labels/metadata GALMS use/have used is shitty, so maybe don’t aim to get ml to produce even more of these…&lt;/li&gt;
+  &lt;li&gt;Do a literature review&lt;/li&gt;
+  &lt;li&gt;Try to rapidly build a labelled benchmark dataset&lt;/li&gt;
+  &lt;li&gt;build a minimal product to see if the problem seems viable (not using ml)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;machine-learning-product-archetypes&quot;&gt;Machine learning product archetypes&lt;/h2&gt;
+
+&lt;h3 id=&quot;software-20&quot;&gt;Software 2.0&lt;/h3&gt;
+
+&lt;p&gt;examples: code completion, recomender systems etc. In a GLAM setting I gues this would incldue catlogues, disvoery systems, document summerization etc.&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;org9a5b4e9&quot;&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;human-in-the-loop&quot;&gt;Human-in-the-loop&lt;/h3&gt;
+
+&lt;p&gt;Examples: turn sketches into slides, email auto-completion. In a GLAM setting, there are many potential examples, ML suggestions for cataloguing, document processing/classification/segmentation with some human review.&lt;/p&gt;
+
+&lt;h3 id=&quot;autonomous-systems&quot;&gt;Autonomous systems&lt;/h3&gt;
+
+&lt;p&gt;Examples: self driving cars etc. My 2 c is that most (maybe all) GLAM institutions don’t have sufficient experience with ML to really consider this. Exceptions may include robotics systems for some processes, but these are unlikely to be done “in house”. Maybe I am missing something here?&lt;/p&gt;
+
+&lt;h2 id=&quot;data-flywheel&quot;&gt;Data flywheel&lt;/h2&gt;
+
+&lt;p&gt;sometimes you can get a positive feedback loop where you get more data -&amp;gt; better model -&amp;gt; more users - more data…&lt;/p&gt;
+
+&lt;p&gt;Things to consider. Where can this loop fail? The “more users” criteria might not translate in a glam setting, but perhaps building useful models/datasets that can then be extended on by other institutions is a similar positive feedback loop you can see. Transkribus is an example of this; they built a platform that got more data, which improved models that drove more people to consider it an option.&lt;/p&gt;
+
+&lt;h2 id=&quot;product-design&quot;&gt;Product design&lt;/h2&gt;
+
+&lt;h3 id=&quot;principles-from-apple&quot;&gt;Principles from apple&lt;/h3&gt;
+
+&lt;p&gt;How can you learn from your users? &amp;lt;- This is super relevant!&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Explicit feedback (suggest less pop music)&lt;/li&gt;
+  &lt;li&gt;implicit feedback (like this song)+ calibration during setup (scan your face for FaceID)&lt;/li&gt;
+  &lt;li&gt;corrections (fix model mistakes) &amp;lt;- I think this is particularly important for successfully integrating into GLAM workflows and building trust that ML isn’t going to be making decisions without possibilities for correction&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;how-should-your-app-handle-mistakes&quot;&gt;How should your app handle mistakes?&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;limitations (let users) know where to expect the model to perform well/badly&lt;/li&gt;
+  &lt;li&gt;corrections (let users succeed even if the model fails), i.e. don’t suggest labels that can’t be ignored&lt;/li&gt;
+  &lt;li&gt;attribution (help users understand where suggestions come from)&lt;/li&gt;
+  &lt;li&gt;confidence (help users gauge the quality of results)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;metrics&quot;&gt;Metrics&lt;/h2&gt;
+
+&lt;p&gt;How to pick a single number to optimise?&lt;/p&gt;
+
+&lt;p&gt;The real world is messy, and you often care about lots of metrics. If you need to compare models/approaches, its very helpful to have a single number to optimise.
+This can be done by combining different metrics.
+the optimisation can change as things improve.
+This single metric mindset is good for the model training part but should be balanced against other considerations as you move beyond this stage.&lt;/p&gt;
+
+&lt;h3 id=&quot;common-metrics-to-pick-from&quot;&gt;Common metrics to pick from&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;accuracy&lt;/li&gt;
+  &lt;li&gt;precision&lt;/li&gt;
+  &lt;li&gt;recall&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Don’t think we can generalise to saying one metric is more critical for glams, it really depends on the application.&lt;/p&gt;
+
+&lt;p&gt;Possible combinations weighted average between precision/recall.&lt;/p&gt;
+
+&lt;p&gt;More common in real-world is to use threshold n-1 metrics, evaluate to the nth. The idea here is that you pick one metric like accuracy to focus on but then try and improve that without making other things like the latency of the model much worse. This will be discussed more in future lectures.
+An example: you need a model that will fit into the memory of a particular edge device, so you start with something that will do this and optimise from there.&lt;/p&gt;
+
+&lt;h3 id=&quot;choosing-which-metrics-to-the-threshold&quot;&gt;Choosing which metrics to the threshold&lt;/h3&gt;
+
+&lt;p&gt;What should you optimise vs what should threshold?&lt;/p&gt;
+
+&lt;p&gt;Choosing metrics to  threshold:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;domain judgement: what can you engineer around? For example, maybe you can deal with a lower latency model by caching to get away with worse performance. In a glam setting, this will depend on the application, but if you are ’batch processing’ an existing collection you might not care about latency as much as if you are trying to use something which interacts with people in real-time, i.e. a cataloguing system.&lt;/li&gt;
+  &lt;li&gt;which metrics are least sensitive to model choice?&lt;/li&gt;
+  &lt;li&gt;which metrics are closest to desirable values.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Choosing threshold values:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;domain judgement - what is an acceptable tolerance downstream?&lt;/li&gt;
+  &lt;li&gt;how well does a baseline model do?&lt;/li&gt;
+  &lt;li&gt;how well does the model do already - if your model barely works, then its not going to be worth spending time trying to make it go faster…&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Once you have this baseline, you can eliminate models by successive metrics thresholds. i.e. first drop models with recall below n, then choose models which do well on precision given this minimal recall value.&lt;/p&gt;
+
+&lt;p&gt;It is important to try and be principled about which metric/combo you are going to use upfront as it will lead to different decisions being made about model choice etc. This might change, but its important to have something to drive decisions.&lt;/p&gt;
+
+&lt;h3 id=&quot;baselines&quot;&gt;Baselines&lt;/h3&gt;
+
+&lt;p&gt;Why?&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Give you a lower bound for expected model performance&lt;/li&gt;
+  &lt;li&gt;the tighter the lower bound, the more useful&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Having this baseline gives you some sense of how well/or crappy you are doing—otherwise its hard to make a judgement about next steps when training a model.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Where to look for baselines?&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;published results, make sure these are fair comparisons.&lt;/li&gt;
+  &lt;li&gt;Scripted baselines e.g. rule-based approaches&lt;/li&gt;
+  &lt;li&gt;could also use a simpler machine learning model as a baseline&lt;/li&gt;
+  &lt;li&gt;or even take some kind of average of the dataset. sklearn has a bunch of dummy estimators useful for getting a baseline &lt;a href=&quot;https://scikit-learn.org/stable/modules/model_evaluation.html#model-evaluation&quot;&gt;https://scikit-learn.org/stable/modules/model_evaluation.html#model-evaluation&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;How to create good human baselines
+    &lt;ul&gt;
+      &lt;li&gt;random people quality might be low&lt;/li&gt;
+      &lt;li&gt;might require domain expertise&lt;/li&gt;
+      &lt;li&gt;trainign people on the task can improve quality&lt;/li&gt;
+      &lt;li&gt;ensembling of labels&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;ML lifecycle not linear&lt;/li&gt;
+  &lt;li&gt;projects that are high impact and wrong predictions not so bad&lt;/li&gt;
+  &lt;li&gt;secret sauce is to try and create automated data flywheels getting feedback from users of the model. much of this is about good product design&lt;/li&gt;
+  &lt;li&gt;metrics: having a central metric is important as a starting point&lt;/li&gt;
+  &lt;li&gt;baselines: help direct effort to know how the model is doing and where to direct energy&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;suggested-resources&quot;&gt;suggested resources&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://stanford-cs329s.github.io/syllabus.html&quot;&gt;https://stanford-cs329s.github.io/syllabus.html&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://developer.apple.com/design/human-interface-guidelines/machine-learning/overview/introduction/&quot;&gt;https://developer.apple.com/design/human-interface-guidelines/machine-learning/overview/introduction/&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://developers.google.com/machine-learning/guides/rules-of-ml/&quot;&gt;https://developers.google.com/machine-learning/guides/rules-of-ml/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content><author><name></name></author><category term="deployment" /><category term="ethics" /><category term="glam" /><summary type="html">Introduction to my notes</summary></entry><entry><title type="html">Writing a fastai callback</title><link href="https://danielvanstrien.xyz/fastai/callbacks/learning/2021/03/04/callbacks-and-debugging-part-one.html" rel="alternate" type="text/html" title="Writing a fastai callback" /><published>2021-03-04T00:00:00-06:00</published><updated>2021-03-04T00:00:00-06:00</updated><id>https://danielvanstrien.xyz/fastai/callbacks/learning/2021/03/04/-callbacks-and-debugging-part-one</id><content type="html" xml:base="https://danielvanstrien.xyz/fastai/callbacks/learning/2021/03/04/callbacks-and-debugging-part-one.html">&lt;!--
 #################################################
 ### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
 #################################################

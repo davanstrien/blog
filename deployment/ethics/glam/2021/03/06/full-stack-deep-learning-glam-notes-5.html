@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Full Stack Deep Learning notes on machine learning projects | Daniel van Strien</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Full Stack Deep Learning notes on machine learning projects" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Introduction to my notes" />
+<meta property="og:description" content="Introduction to my notes" />
+<link rel="canonical" href="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/06/full-stack-deep-learning-glam-notes-5.html" />
+<meta property="og:url" content="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/06/full-stack-deep-learning-glam-notes-5.html" />
+<meta property="og:site_name" content="Daniel van Strien" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-03-06T00:00:00-06:00" />
+<script type="application/ld+json">
+{"url":"https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/06/full-stack-deep-learning-glam-notes-5.html","@type":"BlogPosting","headline":"Full Stack Deep Learning notes on machine learning projects","dateModified":"2021-03-06T00:00:00-06:00","datePublished":"2021-03-06T00:00:00-06:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/06/full-stack-deep-learning-glam-notes-5.html"},"description":"Introduction to my notes","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://danielvanstrien.xyz/feed.xml" title="Daniel van Strien" /><!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-59247814-2','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+
+<link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" integrity="sha512-h7nl+xz8wgDlNM4NqKEM4F1NkIRS17M9+uJwIGwuo8vGqIl4BhuCKdxjWEINm+xyrUjNCnK5dCrhM0sj+wTIXw==" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js" integrity="sha512-/CMIhXiDA3m2c9kzRyd97MTb3MC6OVnx4TElQ7fkkoRghwDf6gi41gaT1PwF270W6+J60uTmwgeRpNpJdRV6sg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js" integrity="sha512-Do7uJAaHZm5OLrIv/yN4w0iG1dbu01kzdMNnFfu/mAqgUk6Nniv2JYHcwH+cNwjqgLcqcuBBk+JRvprLVI8azg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha512-0doc9hKxR3PYwso42RD1p5ySZpzzuDiOwMrdCEh2WdJZCjcmFKc/wEnL+z8fBQrnHoiNWbo+3fiGkOYXBdQp4A==" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Daniel van Strien</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About Me</a><a class="page-link" href="/search/">Search</a><a class="page-link" href="/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Full Stack Deep Learning notes on machine learning projects</h1><p class="post-meta post-meta-title"><time class="dt-published" datetime="2021-03-06T00:00:00-06:00" itemprop="datePublished">
+        Mar 6, 2021
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      13 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/categories/#deployment">deployment</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/categories/#ethics">ethics</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/categories/#glam">glam</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <h1 id="introduction-to-my-notes">Introduction to my notes</h1>
+
+<p>These are my notes from the <a href="https://fullstackdeeplearning.com/">full-stack deep learning course</a>.</p>
+
+<p>They have a  focus on the GLAM setting, which might have different requirements, incentives and resources compared to business deployments of ML projects. These notes are for my use primarily. I am posting them to make myself more accountable for making semi-coherent notes.</p>
+
+<p><strong>These are my notes, written in a personal capacity - my employer denounces all my views</strong></p>
+
+<h1 id="lecture-5-machine-learning-projects">Lecture 5: Machine learning projects</h1>
+
+<p>This is the first ’proper’ lesson of the course with the previous ones focused on a review of deep learning approaches. This lecture focused on an overview of machine learning projects (beyond training a model)</p>
+
+<h2 id="85-of-machine-learning-projects-fail">85% of machine learning projects fail</h2>
+
+<p>This stat might be a bit questionable in general but likely has some truth to it. How does this differ in a GLAM setting? It might be more evident in a business setting if a project is successful or not based on a business need. In a GLAM setting, a project that is never “deployed”  might still by deemed successful. It is also my impression that there is a much closer overlap between academic/research projects and “business” projects in a GLAM setting. This might mean that the successful outcome is a published paper rather than a deployed model solving a “business” problem.</p>
+
+<h2 id="lifecycle-of-a-machine-learning-project">Lifecycle of a machine learning project</h2>
+
+<p>Covered in this lecture:</p>
+
+<ul>
+  <li>How to think about all of the activities in an ML project</li>
+  <li>Prioritising projects: what is feasible?</li>
+  <li>Archetypes: categories of projects and the implications for project management</li>
+  <li>Metrics: how to pick a single number to optimise</li>
+  <li>Baselines: how to know if a model is performing well</li>
+</ul>
+
+<p>Stages in the lifecycle are not linear but loop back and forth. i.e. you go back to project planning once you’ve started collecting data/labels because you realise the labels you collected aren’t feasible to collect. This might be more important in a GLAM setting? Data collection usually takes place in a different way; for example, I don’t know of any GLAMS that have extensively used paid crowdsource workers to collect training labels. This means that the label collection options might have to factor in more considerations around what is easy enough/fun enough.</p>
+
+<p>Managing trade-offs between, e.g. accuracy and model latency</p>
+
+<h2 id="cross-project-infrastructure-and-staffing">Cross-project infrastructure and staffing</h2>
+
+<p>Should there be a separate team? Where should they sit in an organisation?</p>
+
+<p>Domain expertise is particularly important in a GLAM setting, so there might be risks with creating a team that does ML without this subject/domain expertise. On this point, I’m persuaded a lot by what fastai suggest about making deep learning accessible to domain experts. GLAMs should probably have some people who can support these efforts, but having a bunch of people hired as “the data science people” might be a bad idea if they don’t work closely with others across an institution. Maybe I’m naive here that GLAMs would be willing to invest in broad training of many staff rather than hiring a few people. 🤷‍♂️</p>
+
+<h2 id="prioritising-machine-learning-projects">Prioritising machine learning projects</h2>
+
+<p>How to decide what a suitable candidate for an ML project is?</p>
+
+<h3 id="a-general-framework-for-prioritising-projects">A (general) framework for prioritising projects</h3>
+
+<p>One way to identify projects is to try and find things that have a high impact and relatively low cost.</p>
+
+<h3 id="mental-models-for-high-impact-ml-projects">Mental models for high-impact ML projects</h3>
+
+<p>Four mental models introduced for thinking about impact:</p>
+
+<ol>
+  <li>Where can you take advantage of cheap prediction</li>
+  <li>Where is there friction in your product?</li>
+  <li>Where can you automate complicated manual processes?</li>
+  <li>
+    <p>What are other people doing?</p>
+  </li>
+  <li>Cheap predictions (1)</li>
+</ol>
+
+<p>For number 1, the idea of “cheap predictions” is useful even if the economics are different. Cheap predictions might be more about unlocking tasks that wouldn’t otherwise be possible to do. Rather than using ML to replace something, it might make it feasible to do something which otherwise would be too expensive for the relative benefit.</p>
+
+<ol>
+  <li>Where is there friction in your product? (2)</li>
+</ol>
+
+<p>This objective seems important, but my examples of where GLAMS could make things easier for users would often not be simple projects to implement. They may also sit outside of what would be simple for a single institution to do on their own, or they may have already outsourced these systems. For example, cataloguing/discovery systems.</p>
+
+<ol>
+  <li>Where can you automate complicated manual processes? (3)</li>
+</ol>
+
+<p>For number 3, I would adjust this slightly to “where can you automate simple/boring manual processes” I think this is an area where there is a bunch of low hanging fruit for GLAMs. It is tempting to jump to more jazzy end-to-end models that will fully revolutionise cataloguing etc., but there are loads of tasks that GLAM staff have to do that:</p>
+<ul>
+  <li>might be boring</li>
+  <li>are probably difficult to solve using “traditional” programming i.e. writing a rules-based system would be difficult</li>
+  <li>which has enough ’volume’ that it’s worth automating.</li>
+  <li>these are often also “staff facing” I think this reduced the potential risks of things going wrong versus something user-facing, for example, showing users a bunch of automatically generated tags for collection items?</li>
+</ul>
+
+<ol>
+  <li>
+    <p>What is ML good at?</p>
+
+    <p>I think this is a lovely consideration. I also believe this is something where energy shoud be spent in spreading the gospel of what ML is good at to staff working in GLAMS. This will make it much easier for people to self diagnose that something they are working with could be a good candidate for ml to help with and also helps demystify.</p>
+
+    <p>The mental model of software 2.0 is a bit of a meme, but I think there is a lot of truth in there. The rules you would need to write to solve, for example, a relatively simple computer vision classification task, could be super complicated. Going back to my domain experts should use ml point:  I think that there are places where ml could be used as a “tool” in a glam setting in a much more mundane way for much more modest things. The actual coding ability level is potentially lower for this than creating complex rules-based approaches to the same task.</p>
+  </li>
+  <li>
+    <p>What are other people doing?</p>
+  </li>
+</ol>
+
+<p>This should be an obvious one and ideally this will become more feasible as GLAMS get better at collaborating on sharing code/data (particularly labelled training data).</p>
+
+<p>An interesting point here about how to find out what others are doing. I think GLAMs are good at shouting about ML stuff at the moment because it’s super trendy. Still, there might be a lack of shouting about unsuccessful projects that others could learn from and/or shouting about more boring applications of ml that might be high impact but are not as obviously glamorous (pardon the pun).</p>
+
+<h3 id="feasability">Feasability</h3>
+
+<p>What drives the feasibility of a project?</p>
+
+<ol>
+  <li>
+    <p>Data availability</p>
+
+    <ul>
+      <li>how much data do you need?</li>
+      <li>how stable is the data - if data updates in the real world all the time this will need to be replicated in the training data. This might be an argument for starting with more contained ’collections’ even if these collections are slightly arbitrary.</li>
+      <li>how secure does the data need to be. Copyright might be a challenge. GLAMs should push Text and Data Mining Exemptions more forcefully for machine learning projects</li>
+    </ul>
+  </li>
+  <li>
+    <p>Accuracy requirements</p>
+
+    <ul>
+      <li>how costly are wrong predictions? This obviously depends on the problem, but it might be an argument for starting with “staff facing” or “stand alone” projects where there is either more human checking involved or the system’s limitations can be made more explicit.</li>
+      <li>how frequently does the system need to be correct to be useful?</li>
+      <li>ethical implications of the model’s accuracy - what is the harm of a model getting things wrong. Particularly important if the accuracy is not evenly distributed. For example, using Named Entity Recognition across a multi-language dataset with accuracy much higher for English compared to other results.</li>
+      <li>pushing up accuracy tends to push up project costs because of more training data required, better label quality.</li>
+    </ul>
+  </li>
+  <li>
+    <p>Feasibility of the method</p>
+
+    <ul>
+      <li>What is still hard for ML? One rule of thumb suggested for what is possible with ml given:</li>
+    </ul>
+
+    <blockquote>
+      <p>“Pretty much anything that a normal (sic) person can do in &lt;1 sec, we can now automate with ai”</p>
+    </blockquote>
+
+    <p>Leaving aside the loaded “normal person” this rule doesn’t seem to work in many cases, as is pointed out in the lecture. There are a bunch of things that are easy for many people to do but aren’t easy at all for an ML system. Jokes, sarcasm etc. are all challenigng for ml.</p>
+
+    <p>Still challenging:</p>
+
+    <ul>
+      <li>Pure unsupervised learning  difficult</li>
+      <li>Reinforcement learning (outside of academia)</li>
+    </ul>
+  </li>
+</ol>
+
+<h3 id="how-to-run-a-feasibility-assessment">How to run a feasibility assessment?</h3>
+
+<ul>
+  <li>Are you sure you need ML at all? Many problems can still be solved with regex…</li>
+  <li>Put in work up-front to define success criteria with all of the stakeholders: think this one is super important. It could be tempting to be a bit hazy on this and make the success criteria “we did a cool ml project”. This might be okay if the output is a paper/blog post but probably not if you’re going to deploy something into ’production’</li>
+  <li>Consider the ethics: consider what weird/bad results commercial black box APIs might give with heritage data. Consider whether you are pilling onto existing biases in your collection. Some of the labels/metadata GALMS use/have used is shitty, so maybe don’t aim to get ml to produce even more of these…</li>
+  <li>Do a literature review</li>
+  <li>Try to rapidly build a labelled benchmark dataset</li>
+  <li>build a minimal product to see if the problem seems viable (not using ml)</li>
+</ul>
+
+<h2 id="machine-learning-product-archetypes">Machine learning product archetypes</h2>
+
+<h3 id="software-20">Software 2.0</h3>
+
+<p>examples: code completion, recomender systems etc. In a GLAM setting I gues this would incldue catlogues, disvoery systems, document summerization etc.</p>
+
+<p><a id="org9a5b4e9"></a></p>
+
+<h3 id="human-in-the-loop">Human-in-the-loop</h3>
+
+<p>Examples: turn sketches into slides, email auto-completion. In a GLAM setting, there are many potential examples, ML suggestions for cataloguing, document processing/classification/segmentation with some human review.</p>
+
+<h3 id="autonomous-systems">Autonomous systems</h3>
+
+<p>Examples: self driving cars etc. My 2 c is that most (maybe all) GLAM institutions don’t have sufficient experience with ML to really consider this. Exceptions may include robotics systems for some processes, but these are unlikely to be done “in house”. Maybe I am missing something here?</p>
+
+<h2 id="data-flywheel">Data flywheel</h2>
+
+<p>sometimes you can get a positive feedback loop where you get more data -&gt; better model -&gt; more users - more data…</p>
+
+<p>Things to consider. Where can this loop fail? The “more users” criteria might not translate in a glam setting, but perhaps building useful models/datasets that can then be extended on by other institutions is a similar positive feedback loop you can see. Transkribus is an example of this; they built a platform that got more data, which improved models that drove more people to consider it an option.</p>
+
+<h2 id="product-design">Product design</h2>
+
+<h3 id="principles-from-apple">Principles from apple</h3>
+
+<p>How can you learn from your users? &lt;- This is super relevant!</p>
+
+<ul>
+  <li>Explicit feedback (suggest less pop music)</li>
+  <li>implicit feedback (like this song)+ calibration during setup (scan your face for FaceID)</li>
+  <li>corrections (fix model mistakes) &lt;- I think this is particularly important for successfully integrating into GLAM workflows and building trust that ML isn’t going to be making decisions without possibilities for correction</li>
+</ul>
+
+<h3 id="how-should-your-app-handle-mistakes">How should your app handle mistakes?</h3>
+
+<ul>
+  <li>limitations (let users) know where to expect the model to perform well/badly</li>
+  <li>corrections (let users succeed even if the model fails), i.e. don’t suggest labels that can’t be ignored</li>
+  <li>attribution (help users understand where suggestions come from)</li>
+  <li>confidence (help users gauge the quality of results)</li>
+</ul>
+
+<h2 id="metrics">Metrics</h2>
+
+<p>How to pick a single number to optimise?</p>
+
+<p>The real world is messy, and you often care about lots of metrics. If you need to compare models/approaches, its very helpful to have a single number to optimise.
+This can be done by combining different metrics.
+the optimisation can change as things improve.
+This single metric mindset is good for the model training part but should be balanced against other considerations as you move beyond this stage.</p>
+
+<h3 id="common-metrics-to-pick-from">Common metrics to pick from</h3>
+
+<ul>
+  <li>accuracy</li>
+  <li>precision</li>
+  <li>recall</li>
+</ul>
+
+<p>Don’t think we can generalise to saying one metric is more critical for glams, it really depends on the application.</p>
+
+<p>Possible combinations weighted average between precision/recall.</p>
+
+<p>More common in real-world is to use threshold n-1 metrics, evaluate to the nth. The idea here is that you pick one metric like accuracy to focus on but then try and improve that without making other things like the latency of the model much worse. This will be discussed more in future lectures.
+An example: you need a model that will fit into the memory of a particular edge device, so you start with something that will do this and optimise from there.</p>
+
+<h3 id="choosing-which-metrics-to-the-threshold">Choosing which metrics to the threshold</h3>
+
+<p>What should you optimise vs what should threshold?</p>
+
+<p>Choosing metrics to  threshold:</p>
+
+<ul>
+  <li>domain judgement: what can you engineer around? For example, maybe you can deal with a lower latency model by caching to get away with worse performance. In a glam setting, this will depend on the application, but if you are ’batch processing’ an existing collection you might not care about latency as much as if you are trying to use something which interacts with people in real-time, i.e. a cataloguing system.</li>
+  <li>which metrics are least sensitive to model choice?</li>
+  <li>which metrics are closest to desirable values.</li>
+</ul>
+
+<p>Choosing threshold values:</p>
+
+<ul>
+  <li>domain judgement - what is an acceptable tolerance downstream?</li>
+  <li>how well does a baseline model do?</li>
+  <li>how well does the model do already - if your model barely works, then its not going to be worth spending time trying to make it go faster…</li>
+</ul>
+
+<p>Once you have this baseline, you can eliminate models by successive metrics thresholds. i.e. first drop models with recall below n, then choose models which do well on precision given this minimal recall value.</p>
+
+<p>It is important to try and be principled about which metric/combo you are going to use upfront as it will lead to different decisions being made about model choice etc. This might change, but its important to have something to drive decisions.</p>
+
+<h3 id="baselines">Baselines</h3>
+
+<p>Why?</p>
+
+<ul>
+  <li>Give you a lower bound for expected model performance</li>
+  <li>the tighter the lower bound, the more useful</li>
+</ul>
+
+<p>Having this baseline gives you some sense of how well/or crappy you are doing—otherwise its hard to make a judgement about next steps when training a model.</p>
+
+<ol>
+  <li>Where to look for baselines?</li>
+</ol>
+
+<ul>
+  <li>published results, make sure these are fair comparisons.</li>
+  <li>Scripted baselines e.g. rule-based approaches</li>
+  <li>could also use a simpler machine learning model as a baseline</li>
+  <li>or even take some kind of average of the dataset. sklearn has a bunch of dummy estimators useful for getting a baseline <a href="https://scikit-learn.org/stable/modules/model_evaluation.html#model-evaluation">https://scikit-learn.org/stable/modules/model_evaluation.html#model-evaluation</a></li>
+</ul>
+
+<ol>
+  <li>How to create good human baselines
+    <ul>
+      <li>random people quality might be low</li>
+      <li>might require domain expertise</li>
+      <li>trainign people on the task can improve quality</li>
+      <li>ensembling of labels</li>
+    </ul>
+  </li>
+</ol>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<ul>
+  <li>ML lifecycle not linear</li>
+  <li>projects that are high impact and wrong predictions not so bad</li>
+  <li>secret sauce is to try and create automated data flywheels getting feedback from users of the model. much of this is about good product design</li>
+  <li>metrics: having a central metric is important as a starting point</li>
+  <li>baselines: help direct effort to know how the model is doing and where to direct energy</li>
+</ul>
+
+<h1 id="suggested-resources">suggested resources</h1>
+
+<ul>
+  <li><a href="https://stanford-cs329s.github.io/syllabus.html">https://stanford-cs329s.github.io/syllabus.html</a></li>
+  <li><a href="https://developer.apple.com/design/human-interface-guidelines/machine-learning/overview/introduction/">https://developer.apple.com/design/human-interface-guidelines/machine-learning/overview/introduction/</a></li>
+  <li><a href="https://developers.google.com/machine-learning/guides/rules-of-ml/">https://developers.google.com/machine-learning/guides/rules-of-ml/</a></li>
+</ul>
+
+
+  </div><a class="u-url" href="/deployment/ethics/glam/2021/03/06/full-stack-deep-learning-glam-notes-5.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>digital collections + computational methods</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/davanstrien" title="davanstrien"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/vanstriendaniel" title="vanstriendaniel"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
