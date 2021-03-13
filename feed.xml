@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://danielvanstrien.xyz/feed.xml" rel="self" type="application/atom+xml" /><link href="https://danielvanstrien.xyz/" rel="alternate" type="text/html" /><updated>2021-03-13T07:43:29-06:00</updated><id>https://danielvanstrien.xyz/feed.xml</id><title type="html">Daniel van Strien</title><subtitle>digital collections + computational methods</subtitle><entry><title type="html">Full Stack Deep Learning notes on machine learning infrastructure and tools</title><link href="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/13/full-stack-deep-learning-lesson-6-tooling.html" rel="alternate" type="text/html" title="Full Stack Deep Learning notes on machine learning infrastructure and tools" /><published>2021-03-13T00:00:00-06:00</published><updated>2021-03-13T00:00:00-06:00</updated><id>https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/13/full-stack-deep-learning-lesson-6-tooling</id><content type="html" xml:base="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/13/full-stack-deep-learning-lesson-6-tooling.html">&lt;h1 id=&quot;introduction-to-my-notes&quot;&gt;Introduction to my notes&lt;/h1&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://danielvanstrien.xyz/feed.xml" rel="self" type="application/atom+xml" /><link href="https://danielvanstrien.xyz/" rel="alternate" type="text/html" /><updated>2021-03-13T07:47:05-06:00</updated><id>https://danielvanstrien.xyz/feed.xml</id><title type="html">Daniel van Strien</title><subtitle>digital collections + computational methods</subtitle><entry><title type="html">Full Stack Deep Learning notes on machine learning infrastructure and tools</title><link href="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/13/full-stack-deep-learning-lesson-6-tooling.html" rel="alternate" type="text/html" title="Full Stack Deep Learning notes on machine learning infrastructure and tools" /><published>2021-03-13T00:00:00-06:00</published><updated>2021-03-13T00:00:00-06:00</updated><id>https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/13/full-stack-deep-learning-lesson-6-tooling</id><content type="html" xml:base="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/13/full-stack-deep-learning-lesson-6-tooling.html">&lt;h1 id=&quot;introduction-to-my-notes&quot;&gt;Introduction to my notes&lt;/h1&gt;
 
 &lt;p&gt;These are my notes from the &lt;a href=&quot;https://fullstackdeeplearning.com/&quot;&gt;full-stack deep learning course&lt;/a&gt;.&lt;/p&gt;
 
@@ -99,7 +99,7 @@
 
 &lt;p&gt;Deep learning frameworks put on a chart with good for production and good for development chart.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;../images/framework_comparison.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;TODO add chart&lt;/p&gt;
 
 &lt;p&gt;I think in the context of using deep learning in a GLAM setting, there should be a lot of emphasis placed on using frameworks that focus on making things easier to understand for a broader audience. I think GLAMs should be trying to upskill a wide range of staff with some of the skills associated with ml and a core of staff with the skills to develop all/some/most things themselves as &lt;em&gt;domain experts&lt;/em&gt;. For this, to work, I there needs to be an emphasis placed on the accessibility of model development. i.e. prefer to use a framework training loop (fastai/Keras/lightning) rather than roll a custom loop since this probably won’t add much but will often make code harder for others to understand.&lt;/p&gt;
 
@@ -115,129 +115,7 @@
 
 &lt;p&gt;Increasingly a move towards ‘end-to-end’ platforms for helping across the ml lifecycle.&lt;/p&gt;
 
-&lt;p&gt;My take away from this lecture is that there can be an overwhelming range of tools available. Probably these tools should be introduced slowly into a workflow. From my perspective, the experiment tracking components should be a priority. —
-layout: post
-descrption: full stack deep learning notes
-categories: [deployment, ethics, glam]
-title: “Full Stack Deep Learning notes on machine learning infrastructure and tools” 
-—&lt;/p&gt;
-
-&lt;h1 id=&quot;introduction-to-my-notes-1&quot;&gt;Introduction to my notes&lt;/h1&gt;
-
-&lt;p&gt;These are my notes from the &lt;a href=&quot;https://fullstackdeeplearning.com/&quot;&gt;full-stack deep learning course&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;They have a  focus on the GLAM setting, which might have different requirements, incentives and resources compared to business deployments of ML projects. These notes are for my use primarily. I am posting them to make myself more accountable for making semi-coherent notes.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;These are my notes, written in a personal capacity - my employer denounces all my views&lt;/strong&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;the-dream-1&quot;&gt;The Dream&lt;/h2&gt;
-
-&lt;p&gt;The dream is to build a system that has a tight feedback loop between data -&amp;gt; model -&amp;gt; inference -&amp;gt; more data -&amp;gt; better model -&amp;gt; better predictions …&lt;/p&gt;
-
-&lt;p&gt;One note here: this is clearly a nice dream for some applications of ml but others might be more ‘one off tools’ where this might be less important. For example tools developed to help work with the ingest of a new collection.&lt;/p&gt;
-
-&lt;h2 id=&quot;infastuctire-buckets-1&quot;&gt;Infastuctire buckets&lt;/h2&gt;
-
-&lt;p&gt;A bunch of tools that help get closer to this dream, these broadly fall into three categories&lt;/p&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Data&lt;/th&gt;
-      &lt;th&gt;Training&lt;/th&gt;
-      &lt;th&gt;Deployment&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;Data Sources&lt;/td&gt;
-      &lt;td&gt;Compute&lt;/td&gt;
-      &lt;td&gt;CI/CD&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;Databases&lt;/td&gt;
-      &lt;td&gt;Resource management&lt;/td&gt;
-      &lt;td&gt;Testing&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;Data Version control&lt;/td&gt;
-      &lt;td&gt;Frameworks for distributed training&lt;/td&gt;
-      &lt;td&gt;Tooling for edge deployment&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;Labelling tools&lt;/td&gt;
-      &lt;td&gt;Experiment management&lt;/td&gt;
-      &lt;td&gt;Web deployment&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;Feature stores&lt;/td&gt;
-      &lt;td&gt;Hyperparmater tuning&lt;/td&gt;
-      &lt;td&gt;monitoring&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;There is a slightly overwhelming range of tools here. I think some of these only make sense at a certain level of scale i.e. auto-scaling inference accross multiple regions is probably not a scenerio many (any?) glam instituions are dealing with at the moment for their ml pipelines. There are probably some notable exceptiosn here; internet archive, wikipedia etc.&lt;/p&gt;
-
-&lt;h2 id=&quot;editors-1&quot;&gt;Editors&lt;/h2&gt;
-
-&lt;p&gt;I fast forward through this bit as I’m mostly happy with my choices here!&lt;/p&gt;
-
-&lt;h2 id=&quot;compute-needs-1&quot;&gt;Compute needs&lt;/h2&gt;
-
-&lt;p&gt;Two major compute needs: development and training/evaluation.&lt;/p&gt;
-
-&lt;p&gt;The development one intended to make experimentation easy. Do basic training etc.&lt;/p&gt;
-
-&lt;p&gt;Training compute: multi gpus to do parameter sweeps etc. I think financial constrains often make this part less possible in a GLAM setting. There may also be some benefits to restricting compute slightly. Since GLAMs might (maybe should) be also considering how to share models approaches it migth not be helpful to immediately jump to models which require multiple GPUs to fine-train when a model with much more constrained resources might only be slightly worse.&lt;/p&gt;
-
-&lt;h3 id=&quot;cloud-vs-local-1&quot;&gt;Cloud vs local&lt;/h3&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Nvidia default for GPU&lt;/li&gt;
-  &lt;li&gt;New architecture every year: Kepler -&amp;gt; pascal -&amp;gt; volta -&amp;gt; turing -&amp;gt; ampere&lt;/li&gt;
-  &lt;li&gt;Server and then ‘enthusiast’, then consumer versions of the cards&lt;/li&gt;
-  &lt;li&gt;Business only supposed to use primarilyserver cards. I don’t know what the definition of business is here but it seems this is reguarly ignored&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;A note here; I think a lot of use cases for deep learnings in GLAMs could probably be well addressed by a dev box with one 3090 card and a bunch of storage. This may also be slighly less annoying for IT compared to going into the cloud.&lt;/p&gt;
-
-&lt;p&gt;Cost of cloud gets expensive compared to local deep learning rig.&lt;/p&gt;
-
-&lt;p&gt;Spot instances can make things cheaper. Can be fine for doing experiments in parallel and time saving is important.&lt;/p&gt;
-
-&lt;p&gt;On prem scaling can be challenging at some points. For a Glam lab setting having one/two GPUs still seems prefferable for ‘local work’ there might also be a desire to facilate access to collections for researhcers etc which may work better through the cloud.&lt;/p&gt;
-
-&lt;h3 id=&quot;resource-management-1&quot;&gt;Resource management&lt;/h3&gt;
-
-&lt;p&gt;Managing enviroments, resources&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;could use simple scripts to manage this&lt;/li&gt;
-  &lt;li&gt;slurm for scheduling jobs&lt;/li&gt;
-  &lt;li&gt;docker - will come up later in the course&lt;/li&gt;
-  &lt;li&gt;‘all in one solutions’ - possibly overkill&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;frameworks-1&quot;&gt;Frameworks&lt;/h2&gt;
-
-&lt;p&gt;Deep learning frameworks put on chart with good for production and good for development chart.&lt;/p&gt;
-
-&lt;p&gt;TODO add chart&lt;/p&gt;
-
-&lt;p&gt;I think in the context of using deep learning in a GLAM setting there should be a lot of emhasis placed on using frameworks that focus on making things easier to understand for a broader audience. I personally think GLAMs should be trying to upskill a broad range of staff with some of the skills associated with ml and a core of staff with the skills to develop all/some/most things themselves as &lt;em&gt;domain expersts&lt;/em&gt;. For this to work I think there needs to be an emphasis placed on the accessibilty and clenaess of model developmenet. i.e. prefer to use a framework training loop i.e. fastai/keras/lightning rather than roll your own since this probably won’t add much but will often make code harder for others to understand.&lt;/p&gt;
-
-&lt;h2 id=&quot;experiment-tracking-1&quot;&gt;Experiment tracking&lt;/h2&gt;
-
-&lt;p&gt;Deep learning usually involves at least some experimentation with different model architectures, data augmentations, hyper paramters etc. Keeping track of this can be a pain to do manually.&lt;/p&gt;
-
-&lt;p&gt;Various options available. Weights and Biases seems to be most liked commercial offering. There are a bunch of open source projects that do this too.&lt;/p&gt;
-
-&lt;h2 id=&quot;hyperparmater-optimization&quot;&gt;Hyperparmater Optimization&lt;/h2&gt;
-
-&lt;p&gt;Various options for doing this including local/open source offerings.&lt;/p&gt;
-
-&lt;p&gt;Increasingly a move towards ‘end-to-end’ platforms for helping accross the ml lifecyle.&lt;/p&gt;</content><author><name></name></author><category term="deployment" /><category term="ethics" /><category term="glam" /><summary type="html">Introduction to my notes</summary></entry><entry><title type="html">Full Stack Deep Learning notes on machine learning projects</title><link href="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/06/full-stack-deep-learning-glam-notes-5.html" rel="alternate" type="text/html" title="Full Stack Deep Learning notes on machine learning projects" /><published>2021-03-06T00:00:00-06:00</published><updated>2021-03-06T00:00:00-06:00</updated><id>https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/06/full-stack-deep-learning-glam-notes-5</id><content type="html" xml:base="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/06/full-stack-deep-learning-glam-notes-5.html">&lt;h1 id=&quot;introduction-to-my-notes&quot;&gt;Introduction to my notes&lt;/h1&gt;
+&lt;p&gt;My take away from this lecture is that there can be an overwhelming range of tools available. Probably these tools should be introduced slowly into a workflow. From my perspective, the experiment tracking components should be a priority.&lt;/p&gt;</content><author><name></name></author><category term="deployment" /><category term="ethics" /><category term="glam" /><summary type="html">Introduction to my notes</summary></entry><entry><title type="html">Full Stack Deep Learning notes on machine learning projects</title><link href="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/06/full-stack-deep-learning-glam-notes-5.html" rel="alternate" type="text/html" title="Full Stack Deep Learning notes on machine learning projects" /><published>2021-03-06T00:00:00-06:00</published><updated>2021-03-06T00:00:00-06:00</updated><id>https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/06/full-stack-deep-learning-glam-notes-5</id><content type="html" xml:base="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/06/full-stack-deep-learning-glam-notes-5.html">&lt;h1 id=&quot;introduction-to-my-notes&quot;&gt;Introduction to my notes&lt;/h1&gt;
 
 &lt;p&gt;These are my notes from the &lt;a href=&quot;https://fullstackdeeplearning.com/&quot;&gt;full-stack deep learning course&lt;/a&gt;.&lt;/p&gt;
 
