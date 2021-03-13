@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://danielvanstrien.xyz/feed.xml" rel="self" type="application/atom+xml" /><link href="https://danielvanstrien.xyz/" rel="alternate" type="text/html" /><updated>2021-03-13T07:47:05-06:00</updated><id>https://danielvanstrien.xyz/feed.xml</id><title type="html">Daniel van Strien</title><subtitle>digital collections + computational methods</subtitle><entry><title type="html">Full Stack Deep Learning notes on machine learning infrastructure and tools</title><link href="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/13/full-stack-deep-learning-lesson-6-tooling.html" rel="alternate" type="text/html" title="Full Stack Deep Learning notes on machine learning infrastructure and tools" /><published>2021-03-13T00:00:00-06:00</published><updated>2021-03-13T00:00:00-06:00</updated><id>https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/13/full-stack-deep-learning-lesson-6-tooling</id><content type="html" xml:base="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/13/full-stack-deep-learning-lesson-6-tooling.html">&lt;h1 id=&quot;introduction-to-my-notes&quot;&gt;Introduction to my notes&lt;/h1&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://danielvanstrien.xyz/feed.xml" rel="self" type="application/atom+xml" /><link href="https://danielvanstrien.xyz/" rel="alternate" type="text/html" /><updated>2021-03-13T07:51:56-06:00</updated><id>https://danielvanstrien.xyz/feed.xml</id><title type="html">Daniel van Strien</title><subtitle>digital collections + computational methods</subtitle><entry><title type="html">Full Stack Deep Learning notes on machine learning infrastructure and tools</title><link href="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/13/full-stack-deep-learning-lesson-6-tooling.html" rel="alternate" type="text/html" title="Full Stack Deep Learning notes on machine learning infrastructure and tools" /><published>2021-03-13T00:00:00-06:00</published><updated>2021-03-13T00:00:00-06:00</updated><id>https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/13/full-stack-deep-learning-lesson-6-tooling</id><content type="html" xml:base="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/13/full-stack-deep-learning-lesson-6-tooling.html">&lt;h1 id=&quot;introduction-to-my-notes&quot;&gt;Introduction to my notes&lt;/h1&gt;
 
 &lt;p&gt;These are my notes from the &lt;a href=&quot;https://fullstackdeeplearning.com/&quot;&gt;full-stack deep learning course&lt;/a&gt;.&lt;/p&gt;
 
@@ -12,7 +12,7 @@
 
 &lt;p&gt;One note here: this is a nice dream for some ml applications, but others might be more ‘one-off tools’ where this might be less important. For example, tools developed to help work with the ingest of a new collection.&lt;/p&gt;
 
-&lt;h2 id=&quot;infastuctire-buckets&quot;&gt;Infastuctire buckets&lt;/h2&gt;
+&lt;h2 id=&quot;infrastructure-buckets&quot;&gt;Infrastructure buckets&lt;/h2&gt;
 
 &lt;p&gt;A bunch of tools that help get closer to this dream broadly fall into three categories&lt;/p&gt;
 
@@ -99,7 +99,7 @@
 
 &lt;p&gt;Deep learning frameworks put on a chart with good for production and good for development chart.&lt;/p&gt;
 
-&lt;p&gt;TODO add chart&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;../images/framework_comparison.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;I think in the context of using deep learning in a GLAM setting, there should be a lot of emphasis placed on using frameworks that focus on making things easier to understand for a broader audience. I think GLAMs should be trying to upskill a wide range of staff with some of the skills associated with ml and a core of staff with the skills to develop all/some/most things themselves as &lt;em&gt;domain experts&lt;/em&gt;. For this, to work, I there needs to be an emphasis placed on the accessibility of model development. i.e. prefer to use a framework training loop (fastai/Keras/lightning) rather than roll a custom loop since this probably won’t add much but will often make code harder for others to understand.&lt;/p&gt;
 
@@ -418,6 +418,13 @@ An example: you need a model that will fit into the memory of a particular edge 
 
 &lt;div class=&quot;container&quot; id=&quot;notebook-container&quot;&gt;
         
+    
+    
+&lt;div class=&quot;cell border-box-sizing code_cell rendered&quot;&gt;
+
+&lt;/div&gt;
+    
+
 &lt;div class=&quot;cell border-box-sizing text_cell rendered&quot;&gt;&lt;div class=&quot;inner_cell&quot;&gt;
 &lt;div class=&quot;text_cell_render border-box-sizing rendered_html&quot;&gt;
 &lt;h2 id=&quot;Intro&quot;&gt;Intro&lt;a class=&quot;anchor-link&quot; href=&quot;#Intro&quot;&gt; &lt;/a&gt;&lt;/h2&gt;&lt;p&gt;I sometimes feel like the process of me writing working code is analogous to the thing about monkeys writing &lt;a href=&quot;https://en.wikipedia.org/wiki/Infinite_monkey_theorem&quot;&gt;Shakespeare&lt;/a&gt;, although in my case the end result of probably more like a Donald Trump tweet. My process for debugging or trying to work out how to implement something I'm not completely familiar with seems to not always be efficient. This is something I'm keen to work on.&lt;/p&gt;
@@ -508,7 +515,8 @@ There is also a nice example of this in action in this youtube video&lt;/p&gt;
 
 &lt;div class=&quot;inner_cell&quot;&gt;
     &lt;div class=&quot;input_area&quot;&gt;
-&lt;div class=&quot; highlight hl-ipython3&quot;&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;untar_data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;URLs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IMAGEWANG_160&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;div class=&quot; highlight hl-ipython3&quot;&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class=&quot;c1&quot;&gt;#hide_show&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;untar_data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;URLs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IMAGEWANG_160&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
 &lt;span class=&quot;n&quot;&gt;dls&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ImageDataLoaders&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;from_folder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;train&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;valid_pct&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.7&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;item_tfms&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Resize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;64&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)])&lt;/span&gt;
 &lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dls&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dataset&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
