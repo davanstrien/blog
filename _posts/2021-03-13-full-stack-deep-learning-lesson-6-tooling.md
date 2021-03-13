@@ -20,7 +20,7 @@ The dream is to build a system that has a tight feedback loop between data -> mo
 
 One note here: this is a nice dream for some ml applications, but others might be more 'one-off tools' where this might be less important. For example, tools developed to help work with the ingest of a new collection.
 
-## Infastuctire buckets
+## Infrastructure buckets
 
 A bunch of tools that help get closer to this dream broadly fall into three categories 
 
@@ -74,7 +74,7 @@ Managing environments, resources
 
 Deep learning frameworks put on a chart with good for production and good for development chart. 
 
-TODO add chart
+![](../images/framework_comparison.png)
 
 I think in the context of using deep learning in a GLAM setting, there should be a lot of emphasis placed on using frameworks that focus on making things easier to understand for a broader audience. I think GLAMs should be trying to upskill a wide range of staff with some of the skills associated with ml and a core of staff with the skills to develop all/some/most things themselves as *domain experts*. For this, to work, I there needs to be an emphasis placed on the accessibility of model development. i.e. prefer to use a framework training loop (fastai/Keras/lightning) rather than roll a custom loop since this probably won't add much but will often make code harder for others to understand. 
 
