@@ -1,4 +1,311 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://danielvanstrien.xyz/feed.xml" rel="self" type="application/atom+xml" /><link href="https://danielvanstrien.xyz/" rel="alternate" type="text/html" /><updated>2021-03-21T12:40:13-05:00</updated><id>https://danielvanstrien.xyz/feed.xml</id><title type="html">Daniel van Strien</title><subtitle>digital collections + computational methods</subtitle><entry><title type="html">Full Stack Deep Learning notes on machine learning infrastructure and tools</title><link href="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/13/full-stack-deep-learning-lesson-6-tooling.html" rel="alternate" type="text/html" title="Full Stack Deep Learning notes on machine learning infrastructure and tools" /><published>2021-03-13T00:00:00-06:00</published><updated>2021-03-13T00:00:00-06:00</updated><id>https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/13/full-stack-deep-learning-lesson-6-tooling</id><content type="html" xml:base="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/13/full-stack-deep-learning-lesson-6-tooling.html">&lt;h1 id=&quot;introduction-to-my-notes&quot;&gt;Introduction to my notes&lt;/h1&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://danielvanstrien.xyz/feed.xml" rel="self" type="application/atom+xml" /><link href="https://danielvanstrien.xyz/" rel="alternate" type="text/html" /><updated>2021-03-21T12:41:58-05:00</updated><id>https://danielvanstrien.xyz/feed.xml</id><title type="html">Daniel van Strien</title><subtitle>digital collections + computational methods</subtitle><entry><title type="html">Full Stack Deep Learning notes on troubleshooting and debugging</title><link href="https://danielvanstrien.xyz/deployment/glam/2021/03/13/full-stack-deep-learning-lesson-7-debugging.html" rel="alternate" type="text/html" title="Full Stack Deep Learning notes on troubleshooting and debugging" /><published>2021-03-13T00:00:00-06:00</published><updated>2021-03-13T00:00:00-06:00</updated><id>https://danielvanstrien.xyz/deployment/glam/2021/03/13/full-stack-deep-learning-lesson-7-debugging</id><content type="html" xml:base="https://danielvanstrien.xyz/deployment/glam/2021/03/13/full-stack-deep-learning-lesson-7-debugging.html">&lt;h1 id=&quot;introduction-to-my-notes&quot;&gt;Introduction to my notes&lt;/h1&gt;
+
+&lt;p&gt;These are my notes from the &lt;a href=&quot;https://fullstackdeeplearning.com/&quot;&gt;full-stack deep learning course&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;They have a  focus on the GLAM setting, which might have different requirements, incentives and resources compared to business deployments of ML projects. These notes are for my use primarily. I am posting them to make myself more accountable for making semi-coherent notes.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;These are my notes, written in a personal capacity - my employer denounces all my views&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;why-talk-about-debugging&quot;&gt;Why talk about debugging?&lt;/h2&gt;
+
+&lt;p&gt;80-90% of time spent on debugging? Useful to have some approaches for doing this work.&lt;/p&gt;
+
+&lt;h3 id=&quot;why-is-deep-learning-debugging-hard&quot;&gt;Why is deep learning debugging hard?&lt;/h3&gt;
+
+&lt;h4 id=&quot;small-implementation-details&quot;&gt;Small implementation details&lt;/h4&gt;
+&lt;p&gt;Often you may get an error that results in weird results but the code still runs. You don’t have an exception to help you debug. Often need to manually dig around to find the cause of the error. Example:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;images&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;glob&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;glob&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'path/to/images/*'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;labels&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;glob&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;glob&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'path/to/labels/*'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Will not return images and labels in the correct order because of how glob is implemented in python. This doesn’t throw an error but the model won’t learn anything.&lt;/p&gt;
+
+&lt;h4 id=&quot;hyperparamers&quot;&gt;Hyperparamers&lt;/h4&gt;
+&lt;p&gt;Small changes to hyperparameters can make the difference between model training well and not training at all.&lt;/p&gt;
+
+&lt;h4 id=&quot;datamodel-fit&quot;&gt;Data/Model fit&lt;/h4&gt;
+
+&lt;p&gt;Performance on model on one set of images i.e. imagenet might not translate to the data you are working with. Transfer learning will often help but it might be unclear exactly how the model/new tasks translate to new types of data/problems. 
+#&lt;/p&gt;
+
+&lt;h4 id=&quot;models-vs-dataset-construction&quot;&gt;Models vs Dataset construction&lt;/h4&gt;
+
+&lt;p&gt;In an academic setting, a lot of thought is given to choosing models/algorithms. Often this is less of a focus when deploying machine learning in a production setting where there will be many more challenges around constructing a dataset.&lt;/p&gt;
+
+&lt;p&gt;Notes: I think there is a shift here is going from training n a validation/training set to having in the back of your head that predictions will be made ‘in the wild’.&lt;/p&gt;
+
+&lt;p&gt;There can be a fair bit of variation in GLAM datasets which also potentially makes data drift hard to track&lt;/p&gt;
+
+&lt;h3 id=&quot;architecture-selection&quot;&gt;Architecture Selection&lt;/h3&gt;
+
+&lt;p&gt;It can be overwhelming to pick between all the different types of model architectures. Suggestion to start out with a few different flavour and change if needed:&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Type&lt;/th&gt;
+      &lt;th&gt;Model&lt;/th&gt;
+      &lt;th&gt;Maybe move to?&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Images&lt;/td&gt;
+      &lt;td&gt;LeNet-like model&lt;/td&gt;
+      &lt;td&gt;ResNet&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Sequences&lt;/td&gt;
+      &lt;td&gt;LSTM with one hidden layer&lt;/td&gt;
+      &lt;td&gt;Attention&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;other&lt;/td&gt;
+      &lt;td&gt;Fully connected neural net with one hidden layer&lt;/td&gt;
+      &lt;td&gt;Problem dependent&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h3 id=&quot;sensible-defaults&quot;&gt;Sensible defaults&lt;/h3&gt;
+&lt;p&gt;version zero of your model could start with:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;optimizer: Adam with learning rate 3e-4&lt;/li&gt;
+  &lt;li&gt;activations: relu  (FC and Convultional models), tanh (LSTMS)&lt;/li&gt;
+  &lt;li&gt;Intitilization: He et al. normal(relu), GLorot normal (tanh)&lt;/li&gt;
+  &lt;li&gt;Regulirization: none&lt;/li&gt;
+  &lt;li&gt;data normalization: none&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;consider-simplifying-the-problem&quot;&gt;Consider simplifying the problem&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;start with a subset of the training data&lt;/li&gt;
+  &lt;li&gt;use a fixed number of objects, classes etc.&lt;/li&gt;
+  &lt;li&gt;create a simpler synthetic training set&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;model-evaluation&quot;&gt;Model evaluation&lt;/h3&gt;
+
+&lt;p&gt;tl;dr apply bias-variance decomposition&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;../images/Screenshot 2021-03-21 at 17.37.59.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;In statistics and machine learning, the bias-variance tradeoff is the property of a model that the variance of the parameter estimates across samples can be reduced by increasing the bias in the estimated parameters. The bias-variance dilemma or bias-variance problem is the conflict in trying to simultaneously minimise these two sources of error that prevent supervised learning algorithms from generalising beyond their training set:[1][2]
+ The bias error is an error from erroneous assumptions in the learning algorithm. High bias can cause an algorithm to miss the relevant relations between features and target outputs (underfitting).
+   The variance is an error from sensitivity to small fluctuations in the training set. High variance can cause an algorithm to model the random noise in the training data rather than the intended outputs (overfitting). &lt;br /&gt;
+&lt;a href=&quot;&quot;&gt;https://en.wikipedia.org/wiki/Bias%E2%80%93variance_tradeoff&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Test error = irreducible error + bias + variance + val overfitting&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Here we try and see the difference in error between our training data and some kind of baseline, i.e. human performance, to see how much we are underfitting. We also compare validation to training to see how much overfitting.&lt;/p&gt;
+
+&lt;p&gt;This assumes training, validation, and test come from the same distribution.&lt;/p&gt;
+
+&lt;p&gt;Notes: tracking the impact of distribution shift on model performance helpful here.&lt;/p&gt;
+
+&lt;p&gt;Example&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Error source&lt;/th&gt;
+      &lt;th&gt;value&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Goal&lt;/td&gt;
+      &lt;td&gt;1%&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Train error&lt;/td&gt;
+      &lt;td&gt;20%&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Validation error&lt;/td&gt;
+      &lt;td&gt;27%&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Test error&lt;/td&gt;
+      &lt;td&gt;28%&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;The difference between our goal and our train error shows underfitting&lt;/li&gt;
+  &lt;li&gt;The difference between train and validation also shows we’re also overfitting&lt;/li&gt;
+  &lt;li&gt;test and validation error difference is okay&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;🤷‍♂️ Both overfitting and underfitting - how to decide what to do next…&lt;/p&gt;
+
+&lt;h3 id=&quot;prioritizing-improvements&quot;&gt;prioritizing improvements&lt;/h3&gt;
+
+&lt;p&gt;It seems hard to both deal with under and overfitting. The suggested process is to follow the following steps:&lt;/p&gt;
+
+&lt;p&gt;1) address underfitting
+2) address overfitting
+3) address distribution shift
+4) re-balance data (if applicable)&lt;/p&gt;
+
+&lt;h3 id=&quot;how-to-address-under-fitting-ie-reduce-bias&quot;&gt;How to address under-fitting (i.e. reduce bias)&lt;/h3&gt;
+
+&lt;p&gt;These suggestions are listed in order of what to try first.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Make the model bigger (i.e. resnet34, to resnet50)&lt;/li&gt;
+  &lt;li&gt;reduce regulirization&lt;/li&gt;
+  &lt;li&gt;error analysis&lt;/li&gt;
+  &lt;li&gt;choose different model architecture (i.e. bump from LeNet to ResNet). This can introduce new problems, so be careful here&lt;/li&gt;
+  &lt;li&gt;add features 😬 sometimes this can really help even in deep-learning&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;addressing-over-fitting&quot;&gt;Addressing over-fitting&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;add more training data (if possible)&lt;/li&gt;
+  &lt;li&gt;add normalisation&lt;/li&gt;
+  &lt;li&gt;data augmentation&lt;/li&gt;
+  &lt;li&gt;regularisation&lt;/li&gt;
+  &lt;li&gt;error analysis&lt;/li&gt;
+  &lt;li&gt;choose better model architecture&lt;/li&gt;
+  &lt;li&gt;tune hyperparameters&lt;/li&gt;
+  &lt;li&gt;early stopping&lt;/li&gt;
+  &lt;li&gt;remove features&lt;/li&gt;
+  &lt;li&gt;reduce model size&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;addressing-distribution-shift&quot;&gt;Addressing distribution shift&lt;/h3&gt;
+
+&lt;p&gt;a) analyse test-val set errors - why might these errors be there in the validation set. 
+b) analyse test-val set errors and synthesise more data 
+c) domain adaptation&lt;/p&gt;
+
+&lt;h3 id=&quot;error-analysis&quot;&gt;Error analysis&lt;/h3&gt;
+
+&lt;p&gt;Try and find the different sources of error in test/val and see how easily they can be fixed + how much they contribute to the error.&lt;/p&gt;
+
+&lt;p&gt;This could be particularly important when domain expertise might help track down why some of these errors occur. This might also be used to reevaluate labels being targeted if they often cause confusion. Fastai has some nice methods for this &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;most_confused&lt;/code&gt; to show which labels are often confused. If this confusion is reasonable, you may a) either not care too much about these mistakes b) collapse two labels into one label.&lt;/p&gt;
+
+&lt;h3 id=&quot;domain-adaptation&quot;&gt;Domain adaptation&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;supervised: fine-tune pre-trained model&lt;/li&gt;
+  &lt;li&gt;un-supervised: more in the research domain at the moment?&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;tuning-hypermaters&quot;&gt;Tuning Hypermaters&lt;/h2&gt;
+
+&lt;p&gt;Model and optimiser choices?&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;how many layers&lt;/li&gt;
+  &lt;li&gt;kernel size&lt;/li&gt;
+  &lt;li&gt;etc.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;How to choose what to tune? some hyperparameters are more essential but its often hard to know which are going to be more important&lt;/p&gt;
+
+&lt;p&gt;rules of thumb of what is worth tuning&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Hyperparamter&lt;/th&gt;
+      &lt;th&gt;likely senstivity&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Learning rate&lt;/td&gt;
+      &lt;td&gt;high&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Learning rate schedule&lt;/td&gt;
+      &lt;td&gt;high&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Optimiser choice&lt;/td&gt;
+      &lt;td&gt;low&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;other optimiser parameters&lt;/td&gt;
+      &lt;td&gt;low&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;batch size&lt;/td&gt;
+      &lt;td&gt;low (what fits onto GPU)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;weight initialisation&lt;/td&gt;
+      &lt;td&gt;medium&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;loss function&lt;/td&gt;
+      &lt;td&gt;high&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;model depth&lt;/td&gt;
+      &lt;td&gt;medium&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;layer size&lt;/td&gt;
+      &lt;td&gt;high&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;layer params&lt;/td&gt;
+      &lt;td&gt;medium&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Weight of regularisation&lt;/td&gt;
+      &lt;td&gt;medium&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;nonlinearity&lt;/td&gt;
+      &lt;td&gt;low&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h3 id=&quot;approaches-to-hyperparameters&quot;&gt;Approaches to hyperparameters&lt;/h3&gt;
+
+&lt;h4 id=&quot;manual&quot;&gt;Manual:&lt;/h4&gt;
+&lt;ul&gt;
+  &lt;li&gt;focus on what is likely to make a difference conceptually&lt;/li&gt;
+  &lt;li&gt;train and evaluate model&lt;/li&gt;
+  &lt;li&gt;guess a better parameters&lt;/li&gt;
+  &lt;li&gt;can be good as a starting point + combined with other approaches&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;grid-search&quot;&gt;Grid search&lt;/h4&gt;
+&lt;ul&gt;
+  &lt;li&gt;easy to implement&lt;/li&gt;
+  &lt;li&gt;but expensive and you need to have a good sense of sensible range points&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;random-search&quot;&gt;Random search&lt;/h4&gt;
+&lt;ul&gt;
+  &lt;li&gt;often better than grid search for the same number of runs&lt;/li&gt;
+  &lt;li&gt;not very easy to interpret&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;bayesian-approaches&quot;&gt;Bayesian approaches&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;There are nice frameworks for doing this&lt;/li&gt;
+  &lt;li&gt;generally most efficient t&lt;/li&gt;
+  &lt;li&gt;can be hard to implement&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;overarching-notes&quot;&gt;Overarching notes&lt;/h2&gt;
+&lt;p&gt;personally, I think some of these suggestions might be better suited in settings where ml will be the product/service. In GLAMS, this might sometimes be the case, but there is also low hanging fruit using ml as a ‘tool’. In this case, I think it might make more sense to start with the proper implementation of ResNet as a starting point rather than coding your own net from scratch.&lt;/p&gt;
+
+&lt;p&gt;The discussion on error analysis was excellent and is a valuable framework for working out how to prioritise improvements.&lt;/p&gt;</content><author><name></name></author><category term="deployment" /><category term="glam" /><summary type="html">Introduction to my notes</summary></entry><entry><title type="html">Full Stack Deep Learning notes on machine learning infrastructure and tools</title><link href="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/13/full-stack-deep-learning-lesson-6-tooling.html" rel="alternate" type="text/html" title="Full Stack Deep Learning notes on machine learning infrastructure and tools" /><published>2021-03-13T00:00:00-06:00</published><updated>2021-03-13T00:00:00-06:00</updated><id>https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/13/full-stack-deep-learning-lesson-6-tooling</id><content type="html" xml:base="https://danielvanstrien.xyz/deployment/ethics/glam/2021/03/13/full-stack-deep-learning-lesson-6-tooling.html">&lt;h1 id=&quot;introduction-to-my-notes&quot;&gt;Introduction to my notes&lt;/h1&gt;
 
 &lt;p&gt;These are my notes from the &lt;a href=&quot;https://fullstackdeeplearning.com/&quot;&gt;full-stack deep learning course&lt;/a&gt;.&lt;/p&gt;
 
