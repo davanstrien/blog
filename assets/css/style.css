@@ -415,13 +415,17 @@ table th { text-align: center !important; }
 
 .output_text.output_execute_result pre { white-space: pre-wrap; }
 
-.output_wrapper { overflow: scroll; }
+.output_wrapper { overflow: auto; }
 
 .svg-icon.orange { width: 30px; height: 23px; }
 
 .code_cell { margin: 1.5rem 0px !important; }
 
 pre code { font-size: 15px !important; }
+
+.youtube-iframe-wrapper { position: relative; padding-bottom: 56.10%; height: 0; overflow: hidden; }
+
+.youtube-iframe-wrapper iframe, .youtube-iframe-wrapper object, .youtube-iframe-wrapper embed { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
 /*-----------------------------------*/
 /*----- ADD YOUR STYLES BELOW -------*/
