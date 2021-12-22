@@ -154,7 +154,11 @@ window.onload = wrap_img;
   <li>the machine learning should fit into existing workflows (this is something we have/are spending a lot of time on)</li>
 </ul>
 
-<p>Since this is intended to be a tl;dr I won’t go into more detail here.</p>
+<p>Since this is intended to be a tl;dr I won’t go into more detail here about all of these requirements here.</p>
+
+<h2 id="flyswot">flyswot</h2>
+
+<p>The approach we ended up with is to deploy a model using a command line tool that we’ve called <code class="language-plaintext highlighter-rouge">flyswot</code>. This tool can be pointed at a directory and it will recursively check for images which contain the <code class="language-plaintext highlighter-rouge">fse</code> pattern in the filename. These images are then checked using a computer vision model that looks check whether an image is a ‘real’ flysheet or a ‘fake’ flysheet.</p>
 
 <h2 id="what-i-have-learned-so-far">What I have learned (so far)</h2>
 
