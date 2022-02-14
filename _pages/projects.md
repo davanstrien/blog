@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Projects
+title: Selected projects
 permalink: /projects/
 toc: true
 ---
