@@ -78,8 +78,8 @@ I think having more realistic datasets is important for teaching machine learnin
 
 - [Jupyter book showing how to build an ML powered book genre classifier](https://living-with-machines.github.io/genre-classification/intro.html)
 - [A (brief) history of advertising in US Newspapers using computer vision](https://living-with-machines.github.io/nnanno/intro.html)
-
-
+- (**Under review**)  [Computer Vision for the Humanities: An Introduction to Deep Learning for Image Classification, Programming Historian lessons](https://github.com/programminghistorian/ph-submissions/issues/343)
+- (**Under development**) [Intro to AI for GLAM, Carpentries Lesson](https://carpentries-incubator.github.io/machine-learning-librarians-archivists/index.html)
 
 # Code
 
