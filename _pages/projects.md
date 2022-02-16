@@ -77,7 +77,9 @@ I think having more realistic datasets is important for teaching machine learnin
 ## Tutorials
 
 - [Jupyter book showing how to build an ML powered book genre classifier](https://living-with-machines.github.io/genre-classification/intro.html)
-- [Working with digitised historic materials at scale poses some challenges. This series of notebooks is intended to give a rough overview of some of the considerations involved](https://living-with-machines.github.io/nnanno/intro.html)
+- [A (brief) history of advertising in US Newspapers using computer vision](https://living-with-machines.github.io/nnanno/intro.html)
+
+
 
 # Code
 
