@@ -73,6 +73,7 @@ I think having more realistic datasets is important for teaching machine learnin
 - [Computer Vision for the Humanities workshop](https://github.com/Living-with-machines/Computer-Vision-for-the-Humanities-workshop)
 - [Working with maps at scale using Computer Vision and Jupyter notebooks](https://github.com/Living-with-machines/maps-at-scale-using-computer-vision-and-jupyter-notebooks)
 - [Introduction to Jupyter Notebooks: the weird and the wonderful](https://github.com/Living-with-machines/Jupyter-Notebooks-The-Weird-and-Wonderful)
+- [Image Search](https://github.com/Living-with-machines/image-search) 
 
 ## Tutorials
 
