@@ -70,10 +70,10 @@ I think having more realistic datasets is important for teaching machine learnin
 
 ## Workshop materials
 
-- [Computer Vision for the Humanities workshop](https://github.com/Living-with-machines/Computer-Vision-for-the-Humanities-workshop)
+- [Computer Vision for the Humanities workshop](https://github.com/Living-with-machines/Computer-Vision-for-the-Humanities-workshop): This workshop aims to provide an introduction to computer vision aimed for humanities applications. In particular this workshop focuses on providing a high level overivew of machine learning based approaches to computer vision focusing on supervised learning. The workshop includes discussion on working with historical data. The materials are based on in progress Programming Historian lessons.
 - [Working with maps at scale using Computer Vision and Jupyter notebooks](https://github.com/Living-with-machines/maps-at-scale-using-computer-vision-and-jupyter-notebooks)
 - [Introduction to Jupyter Notebooks: the weird and the wonderful](https://github.com/Living-with-machines/Jupyter-Notebooks-The-Weird-and-Wonderful)
-- [Image Search](https://github.com/Living-with-machines/image-search) 
+- [Image Search](https://github.com/Living-with-machines/image-search): Materials for a workshop on image search with a focus on heritage data. The workshop is based on a blog post Image search with 🤗 datasets but goes into a little bit more detail.
 
 ## Tutorials
 
