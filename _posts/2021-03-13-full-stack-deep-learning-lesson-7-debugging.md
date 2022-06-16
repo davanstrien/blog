@@ -1,7 +1,7 @@
 ---
 layout: post
 description: full-stack deep learning notes
-categories: [deployment, glam]
+categories: [deployment, glam, full stack deep learning notes]
 title: "Full Stack Deep Learning notes on troubleshooting and debugging" 
 ---
 

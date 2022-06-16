@@ -1,7 +1,7 @@
 ---
 layout: post
 description: full-stack deep learning notes
-categories: [deployment, ethics, glam]
+categories: [deployment, ethics, glam, full stack deep learning notes]
 title: "Full Stack Deep Learning notes on machine learning infrastructure and tools" 
 ---
 
