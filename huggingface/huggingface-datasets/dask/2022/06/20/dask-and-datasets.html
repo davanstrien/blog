@@ -1,0 +1,2441 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Combining Hugging Face datasets with dask | Daniel van Strien</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Combining Hugging Face datasets with dask" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Using 🤗 datasets in combination with dask" />
+<meta property="og:description" content="Using 🤗 datasets in combination with dask" />
+<link rel="canonical" href="https://danielvanstrien.xyz/huggingface/huggingface-datasets/dask/2022/06/20/dask-and-datasets.html" />
+<meta property="og:url" content="https://danielvanstrien.xyz/huggingface/huggingface-datasets/dask/2022/06/20/dask-and-datasets.html" />
+<meta property="og:site_name" content="Daniel van Strien" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-06-20T00:00:00-05:00" />
+<script type="application/ld+json">
+{"url":"https://danielvanstrien.xyz/huggingface/huggingface-datasets/dask/2022/06/20/dask-and-datasets.html","@type":"BlogPosting","headline":"Combining Hugging Face datasets with dask","dateModified":"2022-06-20T00:00:00-05:00","datePublished":"2022-06-20T00:00:00-05:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://danielvanstrien.xyz/huggingface/huggingface-datasets/dask/2022/06/20/dask-and-datasets.html"},"description":"Using 🤗 datasets in combination with dask","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://danielvanstrien.xyz/feed.xml" title="Daniel van Strien" /><!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-59247814-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-59247814-2');
+</script>
+
+
+<link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" integrity="sha512-h7nl+xz8wgDlNM4NqKEM4F1NkIRS17M9+uJwIGwuo8vGqIl4BhuCKdxjWEINm+xyrUjNCnK5dCrhM0sj+wTIXw==" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js" integrity="sha512-/CMIhXiDA3m2c9kzRyd97MTb3MC6OVnx4TElQ7fkkoRghwDf6gi41gaT1PwF270W6+J60uTmwgeRpNpJdRV6sg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js" integrity="sha512-Do7uJAaHZm5OLrIv/yN4w0iG1dbu01kzdMNnFfu/mAqgUk6Nniv2JYHcwH+cNwjqgLcqcuBBk+JRvprLVI8azg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha512-0doc9hKxR3PYwso42RD1p5ySZpzzuDiOwMrdCEh2WdJZCjcmFKc/wEnL+z8fBQrnHoiNWbo+3fiGkOYXBdQp4A==" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Daniel van Strien</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About Me</a><a class="page-link" href="/projects/">Selected projects</a><a class="page-link" href="/search/">Search</a><a class="page-link" href="/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Combining Hugging Face datasets with dask</h1><p class="page-description">Using 🤗 datasets in combination with dask</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2022-06-20T00:00:00-05:00" itemprop="datePublished">
+        Jun 20, 2022
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      10 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/categories/#huggingface">huggingface</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/categories/#huggingface-datasets">huggingface-datasets</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/categories/#dask">dask</a>
+        
+      
+      </p>
+    
+
+    
+      
+        <div class="pb-5 d-flex flex-justify-center">
+          <div class="px-2">
+
+    <a href="https://github.com/davanstrien/blog/tree/master/_notebooks/2022-06-20-dask-and-datasets.ipynb" role="button" target="_blank">
+<img class="notebook-badge-image" src="/assets/badges/github.svg" alt="View On GitHub">
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://mybinder.org/v2/gh/davanstrien/blog/master?filepath=_notebooks%2F2022-06-20-dask-and-datasets.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/assets/badges/binder.svg" alt="Open In Binder"/>
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://colab.research.google.com/github/davanstrien/blog/blob/master/_notebooks/2022-06-20-dask-and-datasets.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/assets/badges/colab.svg" alt="Open In Colab"/>
+    </a>
+</div>
+          
+        </div>
+      </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h2"><a href="#Make-it-parallel!">Make it parallel! </a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#client">Client</a></li>
+<li class="toc-entry toc-h3"><a href="#cluster-info">Cluster Info</a></li>
+<li class="toc-entry toc-h3"><a href="#localcluster">LocalCluster</a></li>
+<li class="toc-entry toc-h3"><a href="#scheduler-info">Scheduler Info</a></li>
+<li class="toc-entry toc-h3"><a href="#scheduler">Scheduler</a></li>
+<li class="toc-entry toc-h3"><a href="#workers">Workers</a>
+<ul>
+<li class="toc-entry toc-h4"><a href="#worker-0">Worker: 0</a></li>
+<li class="toc-entry toc-h4"><a href="#worker-1">Worker: 1</a></li>
+<li class="toc-entry toc-h4"><a href="#worker-2">Worker: 2</a></li>
+<li class="toc-entry toc-h4"><a href="#worker-3">Worker: 3</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-entry toc-h2"><a href="#Moving-from-datasets-to-a-dask-dataframe">Moving from datasets to a dask dataframe </a></li>
+</ul><!--
+#################################################
+### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
+#################################################
+# file to edit: _notebooks/2022-06-20-dask-and-datasets.ipynb
+-->
+
+<div class="container" id="notebook-container">
+        
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Hugging Face datasets is a super useful library for loading, processing and sharing datasets with other people.</p>
+<p>For many pre-processing steps it works beautifully. The one area where it can be a bit trickier to use is for EDA style analysis. This column-wise EDA is often important as an early step in working with some data or for preparing a data card.</p>
+<p>Fortunately combining datasets and another data library, <a href="https://www.dask.org/">dask</a> works pretty smoothly. This isn't intended to be a full intro to either datasets or dask but hopefully gives you a sense of how both libaries work and how they can complement each other.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>First, make sure we have the required libraries. <a href="https://rich.readthedocs.io/en/stable/">Rich</a> is there for a little added visual flair ✨</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%capture</span>
+<span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="n">datasets</span> <span class="n">toolz</span> <span class="n">rich</span><span class="p">[</span><span class="n">jupyter</span><span class="p">]</span> <span class="n">dask</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> rich
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>For this example we will use a the <a href="https://huggingface.co/datasets/blbooksgenre">blbooksgenre dataset</a> that contains metadata about some digitised books from the British Library. This collection also includes some annotations for the genre of the book which we could use to train a machine learning model.</p>
+<p>We can load a dataset hosted on the Hugging Face hub by using the <code>load_dataset</code> function.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_dataset</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ds</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">"blbooksgenre"</span><span class="p">,</span> <span class="s2">"annotated_raw"</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">"train"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Reusing dataset bl_books_genre (/Users/dvanstrien/.cache/huggingface/datasets/bl_books_genre/annotated_raw/1.1.0/1e01f82403b3d9344121c3b81e5ad7c130338b250bf95dad4c6ab342c642dbe8)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Since we requested only the train split we get back a <code>Dataset</code></p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ds</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">
+<span style="color: #800080; text-decoration-color: #800080; font-weight: bold">Dataset</span><span style="font-weight: bold">({</span>
+    features: <span style="font-weight: bold">[</span><span style="color: #008000; text-decoration-color: #008000">'BL record ID'</span>, <span style="color: #008000; text-decoration-color: #008000">'Name'</span>, <span style="color: #008000; text-decoration-color: #008000">'Dates associated with name'</span>, <span style="color: #008000; text-decoration-color: #008000">'Type of name'</span>, <span style="color: #008000; text-decoration-color: #008000">'Role'</span>, <span style="color: #008000; text-decoration-color: #008000">'All names'</span>, <span style="color: #008000; text-decoration-color: #008000">'Title'</span>, <span style="color: #008000; text-decoration-color: #008000">'Variant titles'</span>, <span style="color: #008000; text-decoration-color: #008000">'Series title'</span>, <span style="color: #008000; text-decoration-color: #008000">'Number within series'</span>, <span style="color: #008000; text-decoration-color: #008000">'Country of publication'</span>, <span style="color: #008000; text-decoration-color: #008000">'Place of publication'</span>, <span style="color: #008000; text-decoration-color: #008000">'Publisher'</span>, <span style="color: #008000; text-decoration-color: #008000">'Date of publication'</span>, <span style="color: #008000; text-decoration-color: #008000">'Edition'</span>, <span style="color: #008000; text-decoration-color: #008000">'Physical description'</span>, <span style="color: #008000; text-decoration-color: #008000">'Dewey classification'</span>, <span style="color: #008000; text-decoration-color: #008000">'BL shelfmark'</span>, <span style="color: #008000; text-decoration-color: #008000">'Topics'</span>, <span style="color: #008000; text-decoration-color: #008000">'Genre'</span>, <span style="color: #008000; text-decoration-color: #008000">'Languages'</span>, <span style="color: #008000; text-decoration-color: #008000">'Notes'</span>, <span style="color: #008000; text-decoration-color: #008000">'BL record ID for physical resource'</span>, <span style="color: #008000; text-decoration-color: #008000">'classification_id'</span>, <span style="color: #008000; text-decoration-color: #008000">'user_id'</span>, <span style="color: #008000; text-decoration-color: #008000">'subject_ids'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_date_pub'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_normalised_date_pub'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_edition_statement'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_FAST_genre_terms'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_FAST_subject_terms'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_comments'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_main_language'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_other_languages_summaries'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_summaries_language'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_translation'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_original_language'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_publisher'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_place_pub'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_country'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_title'</span>, <span style="color: #008000; text-decoration-color: #008000">'Link to digitised book'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotated'</span>, <span style="color: #008000; text-decoration-color: #008000">'Type of resource'</span>, <span style="color: #008000; text-decoration-color: #008000">'created_at'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_genre'</span><span style="font-weight: bold">]</span>,
+    num_rows: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">4398</span>
+<span style="font-weight: bold">})</span>
+</pre>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can see this has a bunch of columns. One that is of interest is the <code>Data of publication</code> column. Since we could use this dataset to train some type of classifier we may want to check whether we have enough examples across different time periods in the dataset.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">"Date of publication"</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #008000; text-decoration-color: #008000">'1879'</span>
+</pre>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>One quick way we can get the frequency count for a column is using the wonderful <a href="https://toolz.readthedocs.io/en/latest/index.html">toolz</a> library</p>
+<p>If our data fits in memory, we can simply pass in a column containing a categorical value to a frequency function to get a frequency count.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">toolz</span> <span class="kn">import</span> <span class="n">frequencies</span><span class="p">,</span> <span class="n">topk</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dates</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="s2">"Date of publication"</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<details class="description" open="">
+      <summary class="btn btn-sm" data-open="Hide Code" data-close="Show Code"></summary>
+        <p></p>
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">frequencies</span><span class="p">(</span><span class="n">dates</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+    </details>
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">
+<span style="font-weight: bold">{</span>
+    <span style="color: #008000; text-decoration-color: #008000">'1879'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">99</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1774'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1765'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1877'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">69</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1893'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">222</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1891'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">148</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1827'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">29</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1868'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">42</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1878'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">72</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1895'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">189</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1897'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">120</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1899'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">104</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1896'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">174</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1876'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">48</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1812'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">13</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1799'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">8</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1830'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">32</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1870'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">42</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1894'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">155</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1864'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">28</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1855'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">42</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1871'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">42</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1836'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">37</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1883'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">51</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1880'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">111</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1884'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">69</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1822'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">16</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1856'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">38</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1872'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">42</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1875'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">57</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1844'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">35</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1890'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">134</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1886'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">43</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1840'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">15</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1888'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">109</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1858'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">43</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1867'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">53</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1826'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">24</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1800'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">3</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1851'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">43</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1838'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">14</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1824'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">20</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1887'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">58</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1874'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">42</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1857'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">44</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1873'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">34</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1837'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">16</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1846'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">32</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1881'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">55</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1898'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">104</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1906'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">4</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1892'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">134</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1869'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">25</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1885'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">69</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1882'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">71</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1863'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">55</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1865'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">53</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1635'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">3</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1859'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">39</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1818'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">17</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1845'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">28</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1852'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">43</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1841'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">23</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1842'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">29</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1848'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">28</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1828'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">23</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1850'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">38</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1860'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">45</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1889'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">140</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1815'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1861'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">28</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1814'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">13</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1843'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">28</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1817'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">12</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1819'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">16</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1853'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">34</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1833'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1854'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">36</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1839'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">33</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1803'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">7</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1835'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">14</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1813'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">8</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1695'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">4</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1809-1811'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1832'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">9</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1823'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">17</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1847'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">28</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1816'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">8</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1806'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1866'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">26</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1829'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">13</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1791'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1637'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1821'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">4</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1807'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">14</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1862'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">22</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1795'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1834'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">12</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1831'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1849'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">13</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1811'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1825'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1809'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">3</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1905'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1808'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1900'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1892-1912'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1804'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">4</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1769'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1910'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1805'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1802'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">3</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1871-'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1901'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1884-1909'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1873-1887'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1979'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1852-1941'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1903'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1871-1873'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1810'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">3</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1907'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1820'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1789'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>
+<span style="font-weight: bold">}</span>
+</pre>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Make-it-parallel!">
+<a class="anchor" href="#Make-it-parallel!" aria-hidden="true"><span class="octicon octicon-link"></span></a>Make it parallel!<a class="anchor-link" href="#Make-it-parallel!"> </a>
+</h2>
+<p>If our data doesn't fit in memory or we want to do things in parallel we might want to use a slightly different approach. This is where dask can play a role.</p>
+<p>Dask offers a number of different collection abstractions that make it easier to do things in parallel. This includes dask bag.</p>
+<p>First we'll create a dask client here, I won't dig into the details of this here but you can get a good overview in the <a href="https://www.dask.org/get-started">getting started</a> pages.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">distributed</span> <span class="kn">import</span> <span class="n">Client</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">client</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+    <div style="width: 24px; height: 24px; background-color: #e1e1e1; border: 3px solid #9D9D9D; border-radius: 5px; position: absolute;"> </div>
+    <div style="margin-left: 48px;">
+        <h3 style="margin-bottom: 0px;">
+<a class="anchor" href="#client" aria-hidden="true"><span class="octicon octicon-link"></span></a>Client</h3>
+        <p style="color: #9D9D9D; margin-bottom: 0px;">Client-20905a8e-f0a0-11ec-9745-6a2f67914040</p>
+        <table style="width: 100%; text-align: left;">
+
+        <tr>
+        
+            <td style="text-align: left;">
+<strong>Connection method:</strong> Cluster object</td>
+            <td style="text-align: left;">
+<strong>Cluster type:</strong> distributed.LocalCluster</td>
+        
+        </tr>
+
+        
+            <tr>
+                <td style="text-align: left;">
+                    <strong>Dashboard: </strong> <a href="http://127.0.0.1:8787/status" target="_blank">http://127.0.0.1:8787/status</a>
+                </td>
+                <td style="text-align: left;"></td>
+            </tr>
+        
+
+        </table>
+
+        
+            <details>
+            <summary style="margin-bottom: 20px;"><h3 style="display: inline;">
+<a class="anchor" href="#cluster-info" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cluster Info</h3></summary>
+            <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-mod-trusted jp-OutputArea-output">
+    <div style="width: 24px; height: 24px; background-color: #e1e1e1; border: 3px solid #9D9D9D; border-radius: 5px; position: absolute;">
+    </div>
+    <div style="margin-left: 48px;">
+        <h3 style="margin-bottom: 0px; margin-top: 0px;">
+<a class="anchor" href="#localcluster" aria-hidden="true"><span class="octicon octicon-link"></span></a>LocalCluster</h3>
+        <p style="color: #9D9D9D; margin-bottom: 0px;">49a42d8a</p>
+        <table style="width: 100%; text-align: left;">
+            <tr>
+                <td style="text-align: left;">
+                    <strong>Dashboard:</strong> <a href="http://127.0.0.1:8787/status" target="_blank">http://127.0.0.1:8787/status</a>
+                </td>
+                <td style="text-align: left;">
+                    <strong>Workers:</strong> 4
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <strong>Total threads:</strong> 8
+                </td>
+                <td style="text-align: left;">
+                    <strong>Total memory:</strong> 16.00 GiB
+                </td>
+            </tr>
+            
+            <tr>
+    <td style="text-align: left;">
+<strong>Status:</strong> running</td>
+    <td style="text-align: left;">
+<strong>Using processes:</strong> True</td>
+</tr>
+
+            
+        </table>
+
+        <details>
+            <summary style="margin-bottom: 20px;">
+                <h3 style="display: inline;">
+<a class="anchor" href="#scheduler-info" aria-hidden="true"><span class="octicon octicon-link"></span></a>Scheduler Info</h3>
+            </summary>
+
+            <div style="">
+    <div>
+        <div style="width: 24px; height: 24px; background-color: #FFF7E5; border: 3px solid #FF6132; border-radius: 5px; position: absolute;"> </div>
+        <div style="margin-left: 48px;">
+            <h3 style="margin-bottom: 0px;">
+<a class="anchor" href="#scheduler" aria-hidden="true"><span class="octicon octicon-link"></span></a>Scheduler</h3>
+            <p style="color: #9D9D9D; margin-bottom: 0px;">Scheduler-8056c007-0b01-4f66-919e-3da511151e00</p>
+            <table style="width: 100%; text-align: left;">
+                <tr>
+                    <td style="text-align: left;">
+                        <strong>Comm:</strong> tcp://127.0.0.1:61718
+                    </td>
+                    <td style="text-align: left;">
+                        <strong>Workers:</strong> 4
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">
+                        <strong>Dashboard:</strong> <a href="http://127.0.0.1:8787/status" target="_blank">http://127.0.0.1:8787/status</a>
+                    </td>
+                    <td style="text-align: left;">
+                        <strong>Total threads:</strong> 8
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">
+                        <strong>Started:</strong> Just now
+                    </td>
+                    <td style="text-align: left;">
+                        <strong>Total memory:</strong> 16.00 GiB
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <details style="margin-left: 48px;">
+        <summary style="margin-bottom: 20px;">
+            <h3 style="display: inline;">
+<a class="anchor" href="#workers" aria-hidden="true"><span class="octicon octicon-link"></span></a>Workers</h3>
+        </summary>
+
+        
+        <div style="margin-bottom: 20px;">
+            <div style="width: 24px; height: 24px; background-color: #DBF5FF; border: 3px solid #4CC9FF; border-radius: 5px; position: absolute;"> </div>
+            <div style="margin-left: 48px;">
+            <details>
+                <summary>
+                    <h4 style="margin-bottom: 0px; display: inline;">
+<a class="anchor" href="#worker-0" aria-hidden="true"><span class="octicon octicon-link"></span></a>Worker: 0</h4>
+                </summary>
+                <table style="width: 100%; text-align: left;">
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Comm: </strong> tcp://127.0.0.1:61737
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Total threads: </strong> 2
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Dashboard: </strong> <a href="http://127.0.0.1:61738/status" target="_blank">http://127.0.0.1:61738/status</a>
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Memory: </strong> 4.00 GiB
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Nanny: </strong> tcp://127.0.0.1:61723
+                        </td>
+                        <td style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align: left;">
+                            <strong>Local directory: </strong> /Users/dvanstrien/Documents/daniel/blog/_notebooks/dask-worker-space/worker-p9v0g43z
+                        </td>
+                    </tr>
+
+                    
+
+                    
+
+                </table>
+            </details>
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <div style="width: 24px; height: 24px; background-color: #DBF5FF; border: 3px solid #4CC9FF; border-radius: 5px; position: absolute;"> </div>
+            <div style="margin-left: 48px;">
+            <details>
+                <summary>
+                    <h4 style="margin-bottom: 0px; display: inline;">
+<a class="anchor" href="#worker-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Worker: 1</h4>
+                </summary>
+                <table style="width: 100%; text-align: left;">
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Comm: </strong> tcp://127.0.0.1:61733
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Total threads: </strong> 2
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Dashboard: </strong> <a href="http://127.0.0.1:61734/status" target="_blank">http://127.0.0.1:61734/status</a>
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Memory: </strong> 4.00 GiB
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Nanny: </strong> tcp://127.0.0.1:61721
+                        </td>
+                        <td style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align: left;">
+                            <strong>Local directory: </strong> /Users/dvanstrien/Documents/daniel/blog/_notebooks/dask-worker-space/worker-9o5d7ajc
+                        </td>
+                    </tr>
+
+                    
+
+                    
+
+                </table>
+            </details>
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <div style="width: 24px; height: 24px; background-color: #DBF5FF; border: 3px solid #4CC9FF; border-radius: 5px; position: absolute;"> </div>
+            <div style="margin-left: 48px;">
+            <details>
+                <summary>
+                    <h4 style="margin-bottom: 0px; display: inline;">
+<a class="anchor" href="#worker-2" aria-hidden="true"><span class="octicon octicon-link"></span></a>Worker: 2</h4>
+                </summary>
+                <table style="width: 100%; text-align: left;">
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Comm: </strong> tcp://127.0.0.1:61742
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Total threads: </strong> 2
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Dashboard: </strong> <a href="http://127.0.0.1:61743/status" target="_blank">http://127.0.0.1:61743/status</a>
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Memory: </strong> 4.00 GiB
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Nanny: </strong> tcp://127.0.0.1:61724
+                        </td>
+                        <td style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align: left;">
+                            <strong>Local directory: </strong> /Users/dvanstrien/Documents/daniel/blog/_notebooks/dask-worker-space/worker-060lske2
+                        </td>
+                    </tr>
+
+                    
+
+                    
+
+                </table>
+            </details>
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <div style="width: 24px; height: 24px; background-color: #DBF5FF; border: 3px solid #4CC9FF; border-radius: 5px; position: absolute;"> </div>
+            <div style="margin-left: 48px;">
+            <details>
+                <summary>
+                    <h4 style="margin-bottom: 0px; display: inline;">
+<a class="anchor" href="#worker-3" aria-hidden="true"><span class="octicon octicon-link"></span></a>Worker: 3</h4>
+                </summary>
+                <table style="width: 100%; text-align: left;">
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Comm: </strong> tcp://127.0.0.1:61736
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Total threads: </strong> 2
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Dashboard: </strong> <a href="http://127.0.0.1:61739/status" target="_blank">http://127.0.0.1:61739/status</a>
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Memory: </strong> 4.00 GiB
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Nanny: </strong> tcp://127.0.0.1:61722
+                        </td>
+                        <td style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align: left;">
+                            <strong>Local directory: </strong> /Users/dvanstrien/Documents/daniel/blog/_notebooks/dask-worker-space/worker-cn3vzh_q
+                        </td>
+                    </tr>
+
+                    
+
+                    
+
+                </table>
+            </details>
+            </div>
+        </div>
+        
+
+    </details>
+</div>
+
+        </details>
+    </div>
+</div>
+            </details>
+        
+
+    </div>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Since we don't want to load all of our data into memory we can great a generator that will yield one row at a time. In this case we'll start by exploring the <code>Title</code> column</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">yield_titles</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">row</span><span class="p">[</span><span class="s2">"Title"</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can see that this returns a generator</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">yield_titles</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">generator</span><span style="color: #000000; text-decoration-color: #000000"> object yield_titles at </span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0x7ffc28fdc040</span><span style="font-weight: bold">&gt;</span>
+</pre>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">yield_titles</span><span class="p">()))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #008000; text-decoration-color: #008000">'The Canadian farmer. A missionary incident [Signed: W. J. H. Y, i.e. William J. H. Yates.]'</span>
+</pre>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can store this in a titles variable.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">titles</span> <span class="o">=</span> <span class="n">yield_titles</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We'll now import dask bag.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>import dask.bag as db</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can create a dask bag object using the <code>from_sequence</code> method.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">bag</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">from_sequence</span><span class="p">(</span><span class="n">titles</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">bag</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">dask.bag<span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">from_sequence</span><span style="color: #000000; text-decoration-color: #000000">, </span><span style="color: #808000; text-decoration-color: #808000">npartitions</span><span style="color: #000000; text-decoration-color: #000000">=</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span><span style="font-weight: bold">&gt;</span>
+</pre>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can look at an example using the <code>take</code> method</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">bag</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">
+<span style="font-weight: bold">(</span>
+    <span style="font-weight: bold">[</span>
+        <span style="color: #008000; text-decoration-color: #008000">'The'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'Canadian'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'farmer.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'A'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'missionary'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'incident'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'[Signed:'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'W.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'J.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'H.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'Y,'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'i.e.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'William'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'J.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'H.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'Yates.]'</span>
+    <span style="font-weight: bold">]</span>,
+<span style="font-weight: bold">)</span>
+</pre>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>dask bag has a bunch of handy methods for processing data (some of these we could also do in 🤗 datasets but others are not available as specific methods in datasets).</p>
+<p>For example we can make sure we only have unique titles using the <code>distinct</code> method.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">unique_titles</span> <span class="o">=</span> <span class="n">bag</span><span class="o">.</span><span class="n">distinct</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">unique_titles</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">
+<span style="font-weight: bold">(</span>
+    <span style="color: #008000; text-decoration-color: #008000">'The Canadian farmer. A missionary incident [Signed: W. J. H. Y, i.e. William J. H. Yates.]'</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'A new musical Interlude, called the Election [By M. P. Andrews.]'</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'An Elegy written among the ruins of an Abbey. By the author of the Nun [E. Jerningham]'</span>,
+    <span style="color: #008000; text-decoration-color: #008000">"The Baron's Daughter. A ballad by the author of Poetical Recreations [i.e. William C. Hazlitt] . F.P"</span>
+<span style="font-weight: bold">)</span>
+</pre>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Similar to 🤗 datasets we have a map method that we can use to apply a function to all of our examples. In this case we split the title text into individual words.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">title_words_split</span> <span class="o">=</span> <span class="n">unique_titles</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">" "</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">title_words_split</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">
+<span style="font-weight: bold">(</span>
+    <span style="font-weight: bold">[</span>
+        <span style="color: #008000; text-decoration-color: #008000">'The'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'Canadian'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'farmer.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'A'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'missionary'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'incident'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'[Signed:'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'W.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'J.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'H.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'Y,'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'i.e.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'William'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'J.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'H.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'Yates.]'</span>
+    <span style="font-weight: bold">]</span>,
+    <span style="font-weight: bold">[</span>
+        <span style="color: #008000; text-decoration-color: #008000">'A'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'new'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'musical'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'Interlude,'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'called'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'the'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'Election'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'[By'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'M.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'P.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'Andrews.]'</span>
+    <span style="font-weight: bold">]</span>
+<span style="font-weight: bold">)</span>
+</pre>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can see we now have all our words in a list. Helpfully dask bag has a <code>flatten</code> method. This will consume our lists and put all the words in a single sequence.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">flattend_title_words</span> <span class="o">=</span> <span class="n">title_words_split</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">flattend_title_words</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'The'</span>, <span style="color: #008000; text-decoration-color: #008000">'Canadian'</span><span style="font-weight: bold">)</span>
+</pre>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We could now use the <code>frequencies</code> method to get the top words.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">freqs</span> <span class="o">=</span> <span class="n">flattend_title_words</span><span class="o">.</span><span class="n">frequencies</span><span class="p">(</span><span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">freqs</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">dask.bag<span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">sorted</span><span style="color: #000000; text-decoration-color: #000000">, </span><span style="color: #808000; text-decoration-color: #808000">npartitions</span><span style="color: #000000; text-decoration-color: #000000">=</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span><span style="font-weight: bold">&gt;</span>
+</pre>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Since dask bag methods are lazy by default nothing has actually been calculated yet. We could just grab the top 10 words.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">top_10_words</span> <span class="o">=</span> <span class="n">freqs</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>If we want the results of something we call <code>compute</code> which will call all of the chained methods on our bag.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">top_10_words</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">
+<span style="font-weight: bold">[</span>
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'of'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">808</span><span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'the'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">674</span><span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'and'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">550</span><span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'...'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">518</span><span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'in'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">402</span><span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'van'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">306</span><span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'etc'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">301</span><span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'de'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">258</span><span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'en'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">258</span><span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'a'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">231</span><span style="font-weight: bold">)</span>
+<span style="font-weight: bold">]</span>
+</pre>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We could also do the same with lowered version</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">lowered_title_words</span> <span class="o">=</span> <span class="n">flattend_title_words</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">freqs</span> <span class="o">=</span> <span class="n">lowered_title_words</span><span class="o">.</span><span class="n">frequencies</span><span class="p">(</span><span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The visualize method gives you some insights into how the computation is managed by dask.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">freqs</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">engine</span><span class="o">=</span><span class="s2">"cytoscape"</span><span class="p">,</span> <span class="n">optimize_graph</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Moving-from-datasets-to-a-dask-dataframe">
+<a class="anchor" href="#Moving-from-datasets-to-a-dask-dataframe" aria-hidden="true"><span class="octicon octicon-link"></span></a>Moving from datasets to a dask dataframe<a class="anchor-link" href="#Moving-from-datasets-to-a-dask-dataframe"> </a>
+</h2>
+<p>For some operations, dask bag is super easy to use. Sometimes though you will hurt your brain trying to crow bar your problem into the dask bag API 😵‍💫 This is where dask dataframes come in! Using parquet, we can easily save our 🤗 dataset as a parquet file.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ds</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="s2">"genre.parquet"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>3583138</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">dask.dataframe</span> <span class="k">as</span> <span class="nn">dd</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>and load from this file</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ddf</span> <span class="o">=</span> <span class="n">dd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">"genre.parquet"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>As dask dataframe works quite similar to a pandas dataframe. It is lazy by default so if we just print it out</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ddf</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div><strong>Dask DataFrame Structure:</strong></div>
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>BL record ID</th>
+      <th>Name</th>
+      <th>Dates associated with name</th>
+      <th>Type of name</th>
+      <th>Role</th>
+      <th>All names</th>
+      <th>Title</th>
+      <th>Variant titles</th>
+      <th>Series title</th>
+      <th>Number within series</th>
+      <th>Country of publication</th>
+      <th>Place of publication</th>
+      <th>Publisher</th>
+      <th>Date of publication</th>
+      <th>Edition</th>
+      <th>Physical description</th>
+      <th>Dewey classification</th>
+      <th>BL shelfmark</th>
+      <th>Topics</th>
+      <th>Genre</th>
+      <th>Languages</th>
+      <th>Notes</th>
+      <th>BL record ID for physical resource</th>
+      <th>classification_id</th>
+      <th>user_id</th>
+      <th>subject_ids</th>
+      <th>annotator_date_pub</th>
+      <th>annotator_normalised_date_pub</th>
+      <th>annotator_edition_statement</th>
+      <th>annotator_FAST_genre_terms</th>
+      <th>annotator_FAST_subject_terms</th>
+      <th>annotator_comments</th>
+      <th>annotator_main_language</th>
+      <th>annotator_other_languages_summaries</th>
+      <th>annotator_summaries_language</th>
+      <th>annotator_translation</th>
+      <th>annotator_original_language</th>
+      <th>annotator_publisher</th>
+      <th>annotator_place_pub</th>
+      <th>annotator_country</th>
+      <th>annotator_title</th>
+      <th>Link to digitised book</th>
+      <th>annotated</th>
+      <th>Type of resource</th>
+      <th>created_at</th>
+      <th>annotator_genre</th>
+    </tr>
+    <tr>
+      <th>npartitions=1</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th></th>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>object</td>
+      <td>bool</td>
+      <td>int64</td>
+      <td>datetime64[ns]</td>
+      <td>int64</td>
+    </tr>
+    <tr>
+      <th></th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<div>Dask Name: read-parquet, 1 tasks</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>You'll see we don't actually get back any data. If we use head we get the number of examples we ask for.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ddf</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>BL record ID</th>
+      <th>Name</th>
+      <th>Dates associated with name</th>
+      <th>Type of name</th>
+      <th>Role</th>
+      <th>All names</th>
+      <th>Title</th>
+      <th>Variant titles</th>
+      <th>Series title</th>
+      <th>Number within series</th>
+      <th>...</th>
+      <th>annotator_original_language</th>
+      <th>annotator_publisher</th>
+      <th>annotator_place_pub</th>
+      <th>annotator_country</th>
+      <th>annotator_title</th>
+      <th>Link to digitised book</th>
+      <th>annotated</th>
+      <th>Type of resource</th>
+      <th>created_at</th>
+      <th>annotator_genre</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>014603046</td>
+      <td>Yates, William Joseph H.</td>
+      <td></td>
+      <td>person</td>
+      <td></td>
+      <td>[Yates, William Joseph H. [person] ,  Y, W. J....</td>
+      <td>The Canadian farmer. A missionary incident [Si...</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>...</td>
+      <td></td>
+      <td>NONE</td>
+      <td>London</td>
+      <td>enk</td>
+      <td>The Canadian farmer. A missionary incident [Si...</td>
+      <td>http://access.bl.uk/item/viewer/ark:/81055/vdc...</td>
+      <td>True</td>
+      <td>0</td>
+      <td>2020-08-11 14:30:33</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>014603046</td>
+      <td>Yates, William Joseph H.</td>
+      <td></td>
+      <td>person</td>
+      <td></td>
+      <td>[Yates, William Joseph H. [person] ,  Y, W. J....</td>
+      <td>The Canadian farmer. A missionary incident [Si...</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>...</td>
+      <td></td>
+      <td>NONE</td>
+      <td>London</td>
+      <td>enk</td>
+      <td>The Canadian farmer. A missionary incident [Si...</td>
+      <td>http://access.bl.uk/item/viewer/ark:/81055/vdc...</td>
+      <td>True</td>
+      <td>0</td>
+      <td>2021-04-15 09:53:23</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>014603046</td>
+      <td>Yates, William Joseph H.</td>
+      <td></td>
+      <td>person</td>
+      <td></td>
+      <td>[Yates, William Joseph H. [person] ,  Y, W. J....</td>
+      <td>The Canadian farmer. A missionary incident [Si...</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>...</td>
+      <td></td>
+      <td>NONE</td>
+      <td>London</td>
+      <td>enk</td>
+      <td>The Canadian farmer. A missionary incident [Si...</td>
+      <td>http://access.bl.uk/item/viewer/ark:/81055/vdc...</td>
+      <td>True</td>
+      <td>0</td>
+      <td>2020-09-24 14:27:54</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<p>3 rows × 46 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We have some familiar methods from pandas available to us</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ddf</span> <span class="o">=</span> <span class="n">ddf</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="s2">"Title"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>As an example of something that would be a bit tricky in datasets, we can see how to groupby the mean title length by year of publication. First we create a new column for title length</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ddf</span><span class="p">[</span><span class="s2">"title_len"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ddf</span><span class="p">[</span><span class="s2">"Title"</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can then groupby the date of publication</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">grouped</span> <span class="o">=</span> <span class="n">ddf</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"Date of publication"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>and then calculate the mean <code>title_len</code></p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">mean_title_len</span> <span class="o">=</span> <span class="n">grouped</span><span class="p">[</span><span class="s2">"title_len"</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>To actually compute this value we call the <code>compute</code> method</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">mean_title_len</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">
+Date of publication
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1635</span>    <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">248.0</span>
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1637</span>     <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">67.0</span>
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1695</span>     <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">63.0</span>
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1765</span>     <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">86.0</span>
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1769</span>     <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">20.0</span>
+        <span style="color: #808000; text-decoration-color: #808000">...</span>  
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1905</span>    <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">141.0</span>
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1906</span>    <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">225.0</span>
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1907</span>    <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">142.0</span>
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1910</span>     <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">65.0</span>
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1979</span>     <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">43.0</span>
+Name: title_len, Length: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">124</span>, dtype: float64
+</pre>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can also create a plot in the usual way</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">mean_title_len</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">AxesSubplot:</span><span style="color: #808000; text-decoration-color: #808000; font-weight: bold">xlabel</span><span style="color: #000000; text-decoration-color: #000000">=</span><span style="color: #008000; text-decoration-color: #008000">'Date of publication'</span><span style="font-weight: bold">&gt;</span>
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">Figure</span><span style="color: #000000; text-decoration-color: #000000"> size 432x288 with </span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span><span style="color: #000000; text-decoration-color: #000000"> Axes</span><span style="font-weight: bold">&gt;</span>
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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%0A">
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This was a very quick overview. The <a href="https://www.dask.org/get-started">dask docs</a> go into much more detail as do the Hugging Face <a href="https://huggingface.co/docs/datasets/">datasets docs</a>.</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<script type="application/vnd.jupyter.widget-state+json">
+{"0c0752e8e9024977979562531ad5a4b7": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "ProgressStyleModel", "state": {"_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "ProgressStyleModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "StyleView", "bar_color": null, "description_width": ""}}, "408dd31921ee40bb9c9fc8995d4b8577": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "HBoxModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "HBoxModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "HBoxView", "box_style": "", "children": ["IPY_MODEL_5e1150b6dfb8494195191efaeb5b7feb", "IPY_MODEL_6edda0b1149541499ab485df06711944", "IPY_MODEL_45fcaeca1a184768a624607172ab7d72"], "layout": "IPY_MODEL_ea28bfd1711148c29b494a0194d2ffbf"}}, "45fcaeca1a184768a624607172ab7d72": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "HTMLModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "HTMLModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "HTMLView", "description": "", "description_tooltip": null, "layout": "IPY_MODEL_4ccb508cf3ab4001a30cea47d2448e23", "placeholder": "\u200b", "style": "IPY_MODEL_88809da60e3846dc886cd2545edbc5c3", "value": " 1/1 [00:00&lt;00:00, 21.14it/s]"}}, "4ccb508cf3ab4001a30cea47d2448e23": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "5d3ee4cdf67e44878bac361e143b828a": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "DescriptionStyleModel", "state": {"_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "DescriptionStyleModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "StyleView", "description_width": ""}}, "5e1150b6dfb8494195191efaeb5b7feb": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "HTMLModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "HTMLModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "HTMLView", "description": "", "description_tooltip": null, "layout": "IPY_MODEL_b3eaa93967914d7f8977d736611b845f", "placeholder": "\u200b", "style": "IPY_MODEL_5d3ee4cdf67e44878bac361e143b828a", "value": "100%"}}, "6edda0b1149541499ab485df06711944": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "FloatProgressModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "FloatProgressModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "ProgressView", "bar_style": "success", "description": "", "description_tooltip": null, "layout": "IPY_MODEL_bff82a2eab2a4f7d87f8037e30839050", "max": 1, "min": 0, "orientation": "horizontal", "style": "IPY_MODEL_0c0752e8e9024977979562531ad5a4b7", "value": 1}}, "88809da60e3846dc886cd2545edbc5c3": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "DescriptionStyleModel", "state": {"_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "DescriptionStyleModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "StyleView", "description_width": ""}}, "b3eaa93967914d7f8977d736611b845f": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "bff82a2eab2a4f7d87f8037e30839050": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "ea28bfd1711148c29b494a0194d2ffbf": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}}
+</script>
+
+
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="davanstrien/blog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/huggingface/huggingface-datasets/dask/2022/06/20/dask-and-datasets.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>digital collections + computational methods</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/davanstrien" target="_blank" title="davanstrien"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/vanstriendaniel" target="_blank" title="vanstriendaniel"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
