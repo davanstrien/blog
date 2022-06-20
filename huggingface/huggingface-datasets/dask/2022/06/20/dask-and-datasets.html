@@ -154,23 +154,12 @@ window.onload = wrap_img;
 
   <div class="post-content e-content" itemprop="articleBody">
     <ul class="section-nav">
-<li class="toc-entry toc-h2"><a href="#Make-it-parallel!">Make it parallel! </a>
+<li class="toc-entry toc-h2"><a href="#Load-some-data">Load some data </a>
 <ul>
-<li class="toc-entry toc-h3"><a href="#client">Client</a></li>
-<li class="toc-entry toc-h3"><a href="#cluster-info">Cluster Info</a></li>
-<li class="toc-entry toc-h3"><a href="#localcluster">LocalCluster</a></li>
-<li class="toc-entry toc-h3"><a href="#scheduler-info">Scheduler Info</a></li>
-<li class="toc-entry toc-h3"><a href="#scheduler">Scheduler</a></li>
-<li class="toc-entry toc-h3"><a href="#workers">Workers</a>
-<ul>
-<li class="toc-entry toc-h4"><a href="#worker-0">Worker: 0</a></li>
-<li class="toc-entry toc-h4"><a href="#worker-1">Worker: 1</a></li>
-<li class="toc-entry toc-h4"><a href="#worker-2">Worker: 2</a></li>
-<li class="toc-entry toc-h4"><a href="#worker-3">Worker: 3</a></li>
+<li class="toc-entry toc-h3"><a href="#Using-toolz-to-calculate-frequencies-for-a-column">Using toolz to calculate frequencies for a column </a></li>
 </ul>
 </li>
-</ul>
-</li>
+<li class="toc-entry toc-h2"><a href="#Make-it-parallel!">Make it parallel! </a></li>
 <li class="toc-entry toc-h2"><a href="#Moving-from-datasets-to-a-dask-dataframe">Moving from datasets to a dask dataframe </a></li>
 </ul><!--
 #################################################
@@ -234,6 +223,15 @@ window.onload = wrap_img;
 </div>
     
 
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Load-some-data">
+<a class="anchor" href="#Load-some-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Load some data<a class="anchor-link" href="#Load-some-data"> </a>
+</h2>
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
@@ -379,6 +377,15 @@ window.onload = wrap_img;
 </div>
     
 
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Using-toolz-to-calculate-frequencies-for-a-column">
+<a class="anchor" href="#Using-toolz-to-calculate-frequencies-for-a-column" aria-hidden="true"><span class="octicon octicon-link"></span></a>Using toolz to calculate frequencies for a column<a class="anchor-link" href="#Using-toolz-to-calculate-frequencies-for-a-column"> </a>
+</h3>
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
@@ -627,349 +634,6 @@ window.onload = wrap_img;
 </pre></div>
 
     </div>
-</div>
-</div>
-
-</div>
-    
-
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">client</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-<div class="output_html rendered_html output_subarea output_execute_result">
-<div>
-    <div style="width: 24px; height: 24px; background-color: #e1e1e1; border: 3px solid #9D9D9D; border-radius: 5px; position: absolute;"> </div>
-    <div style="margin-left: 48px;">
-        <h3 style="margin-bottom: 0px;">
-<a class="anchor" href="#client" aria-hidden="true"><span class="octicon octicon-link"></span></a>Client</h3>
-        <p style="color: #9D9D9D; margin-bottom: 0px;">Client-20905a8e-f0a0-11ec-9745-6a2f67914040</p>
-        <table style="width: 100%; text-align: left;">
-
-        <tr>
-        
-            <td style="text-align: left;">
-<strong>Connection method:</strong> Cluster object</td>
-            <td style="text-align: left;">
-<strong>Cluster type:</strong> distributed.LocalCluster</td>
-        
-        </tr>
-
-        
-            <tr>
-                <td style="text-align: left;">
-                    <strong>Dashboard: </strong> <a href="http://127.0.0.1:8787/status" target="_blank">http://127.0.0.1:8787/status</a>
-                </td>
-                <td style="text-align: left;"></td>
-            </tr>
-        
-
-        </table>
-
-        
-            <details>
-            <summary style="margin-bottom: 20px;"><h3 style="display: inline;">
-<a class="anchor" href="#cluster-info" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cluster Info</h3></summary>
-            <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-mod-trusted jp-OutputArea-output">
-    <div style="width: 24px; height: 24px; background-color: #e1e1e1; border: 3px solid #9D9D9D; border-radius: 5px; position: absolute;">
-    </div>
-    <div style="margin-left: 48px;">
-        <h3 style="margin-bottom: 0px; margin-top: 0px;">
-<a class="anchor" href="#localcluster" aria-hidden="true"><span class="octicon octicon-link"></span></a>LocalCluster</h3>
-        <p style="color: #9D9D9D; margin-bottom: 0px;">49a42d8a</p>
-        <table style="width: 100%; text-align: left;">
-            <tr>
-                <td style="text-align: left;">
-                    <strong>Dashboard:</strong> <a href="http://127.0.0.1:8787/status" target="_blank">http://127.0.0.1:8787/status</a>
-                </td>
-                <td style="text-align: left;">
-                    <strong>Workers:</strong> 4
-                </td>
-            </tr>
-            <tr>
-                <td style="text-align: left;">
-                    <strong>Total threads:</strong> 8
-                </td>
-                <td style="text-align: left;">
-                    <strong>Total memory:</strong> 16.00 GiB
-                </td>
-            </tr>
-            
-            <tr>
-    <td style="text-align: left;">
-<strong>Status:</strong> running</td>
-    <td style="text-align: left;">
-<strong>Using processes:</strong> True</td>
-</tr>
-
-            
-        </table>
-
-        <details>
-            <summary style="margin-bottom: 20px;">
-                <h3 style="display: inline;">
-<a class="anchor" href="#scheduler-info" aria-hidden="true"><span class="octicon octicon-link"></span></a>Scheduler Info</h3>
-            </summary>
-
-            <div style="">
-    <div>
-        <div style="width: 24px; height: 24px; background-color: #FFF7E5; border: 3px solid #FF6132; border-radius: 5px; position: absolute;"> </div>
-        <div style="margin-left: 48px;">
-            <h3 style="margin-bottom: 0px;">
-<a class="anchor" href="#scheduler" aria-hidden="true"><span class="octicon octicon-link"></span></a>Scheduler</h3>
-            <p style="color: #9D9D9D; margin-bottom: 0px;">Scheduler-8056c007-0b01-4f66-919e-3da511151e00</p>
-            <table style="width: 100%; text-align: left;">
-                <tr>
-                    <td style="text-align: left;">
-                        <strong>Comm:</strong> tcp://127.0.0.1:61718
-                    </td>
-                    <td style="text-align: left;">
-                        <strong>Workers:</strong> 4
-                    </td>
-                </tr>
-                <tr>
-                    <td style="text-align: left;">
-                        <strong>Dashboard:</strong> <a href="http://127.0.0.1:8787/status" target="_blank">http://127.0.0.1:8787/status</a>
-                    </td>
-                    <td style="text-align: left;">
-                        <strong>Total threads:</strong> 8
-                    </td>
-                </tr>
-                <tr>
-                    <td style="text-align: left;">
-                        <strong>Started:</strong> Just now
-                    </td>
-                    <td style="text-align: left;">
-                        <strong>Total memory:</strong> 16.00 GiB
-                    </td>
-                </tr>
-            </table>
-        </div>
-    </div>
-
-    <details style="margin-left: 48px;">
-        <summary style="margin-bottom: 20px;">
-            <h3 style="display: inline;">
-<a class="anchor" href="#workers" aria-hidden="true"><span class="octicon octicon-link"></span></a>Workers</h3>
-        </summary>
-
-        
-        <div style="margin-bottom: 20px;">
-            <div style="width: 24px; height: 24px; background-color: #DBF5FF; border: 3px solid #4CC9FF; border-radius: 5px; position: absolute;"> </div>
-            <div style="margin-left: 48px;">
-            <details>
-                <summary>
-                    <h4 style="margin-bottom: 0px; display: inline;">
-<a class="anchor" href="#worker-0" aria-hidden="true"><span class="octicon octicon-link"></span></a>Worker: 0</h4>
-                </summary>
-                <table style="width: 100%; text-align: left;">
-                    <tr>
-                        <td style="text-align: left;">
-                            <strong>Comm: </strong> tcp://127.0.0.1:61737
-                        </td>
-                        <td style="text-align: left;">
-                            <strong>Total threads: </strong> 2
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="text-align: left;">
-                            <strong>Dashboard: </strong> <a href="http://127.0.0.1:61738/status" target="_blank">http://127.0.0.1:61738/status</a>
-                        </td>
-                        <td style="text-align: left;">
-                            <strong>Memory: </strong> 4.00 GiB
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="text-align: left;">
-                            <strong>Nanny: </strong> tcp://127.0.0.1:61723
-                        </td>
-                        <td style="text-align: left;"></td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" style="text-align: left;">
-                            <strong>Local directory: </strong> /Users/dvanstrien/Documents/daniel/blog/_notebooks/dask-worker-space/worker-p9v0g43z
-                        </td>
-                    </tr>
-
-                    
-
-                    
-
-                </table>
-            </details>
-            </div>
-        </div>
-        
-        <div style="margin-bottom: 20px;">
-            <div style="width: 24px; height: 24px; background-color: #DBF5FF; border: 3px solid #4CC9FF; border-radius: 5px; position: absolute;"> </div>
-            <div style="margin-left: 48px;">
-            <details>
-                <summary>
-                    <h4 style="margin-bottom: 0px; display: inline;">
-<a class="anchor" href="#worker-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Worker: 1</h4>
-                </summary>
-                <table style="width: 100%; text-align: left;">
-                    <tr>
-                        <td style="text-align: left;">
-                            <strong>Comm: </strong> tcp://127.0.0.1:61733
-                        </td>
-                        <td style="text-align: left;">
-                            <strong>Total threads: </strong> 2
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="text-align: left;">
-                            <strong>Dashboard: </strong> <a href="http://127.0.0.1:61734/status" target="_blank">http://127.0.0.1:61734/status</a>
-                        </td>
-                        <td style="text-align: left;">
-                            <strong>Memory: </strong> 4.00 GiB
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="text-align: left;">
-                            <strong>Nanny: </strong> tcp://127.0.0.1:61721
-                        </td>
-                        <td style="text-align: left;"></td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" style="text-align: left;">
-                            <strong>Local directory: </strong> /Users/dvanstrien/Documents/daniel/blog/_notebooks/dask-worker-space/worker-9o5d7ajc
-                        </td>
-                    </tr>
-
-                    
-
-                    
-
-                </table>
-            </details>
-            </div>
-        </div>
-        
-        <div style="margin-bottom: 20px;">
-            <div style="width: 24px; height: 24px; background-color: #DBF5FF; border: 3px solid #4CC9FF; border-radius: 5px; position: absolute;"> </div>
-            <div style="margin-left: 48px;">
-            <details>
-                <summary>
-                    <h4 style="margin-bottom: 0px; display: inline;">
-<a class="anchor" href="#worker-2" aria-hidden="true"><span class="octicon octicon-link"></span></a>Worker: 2</h4>
-                </summary>
-                <table style="width: 100%; text-align: left;">
-                    <tr>
-                        <td style="text-align: left;">
-                            <strong>Comm: </strong> tcp://127.0.0.1:61742
-                        </td>
-                        <td style="text-align: left;">
-                            <strong>Total threads: </strong> 2
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="text-align: left;">
-                            <strong>Dashboard: </strong> <a href="http://127.0.0.1:61743/status" target="_blank">http://127.0.0.1:61743/status</a>
-                        </td>
-                        <td style="text-align: left;">
-                            <strong>Memory: </strong> 4.00 GiB
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="text-align: left;">
-                            <strong>Nanny: </strong> tcp://127.0.0.1:61724
-                        </td>
-                        <td style="text-align: left;"></td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" style="text-align: left;">
-                            <strong>Local directory: </strong> /Users/dvanstrien/Documents/daniel/blog/_notebooks/dask-worker-space/worker-060lske2
-                        </td>
-                    </tr>
-
-                    
-
-                    
-
-                </table>
-            </details>
-            </div>
-        </div>
-        
-        <div style="margin-bottom: 20px;">
-            <div style="width: 24px; height: 24px; background-color: #DBF5FF; border: 3px solid #4CC9FF; border-radius: 5px; position: absolute;"> </div>
-            <div style="margin-left: 48px;">
-            <details>
-                <summary>
-                    <h4 style="margin-bottom: 0px; display: inline;">
-<a class="anchor" href="#worker-3" aria-hidden="true"><span class="octicon octicon-link"></span></a>Worker: 3</h4>
-                </summary>
-                <table style="width: 100%; text-align: left;">
-                    <tr>
-                        <td style="text-align: left;">
-                            <strong>Comm: </strong> tcp://127.0.0.1:61736
-                        </td>
-                        <td style="text-align: left;">
-                            <strong>Total threads: </strong> 2
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="text-align: left;">
-                            <strong>Dashboard: </strong> <a href="http://127.0.0.1:61739/status" target="_blank">http://127.0.0.1:61739/status</a>
-                        </td>
-                        <td style="text-align: left;">
-                            <strong>Memory: </strong> 4.00 GiB
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="text-align: left;">
-                            <strong>Nanny: </strong> tcp://127.0.0.1:61722
-                        </td>
-                        <td style="text-align: left;"></td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" style="text-align: left;">
-                            <strong>Local directory: </strong> /Users/dvanstrien/Documents/daniel/blog/_notebooks/dask-worker-space/worker-cn3vzh_q
-                        </td>
-                    </tr>
-
-                    
-
-                    
-
-                </table>
-            </details>
-            </div>
-        </div>
-        
-
-    </details>
-</div>
-
-        </details>
-    </div>
-</div>
-            </details>
-        
-
-    </div>
-</div>
-</div>
-
-</div>
-
 </div>
 </div>
 
