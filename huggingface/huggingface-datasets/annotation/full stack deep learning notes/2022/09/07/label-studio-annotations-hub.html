@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Label Studio x Hugging Face datasets hub | Daniel van Strien</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Label Studio x Hugging Face datasets hub" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Using label studio and the Hugging Face datasets hub to iteratively annotate a dataset" />
+<meta property="og:description" content="Using label studio and the Hugging Face datasets hub to iteratively annotate a dataset" />
+<link rel="canonical" href="https://danielvanstrien.xyz/huggingface/huggingface-datasets/annotation/full%20stack%20deep%20learning%20notes/2022/09/07/label-studio-annotations-hub.html" />
+<meta property="og:url" content="https://danielvanstrien.xyz/huggingface/huggingface-datasets/annotation/full%20stack%20deep%20learning%20notes/2022/09/07/label-studio-annotations-hub.html" />
+<meta property="og:site_name" content="Daniel van Strien" />
+<meta property="og:image" content="https://raw.githubusercontent.com/davanstrien/blog/master/images/huggingface_hub_label_possum.webp" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-09-07T00:00:00-05:00" />
+<script type="application/ld+json">
+{"url":"https://danielvanstrien.xyz/huggingface/huggingface-datasets/annotation/full%20stack%20deep%20learning%20notes/2022/09/07/label-studio-annotations-hub.html","@type":"BlogPosting","headline":"Label Studio x Hugging Face datasets hub","dateModified":"2022-09-07T00:00:00-05:00","datePublished":"2022-09-07T00:00:00-05:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://danielvanstrien.xyz/huggingface/huggingface-datasets/annotation/full%20stack%20deep%20learning%20notes/2022/09/07/label-studio-annotations-hub.html"},"image":"https://raw.githubusercontent.com/davanstrien/blog/master/images/huggingface_hub_label_possum.webp","description":"Using label studio and the Hugging Face datasets hub to iteratively annotate a dataset","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://danielvanstrien.xyz/feed.xml" title="Daniel van Strien" /><!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-59247814-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-59247814-2');
+</script>
+
+
+<link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" integrity="sha512-h7nl+xz8wgDlNM4NqKEM4F1NkIRS17M9+uJwIGwuo8vGqIl4BhuCKdxjWEINm+xyrUjNCnK5dCrhM0sj+wTIXw==" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js" integrity="sha512-/CMIhXiDA3m2c9kzRyd97MTb3MC6OVnx4TElQ7fkkoRghwDf6gi41gaT1PwF270W6+J60uTmwgeRpNpJdRV6sg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js" integrity="sha512-Do7uJAaHZm5OLrIv/yN4w0iG1dbu01kzdMNnFfu/mAqgUk6Nniv2JYHcwH+cNwjqgLcqcuBBk+JRvprLVI8azg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha512-0doc9hKxR3PYwso42RD1p5ySZpzzuDiOwMrdCEh2WdJZCjcmFKc/wEnL+z8fBQrnHoiNWbo+3fiGkOYXBdQp4A==" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Daniel van Strien</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About Me</a><a class="page-link" href="/projects/">Selected projects</a><a class="page-link" href="/search/">Search</a><a class="page-link" href="/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Label Studio x Hugging Face datasets hub</h1><p class="page-description">Using label studio and the Hugging Face datasets hub to iteratively annotate a dataset</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2022-09-07T00:00:00-05:00" itemprop="datePublished">
+        Sep 7, 2022
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      11 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/categories/#huggingface">huggingface</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/categories/#huggingface-datasets">huggingface-datasets</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/categories/#annotation">annotation</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/categories/#full stack deep learning notes">full stack deep learning notes</a>
+        
+      
+      </p>
+    
+
+    
+      
+        <div class="pb-5 d-flex flex-justify-center">
+          <div class="px-2">
+
+    <a href="https://github.com/davanstrien/blog/tree/master/_notebooks/2022-09-07-label-studio-annotations-hub.ipynb" role="button" target="_blank">
+<img class="notebook-badge-image" src="/assets/badges/github.svg" alt="View On GitHub">
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://mybinder.org/v2/gh/davanstrien/blog/master?filepath=_notebooks%2F2022-09-07-label-studio-annotations-hub.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/assets/badges/binder.svg" alt="Open In Binder"/>
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://colab.research.google.com/github/davanstrien/blog/blob/master/_notebooks/2022-09-07-label-studio-annotations-hub.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/assets/badges/colab.svg" alt="Open In Colab"/>
+    </a>
+</div>
+          
+        </div>
+      </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h1"><a href="#Full-stack-deep-learning:-annotating-data">Full stack deep learning: annotating data </a>
+<ul>
+<li class="toc-entry toc-h2"><a href="#What-is-the-goal?">What is the goal? </a></li>
+<li class="toc-entry toc-h2"><a href="#A-more-mundane-challenge">A more mundane challenge </a></li>
+<li class="toc-entry toc-h2"><a href="#Create-a-new-dataset-on-the-Hub">Create a new dataset on the Hub </a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#Uploading-our-raw-data-to-the-hub">Uploading our raw data to the hub </a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h2"><a href="#Loading-local-files-and-metadata">Loading local files and metadata </a></li>
+<li class="toc-entry toc-h2"><a href="#Annotating-using-label-studio">Annotating using label studio </a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#Loading-annotations-into-label-studio">Loading annotations into label studio </a></li>
+<li class="toc-entry toc-h3"><a href="#Export-annotations">Export annotations </a></li>
+<li class="toc-entry toc-h3"><a href="#Load-annotations">Load annotations </a></li>
+<li class="toc-entry toc-h3"><a href="#How-to-use-our-annotations?">How to use our annotations? </a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h2"><a href="#What-next?">What next? </a></li>
+<li class="toc-entry toc-h2"><a href="#Where-won't-this-work?">Where won&#39;t this work? </a></li>
+</ul>
+</li>
+</ul><!--
+#################################################
+### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
+#################################################
+# file to edit: _notebooks/2022-09-07-label-studio-annotations-hub.ipynb
+-->
+
+<div class="container" id="notebook-container">
+        
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Full-stack-deep-learning:-annotating-data">
+<a class="anchor" href="#Full-stack-deep-learning:-annotating-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Full stack deep learning: annotating data<a class="anchor-link" href="#Full-stack-deep-learning:-annotating-data"> </a>
+</h1>
+<p>I'm currently going through the <a href="https://fullstackdeeplearning.com">Full Stack Deep Learning course</a>. As part of this we've been going through tools for different parts of the machine learning pipeline. This post talks about data annotation, and how we can combine Label Studio and the <a href="https://huggingface.co/datasets">Hugging Face Datasets hub</a>. I'll use the example of annotating image data for an image classification task. The details of why I'm annotating this data will wait for a future post!</p>
+<p><strong>note</strong> this post assumes you already know roughly what the Hugging Face Hub is. If you don't <a href="https://huggingface.co/course/chapter4/1">this</a> is a nice intro.</p>
+<h2 id="What-is-the-goal?">
+<a class="anchor" href="#What-is-the-goal?" aria-hidden="true"><span class="octicon octicon-link"></span></a>What is the goal?<a class="anchor-link" href="#What-is-the-goal?"> </a>
+</h2>
+<p>We want to have a way of easily moving from different stages of our machine learning project pipeline. For many projects, especially the weird stuff I'm likely to do, you will need to do some of your own annotating. It almost always makes sense to move quickly between annotating a first batch of data, trying to train a model and iterating. This can help:</p>
+<ul>
+<li>flag issues with your data</li>
+<li>identify if you have ambiguous labels</li>
+<li>help you get some sense of how a model might perform on the task you are working on</li>
+<li>allow you to deploy a model early so you can begin iterating on the whole pipeline </li>
+<li>...</li>
+</ul>
+<p><a href="https://imgflip.com/i/6skdh9"><img src="https://i.imgflip.com/6skdh9.jpg" title="made at imgflip.com"></a></p>
+<div><a href="https://imgflip.com/memegenerator">from Imgflip Meme Generator</a></div>
+<p>This approach can cause some challenges; how do you keep updating your annotations, how can you version the changes?</p>
+<h2 id="A-more-mundane-challenge">
+<a class="anchor" href="#A-more-mundane-challenge" aria-hidden="true"><span class="octicon octicon-link"></span></a>A more mundane challenge<a class="anchor-link" href="#A-more-mundane-challenge"> </a>
+</h2>
+<p>In the full stack deep learning course, one of the <a href="https://fullstackdeeplearning.com/course/2022/lab-6-data-annotation/">labs</a> covered using <a href="https://labelstud.io/guide/tasks">Label Studio</a> to annotate data. Label studio is a great open source tool for annotating data across a range of domains and for a variety of tasks.</p>
+<p>Label studio has great support for annotating image data. One challenge we can face, however, is how to load images into label studio. This can be particularly tricky if you only have the images locally since label studio prefers images to be available via a URL. There are <a href="https://labelstud.io/guide/tasks.html#Import-data-from-a-local-directory">various ways around this</a> but we may also be able to tackle this challenge using the datasets hub.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We'll start by downloading a dataset we want annotate <strong>warning</strong> this dataset is pretty big ~44GB uncompressed.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span>%%bash
+wget https://nlsfoundry.s3.amazonaws.com/data/nls-data-encyclopaediaBritannica.zip
+unzip *.zip
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We'll import some standard libraries</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Create-a-new-dataset-on-the-Hub">
+<a class="anchor" href="#Create-a-new-dataset-on-the-Hub" aria-hidden="true"><span class="octicon octicon-link"></span></a>Create a new dataset on the Hub<a class="anchor-link" href="#Create-a-new-dataset-on-the-Hub"> </a>
+</h2>
+<p>Since we want to upload our data to the Hugging Face hub we'll create a new dataset on the Hugging Face Hub via the CLI.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<div class="highlight"><pre><span></span>huggingface-cli repo create encyclopaedia_britannica --type dataset
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Under the hood, Hugging Face hub datasets (and models) are Git repositories. We'll clone this repo and move the downloaded dataset into this new Git repository.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<div class="highlight"><pre><span></span>git clone https://huggingface.co/datasets/davanstrien/encyclopaedia_britannica
+mv nls-data-encyclopaediaBritannica encyclopaedia_britannica/
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Since the number of examples in this dataset is beyond what we're likely to annotate we do a bit of deleting of the dataset. You could also take a sample of the original but in this case I'm happy to reclaim some space on my hardrive!</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">tqdm</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>first we get rid of some alto folders that we don't need for the dataset we're aiming to create</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">directory</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+    <span class="nb">list</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="s2">"encyclopaedia_britannica/nls-data-encyclopaediaBritannica"</span><span class="p">)</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span>
+                <span class="s2">"*alto"</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+<span class="p">):</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>100%|██████████| 195/195 [00:34&lt;00:00,  5.62it/s]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>there are a few other <code>*.xml</code> files in this dataset we also remove</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">xml_file</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+    <span class="nb">list</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="s2">"encyclopaedia_britannica/nls-data-encyclopaediaBritannica"</span><span class="p">)</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span>
+                <span class="s2">"*xml"</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+<span class="p">):</span>
+    <span class="n">xml_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>100%|██████████| 195/195 [00:00&lt;00:00, 1464.47it/s]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's take a look at how many images we have now</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">image_files</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"encyclopaedia_britannica/nls-data-encyclopaediaBritannica"</span><span class="p">)</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s2">"*jpg"</span><span class="p">))</span>
+<span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">image_files</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>155388</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We're not likely to annotate this many images, let's aim to have a max of 10,000 images. This is also likely to be more than we'll annotate but we may use a smaller sample for unsupervised pre-training.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">num_to_remove</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">image_files</span><span class="p">)</span> <span class="o">-</span> <span class="mi">10_000</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We'll now randomly remove the extra images we don't need beyond our sample</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">to_remove</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">image_files</span><span class="p">,</span> <span class="n">num_to_remove</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">to_remove</span><span class="p">):</span>
+    <span class="n">file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>100%|██████████| 90000/90000 [00:33&lt;00:00, 2659.02it/s]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">len</span><span class="p">(</span>
+    <span class="nb">list</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="s2">"encyclopaedia_britannica/nls-data-encyclopaediaBritannica"</span><span class="p">)</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span>
+                <span class="s2">"*jpg"</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>10000</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Uploading-our-raw-data-to-the-hub">
+<a class="anchor" href="#Uploading-our-raw-data-to-the-hub" aria-hidden="true"><span class="octicon octicon-link"></span></a>Uploading our raw data to the hub<a class="anchor-link" href="#Uploading-our-raw-data-to-the-hub"> </a>
+</h3>
+<p>We can now upload this data to the Hugging Face Hub. Under the hood the Hub uses Git so everything you love (and hate) about Git should be familiar. The main difference between using the hub and GitHub or another Git hosting platform is that the Hugging Face hub has support for large files. This means we can more easily work with large files (like our images).</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<div class="highlight"><pre><span></span><span class="nb">cd</span> encyclopaedia_britannica
+git lfs track <span class="s2">"*.jpg"</span>
+git add .gitattributes
+git add nls-data-encyclopaediaBritannica
+git commit -m <span class="s2">"add image files"</span>
+git push
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Loading-local-files-and-metadata">
+<a class="anchor" href="#Loading-local-files-and-metadata" aria-hidden="true"><span class="octicon octicon-link"></span></a>Loading local files and metadata<a class="anchor-link" href="#Loading-local-files-and-metadata"> </a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The particular dataset we're working with also has a metadata file associated with it. We can  grab all of the images so we can put them in a DataFrame and merge this with metadata about these images. We may not use this extra metadata but it's nice to have this additional metadata about our items alongside our annotations. This can help us debug where our model is performing badly later on.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">image_files</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="n">Path</span><span class="p">(</span><span class="s2">"encyclopaedia_britannica/nls-data-encyclopaediaBritannica"</span><span class="p">)</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s2">"*.jpg"</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">image_files</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"filename"</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This dataset also comes with some metadata. We'll load that in to another DataFrame</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">metadata_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="s2">"encyclopaedia_britannica/nls-data-encyclopaediaBritannica/encyclopaediaBritannica-inventory.csv"</span><span class="p">,</span>
+    <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">"id"</span><span class="p">,</span> <span class="s2">"meta"</span><span class="p">],</span>
+    <span class="n">dtype</span><span class="o">=</span><span class="p">{</span><span class="s2">"id"</span><span class="p">:</span> <span class="s2">"int64"</span><span class="p">},</span>
+<span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"int64"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">metadata_df</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">"id"</span><span class="p">)</span>
+<span class="n">df</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>filename</th>
+      <th>id</th>
+      <th>meta</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>encyclopaedia_britannica/nls-data-encyclopaedi...</td>
+      <td>190273291</td>
+      <td>Encyclopaedia Britannica - Third edition, Volu...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>encyclopaedia_britannica/nls-data-encyclopaedi...</td>
+      <td>190273291</td>
+      <td>Encyclopaedia Britannica - Third edition, Volu...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>encyclopaedia_britannica/nls-data-encyclopaedi...</td>
+      <td>190273291</td>
+      <td>Encyclopaedia Britannica - Third edition, Volu...</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>encyclopaedia_britannica/nls-data-encyclopaedi...</td>
+      <td>190273291</td>
+      <td>Encyclopaedia Britannica - Third edition, Volu...</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>encyclopaedia_britannica/nls-data-encyclopaedi...</td>
+      <td>190273291</td>
+      <td>Encyclopaedia Britannica - Third edition, Volu...</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>9995</th>
+      <td>encyclopaedia_britannica/nls-data-encyclopaedi...</td>
+      <td>193696083</td>
+      <td>Encyclopaedia Britannica - Seventh edition, Vo...</td>
+    </tr>
+    <tr>
+      <th>9996</th>
+      <td>encyclopaedia_britannica/nls-data-encyclopaedi...</td>
+      <td>193696083</td>
+      <td>Encyclopaedia Britannica - Seventh edition, Vo...</td>
+    </tr>
+    <tr>
+      <th>9997</th>
+      <td>encyclopaedia_britannica/nls-data-encyclopaedi...</td>
+      <td>193696083</td>
+      <td>Encyclopaedia Britannica - Seventh edition, Vo...</td>
+    </tr>
+    <tr>
+      <th>9998</th>
+      <td>encyclopaedia_britannica/nls-data-encyclopaedi...</td>
+      <td>193696083</td>
+      <td>Encyclopaedia Britannica - Seventh edition, Vo...</td>
+    </tr>
+    <tr>
+      <th>9999</th>
+      <td>encyclopaedia_britannica/nls-data-encyclopaedi...</td>
+      <td>193696083</td>
+      <td>Encyclopaedia Britannica - Seventh edition, Vo...</td>
+    </tr>
+  </tbody>
+</table>
+<p>10000 rows × 3 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Annotating-using-label-studio">
+<a class="anchor" href="#Annotating-using-label-studio" aria-hidden="true"><span class="octicon octicon-link"></span></a>Annotating using label studio<a class="anchor-link" href="#Annotating-using-label-studio"> </a>
+</h2>
+<p>Now we have our images uploaded to the Hugging Face hub, how we go about annotating? As was mentioned already the Hugging Face hub is essentially a Git repo. Since we uploaded our image files individually i.e. not in a compressed folder, we can access each file from that repo. We mentioned before that label studio can load images from URLs. The hub has an API that we can use to interact with our repository. Let's see how we can use this to get our data ready for label studio.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">huggingface_hub</span> <span class="kn">import</span> <span class="n">list_repo_files</span><span class="p">,</span> <span class="n">hf_hub_url</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">files</span> <span class="o">=</span> <span class="n">list_repo_files</span><span class="p">(</span><span class="s2">"davanstrien/encyclopaedia_britannica"</span><span class="p">,</span> <span class="n">repo_type</span><span class="o">=</span><span class="s2">"dataset"</span><span class="p">)</span>
+<span class="n">files</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>['.gitattributes',
+ 'nls-data-encyclopaediaBritannica/144133901/image/188082865.3.jpg']</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We'll filter out some data we are not interested in annotating</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">file</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"."</span><span class="p">)]</span>
+<span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>10002</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><code>hf_hub_url</code> can be used to generate the URL for a particular file</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">hf_hub_url</span><span class="p">(</span>
+    <span class="s2">"davanstrien/encyclopaedia_britannica"</span><span class="p">,</span>
+    <span class="s2">"192866824.3.jpg"</span><span class="p">,</span>
+    <span class="n">subfolder</span><span class="o">=</span><span class="s2">"sample/nls-data-encyclopaediaBritannica/192547788/image"</span><span class="p">,</span>
+    <span class="n">repo_type</span><span class="o">=</span><span class="s2">"dataset"</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>'https://huggingface.co/datasets/davanstrien/encyclopaedia_britannica/resolve/main/sample/nls-data-encyclopaediaBritannica/192547788/image/192866824.3.jpg'</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can use this to grab all of the URLs we're interested in</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">urls</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="n">urls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="n">hf_hub_url</span><span class="p">(</span>
+            <span class="s2">"davanstrien/encyclopedia_britannica"</span><span class="p">,</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">subfolder</span><span class="o">=</span><span class="n">file</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">repo_type</span><span class="o">=</span><span class="s2">"dataset"</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can now load these into a DataFrame, and save this to a CSV file.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">urls</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"image"</span><span class="p">])</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">"data.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"data.csv"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>image</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>9997</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+    </tr>
+    <tr>
+      <th>9998</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+    </tr>
+    <tr>
+      <th>9999</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+    </tr>
+    <tr>
+      <th>10000</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+    </tr>
+    <tr>
+      <th>10001</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+    </tr>
+  </tbody>
+</table>
+<p>10002 rows × 1 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Loading-annotations-into-label-studio">
+<a class="anchor" href="#Loading-annotations-into-label-studio" aria-hidden="true"><span class="octicon octicon-link"></span></a>Loading annotations into label studio<a class="anchor-link" href="#Loading-annotations-into-label-studio"> </a>
+</h3>
+<p>We can use this file to load our data into label studio
+<img src="https://raw.githubusercontent.com/davanstrien/blog/master/images/label-studio-import.webp" alt="Label Studio import"></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>From here, we need to define our annotation task. We can then begin annotating data.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Export-annotations">
+<a class="anchor" href="#Export-annotations" aria-hidden="true"><span class="octicon octicon-link"></span></a>Export annotations<a class="anchor-link" href="#Export-annotations"> </a>
+</h3>
+<p>You can either wait until you've finished doing all the labels, however, we may have a lot of data to annotate so it's likely instead that we will want to export once we've either hit a reasonable number of labels or get too bored of annotating. There are various different export formats available in this case we'll use JSON-Min</p>
+<p><img src="https://raw.githubusercontent.com/davanstrien/blog/master/images/label-studio-export.webp" alt=""></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Load-annotations">
+<a class="anchor" href="#Load-annotations" aria-hidden="true"><span class="octicon octicon-link"></span></a>Load annotations<a class="anchor-link" href="#Load-annotations"> </a>
+</h3>
+<p>Now we have export our annotations lets load them into a new DatafFame. We'll only select the columns we're interested in</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">annotation_dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="s2">"project-3-at-2022-09-08-15-16-4279e901.json"</span><span class="p">)[</span>
+    <span class="p">[</span><span class="s2">"image"</span><span class="p">,</span> <span class="s2">"choice"</span><span class="p">]</span>
+<span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">annotation_dataframe</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>image</th>
+      <th>choice</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+      <td>text-only</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+      <td>text-only</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+      <td>text-only</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+      <td>text-only</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+      <td>text-only</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>1516</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+      <td>text-only</td>
+    </tr>
+    <tr>
+      <th>1517</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+      <td>text-only</td>
+    </tr>
+    <tr>
+      <th>1518</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+      <td>text-only</td>
+    </tr>
+    <tr>
+      <th>1519</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+      <td>text-only</td>
+    </tr>
+    <tr>
+      <th>1520</th>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+      <td>text-only</td>
+    </tr>
+  </tbody>
+</table>
+<p>1521 rows × 2 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>If we take a look at the URL for one of the annotations, you'll see that we still have a nice path that mirrors the folder structure of the original data. This also means we can merge this annotations DataFrame with our previous metadata DataFrame.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">annotation_dataframe</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="s2">"image"</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>'https://huggingface.co/datasets/davanstrien/encyclopaedia_britannica/resolve/main/nls-data-encyclopaediaBritannica/192693396/image/192979378.3.jpg'</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">annotation_dataframe</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="s2">"image"</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>['nls-data-encyclopaediaBritannica', '192693396', 'image', '192979378.3.jpg']</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">annotation_dataframe</span><span class="p">[</span><span class="s2">"filename"</span><span class="p">]</span> <span class="o">=</span> <span class="n">annotation_dataframe</span><span class="p">[</span><span class="s2">"image"</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+    <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">"/"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)[</span><span class="o">-</span><span class="mi">4</span><span class="p">:])</span>
+<span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">annotation_dataframe</span><span class="p">[</span><span class="s2">"filename"</span><span class="p">]</span> <span class="o">=</span> <span class="n">annotation_dataframe</span><span class="p">[</span><span class="s2">"filename"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">annotation_dataframe</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">"filename"</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">"outer"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>filename</th>
+      <th>id</th>
+      <th>meta</th>
+      <th>image</th>
+      <th>choice</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>encyclopaedia_britannica/nls-data-encyclopaedi...</td>
+      <td>190273291.0</td>
+      <td>Encyclopaedia Britannica - Third edition, Volu...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>encyclopaedia_britannica/nls-data-encyclopaedi...</td>
+      <td>190273291.0</td>
+      <td>Encyclopaedia Britannica - Third edition, Volu...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>encyclopaedia_britannica/nls-data-encyclopaedi...</td>
+      <td>190273291.0</td>
+      <td>Encyclopaedia Britannica - Third edition, Volu...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>encyclopaedia_britannica/nls-data-encyclopaedi...</td>
+      <td>190273291.0</td>
+      <td>Encyclopaedia Britannica - Third edition, Volu...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>encyclopaedia_britannica/nls-data-encyclopaedi...</td>
+      <td>190273291.0</td>
+      <td>Encyclopaedia Britannica - Third edition, Volu...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>11516</th>
+      <td>nls-data-encyclopaediaBritannica/144133901/ima...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+      <td>text-only</td>
+    </tr>
+    <tr>
+      <th>11517</th>
+      <td>nls-data-encyclopaediaBritannica/144133901/ima...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+      <td>text-only</td>
+    </tr>
+    <tr>
+      <th>11518</th>
+      <td>nls-data-encyclopaediaBritannica/144133901/ima...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+      <td>text-only</td>
+    </tr>
+    <tr>
+      <th>11519</th>
+      <td>nls-data-encyclopaediaBritannica/144133901/ima...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+      <td>text-only</td>
+    </tr>
+    <tr>
+      <th>11520</th>
+      <td>nls-data-encyclopaediaBritannica/144133901/ima...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://huggingface.co/datasets/davanstrien/en...</td>
+      <td>text-only</td>
+    </tr>
+  </tbody>
+</table>
+<p>11521 rows × 5 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This means we can keep our nice orignal metadata intact but also add our additional metadata where it exists. Let's check how many annotations we have</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">choice</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>text-only      1436
+illustrated      70
+Name: choice, dtype: int64</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can also see how much of our dataset we have coverage for</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">choice</span><span class="o">.</span><span class="n">notna</span><span class="p">()])</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>0.13071781963371235</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="How-to-use-our-annotations?">
+<a class="anchor" href="#How-to-use-our-annotations?" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to use our annotations?<a class="anchor-link" href="#How-to-use-our-annotations?"> </a>
+</h3>
+<p>We now have some annoations inside a DataFrame. What should we do we these? We can also use the Hub for storing this. This comes with a few benefits:</p>
+<ul>
+<li>we keep our data and annotations in the same place. </li>
+<li>since the Hub uses Git under the hood we also get versioning for our dataset. We can use this version information to track for example how different models perform during training as we add more labels. </li>
+</ul>
+<p>Another nice thing about the Hub is that we can create dataset loading scripts to load our data. This script can use this CSV we've just created and only load the data we have examples for.</p>
+<p>First we'll save to a CSV file:</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">"annotations.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can then copy these into the same repository used to host our dataset.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<div class="highlight"><pre><span></span>cp annotations.csv encyclopedia_britannica/
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Once we've done this we can commit these and push our annotations to the hub:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<div class="highlight"><pre><span></span><span class="nb">cd</span> encyclopedia_britannica/
+git add annotations.csv
+git commit -m <span class="s2">"update annotations"</span>
+git push
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="What-next?">
+<a class="anchor" href="#What-next?" aria-hidden="true"><span class="octicon octicon-link"></span></a>What next?<a class="anchor-link" href="#What-next?"> </a>
+</h2>
+<p>We now have a repository which contains a bunch of images, and a CSV file which contains annotations for some of these images. How do we use this for model training? From this point we can create a dataset <a href="https://huggingface.co/docs/datasets/dataset_script">loading script</a> inside the same repository.</p>
+<p>This dataset loading script will allow us to load the data from the hub using the <code>datasets</code> library. Additionally we can write this script so that it only loads data we have annotations for.</p>
+<p>What does this mean:</p>
+<ul>
+<li>we have a dataset we can use to train our model</li>
+<li>the dataset is hosted on the Hugging Face hub which means it's easy to share with other people </li>
+<li>we can keep adding new annotations to this dataset and pushing our changes to the hub </li>
+<li>Since the <code>datasets</code> library has nice caching support it will only download the dataset if there are changes. This change will be triggered by changes to our annotations.csv file. </li>
+</ul>
+<h2 id="Where-won't-this-work?">
+<a class="anchor" href="#Where-won't-this-work?" aria-hidden="true"><span class="octicon octicon-link"></span></a>Where won't this work?<a class="anchor-link" href="#Where-won't-this-work?"> </a>
+</h2>
+<p>This workflow is based on the assumption that the dataset you are annotating is public from the start. This is usually possible for the domain I work in (libraries) but could be a major blocker for other people. This workflow might also break if you have lots of people annotating. There are probably ways around this but things could start becoming a bit hacky...</p>
+
+</div>
+</div>
+</div>
+</div>
+
+
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="davanstrien/blog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/huggingface/huggingface-datasets/annotation/full%20stack%20deep%20learning%20notes/2022/09/07/label-studio-annotations-hub.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>digital collections + computational methods</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/davanstrien" target="_blank" title="davanstrien"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/vanstriendaniel" target="_blank" title="vanstriendaniel"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
