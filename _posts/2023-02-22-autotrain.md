@@ -16,7 +16,7 @@ There are many potential uses of computer vision in GLAM (Galleries, Libraries, 
 
 All of these use cases require some technical work to implement or use. Usually, they need some programming knowledge too. However, there are many tasks in GLAM where computer vision could be helpful to, requiring less technical work to implement. In particular, many uses of computer vision can be framed as an image classification task (putting images into categories). 
 
-Last year, Kaspar Beelen, Melvin Wevers, Thomas Smits, Katherine McDonough, and I shared a two-part Programming Historian lesson, [*Computer Vision for the Humanities: An Introduction to Deep Learning for Image Classification.*](https://programminghistorian.org/en/lessons/computer-vision-deep-learning-pt1). 
+Last year, Kaspar Beelen, Melvin Wevers, Thomas Smits, Katherine McDonough, and I shared a two-part Programming Historian lesson, [*Computer Vision for the Humanities: An Introduction to Deep Learning for Image Classification*](https://programminghistorian.org/en/lessons/computer-vision-deep-learning-pt1). 
 
 This lesson aimed to provide an introduction to how computer vision can be leveraged to work with images 'at scale' -- in particular for research applications. While we tried hard to make the lesson (particularly part one) accessible, there are still barriers to getting started:
 
