@@ -164,6 +164,12 @@ There are better ways, but spending 30 mins removing examples you don't think th
 Below is an example from another similar dataset where we get models with 99% accuracy. All of this without writing a line of code! 
 ![](https://github.com/davanstrien/blog/blob/master/images/_autotrain/illustrations-model-overview.webp?raw=true)
 
+### Show me the models! 
+
+You can find the best models shown above here:
+
+- https://huggingface.co/davanstrien/autotrain-ia-useful-covers-3665397856
+- https://huggingface.co/davanstrien/autotrain-encyclopaedia-illustrations-blog-post-3327992158
 
 
 
