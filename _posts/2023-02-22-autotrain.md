@@ -1,10 +1,9 @@
 ---
 layout: post
-description: Using Hugging Face AutoTrain to train an image classifer without writing any code. 
+description: "How can we train useful machine learning models without writing code?"
 categories: [huggingface, autotrain] 
-title: "Using AutoTrain to detect illustrated ads"
+title: "Using Hugging Face AutoTrain to train an image classifer without writing any code."
 ---
-
 
 ## Introduction 
 
