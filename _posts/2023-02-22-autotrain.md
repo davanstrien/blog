@@ -44,11 +44,12 @@ For this project we'll use a dataset created by the [Internet Archive](https://a
 
 Useful image example: 
 
-![Useful image](http://blog.archive.org/wp-content/uploads/2019/01/bigbookofknowled0000farn-802x1024.jpg)
+<img src="https://blog.archive.org/wp-content/uploads/2019/01/bigbookofknowled0000farn-802x1024.jpg" alt= “A picture of a the front cover of a book with rocks, and dinosaurs” width="250"> 
 
 Not useful image example: 
 
-![Not useful](http://blog.archive.org/wp-content/uploads/2019/01/10sermonspreache00donnuoft-626x1024.jpg)
+
+<img src="http://blog.archive.org/wp-content/uploads/2019/01/10sermonspreache00donnuoft-626x1024.jpg" alt= “A picture of a the front cover of a book which is blank” width="250"> 
 
 Essentially the task is to decide whether an image of a digitized book cover is 'useful' or 'not useful,' i.e. whether showing this cover to Internet Archive users would give them useful information or not. The Internet Archive shared a [dataset](https://archive.org/details/year-1923-not-very-useful-covers
 ) along with this blog post which contains examples for each category. 
