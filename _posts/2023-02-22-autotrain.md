@@ -163,6 +163,10 @@ There are better ways, but spending 30 mins removing examples you don't think th
 
 Below is an example from another similar dataset where we get models with 99% accuracy. All of this without writing a line of code! 
 ![](https://github.com/davanstrien/blog/blob/master/images/_autotrain/illustrations-model-overview.webp?raw=true)
+ 
+## What can I do with this model?
+
+There are various ways in which you can use the model you've created. How you want to use it depends largely on your use case. In a follow-up blog post I'll suggest a few options for how you can continue on the no/low-code journey to creating and using ML tools customised to your needs and data 🤗.
 
 ### Show me the models! 
 
