@@ -168,8 +168,8 @@ Below is an example from another similar dataset where we get models with 99% ac
 
 You can find the best models shown above here:
 
-- https://huggingface.co/davanstrien/autotrain-ia-useful-covers-3665397856
-- https://huggingface.co/davanstrien/autotrain-encyclopaedia-illustrations-blog-post-3327992158
+- [https://huggingface.co/davanstrien/autotrain-ia-useful-covers-3665397856]()
+- [https://huggingface.co/davanstrien/autotrain-encyclopaedia-illustrations-blog-post-3327992158]()
 
 
 
