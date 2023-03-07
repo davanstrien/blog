@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Dynamically updating a Hugging Face hub organization README | Daniel van Strien</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Dynamically updating a Hugging Face hub organization README" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Using the huggingface_hub library and Jinja to update a README dynamically" />
+<meta property="og:description" content="Using the huggingface_hub library and Jinja to update a README dynamically" />
+<link rel="canonical" href="https://danielvanstrien.xyz/metadata/huggingface/2023/03/07/readme-template.html" />
+<meta property="og:url" content="https://danielvanstrien.xyz/metadata/huggingface/2023/03/07/readme-template.html" />
+<meta property="og:site_name" content="Daniel van Strien" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2023-03-07T00:00:00-06:00" />
+<script type="application/ld+json">
+{"url":"https://danielvanstrien.xyz/metadata/huggingface/2023/03/07/readme-template.html","headline":"Dynamically updating a Hugging Face hub organization README","dateModified":"2023-03-07T00:00:00-06:00","datePublished":"2023-03-07T00:00:00-06:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://danielvanstrien.xyz/metadata/huggingface/2023/03/07/readme-template.html"},"description":"Using the huggingface_hub library and Jinja to update a README dynamically","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://danielvanstrien.xyz/feed.xml" title="Daniel van Strien" /><!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-59247814-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-59247814-2');
+</script>
+
+
+<link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" integrity="sha512-h7nl+xz8wgDlNM4NqKEM4F1NkIRS17M9+uJwIGwuo8vGqIl4BhuCKdxjWEINm+xyrUjNCnK5dCrhM0sj+wTIXw==" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js" integrity="sha512-/CMIhXiDA3m2c9kzRyd97MTb3MC6OVnx4TElQ7fkkoRghwDf6gi41gaT1PwF270W6+J60uTmwgeRpNpJdRV6sg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js" integrity="sha512-Do7uJAaHZm5OLrIv/yN4w0iG1dbu01kzdMNnFfu/mAqgUk6Nniv2JYHcwH+cNwjqgLcqcuBBk+JRvprLVI8azg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha512-0doc9hKxR3PYwso42RD1p5ySZpzzuDiOwMrdCEh2WdJZCjcmFKc/wEnL+z8fBQrnHoiNWbo+3fiGkOYXBdQp4A==" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Daniel van Strien</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About Me</a><a class="page-link" href="/projects/">Selected projects</a><a class="page-link" href="/search/">Search</a><a class="page-link" href="/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Dynamically updating a Hugging Face hub organization README</h1><p class="page-description">Using the huggingface_hub library and Jinja to update a README dynamically</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2023-03-07T00:00:00-06:00" itemprop="datePublished">
+        Mar 7, 2023
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      11 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/categories/#metadata">metadata</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/categories/#huggingface">huggingface</a>
+        
+      
+      </p>
+    
+
+    
+      </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h2"><a href="#What-are-we-aiming-to-do?">What are we aiming to do? </a></li>
+<li class="toc-entry toc-h2"><a href="#How-can-we-create-a-README-that-dynamically-updates">How can we create a README that dynamically updates </a></li>
+<li class="toc-entry toc-h2"><a href="#Updating-the-README-on-the-Hugging-Face-Hub">Updating the README on the Hugging Face Hub </a></li>
+</ul><!--
+#################################################
+### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
+#################################################
+# file to edit: _notebooks/2023-03-07-readme-template.ipynb
+-->
+
+<div class="container" id="notebook-container">
+        
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>tl;dr we can use the <code>huggingface_hub</code> library to auto generate a model card readme for the <a href="https://huggingface.co/biglam">BigLAM organization</a>.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="What-are-we-aiming-to-do?">
+<a class="anchor" href="#What-are-we-aiming-to-do?" aria-hidden="true"><span class="octicon octicon-link"></span></a>What are we aiming to do?<a class="anchor-link" href="#What-are-we-aiming-to-do?"> </a>
+</h2>
+<p>The Hugging Face hub allows organizations to create a README card to describe their organization.</p>
+<p><img src="/images/copied_from_nb/../images/_readme_auto_generate/before_readme.png" alt=""></p>
+<p>Whilst you can manually create this there might be some content that would be nice to auto populate. For example, for the BigLAM organization, we're mainly focused on collecting datasets. Since we have many tasks supported by these datasets we might want to create a list of datasets organized by task. Ideally we don't want to have to manually update this. Let's see how we can do this!</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>First we'll install the <code>huggingface_hub</code> library which allows us to interact with the hub. We'll install <code>Jinja2</code> for templating and <code>toolz</code> because <code>toolz</code> makes Python infinitely more delightful!</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">pip</span> install huggingface_hub toolz Jinja2
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Requirement already satisfied: huggingface_hub in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (0.11.1)
+Requirement already satisfied: toolz in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (0.12.0)
+Requirement already satisfied: Jinja2 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (3.1.2)
+Requirement already satisfied: pyyaml&gt;=5.1 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from huggingface_hub) (6.0)
+Requirement already satisfied: packaging&gt;=20.9 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from huggingface_hub) (23.0)
+Requirement already satisfied: requests in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from huggingface_hub) (2.28.2)
+Requirement already satisfied: filelock in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from huggingface_hub) (3.9.0)
+Requirement already satisfied: typing-extensions&gt;=3.7.4.3 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from huggingface_hub) (4.4.0)
+Requirement already satisfied: tqdm in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from huggingface_hub) (4.64.1)
+Requirement already satisfied: MarkupSafe&gt;=2.0 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from Jinja2) (2.1.1)
+Requirement already satisfied: urllib3&lt;1.27,&gt;=1.21.1 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from requests-&gt;huggingface_hub) (1.26.14)
+Requirement already satisfied: idna&lt;4,&gt;=2.5 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from requests-&gt;huggingface_hub) (3.4)
+Requirement already satisfied: certifi&gt;=2017.4.17 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from requests-&gt;huggingface_hub) (2022.12.7)
+Requirement already satisfied: charset-normalizer&lt;4,&gt;=2 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from requests-&gt;huggingface_hub) (3.0.1)
+
+<span class="ansi-bold">[</span><span class="ansi-blue-fg">notice</span><span class="ansi-bold">]</span> A new release of pip available: <span class="ansi-red-fg">22.3.1</span> -&gt; <span class="ansi-green-fg">23.0.1</span>
+<span class="ansi-bold">[</span><span class="ansi-blue-fg">notice</span><span class="ansi-bold">]</span> To update, run: <span class="ansi-green-fg">pip install --upgrade pip</span>
+Note: you may need to restart the kernel to use updated packages.
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">toolz</span>
+<span class="kn">from</span> <span class="nn">huggingface_hub</span> <span class="kn">import</span> <span class="n">list_datasets</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We list all the datasets under this organization</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">big_lam_datasets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">list_datasets</span><span class="p">(</span><span class="n">author</span><span class="o">=</span><span class="s2">"biglam"</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">)))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We want to check which tasks our organization currently has. If we look at an example of one dataset:</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">big_lam_datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>DatasetInfo: {
+	id: biglam/illustrated_ads
+	sha: 688e7d96e99cd5730a17a5c55b0964d27a486904
+	lastModified: 2023-01-18T20:38:15.000Z
+	tags: ['task_categories:image-classification', 'task_ids:multi-class-image-classification', 'annotations_creators:expert-generated', 'size_categories:n&lt;1K', 'license:cc0-1.0', 'lam', 'historic newspapers']
+	private: False
+	author: biglam
+	description: The Dataset contains images derived from the Newspaper Navigator (news-navigator.labs.loc.gov/), a dataset of images drawn from the Library of Congress Chronicling America collection.
+	citation: @dataset{van_strien_daniel_2021_5838410,
+  author       = {van Strien, Daniel},
+  title        = {{19th Century United States Newspaper Advert images 
+                   with 'illustrated' or 'non illustrated' labels}},
+  month        = oct,
+  year         = 2021,
+  publisher    = {Zenodo},
+  version      = {0.0.1},
+  doi          = {10.5281/zenodo.5838410},
+  url          = {https://doi.org/10.5281/zenodo.5838410}}
+	cardData: {'annotations_creators': ['expert-generated'], 'language': [], 'language_creators': [], 'license': ['cc0-1.0'], 'multilinguality': [], 'pretty_name': "19th Century United States Newspaper Advert images with 'illustrated' or 'non illustrated' labels", 'size_categories': ['n&lt;1K'], 'source_datasets': [], 'tags': ['lam', 'historic newspapers'], 'task_categories': ['image-classification'], 'task_ids': ['multi-class-image-classification']}
+	siblings: []
+	_id: 62b9bb453b3301c319d5b53e
+	disabled: False
+	gated: False
+	gitalyUid: 4a051da032bb27da0bc286b288384bb3362f56546a387b130121cd279db336e1
+	likes: 3
+	downloads: 11
+}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can see the <code>cardData</code> attribute contains an item containing the tasks supported by a dataset</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">big_lam_datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cardData</span><span class="p">[</span><span class="s1">'task_categories'</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>['image-classification']</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">get_task_categories</span><span class="p">(</span><span class="n">dataset</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield from</span> <span class="n">dataset</span><span class="o">.</span><span class="n">cardData</span><span class="p">[</span><span class="s1">'task_categories'</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can use the <code>toolz.frequencies</code> function to get counts of these tasks in our org.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">task_frequencies</span> <span class="o">=</span> <span class="n">toolz</span><span class="o">.</span><span class="n">frequencies</span><span class="p">(</span>
+    <span class="n">toolz</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">get_task_categories</span><span class="p">,</span> <span class="n">big_lam_datasets</span><span class="p">))</span>
+<span class="p">)</span>
+<span class="n">task_frequencies</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{'image-classification': 8,
+ 'text-classification': 6,
+ 'image-to-text': 2,
+ 'text-generation': 7,
+ 'object-detection': 5,
+ 'fill-mask': 2,
+ 'text-to-image': 1,
+ 'image-to-image': 1,
+ 'token-classification': 1}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Since we want to organize by task type, let's grab the names of all the tasks in the BigLAM organization.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">tasks</span> <span class="o">=</span> <span class="n">task_frequencies</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+<span class="n">tasks</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>dict_keys(['image-classification', 'text-classification', 'image-to-text', 'text-generation', 'object-detection', 'fill-mask', 'text-to-image', 'image-to-image', 'token-classification'])</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We now want to group together datasets by the task(s) they support. We can use a default dict to create a dictionary where the keys are the task and the values are a list of datasets supporting that task. <strong>Note</strong> some datasets support multiple tasks so may appear under more than one task key.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">datasets_by_task</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">big_lam_datasets</span><span class="p">:</span>
+    <span class="n">tasks</span> <span class="o">=</span> <span class="n">get_task_categories</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
+        <span class="n">datasets_by_task</span><span class="p">[</span><span class="n">task</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We now have a dictionary which allows us to get all datasets supporting a task, for example <code>fill-mask</code></p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">datasets_by_task</span><span class="p">[</span><span class="s2">"fill-mask"</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[DatasetInfo: {
+ 	id: biglam/berlin_state_library_ocr
+ 	sha: a890935d5bd754ddc5b85f56b6f34f6d2bb4abba
+ 	lastModified: 2022-08-05T09:36:24.000Z
+ 	tags: ['task_categories:fill-mask', 'task_categories:text-generation', 'task_ids:masked-language-modeling', 'task_ids:language-modeling', 'annotations_creators:machine-generated', 'language_creators:expert-generated', 'multilinguality:multilingual', 'size_categories:1M&lt;n&lt;10M', 'language:de', 'language:nl', 'language:en', 'language:fr', 'language:es', 'license:cc-by-4.0', 'ocr', 'library']
+ 	private: False
+ 	author: biglam
+ 	description: None
+ 	citation: None
+ 	cardData: {'annotations_creators': ['machine-generated'], 'language': ['de', 'nl', 'en', 'fr', 'es'], 'language_creators': ['expert-generated'], 'license': ['cc-by-4.0'], 'multilinguality': ['multilingual'], 'pretty_name': 'Berlin State Library OCR', 'size_categories': ['1M&lt;n&lt;10M'], 'source_datasets': [], 'tags': ['ocr', 'library'], 'task_categories': ['fill-mask', 'text-generation'], 'task_ids': ['masked-language-modeling', 'language-modeling']}
+ 	siblings: []
+ 	_id: 62e0431281d9ca6484efac31
+ 	disabled: False
+ 	gated: False
+ 	gitalyUid: 3818ba9c8b624d79f1fcfb0c79bd197fb5b3a3f9de2452aed5028e8b6435f56a
+ 	likes: 3
+ 	downloads: 5
+ },
+ DatasetInfo: {
+ 	id: biglam/bnl_newspapers1841-1879
+ 	sha: 588db6c242ecae417b92830d5646121c15726fea
+ 	lastModified: 2022-11-15T09:25:43.000Z
+ 	tags: ['task_categories:text-generation', 'task_categories:fill-mask', 'task_ids:language-modeling', 'task_ids:masked-language-modeling', 'annotations_creators:no-annotation', 'language_creators:expert-generated', 'multilinguality:multilingual', 'size_categories:100K&lt;n&lt;1M', 'source_datasets:original', 'language:de', 'language:fr', 'language:lb', 'language:nl', 'language:la', 'language:en', 'license:cc0-1.0', 'newspapers', '1800-1900']
+ 	private: False
+ 	author: biglam
+ 	description: None
+ 	citation: None
+ 	cardData: {'annotations_creators': ['no-annotation'], 'language': ['de', 'fr', 'lb', 'nl', 'la', 'en'], 'language_creators': ['expert-generated'], 'license': ['cc0-1.0'], 'multilinguality': ['multilingual'], 'pretty_name': 'BnL Newspapers 1841-1879', 'size_categories': ['100K&lt;n&lt;1M'], 'source_datasets': ['original'], 'tags': ['newspapers', '1800-1900'], 'task_categories': ['text-generation', 'fill-mask'], 'task_ids': ['language-modeling', 'masked-language-modeling']}
+ 	siblings: []
+ 	_id: 6372286ce8891da06b2a5d2f
+ 	disabled: False
+ 	gated: False
+ 	gitalyUid: 039f217af964cfa1317f03d58c367ba6f0e415721b107a298cd4e75cbad50e8b
+ 	likes: 2
+ 	downloads: 3
+ }]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="How-can-we-create-a-README-that-dynamically-updates">
+<a class="anchor" href="#How-can-we-create-a-README-that-dynamically-updates" aria-hidden="true"><span class="octicon octicon-link"></span></a>How can we create a README that dynamically updates<a class="anchor-link" href="#How-can-we-create-a-README-that-dynamically-updates"> </a>
+</h2>
+<p>We now have our datasets organized by task. However, at the moment, this is in the form of a Python dictionary. It would be much nicer to render it a more pleasing format. This is where a <a href="https://www.fullstackpython.com/template-engines.html">templating engine</a> can help. In this case we'll use <a href="https://jinja.palletsprojects.com/en/3.0.x/templates/">Jinja</a>.</p>
+<p>A templating engine allows us to create a template which can dynamically be updated based on values we pass in. We won't go in depth to templating engines/Jinja in this blog post because I'm not an expert in templating engines. This <a href="https://realpython.com/primer-on-jinja-templating/">Real Python article</a> is a nice introduction to Jinja.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">jinja2</span> <span class="kn">import</span> <span class="n">Environment</span><span class="p">,</span> <span class="n">FileSystemLoader</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can start by taking a look at our template. Since a lot of the template I created doesn't update, we'll use <code>tail</code> to look at the bottom of the template which is dynamically updating.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span>tail -n <span class="m">12</span> templates/readme.jinja
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>An overview of datasets currently made available via BigLam organised by task type.
+
+{% for task_type, datasets in task_dictionary.items() %}
+
+&lt;details&gt;
+  &lt;summary&gt;{{ task_type }}&lt;/summary&gt;
+    {% for dataset in datasets %}
+  - [{{dataset.cardData['pretty_name']}}](https://huggingface.co/datasets/biglam/{{ dataset.id }})
+  {%- endfor %}
+
+&lt;/details&gt;
+{% endfor %}</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Even if you aren't familiar with templating engines, you can probably see roughly what this does. We look through all the keys and values in our dictionary, create a section for that task based on the dictionary key. We next loop through the dictionary values (which in this case is a list) and create a link for that dataset. Since we're looping through <code>DatasetInfo</code> objects in the list we can grab things like the <code>pretty_name</code> for the dataset and dynamically create a URL link.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can load this template as follows</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">environment</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">(</span><span class="n">loader</span><span class="o">=</span><span class="n">FileSystemLoader</span><span class="p">(</span><span class="s2">"templates/"</span><span class="p">))</span>
+<span class="n">template</span> <span class="o">=</span> <span class="n">environment</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="s2">"readme.jinja"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Create a context dictionary which we use to pass through our dictionary</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"task_dictionary"</span><span class="p">:</span> <span class="n">datasets_by_task</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can now render this and see how it looks</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">context</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>---
+title: README
+emoji: 📚
+colorFrom: pink
+colorTo: gray
+sdk: static
+pinned: false
+---
+
+BigScience 🌸 is an open scientific collaboration of nearly 600 researchers from 50 countries and 250 institutions who collaborate on various projects within the natural language processing (NLP) space to broaden the accessibility of language datasets while working on challenging scientific questions around training language models.
+
+
+BigLAM started as a [datasets hackathon](https://github.com/bigscience-workshop/lam) focused on making data from Libraries, Archives, and Museums (LAMS) with potential machine-learning applications accessible via the Hugging Face Hub.
+We are continuing to work on making more datasets available via the Hugging Face hub to help make these datasets more discoverable, open them up to new audiences, and help ensure that machine-learning datasets more closely reflect the richness of human culture.
+
+
+## Dataset Overview
+
+An overview of datasets currently made available via BigLam organised by task type.
+
+
+
+&lt;details&gt;
+  &lt;summary&gt;image-classification&lt;/summary&gt;
+    
+  - [19th Century United States Newspaper Advert images with 'illustrated' or 'non illustrated' labels](https://huggingface.co/datasets/biglam/biglam/illustrated_ads)
+  - [Brill Iconclass AI Test Set ](https://huggingface.co/datasets/biglam/biglam/brill_iconclass)
+  - [National Library of Scotland Chapbook Illustrations](https://huggingface.co/datasets/biglam/biglam/nls_chapbook_illustrations)
+  - [Encyclopaedia Britannica Illustrated](https://huggingface.co/datasets/biglam/biglam/encyclopaedia_britannica_illustrated)
+  - [V4Design Europeana style dataset](https://huggingface.co/datasets/biglam/biglam/v4design_europeana_style_dataset)
+  - [Early Printed Books Font Detection Dataset](https://huggingface.co/datasets/biglam/biglam/early_printed_books_font_detection)
+  - [Dataset of Pages from Early Printed Books with Multiple Font Groups](https://huggingface.co/datasets/biglam/biglam/early_printed_books_with_multiple_font_groups)
+  - [DEArt: Dataset of European Art](https://huggingface.co/datasets/biglam/biglam/european_art)
+
+&lt;/details&gt;
+
+
+&lt;details&gt;
+  &lt;summary&gt;text-classification&lt;/summary&gt;
+    
+  - [Annotated dataset to assess the accuracy of the textual description of cultural heritage records](https://huggingface.co/datasets/biglam/biglam/cultural_heritage_metadata_accuracy)
+  - [Atypical Animacy](https://huggingface.co/datasets/biglam/biglam/atypical_animacy)
+  - [Old Bailey Proceedings](https://huggingface.co/datasets/biglam/biglam/old_bailey_proceedings)
+  - [Lampeter Corpus](https://huggingface.co/datasets/biglam/biglam/lampeter_corpus)
+  - [Hansard Speeches](https://huggingface.co/datasets/biglam/biglam/hansard_speech)
+  - [Contentious Contexts Corpus](https://huggingface.co/datasets/biglam/biglam/contentious_contexts)
+
+&lt;/details&gt;
+
+
+&lt;details&gt;
+  &lt;summary&gt;image-to-text&lt;/summary&gt;
+    
+  - [Brill Iconclass AI Test Set ](https://huggingface.co/datasets/biglam/biglam/brill_iconclass)
+  - [Old Book Illustrations](https://huggingface.co/datasets/biglam/biglam/oldbookillustrations)
+
+&lt;/details&gt;
+
+
+&lt;details&gt;
+  &lt;summary&gt;text-generation&lt;/summary&gt;
+    
+  - [Old Bailey Proceedings](https://huggingface.co/datasets/biglam/biglam/old_bailey_proceedings)
+  - [Hansard Speeches](https://huggingface.co/datasets/biglam/biglam/hansard_speech)
+  - [Berlin State Library OCR](https://huggingface.co/datasets/biglam/biglam/berlin_state_library_ocr)
+  - [Literary fictions of Gallica](https://huggingface.co/datasets/biglam/biglam/gallica_literary_fictions)
+  - [Europeana Newspapers ](https://huggingface.co/datasets/biglam/biglam/europeana_newspapers)
+  - [Gutenberg Poetry Corpus](https://huggingface.co/datasets/biglam/biglam/gutenberg-poetry-corpus)
+  - [BnL Newspapers 1841-1879](https://huggingface.co/datasets/biglam/biglam/bnl_newspapers1841-1879)
+
+&lt;/details&gt;
+
+
+&lt;details&gt;
+  &lt;summary&gt;object-detection&lt;/summary&gt;
+    
+  - [National Library of Scotland Chapbook Illustrations](https://huggingface.co/datasets/biglam/biglam/nls_chapbook_illustrations)
+  - [YALTAi Tabular Dataset](https://huggingface.co/datasets/biglam/biglam/yalta_ai_tabular_dataset)
+  - [YALTAi Tabular Dataset](https://huggingface.co/datasets/biglam/biglam/yalta_ai_segmonto_manuscript_dataset)
+  - [Beyond Words](https://huggingface.co/datasets/biglam/biglam/loc_beyond_words)
+  - [DEArt: Dataset of European Art](https://huggingface.co/datasets/biglam/biglam/european_art)
+
+&lt;/details&gt;
+
+
+&lt;details&gt;
+  &lt;summary&gt;fill-mask&lt;/summary&gt;
+    
+  - [Berlin State Library OCR](https://huggingface.co/datasets/biglam/biglam/berlin_state_library_ocr)
+  - [BnL Newspapers 1841-1879](https://huggingface.co/datasets/biglam/biglam/bnl_newspapers1841-1879)
+
+&lt;/details&gt;
+
+
+&lt;details&gt;
+  &lt;summary&gt;text-to-image&lt;/summary&gt;
+    
+  - [Old Book Illustrations](https://huggingface.co/datasets/biglam/biglam/oldbookillustrations)
+
+&lt;/details&gt;
+
+
+&lt;details&gt;
+  &lt;summary&gt;image-to-image&lt;/summary&gt;
+    
+  - [Old Book Illustrations](https://huggingface.co/datasets/biglam/biglam/oldbookillustrations)
+
+&lt;/details&gt;
+
+
+&lt;details&gt;
+  &lt;summary&gt;token-classification&lt;/summary&gt;
+    
+  - [Unsilencing Colonial Archives via Automated Entity Recognition](https://huggingface.co/datasets/biglam/biglam/unsilence_voc)
+
+&lt;/details&gt;
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">'/tmp/README.md'</span><span class="p">,</span><span class="s1">'w'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">context</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span>cat /tmp/README.md
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>---
+title: README
+emoji: 📚
+colorFrom: pink
+colorTo: gray
+sdk: static
+pinned: false
+---
+
+BigScience 🌸 is an open scientific collaboration of nearly 600 researchers from 50 countries and 250 institutions who collaborate on various projects within the natural language processing (NLP) space to broaden the accessibility of language datasets while working on challenging scientific questions around training language models.
+
+
+BigLAM started as a [datasets hackathon](https://github.com/bigscience-workshop/lam) focused on making data from Libraries, Archives, and Museums (LAMS) with potential machine-learning applications accessible via the Hugging Face Hub.
+We are continuing to work on making more datasets available via the Hugging Face hub to help make these datasets more discoverable, open them up to new audiences, and help ensure that machine-learning datasets more closely reflect the richness of human culture.
+
+
+## Dataset Overview
+
+An overview of datasets currently made available via BigLam organised by task type.
+
+
+
+&lt;details&gt;
+  &lt;summary&gt;image-classification&lt;/summary&gt;
+    
+  - [19th Century United States Newspaper Advert images with 'illustrated' or 'non illustrated' labels](https://huggingface.co/datasets/biglam/biglam/illustrated_ads)
+  - [Brill Iconclass AI Test Set ](https://huggingface.co/datasets/biglam/biglam/brill_iconclass)
+  - [National Library of Scotland Chapbook Illustrations](https://huggingface.co/datasets/biglam/biglam/nls_chapbook_illustrations)
+  - [Encyclopaedia Britannica Illustrated](https://huggingface.co/datasets/biglam/biglam/encyclopaedia_britannica_illustrated)
+  - [V4Design Europeana style dataset](https://huggingface.co/datasets/biglam/biglam/v4design_europeana_style_dataset)
+  - [Early Printed Books Font Detection Dataset](https://huggingface.co/datasets/biglam/biglam/early_printed_books_font_detection)
+  - [DEArt: Dataset of European Art](https://huggingface.co/datasets/biglam/biglam/european_art)
+
+&lt;/details&gt;
+
+
+&lt;details&gt;
+  &lt;summary&gt;text-classification&lt;/summary&gt;
+    
+  - [Annotated dataset to assess the accuracy of the textual description of cultural heritage records](https://huggingface.co/datasets/biglam/biglam/cultural_heritage_metadata_accuracy)
+  - [Atypical Animacy](https://huggingface.co/datasets/biglam/biglam/atypical_animacy)
+  - [Old Bailey Proceedings](https://huggingface.co/datasets/biglam/biglam/old_bailey_proceedings)
+  - [Lampeter Corpus](https://huggingface.co/datasets/biglam/biglam/lampeter_corpus)
+  - [Hansard Speeches](https://huggingface.co/datasets/biglam/biglam/hansard_speech)
+  - [Contentious Contexts Corpus](https://huggingface.co/datasets/biglam/biglam/contentious_contexts)
+
+&lt;/details&gt;
+
+
+&lt;details&gt;
+  &lt;summary&gt;image-to-text&lt;/summary&gt;
+    
+  - [Brill Iconclass AI Test Set ](https://huggingface.co/datasets/biglam/biglam/brill_iconclass)
+
+&lt;/details&gt;
+
+
+&lt;details&gt;
+  &lt;summary&gt;text-generation&lt;/summary&gt;
+    
+  - [Old Bailey Proceedings](https://huggingface.co/datasets/biglam/biglam/old_bailey_proceedings)
+  - [Hansard Speeches](https://huggingface.co/datasets/biglam/biglam/hansard_speech)
+  - [Berlin State Library OCR](https://huggingface.co/datasets/biglam/biglam/berlin_state_library_ocr)
+  - [Literary fictions of Gallica](https://huggingface.co/datasets/biglam/biglam/gallica_literary_fictions)
+  - [Europeana Newspapers ](https://huggingface.co/datasets/biglam/biglam/europeana_newspapers)
+  - [Gutenberg Poetry Corpus](https://huggingface.co/datasets/biglam/biglam/gutenberg-poetry-corpus)
+  - [BnL Newspapers 1841-1879](https://huggingface.co/datasets/biglam/biglam/bnl_newspapers1841-1879)
+
+&lt;/details&gt;
+
+
+&lt;details&gt;
+  &lt;summary&gt;object-detection&lt;/summary&gt;
+    
+  - [National Library of Scotland Chapbook Illustrations](https://huggingface.co/datasets/biglam/biglam/nls_chapbook_illustrations)
+  - [YALTAi Tabular Dataset](https://huggingface.co/datasets/biglam/biglam/yalta_ai_tabular_dataset)
+  - [YALTAi Tabular Dataset](https://huggingface.co/datasets/biglam/biglam/yalta_ai_segmonto_manuscript_dataset)
+  - [Beyond Words](https://huggingface.co/datasets/biglam/biglam/loc_beyond_words)
+  - [DEArt: Dataset of European Art](https://huggingface.co/datasets/biglam/biglam/european_art)
+
+&lt;/details&gt;
+
+
+&lt;details&gt;
+  &lt;summary&gt;fill-mask&lt;/summary&gt;
+    
+  - [Berlin State Library OCR](https://huggingface.co/datasets/biglam/biglam/berlin_state_library_ocr)
+  - [BnL Newspapers 1841-1879](https://huggingface.co/datasets/biglam/biglam/bnl_newspapers1841-1879)
+
+&lt;/details&gt;
+
+
+&lt;details&gt;
+  &lt;summary&gt;token-classification&lt;/summary&gt;
+    
+  - [Unsilencing Colonial Archives via Automated Entity Recognition](https://huggingface.co/datasets/biglam/biglam/unsilence_voc)
+
+&lt;/details&gt;
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Updating-the-README-on-the-Hugging-Face-Hub">
+<a class="anchor" href="#Updating-the-README-on-the-Hugging-Face-Hub" aria-hidden="true"><span class="octicon octicon-link"></span></a>Updating the README on the Hugging Face Hub<a class="anchor-link" href="#Updating-the-README-on-the-Hugging-Face-Hub"> </a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This looks pretty good! It would be nice to also update the org README without having to manually edit the file. The <code>huggingface_hub</code> library helps us out here once again. Since the organization README is actually a special type of Hugging Face Space, we can interact with it in the same way we could for models or datasets.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">huggingface_hub</span> <span class="kn">import</span> <span class="n">HfApi</span>
+<span class="kn">from</span> <span class="nn">huggingface_hub</span> <span class="kn">import</span> <span class="n">notebook_login</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We'll create a <code>HFApi</code> instance.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">api</span> <span class="o">=</span> <span class="n">HfApi</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Since we're planning to write to a repo we'll need to login to the hub.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">notebook_login</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can now upload the rendered README file we created above to our <code>biglam/README</code> space.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">api</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span>
+    <span class="n">path_or_fileobj</span><span class="o">=</span><span class="s2">"/tmp/readme.md"</span><span class="p">,</span>
+    <span class="n">path_in_repo</span><span class="o">=</span><span class="s2">"README.md"</span><span class="p">,</span>
+    <span class="n">repo_id</span><span class="o">=</span><span class="s2">"biglam/README"</span><span class="p">,</span>
+    <span class="n">repo_type</span><span class="o">=</span><span class="s2">"space"</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>'https://huggingface.co/spaces/biglam/README/blob/main/README.md'</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>If we look at our updated README, we'll see we now have some nice collapsible sections for each task type containing the datasets for that task</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="/images/copied_from_nb/../images/_readme_auto_generate/after_readme.png" alt=""></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Next steps, whilst this was already quite useful, at the moment we still have to run this code when we want to regenerate our README. <a href="https://huggingface.co/docs/hub/webhooks">Webhooks</a> make it possible to make this fully automated by creating a webhook that monitors any changes to repos under the BigLAM org. Would love to hear from anyone who tries this out!</p>
+
+</div>
+</div>
+</div>
+</div>
+
+
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="davanstrien/blog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/metadata/huggingface/2023/03/07/readme-template.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>digital collections + computational methods</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/davanstrien" target="_blank" title="davanstrien"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/vanstriendaniel" target="_blank" title="vanstriendaniel"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
