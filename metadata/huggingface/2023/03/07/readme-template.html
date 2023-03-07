@@ -108,7 +108,7 @@ window.onload = wrap_img;
        • <span class="read-time" title="Estimated read time">
     
     
-      11 min read
+      9 min read
     
 </span></p>
 
@@ -928,134 +928,6 @@ An overview of datasets currently made available via BigLam organised by task ty
 </pre></div>
 
     </div>
-</div>
-</div>
-
-</div>
-    
-
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span>cat /tmp/README.md
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>---
-title: README
-emoji: 📚
-colorFrom: pink
-colorTo: gray
-sdk: static
-pinned: false
----
-
-BigScience 🌸 is an open scientific collaboration of nearly 600 researchers from 50 countries and 250 institutions who collaborate on various projects within the natural language processing (NLP) space to broaden the accessibility of language datasets while working on challenging scientific questions around training language models.
-
-
-BigLAM started as a [datasets hackathon](https://github.com/bigscience-workshop/lam) focused on making data from Libraries, Archives, and Museums (LAMS) with potential machine-learning applications accessible via the Hugging Face Hub.
-We are continuing to work on making more datasets available via the Hugging Face hub to help make these datasets more discoverable, open them up to new audiences, and help ensure that machine-learning datasets more closely reflect the richness of human culture.
-
-
-## Dataset Overview
-
-An overview of datasets currently made available via BigLam organised by task type.
-
-
-
-&lt;details&gt;
-  &lt;summary&gt;image-classification&lt;/summary&gt;
-    
-  - [19th Century United States Newspaper Advert images with 'illustrated' or 'non illustrated' labels](https://huggingface.co/datasets/biglam/biglam/illustrated_ads)
-  - [Brill Iconclass AI Test Set ](https://huggingface.co/datasets/biglam/biglam/brill_iconclass)
-  - [National Library of Scotland Chapbook Illustrations](https://huggingface.co/datasets/biglam/biglam/nls_chapbook_illustrations)
-  - [Encyclopaedia Britannica Illustrated](https://huggingface.co/datasets/biglam/biglam/encyclopaedia_britannica_illustrated)
-  - [V4Design Europeana style dataset](https://huggingface.co/datasets/biglam/biglam/v4design_europeana_style_dataset)
-  - [Early Printed Books Font Detection Dataset](https://huggingface.co/datasets/biglam/biglam/early_printed_books_font_detection)
-  - [DEArt: Dataset of European Art](https://huggingface.co/datasets/biglam/biglam/european_art)
-
-&lt;/details&gt;
-
-
-&lt;details&gt;
-  &lt;summary&gt;text-classification&lt;/summary&gt;
-    
-  - [Annotated dataset to assess the accuracy of the textual description of cultural heritage records](https://huggingface.co/datasets/biglam/biglam/cultural_heritage_metadata_accuracy)
-  - [Atypical Animacy](https://huggingface.co/datasets/biglam/biglam/atypical_animacy)
-  - [Old Bailey Proceedings](https://huggingface.co/datasets/biglam/biglam/old_bailey_proceedings)
-  - [Lampeter Corpus](https://huggingface.co/datasets/biglam/biglam/lampeter_corpus)
-  - [Hansard Speeches](https://huggingface.co/datasets/biglam/biglam/hansard_speech)
-  - [Contentious Contexts Corpus](https://huggingface.co/datasets/biglam/biglam/contentious_contexts)
-
-&lt;/details&gt;
-
-
-&lt;details&gt;
-  &lt;summary&gt;image-to-text&lt;/summary&gt;
-    
-  - [Brill Iconclass AI Test Set ](https://huggingface.co/datasets/biglam/biglam/brill_iconclass)
-
-&lt;/details&gt;
-
-
-&lt;details&gt;
-  &lt;summary&gt;text-generation&lt;/summary&gt;
-    
-  - [Old Bailey Proceedings](https://huggingface.co/datasets/biglam/biglam/old_bailey_proceedings)
-  - [Hansard Speeches](https://huggingface.co/datasets/biglam/biglam/hansard_speech)
-  - [Berlin State Library OCR](https://huggingface.co/datasets/biglam/biglam/berlin_state_library_ocr)
-  - [Literary fictions of Gallica](https://huggingface.co/datasets/biglam/biglam/gallica_literary_fictions)
-  - [Europeana Newspapers ](https://huggingface.co/datasets/biglam/biglam/europeana_newspapers)
-  - [Gutenberg Poetry Corpus](https://huggingface.co/datasets/biglam/biglam/gutenberg-poetry-corpus)
-  - [BnL Newspapers 1841-1879](https://huggingface.co/datasets/biglam/biglam/bnl_newspapers1841-1879)
-
-&lt;/details&gt;
-
-
-&lt;details&gt;
-  &lt;summary&gt;object-detection&lt;/summary&gt;
-    
-  - [National Library of Scotland Chapbook Illustrations](https://huggingface.co/datasets/biglam/biglam/nls_chapbook_illustrations)
-  - [YALTAi Tabular Dataset](https://huggingface.co/datasets/biglam/biglam/yalta_ai_tabular_dataset)
-  - [YALTAi Tabular Dataset](https://huggingface.co/datasets/biglam/biglam/yalta_ai_segmonto_manuscript_dataset)
-  - [Beyond Words](https://huggingface.co/datasets/biglam/biglam/loc_beyond_words)
-  - [DEArt: Dataset of European Art](https://huggingface.co/datasets/biglam/biglam/european_art)
-
-&lt;/details&gt;
-
-
-&lt;details&gt;
-  &lt;summary&gt;fill-mask&lt;/summary&gt;
-    
-  - [Berlin State Library OCR](https://huggingface.co/datasets/biglam/biglam/berlin_state_library_ocr)
-  - [BnL Newspapers 1841-1879](https://huggingface.co/datasets/biglam/biglam/bnl_newspapers1841-1879)
-
-&lt;/details&gt;
-
-
-&lt;details&gt;
-  &lt;summary&gt;token-classification&lt;/summary&gt;
-    
-  - [Unsilencing Colonial Archives via Automated Entity Recognition](https://huggingface.co/datasets/biglam/biglam/unsilence_voc)
-
-&lt;/details&gt;
-</pre>
-</div>
-</div>
-
 </div>
 </div>
 
