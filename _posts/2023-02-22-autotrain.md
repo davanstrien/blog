@@ -2,7 +2,7 @@
 layout: post
 description: "How can we train useful machine learning models without writing code?"
 categories: [huggingface, autotrain] 
-title: "Using Hugging Face AutoTrain to train an image classifer without writing any code."
+title: "Using Hugging Face AutoTrain to train an image classifier without writing any code."
 image: https://raw.githubusercontent.com/davanstrien/blog/master/images/_autotrain/autotrain-image.webp
 ---
 
