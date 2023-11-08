@@ -108,7 +108,7 @@ window.onload = wrap_img;
        • <span class="read-time" title="Estimated read time">
     
     
-      14 min read
+      11 min read
     
 </span></p>
 
@@ -160,7 +160,7 @@ window.onload = wrap_img;
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">pip</span> install datasets qdrant-client
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">pip</span> install datasets qdrant-client --q
 </pre></div>
 
     </div>
@@ -173,103 +173,7 @@ window.onload = wrap_img;
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>Collecting datasets
-  Downloading datasets-2.14.6-py3-none-any.whl (493 kB)
-     <span style="color: rgb(114,156,31)">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">493.7/493.7 kB</span> <span class="ansi-red-fg">7.2 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>[31m8.1 MB/s eta <span class="ansi-cyan-fg">0:00:01</span>
-Collecting qdrant-client
-  Downloading qdrant_client-1.6.4-py3-none-any.whl (181 kB)
-     <span style="color: rgb(114,156,31)">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">181.3/181.3 kB</span> <span class="ansi-red-fg">14.9 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
-Requirement already satisfied: pyyaml&gt;=5.1 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from datasets) (6.0)
-Requirement already satisfied: tqdm&gt;=4.62.1 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from datasets) (4.64.1)
-Requirement already satisfied: pandas in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from datasets) (1.5.2)
-Requirement already satisfied: packaging in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from datasets) (23.0)
-Collecting xxhash
-  Downloading xxhash-3.4.1-cp310-cp310-macosx_11_0_arm64.whl (30 kB)
-Collecting aiohttp
-  Downloading aiohttp-3.8.6-cp310-cp310-macosx_11_0_arm64.whl (347 kB)
-     <span style="color: rgb(114,156,31)">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">347.7/347.7 kB</span> <span class="ansi-red-fg">12.6 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
-Collecting dill&lt;0.3.8,&gt;=0.3.0
-  Using cached dill-0.3.7-py3-none-any.whl (115 kB)
-Collecting pyarrow&gt;=8.0.0
-  Downloading pyarrow-14.0.0-cp310-cp310-macosx_11_0_arm64.whl (24.0 MB)
-     <span style="color: rgb(114,156,31)">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">24.0/24.0 MB</span> <span class="ansi-red-fg">13.6 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>m eta <span class="ansi-cyan-fg">0:00:01</span>[36m0:00:01
-Collecting fsspec[http]&lt;=2023.10.0,&gt;=2023.1.0
-  Downloading fsspec-2023.10.0-py3-none-any.whl (166 kB)
-     <span style="color: rgb(114,156,31)">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">166.4/166.4 kB</span> <span class="ansi-red-fg">8.4 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
-Collecting huggingface-hub&lt;1.0.0,&gt;=0.14.0
-  Using cached huggingface_hub-0.18.0-py3-none-any.whl (301 kB)
-Requirement already satisfied: requests&gt;=2.19.0 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from datasets) (2.28.2)
-Requirement already satisfied: numpy&gt;=1.17 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from datasets) (1.24.1)
-Collecting multiprocess
-  Using cached multiprocess-0.70.15-py310-none-any.whl (134 kB)
-Collecting grpcio&gt;=1.41.0
-  Downloading grpcio-1.59.2-cp310-cp310-macosx_12_0_universal2.whl (9.5 MB)
-     <span style="color: rgb(114,156,31)">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">9.5/9.5 MB</span> <span class="ansi-red-fg">14.5 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>m eta <span class="ansi-cyan-fg">0:00:01</span>0:01:01
-Collecting portalocker&lt;3.0.0,&gt;=2.7.0
-  Downloading portalocker-2.8.2-py3-none-any.whl (17 kB)
-Collecting pydantic&gt;=1.10.8
-  Using cached pydantic-2.4.2-py3-none-any.whl (395 kB)
-Collecting httpx[http2]&gt;=0.14.0
-  Downloading httpx-0.25.1-py3-none-any.whl (75 kB)
-     <span style="color: rgb(114,156,31)">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">75.0/75.0 kB</span> <span class="ansi-red-fg">9.8 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
-Collecting grpcio-tools&gt;=1.41.0
-  Downloading grpcio_tools-1.59.2-cp310-cp310-macosx_12_0_universal2.whl (4.9 MB)
-     <span style="color: rgb(114,156,31)">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">4.9/4.9 MB</span> <span class="ansi-red-fg">12.8 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>m eta <span class="ansi-cyan-fg">0:00:01</span>0:01:01
-Requirement already satisfied: urllib3&lt;2.0.0,&gt;=1.26.14 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from qdrant-client) (1.26.14)
-Requirement already satisfied: attrs&gt;=17.3.0 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from aiohttp-&gt;datasets) (22.2.0)
-Collecting multidict&lt;7.0,&gt;=4.5
-  Using cached multidict-6.0.4-cp310-cp310-macosx_11_0_arm64.whl (29 kB)
-Collecting async-timeout&lt;5.0,&gt;=4.0.0a3
-  Using cached async_timeout-4.0.3-py3-none-any.whl (5.7 kB)
-Collecting aiosignal&gt;=1.1.2
-  Using cached aiosignal-1.3.1-py3-none-any.whl (7.6 kB)
-Collecting frozenlist&gt;=1.1.1
-  Using cached frozenlist-1.4.0-cp310-cp310-macosx_11_0_arm64.whl (46 kB)
-Requirement already satisfied: charset-normalizer&lt;4.0,&gt;=2.0 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from aiohttp-&gt;datasets) (3.0.1)
-Collecting yarl&lt;2.0,&gt;=1.0
-  Using cached yarl-1.9.2-cp310-cp310-macosx_11_0_arm64.whl (62 kB)
-Collecting protobuf&lt;5.0dev,&gt;=4.21.6
-  Downloading protobuf-4.25.0-cp37-abi3-macosx_10_9_universal2.whl (393 kB)
-     <span style="color: rgb(114,156,31)">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">393.9/393.9 kB</span> <span class="ansi-red-fg">9.9 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>m eta <span class="ansi-cyan-fg">0:00:01</span>
-Requirement already satisfied: setuptools in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from grpcio-tools&gt;=1.41.0-&gt;qdrant-client) (65.5.1)
-Requirement already satisfied: anyio in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from httpx[http2]&gt;=0.14.0-&gt;qdrant-client) (3.6.2)
-Requirement already satisfied: sniffio in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from httpx[http2]&gt;=0.14.0-&gt;qdrant-client) (1.3.0)
-Requirement already satisfied: certifi in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from httpx[http2]&gt;=0.14.0-&gt;qdrant-client) (2022.12.7)
-Collecting httpcore
-  Downloading httpcore-1.0.1-py3-none-any.whl (76 kB)
-     <span style="color: rgb(114,156,31)">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">76.9/76.9 kB</span> <span class="ansi-red-fg">7.0 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
-Requirement already satisfied: idna in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from httpx[http2]&gt;=0.14.0-&gt;qdrant-client) (3.4)
-Collecting h2&lt;5,&gt;=3
-  Using cached h2-4.1.0-py3-none-any.whl (57 kB)
-Requirement already satisfied: filelock in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from huggingface-hub&lt;1.0.0,&gt;=0.14.0-&gt;datasets) (3.9.0)
-Requirement already satisfied: typing-extensions&gt;=3.7.4.3 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from huggingface-hub&lt;1.0.0,&gt;=0.14.0-&gt;datasets) (4.4.0)
-Collecting annotated-types&gt;=0.4.0
-  Using cached annotated_types-0.6.0-py3-none-any.whl (12 kB)
-Collecting typing-extensions&gt;=3.7.4.3
-  Using cached typing_extensions-4.8.0-py3-none-any.whl (31 kB)
-Collecting pydantic-core==2.10.1
-  Downloading pydantic_core-2.10.1-cp310-cp310-macosx_11_0_arm64.whl (1.7 MB)
-     <span style="color: rgb(114,156,31)">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">1.7/1.7 MB</span> <span class="ansi-red-fg">12.5 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span> MB/s eta <span class="ansi-cyan-fg">0:00:01</span>
-Requirement already satisfied: pytz&gt;=2020.1 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from pandas-&gt;datasets) (2022.7.1)
-Requirement already satisfied: python-dateutil&gt;=2.8.1 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from pandas-&gt;datasets) (2.8.2)
-Collecting hyperframe&lt;7,&gt;=6.0
-  Using cached hyperframe-6.0.1-py3-none-any.whl (12 kB)
-Collecting hpack&lt;5,&gt;=4.0
-  Using cached hpack-4.0.0-py3-none-any.whl (32 kB)
-Requirement already satisfied: six&gt;=1.5 in /Users/davanstrien/Documents/daniel/blog/venv/lib/python3.10/site-packages (from python-dateutil&gt;=2.8.1-&gt;pandas-&gt;datasets) (1.16.0)
-Collecting h11&lt;0.15,&gt;=0.13
-  Using cached h11-0.14.0-py3-none-any.whl (58 kB)
-Installing collected packages: xxhash, typing-extensions, pyarrow, protobuf, portalocker, multidict, hyperframe, hpack, h11, grpcio, fsspec, frozenlist, dill, async-timeout, annotated-types, yarl, pydantic-core, multiprocess, huggingface-hub, httpcore, h2, grpcio-tools, aiosignal, pydantic, httpx, aiohttp, qdrant-client, datasets
-  Attempting uninstall: typing-extensions
-    Found existing installation: typing_extensions 4.4.0
-    Uninstalling typing_extensions-4.4.0:
-      Successfully uninstalled typing_extensions-4.4.0
-  Attempting uninstall: huggingface-hub
-    Found existing installation: huggingface-hub 0.11.1
-    Uninstalling huggingface-hub-0.11.1:
-      Successfully uninstalled huggingface-hub-0.11.1
-Successfully installed aiohttp-3.8.6 aiosignal-1.3.1 annotated-types-0.6.0 async-timeout-4.0.3 datasets-2.14.6 dill-0.3.7 frozenlist-1.4.0 fsspec-2023.10.0 grpcio-1.59.2 grpcio-tools-1.59.2 h11-0.14.0 h2-4.1.0 hpack-4.0.0 httpcore-1.0.1 httpx-0.25.1 huggingface-hub-0.18.0 hyperframe-6.0.1 multidict-6.0.4 multiprocess-0.70.15 portalocker-2.8.2 protobuf-4.25.0 pyarrow-14.0.0 pydantic-2.4.2 pydantic-core-2.10.1 qdrant-client-1.6.4 typing-extensions-4.8.0 xxhash-3.4.1 yarl-1.9.2
-
+<pre>
 <span class="ansi-bold">[</span><span class="ansi-blue-fg">notice</span><span class="ansi-bold">]</span> A new release of pip available: <span class="ansi-red-fg">22.3.1</span> -&gt; <span class="ansi-green-fg">23.3.1</span>
 <span class="ansi-bold">[</span><span class="ansi-blue-fg">notice</span><span class="ansi-bold">]</span> To update, run: <span class="ansi-green-fg">pip install --upgrade pip</span>
 Note: you may need to restart the kernel to use updated packages.
