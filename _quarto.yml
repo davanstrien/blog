@@ -11,7 +11,6 @@ website:
     right:
       - text: "About"
         href: about.qmd
-
       - icon: github
         href: https://github.com/davanstrien
       - icon: twitter
@@ -19,6 +18,7 @@ website:
   google-analytics:
     tracking-id: "G-F61N6B5LBY"
     anonymize-ip: true
+    storage: none
 
 format:
   html:
