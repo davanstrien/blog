@@ -1,0 +1,24 @@
+project:
+  type: website
+
+# R, Python, and Julia code is only executed locally
+execute:
+  freeze: auto
+
+website:
+  title: "Daniel van Strien"
+  navbar:
+    right:
+      - text: "About"
+        href: about.qmd
+      # - href: pages/projects.qmd
+      - href: pages/cv.qmd
+      - icon: github
+        href: https://github.com/davanstrien
+      - icon: twitter
+        href: https://twitter.com/vanstriendaniel
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css

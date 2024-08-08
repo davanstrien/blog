@@ -1,0 +1,21 @@
+---
+title: "About Me"
+icon: icons/hf-logo.png
+about:
+  template: solana
+  links:
+    - icon: twitter
+      text: Twitter
+      href: https://twitter.com/vanstriendaniel
+    - icon: linkedin
+      text: LinkedIn
+      href: https://uk.linkedin.com/in/danielvanstrien
+    - icon: mastodon
+      text: Mastodon
+      href: https://elk.zone/sigmoid.social/@danielvanstrien
+    - icon: github
+      text: GitHub
+      href: https://github.com/yourusername
+---
+
+Hi, I'm Daniel a Machine Learning Librarian at [Hugging Face](https://huggingface.co/).
