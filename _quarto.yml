@@ -22,3 +22,8 @@ format:
   html:
     theme: cosmo
     css: styles.css
+
+website:
+  google-analytics: "G-F61N6B5LBY"
+  storage: none
+  anonymize-ip: true
