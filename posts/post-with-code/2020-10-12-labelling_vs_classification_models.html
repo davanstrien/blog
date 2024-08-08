@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.56">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Daniel van Strien">
+<meta name="dcterms.date" content="2020-10-12">
+<meta name="description" content="Comparing the loss functions of label and classification models">
+
+<title>Image labeling vs classification models – Daniel van Strien</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Daniel van Strien</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../pages/cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Image labeling vs classification models</h1>
+</div>
+
+<div>
+  <div class="description">
+    Comparing the loss functions of label and classification models
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Daniel van Strien </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 12, 2020</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>The ‘hello world’ example for introducing deep learning based computer vision often involves classifying images as 🐶 or 🐱. An alternative approach to classifying images is to instead apply labels. This is usually introduced in the context of multi-label classification i.e.&nbsp;where an image can have more than one label. In this blog post I discuss some of the differences between these two approaches, specifically the difference in loss functions, and how these two approaches might work better depending on the application. The post starts with a conceptual overview of the differences between these two approaches, before showing the different loss functions and then moving to a practical example of training these two different types of model.</p>
+<section id="image-classification-vs-image-labeling" class="level2">
+<h2 class="anchored" data-anchor-id="image-classification-vs-image-labeling">Image Classification vs Image Labeling</h2>
+<p>In a classification model, an input can have only one label. This could be one of a few or one of a hundred, regardless of the number of potential classes, it is assumed that the input only belongs to one of these. With a model that applies labels this is not true an input can have one, multiple or no labels.</p>
+<section id="sorting-through-family-photos" class="level3">
+<h3 class="anchored" data-anchor-id="sorting-through-family-photos">Sorting through family photos</h3>
+<p>We can use an analogy to illustrate the difference between these two approaches. Let’s say you were sorting through some old family photographs. You might “classify” the photos into one (and only one) of two photo albums, depending on whether they are black-and-white or colour. This would be comparable to using a classification model since each photo will go into exactly one of these two albums - a photo cannot be both simultaneously colour <em>and</em> black-and-white, and it cannot be neither colour <em>nor</em> black-and-white.</p>
+<p>You may at the same time also want to make it easier to find photos of particular people in your family. You could do this by assigning labels to each photo, indicating or “tagging” the family members who appear in the photo. In this case, a photo may have one label (a photo of your sister), more than one label (a photo of your sister <em>and</em> aunt), or it may have no labels (a photograph of a landscape taken on a holiday). This would be analogous to a multi-label classification model.</p>
+<p>The choice between using a model which performs classification or a model which assigns labels should be considered in relation to the role your model has. It is also useful to look a little bit more closely as how these different types of models work under the hood.</p>
+</section>
+</section>
+<section id="crossentropyloss-vs-bcewithlogitsloss" class="level2">
+<h2 class="anchored" data-anchor-id="crossentropyloss-vs-bcewithlogitsloss">CrossEntropyLoss vs BCEWithLogitsLoss</h2>
+<p>When we create a model which does classifications or applies labels, the distinction, if using the same data is that they use different loss functions.</p>
+<p>A classification model will use a variant of Cross Entropy Loss whilst the label model will use a BCE with Logits Loss. We’ll see how this is inferred by fastai below but fore now take my word for it…</p>
+<p>Let’s take a look at a snippet of the Pytorch docs for each of these loss functions</p>
+<section id="crossentropyloss" class="level3">
+<h3 class="anchored" data-anchor-id="crossentropyloss">CrossEntropyLoss</h3>
+<blockquote class="blockquote">
+<p>This criterion combines nn.LogSoftmax() and nn.NLLLoss() in one single class. It is useful when training a classification problem with C classes. If provided, the optional argument weight should be a 1D Tensor assigning weight to each of the classes. This is particularly useful when you have an unbalanced training set. <a href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#crossentropyloss">Read more</a></p>
+</blockquote>
+</section>
+<section id="bcewithlogitsloss" class="level3">
+<h3 class="anchored" data-anchor-id="bcewithlogitsloss">BCEWithLogitsLoss</h3>
+<blockquote class="blockquote">
+<p>This loss combines a Sigmoid layer and the BCELoss in one single class. This version is more numerically stable than using a plain Sigmoid followed by a BCELoss as, by combining the operations into one layer, we take advantage of the log-sum-exp trick for numerical stability. <a href="https://pytorch.org/docs/stable/generated/torch.nn.BCEWithLogitsLoss.html?highlight=bcewithlogitsloss">Read more</a></p>
+</blockquote>
+<p>Let’s see what these do to some activations. First we’ll import required packages</p>
+<div id="cell-6" class="cell" data-execution_count="174">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="exploring-crossentropyloss" class="level1">
+<h1>Exploring CrossEntropyLoss</h1>
+<p>We can create some fake activations. To start we’ll just consider one output with three classes. We’ll start with one to keep things simple for now.</p>
+<div id="cell-9" class="cell" data-execution_count="175">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>one_act <span class="op">=</span> torch.randn((<span class="dv">1</span>, <span class="dv">3</span>)) <span class="op">*</span> <span class="dv">1</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>one_act</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="175">
+<pre><code>tensor([[ 0.9924,  0.8698, -0.0100]])</code></pre>
+</div>
+</div>
+<p>We can think of these activations as probabilities for one of three classes. Let’s see what these sum to.</p>
+<div id="cell-11" class="cell" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>one_act.<span class="bu">sum</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="14">
+<pre><code>tensor(1.0875)</code></pre>
+</div>
+</div>
+<p>We can see that these activations don’t sum to 1. If we want our image input to belong to only one class, then the labels are not mutually exclusive of each other i.e.&nbsp;if one label probability is higher, another needs to be lower i.e.&nbsp;the probabilities need to add up to 1. Going back to the Pytorch explanation of <code>CrossEntropyLoss</code> we see that one component is <code>nn.LogSoftmax()</code>. What is particularly relevant here is that ‘softmax’ part. Let’s see what this does to our activation</p>
+<div id="cell-13" class="cell" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>softmax_acts <span class="op">=</span> torch.softmax(one_act, dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>softmax_acts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="15">
+<pre><code>tensor([[0.4525, 0.0381, 0.5093]])</code></pre>
+</div>
+</div>
+<p>You can probably already see how this has changed the nature of these activations. Let’s call sum on these outputs again.</p>
+<div id="cell-15" class="cell" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>softmax_acts.<span class="bu">sum</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="16">
+<pre><code>tensor(1.)</code></pre>
+</div>
+</div>
+<p>We now have a sum of 1! We can now treat this as the probability of an input image belonging to a particular class. We could then call argmax to find out which class the model is most confident about and use that as our prediction.</p>
+<div id="cell-17" class="cell" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>softmax_acts.argmax(dim<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="17">
+<pre><code>tensor([2])</code></pre>
+</div>
+</div>
+<p>One of the potential issues that was mentioned about using a classification model was that it doesn’t account for ambiguities in the labels very well.</p>
+<section id="what-is-softmax-doing" class="level3">
+<h3 class="anchored" data-anchor-id="what-is-softmax-doing">What is softmax doing?</h3>
+<p>Digging into what <code>softmax</code> does in a little bit more detail will show what is going on here.</p>
+<p>First lets see what softmax actually does, I’ll skip the LaTeX formula from Wikepedia because it makes is look much scarier than the <a href="https://en.wikipedia.org/wiki/Softmax_function#Example">Python code example</a>:</p>
+<div id="cell-20" class="cell" data-execution_count="180">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> [<span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">3.0</span>, <span class="fl">4.0</span>, <span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">3.0</span>]</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>np.exp(a) <span class="op">/</span> np.<span class="bu">sum</span>(np.exp(a)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="180">
+<pre><code>array([0.02364054, 0.06426166, 0.1746813 , 0.474833  , 0.02364054,
+       0.06426166, 0.1746813 ])</code></pre>
+</div>
+</div>
+<p>This is much easier for me to parse compared to the Greek. Let’s look at the different parts. Working with one set of activations again:</p>
+<div id="cell-22" class="cell" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>one_act</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="19">
+<pre><code>tensor([[ 1.1479, -1.3265,  1.2661]])</code></pre>
+</div>
+</div>
+<p>Starting from <code>np.exp(a)</code> we can do this in Pytorch like:</p>
+<div id="cell-24" class="cell" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>one_act.exp()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="20">
+<pre><code>tensor([[3.1515, 0.2654, 3.5471]])</code></pre>
+</div>
+</div>
+<p>We can convert the rest of the numpy code as follows</p>
+<div id="cell-26" class="cell" data-execution_count="21">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>one_act.exp().<span class="bu">sum</span>(dim<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="21">
+<pre><code>tensor([6.9641])</code></pre>
+</div>
+</div>
+<p>Putting it all together we get</p>
+<div id="cell-28" class="cell" data-execution_count="181">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>(one_act.exp() <span class="op">/</span>one_act.exp().<span class="bu">sum</span>(dim<span class="op">=</span><span class="dv">1</span>)).<span class="bu">sum</span>(dim<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="181">
+<pre><code>tensor([1.])</code></pre>
+</div>
+</div>
+<p>This seems to work as expected, i.e.&nbsp;we get the probabilities to sum to 1. To make it clearer what’s going on though, it’s useful to look a little more closely at the difference using <code>exp</code> makes. Let’s import the standard python version of <code>exp</code> and check the docs.</p>
+<div id="cell-30" class="cell" data-execution_count="201">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> math <span class="im">import</span> exp</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>doc(exp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<h4 id="exp" class="doc_header anchored"><code>exp</code><a href="" class="source_link" style="float:right">[source]</a></h4><blockquote class="blockquote"><p><code>exp</code>(<strong><code>x</code></strong>)</p>
+</blockquote>
+<p>Return e raised to the power of x.</p>
+</div>
+</div>
+<p>What difference does using the exponent make? We’ll use a simple array of values to keep things simple</p>
+<div id="cell-32" class="cell" data-execution_count="208">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.array([<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">1</span>])</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="208">
+<pre><code>array([1, 2, 4, 1])</code></pre>
+</div>
+</div>
+<p>Now if we want these to be converted to probabilities for different classes we need them to sum to 1. We could just do this by dividing each element by the sum.</p>
+<div id="cell-34" class="cell" data-execution_count="205">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>x<span class="op">/</span>x.<span class="bu">sum</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="205">
+<pre><code>array([0.125, 0.25 , 0.5  , 0.125])</code></pre>
+</div>
+</div>
+<p>We can confirm this add to 1</p>
+<div id="cell-36" class="cell" data-execution_count="206">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>(x<span class="op">/</span>x.<span class="bu">sum</span>()).<span class="bu">sum</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="206">
+<pre><code>1.0</code></pre>
+</div>
+</div>
+<p>Now this seems to work to get us probabilities for each class. Let’s compare doing the same thing but using <code>exp</code> to create exponents of the inputs</p>
+<div id="cell-38" class="cell" data-execution_count="209">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>np.exp(x)<span class="op">/</span>np.<span class="bu">sum</span>(np.exp(x))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="209">
+<pre><code>array([0.04031637, 0.10959126, 0.80977599, 0.04031637])</code></pre>
+</div>
+</div>
+<p>Again we get an array of probabilities, let’s confirm they add to one.</p>
+<div id="cell-40" class="cell" data-execution_count="189">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>one_act.exp()<span class="op">/</span>one_act.exp().<span class="bu">sum</span>(dim<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="189">
+<pre><code>tensor([[0.4441, 0.3929, 0.1630]])</code></pre>
+</div>
+</div>
+</section>
+<section id="so-what-is-different-here" class="level3">
+<h3 class="anchored" data-anchor-id="so-what-is-different-here">So what is different here?</h3>
+<p>Let’s put the two arrays next to each other so we can compare the values for each index</p>
+<div id="cell-42" class="cell" data-execution_count="190">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>np.exp(x)<span class="op">/</span> np.<span class="bu">sum</span>(np.exp(x)), (x<span class="op">/</span> x.<span class="bu">sum</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="190">
+<pre><code>(array([0.04031637, 0.10959126, 0.80977599, 0.04031637]),
+ array([0.125, 0.25 , 0.5  , 0.125]))</code></pre>
+</div>
+</div>
+<p>Other than the difference in decimals, you will probably notice that when we use exponent, some labels for a class have been pushed much higher. Index <code>2</code> is <code>0.80</code> when we use <code>exp</code> and only <code>0.5</code> when we don’t use the exponent. This is an important difference here. By using the magic properties of <span class="math inline">\(e\)</span> we ‘push’ one probability to be higher than the others.</p>
+<p>This property is useful when we have a clear distinction between classes. If we were predicting handwritten digits there (should) only be one correct answer. In this case having one class prediction being pushed much higher would be a good thing.</p>
+<p>If however, we have labels which are more ambiguous, this would be less of a desirable property. Even if we try and capture ambiguity by using the raw probabilities of the labels, rather than taking the <code>argmax</code> value, the numerical properties of the softmax function mean that it likely that one label value will be pushed higher than the others.</p>
+<p>We’ll look at a practical example later on to illustrate this. Let’s now quickly compare our other loss function</p>
+</section>
+</section>
+<section id="exploring-bcewithlogitsloss" class="level1">
+<h1>Exploring BCEWithLogitsLoss</h1>
+<p>As a reminder &gt; This loss combines a Sigmoid layer and the BCELoss in one single class.</p>
+<p>The part here that we are particularly interested in is the <code>Sigmoid</code>. Let’s use <code>one_acts</code> again</p>
+<div id="cell-45" class="cell" data-execution_count="31">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>one_act</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="31">
+<pre><code>tensor([[ 1.1479, -1.3265,  1.2661]])</code></pre>
+</div>
+</div>
+<p>As a reminder sigmoid function can be plotted as</p>
+<div id="cell-47" class="cell" data-execution_count="32">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide_input </span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="co"># from https://github.com/fastai/fastbook/blob/master/utils.py</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_function(f, tx<span class="op">=</span><span class="va">None</span>, ty<span class="op">=</span><span class="va">None</span>, title<span class="op">=</span><span class="va">None</span>, <span class="bu">min</span><span class="op">=-</span><span class="dv">2</span>, <span class="bu">max</span><span class="op">=</span><span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">6</span>,<span class="dv">4</span>)):</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> torch.linspace(<span class="bu">min</span>,<span class="bu">max</span>)</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    fig,ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>figsize)</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>    ax.plot(x,f(x))</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> tx <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>: ax.set_xlabel(tx)</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ty <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>: ax.set_ylabel(ty)</span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> title <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>: ax.set_title(title)</span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>plot_function(torch.sigmoid, <span class="bu">min</span><span class="op">=-</span><span class="dv">4</span>, <span class="bu">max</span><span class="op">=</span><span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2020-10-12-labelling_vs_classification_models_files/figure-html/cell-21-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>You’ll probably be familiar with sigmoid as one of the potential activations functions you can use in the a neural network. The property we care about is that it squishes inputs into a value between 0 and 1. Let’s do this for our activations</p>
+<div id="cell-49" class="cell" data-execution_count="33">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>torch.sigmoid(one_act)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="33">
+<pre><code>tensor([[0.7591, 0.2097, 0.7801]])</code></pre>
+</div>
+</div>
+<p>We can see that all our values have been pushed between 0 and 1. However, we can also see they don’t sum to 1.</p>
+<div id="cell-51" class="cell" data-execution_count="35">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>torch.sigmoid(one_act).<span class="bu">sum</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="35">
+<pre><code>tensor(1.7489)</code></pre>
+</div>
+</div>
+<p>What we have here is a probability for each label which is <em>independent</em> of the probability of the other labels. The sigmoid function makes sure the activations for each label becomes a probability but it doesn’t make sure that all of the labels probabilities sum to 1. Looking at a practical example using fastai might illustrate this difference.</p>
+<p>We’ll work with some images taken from 19th Century books, the specific images in this case don’t matter to do much</p>
+<div id="cell-54" class="cell" data-execution_count="123">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>wget <span class="op">-</span>q <span class="st">'https://zenodo.org/record/3689444/files/cv_workshop_exercise_data.zip?download=1'</span> <span class="op">-</span>P data<span class="op">/</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>unzip <span class="op">-</span>q data<span class="op">/</span>cv_workshop_exercise_data.<span class="bu">zip</span>?download<span class="op">=</span><span class="dv">1</span> <span class="op">-</span>d data<span class="op">/</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>--2020-10-04 18:59:28--  https://zenodo.org/record/3689444/files/cv_workshop_exercise_data.zip?download=1
+Resolving zenodo.org (zenodo.org)... 137.138.76.77
+Connecting to zenodo.org (zenodo.org)|137.138.76.77|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 23719014 (23M) [application/octet-stream]
+Saving to: ‘data/cv_workshop_exercise_data.zip?download=1’
+
+cv_workshop_exercis 100%[===================&gt;]  22.62M  3.67MB/s    in 10s     
+
+2020-10-04 18:59:39 (2.25 MB/s) - ‘data/cv_workshop_exercise_data.zip?download=1’ saved [23719014/23719014]
+</code></pre>
+</div>
+</div>
+<p>We’ll import fastai and then put images from two folders ‘building’ and ‘coat’ into a Pandas DataFrame.</p>
+<div id="cell-56" class="cell" data-execution_count="36">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastai.vision.<span class="bu">all</span> <span class="im">import</span> <span class="op">*</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-57" class="cell" data-execution_count="40">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>files <span class="op">=</span> get_image_files(<span class="st">'data/cv_workshop_exercise_data/'</span>, folders<span class="op">=</span>[<span class="st">'building'</span>, <span class="st">'coat'</span>])</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame(files.items, columns<span class="op">=</span>[<span class="st">'fname'</span>])</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'class_label'</span>] <span class="op">=</span> df[<span class="st">'fname'</span>].<span class="bu">apply</span>(<span class="kw">lambda</span> x: x.parts[<span class="dv">2</span>])</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'class_label'</span>].value_counts()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="40">
+<pre><code>building    44
+coat        26
+Name: class_label, dtype: int64</code></pre>
+</div>
+</div>
+<p>We can see we have two possible classes <code>building</code> and <code>coat</code>. First we’ll load these into fastai as a classification model.</p>
+<div id="cell-59" class="cell" data-execution_count="51">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>dls_classification <span class="op">=</span> ImageDataLoaders.from_df(df,fn_col<span class="op">=</span><span class="st">'fname'</span>,valid_pct<span class="op">=</span><span class="fl">0.4</span>, label_col<span class="op">=</span><span class="st">'class_label'</span>, item_tfms<span class="op">=</span>Resize(<span class="dv">128</span>, ResizeMethod.Squish), bs<span class="op">=</span><span class="dv">8</span>,num_workers<span class="op">=</span><span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-60" class="cell" data-execution_count="52">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>dls_classification.show_batch()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2020-10-12-labelling_vs_classification_models_files/figure-html/cell-28-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>You’ll see that building refers to a building, whilst a coat refers to a coat of arms. Let’s now load this data into fastai</p>
+<div id="cell-62" class="cell" data-execution_count="53">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> cnn_learner(dls_classification, resnet18, metrics<span class="op">=</span>[accuracy, F1Score()])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Often if we pass fastai a dataloader it will be able to infer the correct loss function based on this data. we can access this using the <code>loss_func</code> attribute.</p>
+<div id="cell-64" class="cell" data-execution_count="54">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>learn.loss_func</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="54">
+<pre><code>FlattenedLoss of CrossEntropyLoss()</code></pre>
+</div>
+</div>
+<p>As promised this is a variant on the CrossEntropyLoss we saw earlier. Let’s now fit it for a bit.</p>
+<div id="cell-66" class="cell" data-execution_count="55">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>learn.fit(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">epoch</th>
+<th data-quarto-table-cell-role="th">train_loss</th>
+<th data-quarto-table-cell-role="th">valid_loss</th>
+<th data-quarto-table-cell-role="th">accuracy</th>
+<th data-quarto-table-cell-role="th">f1_score</th>
+<th data-quarto-table-cell-role="th">time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>1.023169</td>
+<td>0.786303</td>
+<td>0.785714</td>
+<td>0.769231</td>
+<td>00:03</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>0.721281</td>
+<td>0.576258</td>
+<td>0.821429</td>
+<td>0.814815</td>
+<td>00:03</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>0.477446</td>
+<td>0.339626</td>
+<td>0.821429</td>
+<td>0.782609</td>
+<td>00:04</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>0.423173</td>
+<td>0.331097</td>
+<td>0.821429</td>
+<td>0.782609</td>
+<td>00:03</td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>0.351390</td>
+<td>0.239433</td>
+<td>0.857143</td>
+<td>0.818182</td>
+<td>00:03</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Now we have a model, we’ll grab the predictions</p>
+<div id="cell-68" class="cell" data-execution_count="59">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>acts, _ <span class="op">=</span> learn.get_preds()</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>acts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+</div>
+<div class="cell-output cell-output-display" data-execution_count="59">
+<pre><code>tensor([[9.9795e-01, 2.0519e-03],
+        [9.9811e-01, 1.8889e-03],
+        [9.9911e-01, 8.8577e-04],
+        [9.9680e-01, 3.2038e-03],
+        [6.5879e-01, 3.4121e-01],
+        [1.2512e-04, 9.9987e-01],
+        [9.9734e-01, 2.6599e-03],
+        [9.8866e-01, 1.1341e-02],
+        [9.2739e-01, 7.2608e-02],
+        [9.8336e-01, 1.6643e-02],
+        [1.7059e-01, 8.2941e-01],
+        [9.9899e-01, 1.0067e-03],
+        [5.2081e-01, 4.7919e-01],
+        [4.9184e-03, 9.9508e-01],
+        [9.9930e-01, 7.0161e-04],
+        [1.0109e-04, 9.9990e-01],
+        [9.9533e-01, 4.6670e-03],
+        [3.6834e-02, 9.6317e-01],
+        [5.7022e-06, 9.9999e-01],
+        [9.8635e-01, 1.3647e-02],
+        [2.1610e-01, 7.8390e-01],
+        [2.3512e-02, 9.7649e-01],
+        [2.9994e-01, 7.0006e-01],
+        [4.2728e-02, 9.5727e-01],
+        [9.8494e-01, 1.5062e-02],
+        [1.4194e-01, 8.5806e-01],
+        [6.8620e-01, 3.1380e-01],
+        [7.3493e-01, 2.6507e-01]])</code></pre>
+</div>
+</div>
+<p>These are the predictions for each class, let’s confirm these all sum to 1.</p>
+<div id="cell-70" class="cell" data-execution_count="60">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>acts.<span class="bu">sum</span>(dim<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="60">
+<pre><code>tensor([1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000,
+        1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000,
+        1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000,
+        1.0000])</code></pre>
+</div>
+</div>
+<p>If we look at the max for each probability we’ll see they tend to be high.</p>
+<div id="cell-72" class="cell" data-execution_count="81">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>acts.<span class="bu">max</span>(dim<span class="op">=</span><span class="dv">1</span>)[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="81">
+<pre><code>tensor([0.9979, 0.9981, 0.9991, 0.9968, 0.6588, 0.9999, 0.9973, 0.9887, 0.9274,
+        0.9834, 0.8294, 0.9990, 0.5208, 0.9951, 0.9993, 0.9999, 0.9953, 0.9632,
+        1.0000, 0.9864, 0.7839, 0.9765, 0.7001, 0.9573, 0.9849, 0.8581, 0.6862,
+        0.7349])</code></pre>
+</div>
+</div>
+<p>Looking at the mean, max and min:</p>
+<div id="cell-74" class="cell" data-execution_count="83">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>acts.<span class="bu">max</span>(dim<span class="op">=</span><span class="dv">1</span>)[<span class="dv">0</span>].mean(), acts.<span class="bu">max</span>(dim<span class="op">=</span><span class="dv">1</span>)[<span class="dv">0</span>].<span class="bu">max</span>(), acts.<span class="bu">max</span>(dim<span class="op">=</span><span class="dv">1</span>)[<span class="dv">0</span>].<span class="bu">min</span>(), </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="83">
+<pre><code>(tensor(0.9113), tensor(1.0000), tensor(0.5208))</code></pre>
+</div>
+</div>
+<p>This is desirable if the input we are trying to label does neatly fit the categories but if we are trying to label something which is more ambiguous then this might be less useful. A particular case where this certainty might not be so helpful is when your model may possibly face out of domain images, i.e.&nbsp;see things it hasn’t seen before and for which none of the classes it is trying to predict should apply. Let’s load a new dataset of images of people.</p>
+<div id="cell-76" class="cell" data-execution_count="90">
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>people <span class="op">=</span> get_image_files(<span class="st">'data/cv_workshop_exercise_data/'</span>, folders<span class="op">=</span><span class="st">'people'</span>)</span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>people</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="90">
+<pre><code>(#38) [Path('data/cv_workshop_exercise_data/people/000001929_03_000249_2_De Aardbol  Magazijn van hedendaagsche land  en volkenkunde     Met platen en kaarten  [Deel 4 9 by P  H  W ]_1839.jpg'),Path('data/cv_workshop_exercise_data/people/000194796_0_000133_1_Historical Collections     relating to the history and antiquities of every town in Massachusetts  with geographical descriptions  [With illustrations ]_1839.jpg'),Path('data/cv_workshop_exercise_data/people/000194796_0_000140_1_Historical Collections     relating to the history and antiquities of every town in Massachusetts  with geographical descriptions  [With illustrations ]_1839.jpg'),Path('data/cv_workshop_exercise_data/people/000001929_03_000058_1_De Aardbol  Magazijn van hedendaagsche land  en volkenkunde     Met platen en kaarten  [Deel 4 9 by P  H  W ]_1839.jpg'),Path('data/cv_workshop_exercise_data/people/001099118_02_000168_1_The Victories of the British Armies  with anecdotes illustrative of modern warfare  By the author of  Stories of Waterloo  [i e  William Hamilton Maxwell]  etc  [With plates ]_1839.jpg'),Path('data/cv_workshop_exercise_data/people/000001929_08_000107_1_De Aardbol  Magazijn van hedendaagsche land  en volkenkunde     Met platen en kaarten  [Deel 4 9 by P  H  W ]_1839.jpg'),Path('data/cv_workshop_exercise_data/people/000001929_06_000006_1_De Aardbol  Magazijn van hedendaagsche land  en volkenkunde     Met platen en kaarten  [Deel 4 9 by P  H  W ]_1839.jpg'),Path('data/cv_workshop_exercise_data/people/000979699_0_000368_1_Indian Captivities  being a collection of the most remarkable narratives of persons taken captive by the North American Indians     To which are added notes  historical  biographical  etc_1839.jpg'),Path('data/cv_workshop_exercise_data/people/000001929_06_000007_1_De Aardbol  Magazijn van hedendaagsche land  en volkenkunde     Met platen en kaarten  [Deel 4 9 by P  H  W ]_1839.jpg'),Path('data/cv_workshop_exercise_data/people/000001929_08_000106_1_De Aardbol  Magazijn van hedendaagsche land  en volkenkunde     Met platen en kaarten  [Deel 4 9 by P  H  W ]_1839.jpg')...]</code></pre>
+</div>
+</div>
+<div id="cell-77" class="cell" data-execution_count="91">
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>PILImage.create(people[<span class="dv">5</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="91">
+<div>
+<figure class="figure">
+<p><img src="2020-10-12-labelling_vs_classification_models_files/figure-html/cell-37-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>What happens if we predict one of these:</p>
+<div id="cell-79" class="cell" data-execution_count="92">
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>learn.predict(PILImage.create(people[<span class="dv">5</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+</div>
+<div class="cell-output cell-output-display" data-execution_count="92">
+<pre><code>('building', tensor(0), tensor([0.9916, 0.0084]))</code></pre>
+</div>
+</div>
+<p>It’s predict that Torstenson is a building with a probability of 99% certainty! Let’s look at some more</p>
+<div id="cell-81" class="cell" data-execution_count="101">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>preds, _ <span class="op">=</span> learn.get_preds(dl<span class="op">=</span>learn.dls.test_dl(people))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+</div>
+</div>
+<p>now we have a bunch of predictions let’s get the max value. i.e.&nbsp;the probability for the label it predicted and see what the min, max and median is:</p>
+<div id="cell-83" class="cell" data-execution_count="129">
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>preds.<span class="bu">max</span>(dim<span class="op">=</span><span class="dv">1</span>)[<span class="dv">0</span>].<span class="bu">min</span>(), preds.<span class="bu">max</span>(dim<span class="op">=</span><span class="dv">1</span>)[<span class="dv">0</span>].<span class="bu">max</span>(), preds.<span class="bu">max</span>(dim<span class="op">=</span><span class="dv">1</span>)[<span class="dv">0</span>].median()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="129">
+<pre><code>(tensor(0.5288), tensor(1.0000), tensor(0.9765))</code></pre>
+</div>
+</div>
+<p>Although the min is fairly low, the median value is pretty confidently predicting a wrong label. Let’s see how this differs if we instead use a ‘label model’. fastai expects labels to be inside a list, we can create a new column which puts our classes inside a list.</p>
+<div id="cell-85" class="cell" data-execution_count="131">
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'label'</span>] <span class="op">=</span> df[<span class="st">'class_label'</span>].<span class="bu">apply</span>(<span class="kw">lambda</span> x: [x])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We’ll now load in the data. The only difference here is that we specify a <code>y_block</code>, this forces fastai to choose the correct loss function.</p>
+<div id="cell-87" class="cell" data-execution_count="163">
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>dls_label <span class="op">=</span> ImageDataLoaders.from_df(df,fn_col<span class="op">=</span><span class="st">'fname'</span>, </span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>                                     valid_pct<span class="op">=</span><span class="fl">0.4</span>, </span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a>                                     label_col<span class="op">=</span><span class="st">'label'</span>, </span>
+<span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a>                                     y_block<span class="op">=</span>MultiCategoryBlock, </span>
+<span id="cb70-5"><a href="#cb70-5" aria-hidden="true" tabindex="-1"></a>                                     item_tfms<span class="op">=</span>Resize(<span class="dv">128</span>, ResizeMethod.Squish),</span>
+<span id="cb70-6"><a href="#cb70-6" aria-hidden="true" tabindex="-1"></a>                                     bs<span class="op">=</span><span class="dv">8</span>,</span>
+<span id="cb70-7"><a href="#cb70-7" aria-hidden="true" tabindex="-1"></a>                                     num_workers<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb70-8"><a href="#cb70-8" aria-hidden="true" tabindex="-1"></a>dls_label.show_batch()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2020-10-12-labelling_vs_classification_models_files/figure-html/cell-42-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>If we now create the learner, we’ll see a different loss function</p>
+<div id="cell-89" class="cell" data-execution_count="191">
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>label_learn <span class="op">=</span> cnn_learner(dls_label, resnet18, metrics<span class="op">=</span>[F1ScoreMulti()])</span>
+<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a>label_learn.loss_func</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="191">
+<pre><code>FlattenedLoss of BCEWithLogitsLoss()</code></pre>
+</div>
+</div>
+<p>Again we’ll fit for a while</p>
+<div id="cell-91" class="cell" data-execution_count="192">
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>label_learn.fit(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">epoch</th>
+<th data-quarto-table-cell-role="th">train_loss</th>
+<th data-quarto-table-cell-role="th">valid_loss</th>
+<th data-quarto-table-cell-role="th">f1_score</th>
+<th data-quarto-table-cell-role="th">time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0.979886</td>
+<td>1.107939</td>
+<td>0.520422</td>
+<td>00:03</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>0.742499</td>
+<td>0.530855</td>
+<td>0.749681</td>
+<td>00:03</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>0.540384</td>
+<td>0.294314</td>
+<td>0.858553</td>
+<td>00:03</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>0.428714</td>
+<td>0.197953</td>
+<td>0.874603</td>
+<td>00:03</td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>0.358649</td>
+<td>0.157847</td>
+<td>0.973684</td>
+<td>00:03</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Now we’ll grab some predictions again</p>
+<div id="cell-93" class="cell" data-execution_count="198">
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>preds, _ <span class="op">=</span> label_learn.get_preds()</span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a>preds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+</div>
+<div class="cell-output cell-output-display" data-execution_count="198">
+<pre><code>tensor([[9.8592e-01, 2.2629e-02],
+        [5.0721e-01, 1.0558e-01],
+        [9.9954e-01, 1.4539e-02],
+        [2.6342e-01, 9.7471e-01],
+        [9.9732e-01, 3.8691e-04],
+        [1.0064e-02, 9.9507e-01],
+        [1.5311e-02, 9.7020e-01],
+        [2.2675e-03, 9.9944e-01],
+        [9.7902e-01, 2.7719e-02],
+        [6.0582e-01, 1.2015e-01],
+        [7.7181e-02, 9.9448e-01],
+        [9.8096e-01, 5.7364e-03],
+        [8.2864e-01, 4.2955e-01],
+        [9.0980e-01, 1.1982e-02],
+        [9.6249e-01, 1.3159e-02],
+        [2.3728e-01, 6.0858e-01],
+        [9.9327e-01, 4.9904e-03],
+        [9.1160e-04, 9.8218e-01],
+        [9.7016e-01, 2.2057e-03],
+        [9.8055e-01, 1.9247e-02],
+        [8.3900e-01, 2.7438e-01],
+        [4.3518e-01, 1.6118e-01],
+        [6.8165e-01, 1.7120e-01],
+        [7.7239e-01, 5.4064e-02],
+        [9.9350e-01, 7.2269e-02],
+        [6.3511e-01, 1.7830e-02],
+        [1.3994e-01, 8.5564e-01],
+        [2.6746e-02, 6.9240e-01]])</code></pre>
+</div>
+</div>
+<p>Let’s see what these add up to</p>
+<div id="cell-95" class="cell" data-execution_count="199">
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a>preds.<span class="bu">sum</span>(dim<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="199">
+<pre><code>tensor([1.0085, 0.6128, 1.0141, 1.2381, 0.9977, 1.0051, 0.9855, 1.0017, 1.0067,
+        0.7260, 1.0717, 0.9867, 1.2582, 0.9218, 0.9756, 0.8459, 0.9983, 0.9831,
+        0.9724, 0.9998, 1.1134, 0.5964, 0.8528, 0.8265, 1.0658, 0.6529, 0.9956,
+        0.7191])</code></pre>
+</div>
+</div>
+<p>Not 1! Again this is because our labels are now independent of each other. We can see that if we now grab the max for each possible lab and take the min, max and median we get quite different results</p>
+<div id="cell-97" class="cell" data-execution_count="200">
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>preds.<span class="bu">max</span>(dim<span class="op">=</span><span class="dv">1</span>)[<span class="dv">0</span>].<span class="bu">min</span>(), preds.<span class="bu">max</span>(dim<span class="op">=</span><span class="dv">1</span>)[<span class="dv">0</span>].<span class="bu">max</span>(), preds.<span class="bu">max</span>(dim<span class="op">=</span><span class="dv">1</span>)[<span class="dv">0</span>].median()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="200">
+<pre><code>(tensor(0.4352), tensor(0.9995), tensor(0.9702))</code></pre>
+</div>
+</div>
+<p>Since the labels are now independent these probabilities have a much wider range. The lowest value is lower than would be possible when we use a classification model with two classes. This might be useful when we are trying to capture labels which are not tightly defined and therefore we might want our model to have more ‘flexibility’ in the predictions it makes. Let’s see what happens if we predict the same image of Torstenson we had earlier</p>
+<div id="cell-99" class="cell" data-execution_count="169">
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>label_learn.predict(PILImage.create(people[<span class="dv">5</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+</div>
+<div class="cell-output cell-output-display" data-execution_count="169">
+<pre><code>((#1) ['building'], tensor([ True, False]), tensor([0.9992, 0.0055]))</code></pre>
+</div>
+</div>
+<p>Oh dear, this seems to have the same problem as before. However, we have the option to set a threshold for predictions. If we set a threshold and train again…</p>
+<div id="cell-101" class="cell" data-execution_count="217">
+<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a>label_learn <span class="op">=</span> cnn_learner(dls_label, resnet18, metrics<span class="op">=</span>[F1ScoreMulti()],loss_func<span class="op">=</span>BCEWithLogitsLossFlat(thresh<span class="op">=</span><span class="fl">0.9</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-102" class="cell" data-execution_count="218">
+<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>label_learn.fit(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">epoch</th>
+<th data-quarto-table-cell-role="th">train_loss</th>
+<th data-quarto-table-cell-role="th">valid_loss</th>
+<th data-quarto-table-cell-role="th">f1_score</th>
+<th data-quarto-table-cell-role="th">time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0.746691</td>
+<td>0.450183</td>
+<td>0.655556</td>
+<td>00:03</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>0.572374</td>
+<td>0.352565</td>
+<td>0.843939</td>
+<td>00:03</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>0.477375</td>
+<td>0.328633</td>
+<td>0.856250</td>
+<td>00:03</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>0.359104</td>
+<td>0.320807</td>
+<td>0.841642</td>
+<td>00:03</td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>0.306263</td>
+<td>0.327382</td>
+<td>0.860795</td>
+<td>00:03</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>If we now predict the same image</p>
+<div id="cell-104" class="cell" data-execution_count="219">
+<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a>label_learn.predict(PILImage.create(people[<span class="dv">5</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+</div>
+<div class="cell-output cell-output-display" data-execution_count="219">
+<pre><code>((#0) [], tensor([False, False]), tensor([0.8369, 0.4833]))</code></pre>
+</div>
+</div>
+<p>This time we don’t get a prediction! The flexibility of being able to set a threshold is a very nice feature of using this type of loss function since it gives you some more options for deciding how confident you want a model to be.</p>
+</section>
+<section id="discussion" class="level1">
+<h1>Discussion</h1>
+<p>The aim of this blog post was to explore some of the implications of doing ‘classification’ vs ‘labeling’. Although label models are often only considered in relation to models with multiple labels, they can also be applied to models with only one possible label per image. The key distinction between these two approaches is the loss functions. There are implications of choosing between these two loss functions.</p>
+<p>Because of the Softmax component, a classification model will always have probabilities for each class which add to one. Beyond this thought the use of the exponent tends to push one class probability higher than the others.</p>
+<p>In contrast the loss function for a labeling model pushes each <em>individual</em> labels probability between 0 and 1, but it doesn’t require all of label probabilities to add to 1.</p>
+<section id="labeling-in-a-digital-humanitiesglam-context" class="level3">
+<h3 class="anchored" data-anchor-id="labeling-in-a-digital-humanitiesglam-context">Labeling in a Digital Humanities/GLAM context</h3>
+<p>When you have clear labels which are distinct from each other, it is useful to have one label be ‘pushed to the top’. Often in a humanities or GLAM context labels may not be as clear cut.</p>
+<p>This might be because the concepts which you are trying to capture in the labels have fuzzy borders, or because the source material contains some complexities. For example, working with ORC’d text of varying quality. In these situations the fact that softmax will be likely to lead to one prediction being much stronger may not be desirable.</p>
+<p>Although you can work with the raw probabilities predicted by the model to capture some potential ambiguity, because one class will tend to be pushed higher (because of the exponent in softmax) this <em>doesn’t</em> fully address this issue.</p>
+<p>A preference for one or another approach, will depend on the task at hand but even when you only have one single possible label per input, it might still be helpful to consider using a labeling model i.e.&nbsp;BCELoss instead of a classification model using CrossEntropyLoss.</p>
+<p>There are of course other solutions to changing out the loss function you used to train the model. I’m hoping to explore some of these soon 🤓</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/danielvanstrien\.xyz");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

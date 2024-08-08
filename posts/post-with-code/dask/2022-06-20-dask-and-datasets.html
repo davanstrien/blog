@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.56">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Daniel van Strien">
+<meta name="dcterms.date" content="2022-06-20">
+<meta name="description" content="Using 🤗 datasets in combination with dask">
+
+<title>Combining Hugging Face datasets with dask – Daniel van Strien</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+<script src="https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Daniel van Strien</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../pages/cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Combining Hugging Face datasets with dask</h1>
+</div>
+
+<div>
+  <div class="description">
+    Using 🤗 datasets in combination with dask
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Daniel van Strien </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 20, 2022</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Hugging Face datasets is a super useful library for loading, processing and sharing datasets with other people.</p>
+<p>For many pre-processing steps it works beautifully. The one area where it can be a bit trickier to use is for EDA style analysis. This column-wise EDA is often important as an early step in working with some data or for preparing a data card.</p>
+<p>Fortunately combining datasets and another data library, <a href="https://www.dask.org/">dask</a> works pretty smoothly. This isn’t intended to be a full intro to either datasets or dask but hopefully gives you a sense of how both libaries work and how they can complement each other.</p>
+<p>First, make sure we have the required libraries. <a href="https://rich.readthedocs.io/en/stable/">Rich</a> is there for a little added visual flair ✨</p>
+<div id="cell-3" class="cell" data-execution_count="53">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>capture</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install datasets toolz rich[jupyter] dask</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-4" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>load_ext rich</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="load-some-data" class="level2">
+<h2 class="anchored" data-anchor-id="load-some-data">Load some data</h2>
+<p>For this example we will use a the <a href="https://huggingface.co/datasets/blbooksgenre">blbooksgenre dataset</a> that contains metadata about some digitised books from the British Library. This collection also includes some annotations for the genre of the book which we could use to train a machine learning model.</p>
+<p>We can load a dataset hosted on the Hugging Face hub by using the <code>load_dataset</code> function.</p>
+<div id="cell-7" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-8" class="cell" data-outputid="1b619316-4f2d-4f07-862b-08747f6a715e" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> load_dataset(<span class="st">"blbooksgenre"</span>, <span class="st">"annotated_raw"</span>, split<span class="op">=</span><span class="st">"train"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Reusing dataset bl_books_genre (/Users/dvanstrien/.cache/huggingface/datasets/bl_books_genre/annotated_raw/1.1.0/1e01f82403b3d9344121c3b81e5ad7c130338b250bf95dad4c6ab342c642dbe8)</code></pre>
+</div>
+</div>
+<p>Since we requested only the train split we get back a <code>Dataset</code></p>
+<div id="cell-10" class="cell" data-outputid="d7e74115-796c-4acd-9f15-aae838cffdee" data-execution_count="57">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>ds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #800080; text-decoration-color: #800080; font-weight: bold">Dataset</span><span style="font-weight: bold">({</span>
+    features: <span style="font-weight: bold">[</span><span style="color: #008000; text-decoration-color: #008000">'BL record ID'</span>, <span style="color: #008000; text-decoration-color: #008000">'Name'</span>, <span style="color: #008000; text-decoration-color: #008000">'Dates associated with name'</span>, <span style="color: #008000; text-decoration-color: #008000">'Type of name'</span>, <span style="color: #008000; text-decoration-color: #008000">'Role'</span>, <span style="color: #008000; text-decoration-color: #008000">'All names'</span>, <span style="color: #008000; text-decoration-color: #008000">'Title'</span>, <span style="color: #008000; text-decoration-color: #008000">'Variant titles'</span>, <span style="color: #008000; text-decoration-color: #008000">'Series title'</span>, <span style="color: #008000; text-decoration-color: #008000">'Number within series'</span>, <span style="color: #008000; text-decoration-color: #008000">'Country of publication'</span>, <span style="color: #008000; text-decoration-color: #008000">'Place of publication'</span>, <span style="color: #008000; text-decoration-color: #008000">'Publisher'</span>, <span style="color: #008000; text-decoration-color: #008000">'Date of publication'</span>, <span style="color: #008000; text-decoration-color: #008000">'Edition'</span>, <span style="color: #008000; text-decoration-color: #008000">'Physical description'</span>, <span style="color: #008000; text-decoration-color: #008000">'Dewey classification'</span>, <span style="color: #008000; text-decoration-color: #008000">'BL shelfmark'</span>, <span style="color: #008000; text-decoration-color: #008000">'Topics'</span>, <span style="color: #008000; text-decoration-color: #008000">'Genre'</span>, <span style="color: #008000; text-decoration-color: #008000">'Languages'</span>, <span style="color: #008000; text-decoration-color: #008000">'Notes'</span>, <span style="color: #008000; text-decoration-color: #008000">'BL record ID for physical resource'</span>, <span style="color: #008000; text-decoration-color: #008000">'classification_id'</span>, <span style="color: #008000; text-decoration-color: #008000">'user_id'</span>, <span style="color: #008000; text-decoration-color: #008000">'subject_ids'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_date_pub'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_normalised_date_pub'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_edition_statement'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_FAST_genre_terms'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_FAST_subject_terms'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_comments'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_main_language'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_other_languages_summaries'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_summaries_language'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_translation'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_original_language'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_publisher'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_place_pub'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_country'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_title'</span>, <span style="color: #008000; text-decoration-color: #008000">'Link to digitised book'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotated'</span>, <span style="color: #008000; text-decoration-color: #008000">'Type of resource'</span>, <span style="color: #008000; text-decoration-color: #008000">'created_at'</span>, <span style="color: #008000; text-decoration-color: #008000">'annotator_genre'</span><span style="font-weight: bold">]</span>,
+    num_rows: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">4398</span>
+<span style="font-weight: bold">})</span>
+</pre>
+</div>
+</div>
+<p>We can see this has a bunch of columns. One that is of interest is the <code>Data of publication</code> column. Since we could use this dataset to train some type of classifier we may want to check whether we have enough examples across different time periods in the dataset.</p>
+<div id="cell-12" class="cell" data-outputid="6927a531-4649-4ec8-b40e-0d467f735a8d" data-execution_count="58">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>ds[<span class="dv">0</span>][<span class="st">"Date of publication"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #008000; text-decoration-color: #008000">'1879'</span>
+</pre>
+</div>
+</div>
+<section id="using-toolz-to-calculate-frequencies-for-a-column" class="level3">
+<h3 class="anchored" data-anchor-id="using-toolz-to-calculate-frequencies-for-a-column">Using toolz to calculate frequencies for a column</h3>
+<p>One quick way we can get the frequency count for a column is using the wonderful <a href="https://toolz.readthedocs.io/en/latest/index.html">toolz</a> library</p>
+<p>If our data fits in memory, we can simply pass in a column containing a categorical value to a frequency function to get a frequency count.</p>
+<div id="cell-15" class="cell" data-execution_count="60">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> toolz <span class="im">import</span> frequencies, topk</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-16" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>dates <span class="op">=</span> ds[<span class="st">"Date of publication"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-17" class="cell" data-outputid="9d4e5792-30e1-4279-9534-4574a39d321b" data-execution_count="97">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># collapse_hide</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>frequencies(dates)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">{</span>
+    <span style="color: #008000; text-decoration-color: #008000">'1879'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">99</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1774'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1765'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1877'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">69</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1893'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">222</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1891'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">148</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1827'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">29</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1868'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">42</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1878'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">72</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1895'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">189</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1897'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">120</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1899'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">104</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1896'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">174</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1876'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">48</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1812'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">13</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1799'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">8</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1830'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">32</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1870'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">42</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1894'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">155</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1864'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">28</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1855'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">42</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1871'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">42</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1836'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">37</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1883'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">51</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1880'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">111</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1884'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">69</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1822'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">16</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1856'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">38</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1872'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">42</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1875'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">57</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1844'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">35</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1890'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">134</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1886'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">43</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1840'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">15</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1888'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">109</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1858'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">43</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1867'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">53</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1826'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">24</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1800'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">3</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1851'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">43</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1838'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">14</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1824'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">20</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1887'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">58</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1874'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">42</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1857'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">44</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1873'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">34</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1837'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">16</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1846'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">32</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1881'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">55</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1898'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">104</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1906'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">4</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1892'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">134</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1869'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">25</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1885'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">69</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1882'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">71</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1863'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">55</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1865'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">53</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1635'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">3</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1859'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">39</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1818'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">17</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1845'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">28</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1852'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">43</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1841'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">23</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1842'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">29</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1848'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">28</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1828'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">23</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1850'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">38</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1860'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">45</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1889'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">140</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1815'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1861'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">28</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1814'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">13</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1843'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">28</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1817'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">12</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1819'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">16</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1853'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">34</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1833'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1854'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">36</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1839'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">33</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1803'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">7</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1835'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">14</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1813'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">8</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1695'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">4</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1809-1811'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1832'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">9</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1823'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">17</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1847'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">28</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1816'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">8</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1806'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1866'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">26</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1829'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">13</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1791'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1637'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1821'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">4</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1807'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">14</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1862'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">22</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1795'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1834'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">12</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1831'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1849'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">13</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1811'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1825'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1809'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">3</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1905'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1808'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1900'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1892-1912'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1804'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">4</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1769'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1910'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1805'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1802'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">3</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1871-'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1901'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1884-1909'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1873-1887'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1979'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1852-1941'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1903'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1871-1873'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1810'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">3</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1907'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1820'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'1789'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>
+<span style="font-weight: bold">}</span>
+</pre>
+</div>
+</div>
+</section>
+</section>
+<section id="make-it-parallel" class="level2">
+<h2 class="anchored" data-anchor-id="make-it-parallel">Make it parallel!</h2>
+<p>If our data doesn’t fit in memory or we want to do things in parallel we might want to use a slightly different approach. This is where dask can play a role.</p>
+<p>Dask offers a number of different collection abstractions that make it easier to do things in parallel. This includes dask bag.</p>
+<p>First we’ll create a dask client here, I won’t dig into the details of this here but you can get a good overview in the <a href="https://www.dask.org/get-started">getting started</a> pages.</p>
+<div id="cell-19" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> distributed <span class="im">import</span> Client</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-20" class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>client <span class="op">=</span> Client()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Since we don’t want to load all of our data into memory we can great a generator that will yield one row at a time. In this case we’ll start by exploring the <code>Title</code> column</p>
+<div id="cell-22" class="cell" data-execution_count="63">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> yield_titles():</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> row <span class="kw">in</span> ds:</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">yield</span> row[<span class="st">"Title"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can see that this returns a generator</p>
+<div id="cell-24" class="cell" data-outputid="0fe3d283-19ec-4c47-e851-dca5292759c5" data-execution_count="64">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>yield_titles()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">generator</span><span style="color: #000000; text-decoration-color: #000000"> object yield_titles at </span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0x7ffc28fdc040</span><span style="font-weight: bold">&gt;</span>
+</pre>
+</div>
+</div>
+<div id="cell-25" class="cell" data-outputid="91bdfcae-1b6e-4c6b-a586-7375b00ee9bc" data-execution_count="65">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="bu">next</span>(<span class="bu">iter</span>(yield_titles()))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #008000; text-decoration-color: #008000">'The Canadian farmer. A missionary incident [Signed: W. J. H. Y, i.e. William J. H. Yates.]'</span>
+</pre>
+</div>
+</div>
+<p>We can store this in a titles variable.</p>
+<div id="cell-27" class="cell" data-execution_count="21">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>titles <span class="op">=</span> yield_titles()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We’ll now import dask bag.</p>
+<p>import dask.bag as db</p>
+<p>We can create a dask bag object using the <code>from_sequence</code> method.</p>
+<div id="cell-31" class="cell" data-execution_count="69">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>bag <span class="op">=</span> db.from_sequence(titles)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-32" class="cell" data-execution_count="70">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>bag</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">dask.bag<span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">from_sequence</span><span style="color: #000000; text-decoration-color: #000000">, </span><span style="color: #808000; text-decoration-color: #808000">npartitions</span><span style="color: #000000; text-decoration-color: #000000">=</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span><span style="font-weight: bold">&gt;</span>
+</pre>
+</div>
+</div>
+<p>We can look at an example using the <code>take</code> method</p>
+<div id="cell-34" class="cell" data-outputid="dacee933-d4c0-4fc1-b7ce-2d4b8ce800b7" data-execution_count="68">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>bag.take(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">(</span>
+    <span style="font-weight: bold">[</span>
+        <span style="color: #008000; text-decoration-color: #008000">'The'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'Canadian'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'farmer.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'A'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'missionary'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'incident'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'[Signed:'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'W.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'J.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'H.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'Y,'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'i.e.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'William'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'J.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'H.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'Yates.]'</span>
+    <span style="font-weight: bold">]</span>,
+<span style="font-weight: bold">)</span>
+</pre>
+</div>
+</div>
+<p>dask bag has a bunch of handy methods for processing data (some of these we could also do in 🤗 datasets but others are not available as specific methods in datasets).</p>
+<p>For example we can make sure we only have unique titles using the <code>distinct</code> method.</p>
+<div id="cell-36" class="cell" data-execution_count="26">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>unique_titles <span class="op">=</span> bag.distinct()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-37" class="cell" data-outputid="4392f098-1f1d-4950-daeb-679de217d111" data-execution_count="27">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>unique_titles.take(<span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">(</span>
+    <span style="color: #008000; text-decoration-color: #008000">'The Canadian farmer. A missionary incident [Signed: W. J. H. Y, i.e. William J. H. Yates.]'</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'A new musical Interlude, called the Election [By M. P. Andrews.]'</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'An Elegy written among the ruins of an Abbey. By the author of the Nun [E. Jerningham]'</span>,
+    <span style="color: #008000; text-decoration-color: #008000">"The Baron's Daughter. A ballad by the author of Poetical Recreations [i.e. William C. Hazlitt] . F.P"</span>
+<span style="font-weight: bold">)</span>
+</pre>
+</div>
+</div>
+<p>Similar to 🤗 datasets we have a map method that we can use to apply a function to all of our examples. In this case we split the title text into individual words.</p>
+<div id="cell-39" class="cell" data-execution_count="39">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>title_words_split <span class="op">=</span> unique_titles.<span class="bu">map</span>(<span class="kw">lambda</span> x: x.split(<span class="st">" "</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-40" class="cell" data-outputid="51037d54-2f8c-4f67-903c-9408c7fc5b4c" data-execution_count="71">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>title_words_split.take(<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">(</span>
+    <span style="font-weight: bold">[</span>
+        <span style="color: #008000; text-decoration-color: #008000">'The'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'Canadian'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'farmer.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'A'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'missionary'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'incident'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'[Signed:'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'W.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'J.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'H.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'Y,'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'i.e.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'William'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'J.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'H.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'Yates.]'</span>
+    <span style="font-weight: bold">]</span>,
+    <span style="font-weight: bold">[</span>
+        <span style="color: #008000; text-decoration-color: #008000">'A'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'new'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'musical'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'Interlude,'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'called'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'the'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'Election'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'[By'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'M.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'P.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'Andrews.]'</span>
+    <span style="font-weight: bold">]</span>
+<span style="font-weight: bold">)</span>
+</pre>
+</div>
+</div>
+<p>We can see we now have all our words in a list. Helpfully dask bag has a <code>flatten</code> method. This will consume our lists and put all the words in a single sequence.</p>
+<div id="cell-42" class="cell" data-execution_count="73">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>flattend_title_words <span class="op">=</span> title_words_split.flatten()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-43" class="cell" data-outputid="9c473358-4520-42f0-cb0e-3e6696e86283" data-execution_count="74">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>flattend_title_words.take(<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'The'</span>, <span style="color: #008000; text-decoration-color: #008000">'Canadian'</span><span style="font-weight: bold">)</span>
+</pre>
+</div>
+</div>
+<p>We could now use the <code>frequencies</code> method to get the top words.</p>
+<div id="cell-45" class="cell" data-outputid="7d7a32e3-6a82-4437-996d-ba325dc18758" data-execution_count="75">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>freqs <span class="op">=</span> flattend_title_words.frequencies(sort<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-46" class="cell" data-execution_count="76">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>freqs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">dask.bag<span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">sorted</span><span style="color: #000000; text-decoration-color: #000000">, </span><span style="color: #808000; text-decoration-color: #808000">npartitions</span><span style="color: #000000; text-decoration-color: #000000">=</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span><span style="font-weight: bold">&gt;</span>
+</pre>
+</div>
+</div>
+<p>Since dask bag methods are lazy by default nothing has actually been calculated yet. We could just grab the top 10 words.</p>
+<div id="cell-48" class="cell" data-execution_count="77">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>top_10_words <span class="op">=</span> freqs.topk(<span class="dv">10</span>, key<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>If we want the results of something we call <code>compute</code> which will call all of the chained methods on our bag.</p>
+<div id="cell-50" class="cell" data-execution_count="78">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>top_10_words.compute()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">[</span>
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'of'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">808</span><span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'the'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">674</span><span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'and'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">550</span><span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'...'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">518</span><span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'in'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">402</span><span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'van'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">306</span><span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'etc'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">301</span><span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'de'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">258</span><span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'en'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">258</span><span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'a'</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">231</span><span style="font-weight: bold">)</span>
+<span style="font-weight: bold">]</span>
+</pre>
+</div>
+</div>
+<p>We could also do the same with lowered version</p>
+<div id="cell-52" class="cell" data-execution_count="79">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>lowered_title_words <span class="op">=</span> flattend_title_words.<span class="bu">map</span>(<span class="kw">lambda</span> x: x.lower())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-53" class="cell" data-execution_count="80">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>freqs <span class="op">=</span> lowered_title_words.frequencies(sort<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The visualize method gives you some insights into how the computation is managed by dask.</p>
+<div id="cell-55" class="cell" data-execution_count="81">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>freqs.visualize(engine<span class="op">=</span><span class="st">"cytoscape"</span>, optimize_graph<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"d985cef20e334ec49f640e264f51b494","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+</div>
+</section>
+<section id="moving-from-datasets-to-a-dask-dataframe" class="level2">
+<h2 class="anchored" data-anchor-id="moving-from-datasets-to-a-dask-dataframe">Moving from datasets to a dask dataframe</h2>
+<p>For some operations, dask bag is super easy to use. Sometimes though you will hurt your brain trying to crow bar your problem into the dask bag API 😵‍💫 This is where dask dataframes come in! Using parquet, we can easily save our 🤗 dataset as a parquet file.</p>
+<div id="cell-57" class="cell" data-execution_count="44">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>ds.to_parquet(<span class="st">"genre.parquet"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="44">
+<pre><code>3583138</code></pre>
+</div>
+</div>
+<div id="cell-58" class="cell" data-execution_count="84">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> dask.dataframe <span class="im">as</span> dd</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>and load from this file</p>
+<div id="cell-60" class="cell" data-execution_count="85">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>ddf <span class="op">=</span> dd.read_parquet(<span class="st">"genre.parquet"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>As dask dataframe works quite similar to a pandas dataframe. It is lazy by default so if we just print it out</p>
+<div id="cell-62" class="cell" data-execution_count="86">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>ddf</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="86">
+<div><strong>Dask DataFrame Structure:</strong></div>
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">BL record ID</th>
+<th data-quarto-table-cell-role="th">Name</th>
+<th data-quarto-table-cell-role="th">Dates associated with name</th>
+<th data-quarto-table-cell-role="th">Type of name</th>
+<th data-quarto-table-cell-role="th">Role</th>
+<th data-quarto-table-cell-role="th">All names</th>
+<th data-quarto-table-cell-role="th">Title</th>
+<th data-quarto-table-cell-role="th">Variant titles</th>
+<th data-quarto-table-cell-role="th">Series title</th>
+<th data-quarto-table-cell-role="th">Number within series</th>
+<th data-quarto-table-cell-role="th">Country of publication</th>
+<th data-quarto-table-cell-role="th">Place of publication</th>
+<th data-quarto-table-cell-role="th">Publisher</th>
+<th data-quarto-table-cell-role="th">Date of publication</th>
+<th data-quarto-table-cell-role="th">Edition</th>
+<th data-quarto-table-cell-role="th">Physical description</th>
+<th data-quarto-table-cell-role="th">Dewey classification</th>
+<th data-quarto-table-cell-role="th">BL shelfmark</th>
+<th data-quarto-table-cell-role="th">Topics</th>
+<th data-quarto-table-cell-role="th">Genre</th>
+<th data-quarto-table-cell-role="th">Languages</th>
+<th data-quarto-table-cell-role="th">Notes</th>
+<th data-quarto-table-cell-role="th">BL record ID for physical resource</th>
+<th data-quarto-table-cell-role="th">classification_id</th>
+<th data-quarto-table-cell-role="th">user_id</th>
+<th data-quarto-table-cell-role="th">subject_ids</th>
+<th data-quarto-table-cell-role="th">annotator_date_pub</th>
+<th data-quarto-table-cell-role="th">annotator_normalised_date_pub</th>
+<th data-quarto-table-cell-role="th">annotator_edition_statement</th>
+<th data-quarto-table-cell-role="th">annotator_FAST_genre_terms</th>
+<th data-quarto-table-cell-role="th">annotator_FAST_subject_terms</th>
+<th data-quarto-table-cell-role="th">annotator_comments</th>
+<th data-quarto-table-cell-role="th">annotator_main_language</th>
+<th data-quarto-table-cell-role="th">annotator_other_languages_summaries</th>
+<th data-quarto-table-cell-role="th">annotator_summaries_language</th>
+<th data-quarto-table-cell-role="th">annotator_translation</th>
+<th data-quarto-table-cell-role="th">annotator_original_language</th>
+<th data-quarto-table-cell-role="th">annotator_publisher</th>
+<th data-quarto-table-cell-role="th">annotator_place_pub</th>
+<th data-quarto-table-cell-role="th">annotator_country</th>
+<th data-quarto-table-cell-role="th">annotator_title</th>
+<th data-quarto-table-cell-role="th">Link to digitised book</th>
+<th data-quarto-table-cell-role="th">annotated</th>
+<th data-quarto-table-cell-role="th">Type of resource</th>
+<th data-quarto-table-cell-role="th">created_at</th>
+<th data-quarto-table-cell-role="th">annotator_genre</th>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">npartitions=1</th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th"></td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>object</td>
+<td>bool</td>
+<td>int64</td>
+<td>datetime64[ns]</td>
+<td>int64</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th"></td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+<div>Dask Name: read-parquet, 1 tasks</div>
+</div>
+</div>
+<p>You’ll see we don’t actually get back any data. If we use head we get the number of examples we ask for.</p>
+<div id="cell-64" class="cell" data-execution_count="87">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>ddf.head(<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="87">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">BL record ID</th>
+<th data-quarto-table-cell-role="th">Name</th>
+<th data-quarto-table-cell-role="th">Dates associated with name</th>
+<th data-quarto-table-cell-role="th">Type of name</th>
+<th data-quarto-table-cell-role="th">Role</th>
+<th data-quarto-table-cell-role="th">All names</th>
+<th data-quarto-table-cell-role="th">Title</th>
+<th data-quarto-table-cell-role="th">Variant titles</th>
+<th data-quarto-table-cell-role="th">Series title</th>
+<th data-quarto-table-cell-role="th">Number within series</th>
+<th data-quarto-table-cell-role="th">...</th>
+<th data-quarto-table-cell-role="th">annotator_original_language</th>
+<th data-quarto-table-cell-role="th">annotator_publisher</th>
+<th data-quarto-table-cell-role="th">annotator_place_pub</th>
+<th data-quarto-table-cell-role="th">annotator_country</th>
+<th data-quarto-table-cell-role="th">annotator_title</th>
+<th data-quarto-table-cell-role="th">Link to digitised book</th>
+<th data-quarto-table-cell-role="th">annotated</th>
+<th data-quarto-table-cell-role="th">Type of resource</th>
+<th data-quarto-table-cell-role="th">created_at</th>
+<th data-quarto-table-cell-role="th">annotator_genre</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>014603046</td>
+<td>Yates, William Joseph H.</td>
+<td></td>
+<td>person</td>
+<td></td>
+<td>[Yates, William Joseph H. [person] , Y, W. J....</td>
+<td>The Canadian farmer. A missionary incident [Si...</td>
+<td></td>
+<td></td>
+<td></td>
+<td>...</td>
+<td></td>
+<td>NONE</td>
+<td>London</td>
+<td>enk</td>
+<td>The Canadian farmer. A missionary incident [Si...</td>
+<td>http://access.bl.uk/item/viewer/ark:/81055/vdc...</td>
+<td>True</td>
+<td>0</td>
+<td>2020-08-11 14:30:33</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>014603046</td>
+<td>Yates, William Joseph H.</td>
+<td></td>
+<td>person</td>
+<td></td>
+<td>[Yates, William Joseph H. [person] , Y, W. J....</td>
+<td>The Canadian farmer. A missionary incident [Si...</td>
+<td></td>
+<td></td>
+<td></td>
+<td>...</td>
+<td></td>
+<td>NONE</td>
+<td>London</td>
+<td>enk</td>
+<td>The Canadian farmer. A missionary incident [Si...</td>
+<td>http://access.bl.uk/item/viewer/ark:/81055/vdc...</td>
+<td>True</td>
+<td>0</td>
+<td>2021-04-15 09:53:23</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>014603046</td>
+<td>Yates, William Joseph H.</td>
+<td></td>
+<td>person</td>
+<td></td>
+<td>[Yates, William Joseph H. [person] , Y, W. J....</td>
+<td>The Canadian farmer. A missionary incident [Si...</td>
+<td></td>
+<td></td>
+<td></td>
+<td>...</td>
+<td></td>
+<td>NONE</td>
+<td>London</td>
+<td>enk</td>
+<td>The Canadian farmer. A missionary incident [Si...</td>
+<td>http://access.bl.uk/item/viewer/ark:/81055/vdc...</td>
+<td>True</td>
+<td>0</td>
+<td>2020-09-24 14:27:54</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+
+<p>3 rows × 46 columns</p>
+</div>
+</div>
+</div>
+<p>We have some familiar methods from pandas available to us</p>
+<div id="cell-66" class="cell" data-execution_count="49">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>ddf <span class="op">=</span> ddf.drop_duplicates(subset<span class="op">=</span><span class="st">"Title"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>As an example of something that would be a bit tricky in datasets, we can see how to groupby the mean title length by year of publication. First we create a new column for title length</p>
+<div id="cell-68" class="cell" data-execution_count="89">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>ddf[<span class="st">"title_len"</span>] <span class="op">=</span> ddf[<span class="st">"Title"</span>].<span class="bu">map</span>(<span class="kw">lambda</span> x: <span class="bu">len</span>(x))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can then groupby the date of publication</p>
+<div id="cell-70" class="cell" data-execution_count="90">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>grouped <span class="op">=</span> ddf.groupby(<span class="st">"Date of publication"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>and then calculate the mean <code>title_len</code></p>
+<div id="cell-72" class="cell" data-execution_count="91">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>mean_title_len <span class="op">=</span> grouped[<span class="st">"title_len"</span>].mean()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>To actually compute this value we call the <code>compute</code> method</p>
+<div id="cell-74" class="cell" data-execution_count="92">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>mean_title_len.compute()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">Date of publication
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1635</span>    <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">248.0</span>
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1637</span>     <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">67.0</span>
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1695</span>     <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">63.0</span>
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1765</span>     <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">86.0</span>
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1769</span>     <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">20.0</span>
+        <span style="color: #808000; text-decoration-color: #808000">...</span>  
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1905</span>    <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">141.0</span>
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1906</span>    <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">225.0</span>
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1907</span>    <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">142.0</span>
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1910</span>     <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">65.0</span>
+<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1979</span>     <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">43.0</span>
+Name: title_len, Length: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">124</span>, dtype: float64
+</pre>
+</div>
+</div>
+<p>We can also create a plot in the usual way</p>
+<div id="cell-76" class="cell" data-execution_count="93">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>mean_title_len.compute().plot()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">AxesSubplot:</span><span style="color: #808000; text-decoration-color: #808000; font-weight: bold">xlabel</span><span style="color: #000000; text-decoration-color: #000000">=</span><span style="color: #008000; text-decoration-color: #008000">'Date of publication'</span><span style="font-weight: bold">&gt;</span>
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">Figure</span><span style="color: #000000; text-decoration-color: #000000"> size 432x288 with </span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span><span style="color: #000000; text-decoration-color: #000000"> Axes</span><span style="font-weight: bold">&gt;</span>
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2022-06-20-dask-and-datasets_files/figure-html/cell-43-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This was a very quick overview. The <a href="https://www.dask.org/get-started">dask docs</a> go into much more detail as do the Hugging Face <a href="https://huggingface.co/docs/datasets/">datasets docs</a>.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script type="application/vnd.jupyter.widget-state+json">
+{"0c0752e8e9024977979562531ad5a4b7":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"ProgressStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"ProgressStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","bar_color":null,"description_width":""}},"408dd31921ee40bb9c9fc8995d4b8577":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HBoxModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HBoxModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HBoxView","box_style":"","children":["IPY_MODEL_5e1150b6dfb8494195191efaeb5b7feb","IPY_MODEL_6edda0b1149541499ab485df06711944","IPY_MODEL_45fcaeca1a184768a624607172ab7d72"],"layout":"IPY_MODEL_ea28bfd1711148c29b494a0194d2ffbf"}},"45fcaeca1a184768a624607172ab7d72":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_4ccb508cf3ab4001a30cea47d2448e23","placeholder":"​","style":"IPY_MODEL_88809da60e3846dc886cd2545edbc5c3","value":" 1/1 [00:00&lt;00:00, 21.14it/s]"}},"4ccb508cf3ab4001a30cea47d2448e23":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"5d3ee4cdf67e44878bac361e143b828a":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"5e1150b6dfb8494195191efaeb5b7feb":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_b3eaa93967914d7f8977d736611b845f","placeholder":"​","style":"IPY_MODEL_5d3ee4cdf67e44878bac361e143b828a","value":"100%"}},"6edda0b1149541499ab485df06711944":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"FloatProgressModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"FloatProgressModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"ProgressView","bar_style":"success","description":"","description_tooltip":null,"layout":"IPY_MODEL_bff82a2eab2a4f7d87f8037e30839050","max":1,"min":0,"orientation":"horizontal","style":"IPY_MODEL_0c0752e8e9024977979562531ad5a4b7","value":1}},"88809da60e3846dc886cd2545edbc5c3":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"b3eaa93967914d7f8977d736611b845f":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"bff82a2eab2a4f7d87f8037e30839050":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"ea28bfd1711148c29b494a0194d2ffbf":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}}}
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/danielvanstrien\.xyz");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

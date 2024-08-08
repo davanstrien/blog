@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="814pt" height="143pt" viewBox="0.00 0.00 813.75 142.50">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 138.5)">
+<title>polars_query</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-138.5 809.75,-138.5 809.75,4 -4,4"/>
+<!-- p1 -->
+<g id="node1" class="node">
+<title>p1</title>
+<polygon fill="none" stroke="black" points="640.38,-134.5 165.38,-134.5 165.38,-77 640.38,-77 640.38,-134.5"/>
+<text text-anchor="middle" x="402.88" y="-117.2" font-family="Times,serif" font-size="14.00">AGG [col(&quot;conversations&quot;).list.length().mean().alias(&quot;mean_conversation_length&quot;)]</text>
+<text text-anchor="middle" x="402.88" y="-100.7" font-family="Times,serif" font-size="14.00">BY</text>
+<text text-anchor="middle" x="402.88" y="-84.2" font-family="Times,serif" font-size="14.00">[col(&quot;langdetect&quot;)]</text>
+</g>
+<!-- p2 -->
+<g id="node2" class="node">
+<title>p2</title>
+<polygon fill="none" stroke="black" points="805.75,-41 0,-41 0,0 805.75,0 805.75,-41"/>
+<text text-anchor="middle" x="402.88" y="-23.7" font-family="Times,serif" font-size="14.00">Parquet SCAN [https://huggingface.co/datasets/BAAI%2FInfinity-Instruct/resolve/main/3M%2Ftrain-00000-of-00035.parquet, ... 34 other files]</text>
+<text text-anchor="middle" x="402.88" y="-7.2" font-family="Times,serif" font-size="14.00">π 2/5;</text>
+</g>
+<!-- p1&#45;&#45;p2 -->
+<g id="edge1" class="edge">
+<title>p1--p2</title>
+<path fill="none" stroke="black" d="M402.88,-76.57C402.88,-64.96 402.88,-51.8 402.88,-41.25"/>
+</g>
+</g>
+</svg>

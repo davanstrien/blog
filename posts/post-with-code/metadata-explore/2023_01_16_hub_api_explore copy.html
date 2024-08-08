@@ -1,0 +1,2282 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.56">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Daniel van Strien">
+<meta name="dcterms.date" content="2023-01-16">
+<meta name="description" content="How we can use the huggingface_hub library to explore metadata on the Hugging Face Hub.">
+
+<title>A (very brief) intro to exploring metadata on the Hugging Face Hub – Daniel van Strien</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Daniel van Strien</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../pages/cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">A (very brief) intro to exploring metadata on the Hugging Face Hub</h1>
+</div>
+
+<div>
+  <div class="description">
+    How we can use the <code>huggingface_hub</code> library to explore metadata on the Hugging Face Hub.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Daniel van Strien </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 16, 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>The Hugging Face Hub has become the de facto place to share machine learning models and datasets. As the number of models and datasets grow the challenge of finding the right model or dataset for your needs may become more challenging. There are various ways in which we can try and make it easier for people to find relevant models and datasets. One of these is by associating metadata with datasets and models. This blog post will (very briefly) begin to explore metadata on the Hugging Face Hub. Often you’ll want to explore models and datasets via the Hub website but this isn’t the only way to explore the Hub. As part of the process of exploring metadata on the Hugging Face Hub we’ll briefly look at how we can use the <code>huggingface_hub</code> library to programmatically interact with the Hub.</p>
+<section id="library-imports" class="level2">
+<h2 class="anchored" data-anchor-id="library-imports">Library imports</h2>
+<p>For this post we’ll need a few libraries, <code>pandas</code>, <code>requests</code> and <code>matplotlib</code> are likely old friends (or foes…). The <code>huggingface_hub</code> library might be new to you but will soon become a good friend too! The <code>rich</code> library is fantastically useful for quickly getting familiar with a library (i.e.&nbsp;avoiding reading all the docs!) so we’ll import that too.</p>
+<div id="cell-4" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> requests</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> hf_api</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> rich</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-5" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>matplotlib inline</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>plt.style.use(<span class="st">"ggplot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We’ll instantiate an instance of the <code>HfApi</code> class.</p>
+<div id="cell-7" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>api <span class="op">=</span> hf_api.HfApi()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can use <code>rich</code> <code>inspect</code> to get a better sense of what a function or class instance is all about. Let’s see what methods the api has.</p>
+<div id="cell-9" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>rich.inspect(api, methods<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #000080; text-decoration-color: #000080">╭──────────────────────────────────── </span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">class</span><span style="color: #000000; text-decoration-color: #000000"> </span><span style="color: #008000; text-decoration-color: #008000">'huggingface_hub.hf_api.HfApi'</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">&gt;</span><span style="color: #000080; text-decoration-color: #000080"> ─────────────────────────────────────╮</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span> <span style="color: #008000; text-decoration-color: #008000">╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮</span> <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span> <span style="color: #008000; text-decoration-color: #008000">│</span> <span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">huggingface_hub.hf_api.HfApi</span><span style="color: #000000; text-decoration-color: #000000"> object at </span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0x136a2ce80</span><span style="font-weight: bold">&gt;</span>                                                        <span style="color: #008000; text-decoration-color: #008000">│</span> <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span> <span style="color: #008000; text-decoration-color: #008000">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span> <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                                                                                                                 <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                 <span style="color: #808000; text-decoration-color: #808000; font-style: italic">endpoint</span> = <span style="color: #008000; text-decoration-color: #008000">'https://huggingface.co'</span>                                                             <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                    <span style="color: #808000; text-decoration-color: #808000; font-style: italic">token</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>                                                                                 <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span> <span style="color: #808000; text-decoration-color: #808000; font-style: italic">change_discussion_status</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">change_discussion_status</span><span style="font-weight: bold">(</span>repo_id: str, discussion_num: int, new_status:          <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Literal<span style="font-weight: bold">[</span><span style="color: #008000; text-decoration-color: #008000">'open'</span>, <span style="color: #008000; text-decoration-color: #008000">'closed'</span><span style="font-weight: bold">]</span>, *, token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, comment: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> =  <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, repo_type: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt;                                            <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            huggingface_hub.community.DiscussionStatusChange: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Closes or re-opens a Discussion or</span> <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Pull Request.</span>                                                                        <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>       <span style="color: #808000; text-decoration-color: #808000; font-style: italic">comment_discussion</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">comment_discussion</span><span style="font-weight: bold">(</span>repo_id: str, discussion_num: int, comment: str, *, token:    <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, repo_type: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt;                            <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            huggingface_hub.community.DiscussionComment: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Creates a new comment on the given </span>     <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Discussion.</span>                                                                          <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>            <span style="color: #808000; text-decoration-color: #808000; font-style: italic">create_branch</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">create_branch</span><span style="font-weight: bold">(</span>repo_id: str, *, branch: str, token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,         <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            repo_type: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt; <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Create a new branch from `main` on a repo </span> <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">on the Hub.</span>                                                                          <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>            <span style="color: #808000; text-decoration-color: #808000; font-style: italic">create_commit</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">create_commit</span><span style="font-weight: bold">(</span>repo_id: str, operations:                                          <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Iterable<span style="font-weight: bold">[</span>Union<span style="font-weight: bold">[</span>huggingface_hub._commit_api.CommitOperationAdd,                       <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            huggingface_hub._commit_api.CommitOperationDelete<span style="font-weight: bold">]]</span>, *, commit_message: str,         <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            commit_description: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, repo_type:    <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, revision: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, create_pr: Optional<span style="font-weight: bold">[</span>bool<span style="font-weight: bold">]</span> =    <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, num_threads: int = <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>, parent_commit: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt;                  <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            huggingface_hub.hf_api.CommitInfo: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Creates a commit in the given repo, deleting &amp; </span>   <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">uploading files as needed.</span>                                                           <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>        <span style="color: #808000; text-decoration-color: #808000; font-style: italic">create_discussion</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">create_discussion</span><span style="font-weight: bold">(</span>repo_id: str, title: str, *, token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,      <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            description: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, repo_type: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, pull_request:    <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            bool = <span style="color: #ff0000; text-decoration-color: #ff0000; font-style: italic">False</span><span style="font-weight: bold">)</span> -&gt; huggingface_hub.community.DiscussionWithDetails: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Creates a </span>         <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Discussion or Pull Request.</span>                                                          <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>      <span style="color: #808000; text-decoration-color: #808000; font-style: italic">create_pull_request</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">create_pull_request</span><span style="font-weight: bold">(</span>repo_id: str, title: str, *, token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,    <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            description: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, repo_type: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt;               <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            huggingface_hub.community.DiscussionWithDetails: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Creates a Pull Request . Pull </span>      <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Requests created programmatically will be in `</span><span style="color: #7fbf7f; text-decoration-color: #7fbf7f">"draft"</span><span style="color: #7f7f7f; text-decoration-color: #7f7f7f">` status.</span>                       <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>              <span style="color: #808000; text-decoration-color: #808000; font-style: italic">create_repo</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">create_repo</span><span style="font-weight: bold">(</span>repo_id: str, *, token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, private: bool = <span style="color: #ff0000; text-decoration-color: #ff0000; font-style: italic">False</span>, <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            repo_type: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, exist_ok: bool = <span style="color: #ff0000; text-decoration-color: #ff0000; font-style: italic">False</span>, space_sdk: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> =  <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt; str: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Create an empty repo on the HuggingFace Hub.</span>                           <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>               <span style="color: #808000; text-decoration-color: #808000; font-style: italic">create_tag</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">create_tag</span><span style="font-weight: bold">(</span>repo_id: str, *, tag: str, tag_message: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,         <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            revision: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, repo_type:              <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt; <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Tag a given commit of a repo on the Hub.</span>              <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>             <span style="color: #808000; text-decoration-color: #808000; font-style: italic">dataset_info</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">dataset_info</span><span style="font-weight: bold">(</span>repo_id: str, *, revision: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, timeout:           <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>float<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, files_metadata: bool = <span style="color: #ff0000; text-decoration-color: #ff0000; font-style: italic">False</span>, token: Union<span style="font-weight: bold">[</span>bool, str,        <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt; huggingface_hub.hf_api.DatasetInfo: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Get info on one specific </span>   <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">dataset on huggingface.co.</span>                                                           <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>            <span style="color: #808000; text-decoration-color: #808000; font-style: italic">delete_branch</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">delete_branch</span><span style="font-weight: bold">(</span>repo_id: str, *, branch: str, token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,         <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            repo_type: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt; <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Delete a branch from a repo on the Hub.</span>    <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>              <span style="color: #808000; text-decoration-color: #808000; font-style: italic">delete_file</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">delete_file</span><span style="font-weight: bold">(</span>path_in_repo: str, repo_id: str, *, token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,     <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            repo_type: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, revision: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, commit_message:     <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, commit_description: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, create_pr:           <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>bool<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, parent_commit: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt;                       <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            huggingface_hub.hf_api.CommitInfo: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Deletes a file in the given repo.</span>                 <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>            <span style="color: #808000; text-decoration-color: #808000; font-style: italic">delete_folder</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">delete_folder</span><span style="font-weight: bold">(</span>path_in_repo: str, repo_id: str, *, token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,   <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            repo_type: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, revision: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, commit_message:     <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, commit_description: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, create_pr:           <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>bool<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, parent_commit: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt;                       <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            huggingface_hub.hf_api.CommitInfo: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Deletes a folder in the given repo.</span>               <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>              <span style="color: #808000; text-decoration-color: #808000; font-style: italic">delete_repo</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">delete_repo</span><span style="font-weight: bold">(</span>repo_id: str, *, token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, repo_type:             <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span>: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Delete a repo from the HuggingFace Hub. CAUTION: this is </span>     <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">irreversible.</span>                                                                        <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>               <span style="color: #808000; text-decoration-color: #808000; font-style: italic">delete_tag</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">delete_tag</span><span style="font-weight: bold">(</span>repo_id: str, *, tag: str, token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, repo_type:    <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt; <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Delete a tag from a repo on the Hub.</span>                  <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>  <span style="color: #808000; text-decoration-color: #808000; font-style: italic">edit_discussion_comment</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">edit_discussion_comment</span><span style="font-weight: bold">(</span>repo_id: str, discussion_num: int, comment_id: str,      <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            new_content: str, *, token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, repo_type: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span>   <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            -&gt; huggingface_hub.community.DiscussionComment: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Edits a comment on a Discussion </span><span style="color: #bf7fbf; text-decoration-color: #bf7fbf">/</span><span style="color: #7f7f7f; text-decoration-color: #7f7f7f"> </span>   <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Pull Request.</span>                                                                        <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>         <span style="color: #808000; text-decoration-color: #808000; font-style: italic">get_dataset_tags</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">get_dataset_tags</span><span style="font-weight: bold">()</span> -&gt; huggingface_hub.utils.endpoint_helpers.DatasetTags: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Gets </span>  <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">all valid dataset tags as a nested namespace object.</span>                                 <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>   <span style="color: #808000; text-decoration-color: #808000; font-style: italic">get_discussion_details</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">get_discussion_details</span><span style="font-weight: bold">(</span>repo_id: str, discussion_num: int, *, repo_type:          <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt;                                <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            huggingface_hub.community.DiscussionWithDetails: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Fetches a Discussion's </span><span style="color: #bf7fbf; text-decoration-color: #bf7fbf">/</span><span style="color: #7f7f7f; text-decoration-color: #7f7f7f"> Pull </span>      <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Request 's details from the Hub.</span>                                                     <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>       <span style="color: #808000; text-decoration-color: #808000; font-style: italic">get_full_repo_name</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">get_full_repo_name</span><span style="font-weight: bold">(</span>model_id: str, *, organization: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, token:  <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Union<span style="font-weight: bold">[</span>bool, str, NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span>:                                                  <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Returns the repository name for a given model ID and optional</span>                        <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">organization.</span>                                                                        <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>           <span style="color: #808000; text-decoration-color: #808000; font-style: italic">get_model_tags</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">get_model_tags</span><span style="font-weight: bold">()</span> -&gt; huggingface_hub.utils.endpoint_helpers.ModelTags: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Gets all </span>  <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">valid model tags as a nested namespace object</span>                                        <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>     <span style="color: #808000; text-decoration-color: #808000; font-style: italic">get_repo_discussions</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">get_repo_discussions</span><span style="font-weight: bold">(</span>repo_id: str, *, repo_type: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, token:    <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt; Iterator<span style="font-weight: bold">[</span>huggingface_hub.community.Discussion<span style="font-weight: bold">]</span>: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Fetches </span>    <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Discussions and Pull Requests for the given repo.</span>                                    <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>  <span style="color: #808000; text-decoration-color: #808000; font-style: italic">hide_discussion_comment</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">hide_discussion_comment</span><span style="font-weight: bold">(</span>repo_id: str, discussion_num: int, comment_id: str, *,   <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, repo_type: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt;                     <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            huggingface_hub.community.DiscussionComment: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Hides a comment on a Discussion </span><span style="color: #bf7fbf; text-decoration-color: #bf7fbf">/</span><span style="color: #7f7f7f; text-decoration-color: #7f7f7f"> Pull </span> <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Request.</span>                                                                             <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>            <span style="color: #808000; text-decoration-color: #808000; font-style: italic">list_datasets</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">list_datasets</span><span style="font-weight: bold">(</span>*, filter:                                                         <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Union<span style="font-weight: bold">[</span>huggingface_hub.utils.endpoint_helpers.DatasetFilter, str, Iterable<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span>,      <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, author: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, search: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, sort:  <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Union<span style="font-weight: bold">[</span>Literal<span style="font-weight: bold">[</span><span style="color: #008000; text-decoration-color: #008000">'lastModified'</span><span style="font-weight: bold">]</span>, str, NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, direction:                     <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>Literal<span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">-1</span><span style="font-weight: bold">]]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, limit: Optional<span style="font-weight: bold">[</span>int<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, cardData: Optional<span style="font-weight: bold">[</span>bool<span style="font-weight: bold">]</span>  <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, full: Optional<span style="font-weight: bold">[</span>bool<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt;                 <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            List<span style="font-weight: bold">[</span>huggingface_hub.hf_api.DatasetInfo<span style="font-weight: bold">]</span>: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Get the list of all the datasets on </span>       <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">huggingface.co</span>                                                                       <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>             <span style="color: #808000; text-decoration-color: #808000; font-style: italic">list_metrics</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">list_metrics</span><span style="font-weight: bold">()</span> -&gt; List<span style="font-weight: bold">[</span>huggingface_hub.hf_api.MetricInfo<span style="font-weight: bold">]</span>: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Get the public list </span>  <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">of all the metrics on huggingface.co</span>                                                 <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>              <span style="color: #808000; text-decoration-color: #808000; font-style: italic">list_models</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">list_models</span><span style="font-weight: bold">(</span>*, filter: Union<span style="font-weight: bold">[</span>huggingface_hub.utils.endpoint_helpers.ModelFilter, <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            str, Iterable<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span>, NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, author: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, search:          <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, emissions_thresholds: Optional<span style="font-weight: bold">[</span>Tuple<span style="font-weight: bold">[</span>float, float<span style="font-weight: bold">]]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,    <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            sort: Union<span style="font-weight: bold">[</span>Literal<span style="font-weight: bold">[</span><span style="color: #008000; text-decoration-color: #008000">'lastModified'</span><span style="font-weight: bold">]</span>, str, NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, direction:               <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>Literal<span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">-1</span><span style="font-weight: bold">]]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, limit: Optional<span style="font-weight: bold">[</span>int<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, full: Optional<span style="font-weight: bold">[</span>bool<span style="font-weight: bold">]</span> =    <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, cardData: bool = <span style="color: #ff0000; text-decoration-color: #ff0000; font-style: italic">False</span>, fetch_config: bool = <span style="color: #ff0000; text-decoration-color: #ff0000; font-style: italic">False</span>, token: Union<span style="font-weight: bold">[</span>bool, str,    <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt; List<span style="font-weight: bold">[</span>huggingface_hub.hf_api.ModelInfo<span style="font-weight: bold">]</span>: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Get the list of all the</span> <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">models on huggingface.co</span>                                                             <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>          <span style="color: #808000; text-decoration-color: #808000; font-style: italic">list_repo_files</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">list_repo_files</span><span style="font-weight: bold">(</span>repo_id: str, *, revision: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, repo_type:      <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, timeout: Optional<span style="font-weight: bold">[</span>float<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, token: Union<span style="font-weight: bold">[</span>bool, str,       <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt; List<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span>: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Get the list of files in a given repo.</span>               <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>              <span style="color: #808000; text-decoration-color: #808000; font-style: italic">list_spaces</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">list_spaces</span><span style="font-weight: bold">(</span>*, filter: Union<span style="font-weight: bold">[</span>str, Iterable<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span>, NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, author:       <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, search: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, sort:                            <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Union<span style="font-weight: bold">[</span>Literal<span style="font-weight: bold">[</span><span style="color: #008000; text-decoration-color: #008000">'lastModified'</span><span style="font-weight: bold">]</span>, str, NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, direction:                     <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>Literal<span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">-1</span><span style="font-weight: bold">]]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, limit: Optional<span style="font-weight: bold">[</span>int<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, datasets: Union<span style="font-weight: bold">[</span>str,      <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Iterable<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span>, NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, models: Union<span style="font-weight: bold">[</span>str, Iterable<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span>, NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            linked: bool = <span style="color: #ff0000; text-decoration-color: #ff0000; font-style: italic">False</span>, full: Optional<span style="font-weight: bold">[</span>bool<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt;   <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            List<span style="font-weight: bold">[</span>huggingface_hub.hf_api.SpaceInfo<span style="font-weight: bold">]</span>: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Get the public list of all Spaces on </span>        <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">huggingface.co</span>                                                                       <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>       <span style="color: #808000; text-decoration-color: #808000; font-style: italic">merge_pull_request</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">merge_pull_request</span><span style="font-weight: bold">(</span>repo_id: str, discussion_num: int, *, token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> =  <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, comment: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, repo_type: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span>: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Merges a Pull</span> <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Request.</span>                                                                             <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>               <span style="color: #808000; text-decoration-color: #808000; font-style: italic">model_info</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">model_info</span><span style="font-weight: bold">(</span>repo_id: str, *, revision: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, timeout:             <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>float<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, securityStatus: Optional<span style="font-weight: bold">[</span>bool<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, files_metadata: bool  <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            = <span style="color: #ff0000; text-decoration-color: #ff0000; font-style: italic">False</span>, token: Union<span style="font-weight: bold">[</span>bool, str, NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt;                                <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            huggingface_hub.hf_api.ModelInfo: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Get info on one specific model on huggingface.co</span>   <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                <span style="color: #808000; text-decoration-color: #808000; font-style: italic">move_repo</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">move_repo</span><span style="font-weight: bold">(</span>from_id: str, to_id: str, *, repo_type: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, token:   <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span>: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Moving a repository from namespace1/repo_name1 to </span>            <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">namespace2/repo_name2</span>                                                                <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>        <span style="color: #808000; text-decoration-color: #808000; font-style: italic">rename_discussion</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">rename_discussion</span><span style="font-weight: bold">(</span>repo_id: str, discussion_num: int, new_title: str, *, token:   <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, repo_type: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt;                            <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            huggingface_hub.community.DiscussionTitleChange: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Renames a Discussion.</span>               <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                <span style="color: #808000; text-decoration-color: #808000; font-style: italic">repo_info</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">repo_info</span><span style="font-weight: bold">(</span>repo_id: str, *, revision: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, repo_type:            <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, timeout: Optional<span style="font-weight: bold">[</span>float<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, files_metadata: bool = <span style="color: #ff0000; text-decoration-color: #ff0000; font-style: italic">False</span>, <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            token: Union<span style="font-weight: bold">[</span>bool, str, NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt; Union<span style="font-weight: bold">[</span>huggingface_hub.hf_api.ModelInfo, <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            huggingface_hub.hf_api.DatasetInfo, huggingface_hub.hf_api.SpaceInfo<span style="font-weight: bold">]</span>: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Get the info </span> <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">object for a given repo of a given type.</span>                                             <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>         <span style="color: #808000; text-decoration-color: #808000; font-style: italic">set_access_token</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">set_access_token</span><span style="font-weight: bold">(</span>access_token: str<span style="font-weight: bold">)</span>:                                             <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Saves the passed access token so git can correctly authenticate the</span>                  <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">user.</span>                                                                                <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>               <span style="color: #808000; text-decoration-color: #808000; font-style: italic">space_info</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">space_info</span><span style="font-weight: bold">(</span>repo_id: str, *, revision: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, timeout:             <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>float<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, files_metadata: bool = <span style="color: #ff0000; text-decoration-color: #ff0000; font-style: italic">False</span>, token: Union<span style="font-weight: bold">[</span>bool, str,        <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt; huggingface_hub.hf_api.SpaceInfo: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Get info on one specific </span>     <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Space on huggingface.co.</span>                                                             <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>       <span style="color: #808000; text-decoration-color: #808000; font-style: italic">unset_access_token</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">unset_access_token</span><span style="font-weight: bold">()</span>: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Resets the user's access token.</span>                            <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>   <span style="color: #808000; text-decoration-color: #808000; font-style: italic">update_repo_visibility</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">update_repo_visibility</span><span style="font-weight: bold">(</span>repo_id: str, private: bool = <span style="color: #ff0000; text-decoration-color: #ff0000; font-style: italic">False</span>, *, token:            <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, organization: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, repo_type: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, name: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt; Dict<span style="font-weight: bold">[</span>str, bool<span style="font-weight: bold">]</span>: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Update the visibility setting </span> <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">of a repository.</span>                                                                     <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>              <span style="color: #808000; text-decoration-color: #808000; font-style: italic">upload_file</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">upload_file</span><span style="font-weight: bold">(</span>*, path_or_fileobj: Union<span style="font-weight: bold">[</span>str, bytes, BinaryIO<span style="font-weight: bold">]</span>, path_in_repo: str,  <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            repo_id: str, token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, repo_type: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,          <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            revision: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, commit_message: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,                <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            commit_description: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, create_pr: Optional<span style="font-weight: bold">[</span>bool<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,          <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            parent_commit: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt; str:                                         <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Upload a local file </span><span style="color: #7f7f7f; text-decoration-color: #7f7f7f; font-weight: bold">(</span><span style="color: #7f7f7f; text-decoration-color: #7f7f7f">up to </span><span style="color: #7fbfbf; text-decoration-color: #7fbfbf; font-weight: bold">50</span><span style="color: #7f7f7f; text-decoration-color: #7f7f7f"> GB</span><span style="color: #7f7f7f; text-decoration-color: #7f7f7f; font-weight: bold">)</span><span style="color: #7f7f7f; text-decoration-color: #7f7f7f"> to the given repo. The upload is done</span>              <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">through a HTTP post request, and doesn't require git or git-lfs to be</span>                <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">installed.</span>                                                                           <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>            <span style="color: #808000; text-decoration-color: #808000; font-style: italic">upload_folder</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">upload_folder</span><span style="font-weight: bold">(</span>*, repo_id: str, folder_path: Union<span style="font-weight: bold">[</span>str, pathlib.Path<span style="font-weight: bold">]</span>,            <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            path_in_repo: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, commit_message: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,            <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            commit_description: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, repo_type:    <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, revision: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, create_pr: Optional<span style="font-weight: bold">[</span>bool<span style="font-weight: bold">]</span> =    <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, parent_commit: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, allow_patterns: Union<span style="font-weight: bold">[</span>List<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span>, str,     <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, ignore_patterns: Union<span style="font-weight: bold">[</span>List<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span>, str, NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span>:          <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Upload a local folder to the given repo. The upload is done</span>                          <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">through a HTTP requests, and doesn't require git or git-lfs to be</span>                    <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">installed.</span>                                                                           <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                   <span style="color: #808000; text-decoration-color: #808000; font-style: italic">whoami</span> = <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">whoami</span><span style="font-weight: bold">(</span>token: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt; Dict: <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">Call HF API to know </span><span style="color: #7fbf7f; text-decoration-color: #7fbf7f">"whoami"</span><span style="color: #7f7f7f; text-decoration-color: #7f7f7f">.</span>       <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>
+</pre>
+</div>
+</div>
+<p>You’ll see from looking through this there is a bunch of different things we can now do programmatically via the hub. For this post we’re interested in the <code>list_datasets</code> and <code>list_models</code> methods. If we look at one of these we can see it has a bunch of different options we can use when listing datasets or models.</p>
+<div id="cell-11" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>rich.inspect(api.list_models)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #000080; text-decoration-color: #000080">╭─────────── </span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">bound</span><span style="color: #000000; text-decoration-color: #000000"> method HfApi.list_models of &lt;huggingface_hub.hf_api.HfApi object at </span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0x136a2ce80</span><span style="color: #000000; text-decoration-color: #000000">&gt;</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">&gt;</span><span style="color: #000080; text-decoration-color: #000080"> ────────────╮</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span> <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">HfApi.list_models</span><span style="font-weight: bold">(</span>*, filter: Union<span style="font-weight: bold">[</span>huggingface_hub.utils.endpoint_helpers.ModelFilter, str, Iterable<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span>,  <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span> NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, author: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, search: Optional<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, emissions_thresholds:             <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span> Optional<span style="font-weight: bold">[</span>Tuple<span style="font-weight: bold">[</span>float, float<span style="font-weight: bold">]]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, sort: Union<span style="font-weight: bold">[</span>Literal<span style="font-weight: bold">[</span><span style="color: #008000; text-decoration-color: #008000">'lastModified'</span><span style="font-weight: bold">]</span>, str, NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, direction:    <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span> Optional<span style="font-weight: bold">[</span>Literal<span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">-1</span><span style="font-weight: bold">]]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, limit: Optional<span style="font-weight: bold">[</span>int<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, full: Optional<span style="font-weight: bold">[</span>bool<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>, cardData: bool = <span style="color: #ff0000; text-decoration-color: #ff0000; font-style: italic">False</span>, <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span> fetch_config: bool = <span style="color: #ff0000; text-decoration-color: #ff0000; font-style: italic">False</span>, token: Union<span style="font-weight: bold">[</span>bool, str, NoneType<span style="font-weight: bold">]</span> = <span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="font-weight: bold">)</span> -&gt;                                        <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span> List<span style="font-weight: bold">[</span>huggingface_hub.hf_api.ModelInfo<span style="font-weight: bold">]</span>:                                                                         <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                                                                                                                 <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span> <span style="color: #008080; text-decoration-color: #008080">Get the list of all the models on huggingface.co</span>                                                                <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span>                                                                                                                 <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">│</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">28</span><span style="font-style: italic"> attribute(s) not shown.</span> Run <span style="color: #800080; text-decoration-color: #800080; font-weight: bold">inspect</span><span style="font-weight: bold">(</span>inspect<span style="font-weight: bold">)</span> for options.                                                    <span style="color: #000080; text-decoration-color: #000080">│</span>
+<span style="color: #000080; text-decoration-color: #000080">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>
+</pre>
+</div>
+</div>
+<p>For our use case we want everything, so we set <code>limit=None</code>, we don’t want any <code>filters</code> so we set this to <code>None</code> (this is the default behaviour, but we set them explicitly here to make it clearer for our future selves). We also set <code>full=True</code> so we get back more verbose information about our dataset and models. We also wrap the result in <code>iter</code> and <code>list</code> since the behaviour of these methods will change in future versions to support paging.</p>
+<div id="cell-13" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>hub_datasets <span class="op">=</span> <span class="bu">list</span>(<span class="bu">iter</span>(api.list_datasets(limit<span class="op">=</span><span class="va">None</span>, <span class="bu">filter</span><span class="op">=</span><span class="va">None</span>, full<span class="op">=</span><span class="va">True</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-14" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>hub_models <span class="op">=</span> <span class="bu">list</span>(<span class="bu">iter</span>(api.list_models(limit<span class="op">=</span><span class="va">None</span>, <span class="bu">filter</span><span class="op">=</span><span class="va">None</span>, full<span class="op">=</span><span class="va">True</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s peek at an example of what we get back</p>
+<div id="cell-16" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>hub_models[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="8">
+<pre><code>ModelInfo: {
+    modelId: albert-base-v1
+    sha: aeffd769076a5c4f83b2546aea99ca45a15a5da4
+    lastModified: 2021-01-13T15:08:24.000Z
+    tags: ['pytorch', 'tf', 'albert', 'fill-mask', 'en', 'dataset:bookcorpus', 'dataset:wikipedia', 'arxiv:1909.11942', 'transformers', 'exbert', 'license:apache-2.0', 'autotrain_compatible', 'has_space']
+    pipeline_tag: fill-mask
+    siblings: [RepoFile(rfilename='.gitattributes', size='None', blob_id='None', lfs='None'), RepoFile(rfilename='README.md', size='None', blob_id='None', lfs='None'), RepoFile(rfilename='config.json', size='None', blob_id='None', lfs='None'), RepoFile(rfilename='pytorch_model.bin', size='None', blob_id='None', lfs='None'), RepoFile(rfilename='spiece.model', size='None', blob_id='None', lfs='None'), RepoFile(rfilename='tf_model.h5', size='None', blob_id='None', lfs='None'), RepoFile(rfilename='tokenizer.json', size='None', blob_id='None', lfs='None'), RepoFile(rfilename='with-prefix-tf_model.h5', size='None', blob_id='None', lfs='None')]
+    private: False
+    author: None
+    config: None
+    securityStatus: None
+    _id: 621ffdc036468d709f174328
+    id: albert-base-v1
+    gitalyUid: 4f35551ea371da7a8762caab54319a54ade836044f0ca7690d21e86b159867eb
+    likes: 1
+    downloads: 75182
+    library_name: transformers
+}</code></pre>
+</div>
+</div>
+<div id="cell-17" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>hub_datasets[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="9">
+<pre><code>DatasetInfo: {
+    id: acronym_identification
+    sha: 173af1516c409eb4596bc63a69626bdb5584c40c
+    lastModified: 2022-11-18T17:25:49.000Z
+    tags: ['task_categories:token-classification', 'annotations_creators:expert-generated', 'language_creators:found', 'multilinguality:monolingual', 'size_categories:10K&lt;n&lt;100K', 'source_datasets:original', 'language:en', 'license:mit', 'acronym-identification', 'arxiv:2010.14678']
+    private: False
+    author: None
+    description: Acronym identification training and development sets for the acronym identification task at SDU@AAAI-21.
+    citation: @inproceedings{veyseh-et-al-2020-what,
+   title={{What Does This Acronym Mean? Introducing a New Dataset for Acronym Identification and Disambiguation}},
+   author={Amir Pouran Ben Veyseh and Franck Dernoncourt and Quan Hung Tran and Thien Huu Nguyen},
+   year={2020},
+   booktitle={Proceedings of COLING},
+   link={https://arxiv.org/pdf/2010.14678v1.pdf}
+}
+    cardData: {'annotations_creators': ['expert-generated'], 'language_creators': ['found'], 'language': ['en'], 'license': ['mit'], 'multilinguality': ['monolingual'], 'size_categories': ['10K&lt;n&lt;100K'], 'source_datasets': ['original'], 'task_categories': ['token-classification'], 'task_ids': [], 'paperswithcode_id': 'acronym-identification', 'pretty_name': 'Acronym Identification Dataset', 'train-eval-index': [{'config': 'default', 'task': 'token-classification', 'task_id': 'entity_extraction', 'splits': {'eval_split': 'test'}, 'col_mapping': {'tokens': 'tokens', 'labels': 'tags'}}], 'tags': ['acronym-identification'], 'dataset_info': {'features': [{'name': 'id', 'dtype': 'string'}, {'name': 'tokens', 'sequence': 'string'}, {'name': 'labels', 'sequence': {'class_label': {'names': {'0': 'B-long', '1': 'B-short', '2': 'I-long', '3': 'I-short', '4': 'O'}}}}], 'splits': [{'name': 'train', 'num_bytes': 7792803, 'num_examples': 14006}, {'name': 'validation', 'num_bytes': 952705, 'num_examples': 1717}, {'name': 'test', 'num_bytes': 987728, 'num_examples': 1750}], 'download_size': 8556464, 'dataset_size': 9733236}}
+    siblings: []
+    _id: 621ffdd236468d709f181d58
+    disabled: False
+    gated: False
+    gitalyUid: 6570517623fa521aa189178e7c7e73d9d88c01b295204edef97f389a15eae144
+    likes: 9
+    downloads: 6074
+    paperswithcode_id: acronym-identification
+}</code></pre>
+</div>
+</div>
+<p>Since we want both models and datasets we create a dictionary which stores the types of item i.e.&nbsp;is it a dataset or a model.</p>
+<div id="cell-19" class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>hub_data <span class="op">=</span> {<span class="st">"model"</span>: hub_models, <span class="st">"dataset"</span>: hub_datasets}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We’ll be putting our data inside a pandas DataFrame, so we’ll grab the <code>.__dict__</code> attribute for each hub item, so it’s more pandas friendly.</p>
+<div id="cell-21" class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>hub_item_dict <span class="op">=</span> []</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> hub_type, hub_item <span class="kw">in</span> hub_data.items():</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> item <span class="kw">in</span> hub_item:</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>        data <span class="op">=</span> item.__dict__</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>        data[<span class="st">"type"</span>] <span class="op">=</span> hub_type</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>        hub_item_dict.append(data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-22" class="cell" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame.from_dict(hub_item_dict)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>How many hub items do we have?</p>
+<div id="cell-24" class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="13">
+<pre><code>151343</code></pre>
+</div>
+</div>
+<p>What info do we have?</p>
+<div id="cell-26" class="cell" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>df.columns</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="14">
+<pre><code>Index(['modelId', 'sha', 'lastModified', 'tags', 'pipeline_tag', 'siblings',
+       'private', 'author', 'config', 'securityStatus', '_id', 'id',
+       'gitalyUid', 'likes', 'downloads', 'library_name', 'type',
+       'description', 'citation', 'cardData', 'disabled', 'gated',
+       'paperswithcode_id'],
+      dtype='object')</code></pre>
+</div>
+</div>
+</section>
+<section id="tags" class="level2">
+<h2 class="anchored" data-anchor-id="tags">Tags</h2>
+<p>Models and datasets have a bunch of metadata i.e.&nbsp;last modified and number of downloads. We’ll focus on <code>tags</code> here. Let’s start by looking at a single example.</p>
+<div id="cell-28" class="cell" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>df.loc[<span class="dv">30</span>, <span class="st">"tags"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="15">
+<pre><code>['pytorch',
+ 'tf',
+ 'rust',
+ 'safetensors',
+ 'distilbert',
+ 'text-classification',
+ 'en',
+ 'dataset:sst2',
+ 'dataset:glue',
+ 'doi:10.57967/hf/0181',
+ 'transformers',
+ 'license:apache-2.0',
+ 'model-index',
+ 'has_space']</code></pre>
+</div>
+</div>
+<p>We can see that <code>tags</code> capture can relate to tasks i.e.&nbsp;<code>text-classification</code>, libraries supported i.e.&nbsp;<code>tf</code>, or the <code>licence</code> associated with a model or dataset. As a starting point for exploring tags we can take a look at how many tags models and datasets have. We’ll add a new column to capture this number.</p>
+<div id="cell-30" class="cell" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_number_of_tags(tags: [<span class="bu">str</span>]) <span class="op">-&gt;</span> <span class="bu">int</span>:</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">len</span>(tags)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-31" class="cell" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">"number_of_tags"</span>] <span class="op">=</span> df[<span class="st">"tags"</span>].<span class="bu">apply</span>(<span class="kw">lambda</span> x: calculate_number_of_tags(x))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can now use <code>describe</code> to see the breakdown of this number.</p>
+<div id="cell-33" class="cell" data-execution_count="113">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>df.number_of_tags.describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="113">
+<pre><code>count    151343.000000
+mean          3.855566
+std           6.878613
+min           0.000000
+25%           0.000000
+50%           4.000000
+75%           6.000000
+max         650.000000
+Name: number_of_tags, dtype: float64</code></pre>
+</div>
+</div>
+<p>We can see that we have quite a range of tag numbers ranging from <code>0</code> to <code>650</code>! If your brain works anything like mine you probably want to know what this high value is about!</p>
+<div id="cell-35" class="cell" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>df[df.number_of_tags <span class="op">&gt;</span> <span class="dv">640</span>][[<span class="st">"id"</span>, <span class="st">"tags"</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="19">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">tags</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">136372</td>
+<td>bible-nlp/biblenlp-corpus</td>
+<td>[task_categories:translation, annotations_crea...</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<div id="cell-36" class="cell" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>df[df.number_of_tags <span class="op">&gt;</span> <span class="dv">640</span>][<span class="st">"tags"</span>].tolist()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="20">
+<pre><code>[['task_categories:translation',
+  'annotations_creators:no-annotation',
+  'language_creators:expert-generated',
+  'multilinguality:translation',
+  'multilinguality:multilingual',
+  'size_categories:1M&lt;n&lt;10M',
+  'source_datasets:original',
+  'language:aau',
+  'language:aaz',
+  'language:abx',
+  'language:aby',
+  'language:acf',
+  'language:acu',
+  'language:adz',
+  'language:aey',
+  'language:agd',
+  'language:agg',
+  'language:agm',
+  'language:agn',
+  'language:agr',
+  'language:agu',
+  'language:aia',
+  'language:ake',
+  'language:alp',
+  'language:alq',
+  'language:als',
+  'language:aly',
+  'language:ame',
+  'language:amk',
+  'language:amp',
+  'language:amr',
+  'language:amu',
+  'language:anh',
+  'language:anv',
+  'language:aoi',
+  'language:aoj',
+  'language:apb',
+  'language:apn',
+  'language:apu',
+  'language:apy',
+  'language:arb',
+  'language:arl',
+  'language:arn',
+  'language:arp',
+  'language:aso',
+  'language:ata',
+  'language:atb',
+  'language:atd',
+  'language:atg',
+  'language:auc',
+  'language:aui',
+  'language:auy',
+  'language:avt',
+  'language:awb',
+  'language:awk',
+  'language:awx',
+  'language:azg',
+  'language:azz',
+  'language:bao',
+  'language:bbb',
+  'language:bbr',
+  'language:bch',
+  'language:bco',
+  'language:bdd',
+  'language:bea',
+  'language:bel',
+  'language:bgs',
+  'language:bgt',
+  'language:bhg',
+  'language:bhl',
+  'language:big',
+  'language:bjr',
+  'language:bjv',
+  'language:bkd',
+  'language:bki',
+  'language:bkq',
+  'language:bkx',
+  'language:bla',
+  'language:blw',
+  'language:blz',
+  'language:bmh',
+  'language:bmk',
+  'language:bmr',
+  'language:bnp',
+  'language:boa',
+  'language:boj',
+  'language:bon',
+  'language:box',
+  'language:bqc',
+  'language:bre',
+  'language:bsn',
+  'language:bsp',
+  'language:bss',
+  'language:buk',
+  'language:bus',
+  'language:bvr',
+  'language:bxh',
+  'language:byx',
+  'language:bzd',
+  'language:bzj',
+  'language:cab',
+  'language:caf',
+  'language:cao',
+  'language:cap',
+  'language:car',
+  'language:cav',
+  'language:cax',
+  'language:cbc',
+  'language:cbi',
+  'language:cbk',
+  'language:cbr',
+  'language:cbs',
+  'language:cbt',
+  'language:cbu',
+  'language:cbv',
+  'language:cco',
+  'language:ces',
+  'language:cgc',
+  'language:cha',
+  'language:chd',
+  'language:chf',
+  'language:chk',
+  'language:chq',
+  'language:chz',
+  'language:cjo',
+  'language:cjv',
+  'language:cle',
+  'language:clu',
+  'language:cme',
+  'language:cmn',
+  'language:cni',
+  'language:cnl',
+  'language:cnt',
+  'language:cof',
+  'language:con',
+  'language:cop',
+  'language:cot',
+  'language:cpa',
+  'language:cpb',
+  'language:cpc',
+  'language:cpu',
+  'language:crn',
+  'language:crx',
+  'language:cso',
+  'language:cta',
+  'language:ctp',
+  'language:ctu',
+  'language:cub',
+  'language:cuc',
+  'language:cui',
+  'language:cut',
+  'language:cux',
+  'language:cwe',
+  'language:daa',
+  'language:dad',
+  'language:dah',
+  'language:ded',
+  'language:deu',
+  'language:dgr',
+  'language:dgz',
+  'language:dif',
+  'language:dik',
+  'language:dji',
+  'language:djk',
+  'language:dob',
+  'language:dwr',
+  'language:dww',
+  'language:dwy',
+  'language:eko',
+  'language:emi',
+  'language:emp',
+  'language:eng',
+  'language:epo',
+  'language:eri',
+  'language:ese',
+  'language:etr',
+  'language:faa',
+  'language:fai',
+  'language:far',
+  'language:for',
+  'language:fra',
+  'language:fuf',
+  'language:gai',
+  'language:gam',
+  'language:gaw',
+  'language:gdn',
+  'language:gdr',
+  'language:geb',
+  'language:gfk',
+  'language:ghs',
+  'language:gia',
+  'language:glk',
+  'language:gmv',
+  'language:gng',
+  'language:gnn',
+  'language:gnw',
+  'language:gof',
+  'language:grc',
+  'language:gub',
+  'language:guh',
+  'language:gui',
+  'language:gul',
+  'language:gum',
+  'language:guo',
+  'language:gvc',
+  'language:gvf',
+  'language:gwi',
+  'language:gym',
+  'language:gyr',
+  'language:hat',
+  'language:haw',
+  'language:hbo',
+  'language:hch',
+  'language:heb',
+  'language:heg',
+  'language:hix',
+  'language:hla',
+  'language:hlt',
+  'language:hns',
+  'language:hop',
+  'language:hrv',
+  'language:hub',
+  'language:hui',
+  'language:hus',
+  'language:huu',
+  'language:huv',
+  'language:hvn',
+  'language:ign',
+  'language:ikk',
+  'language:ikw',
+  'language:imo',
+  'language:inb',
+  'language:ind',
+  'language:ino',
+  'language:iou',
+  'language:ipi',
+  'language:ita',
+  'language:jac',
+  'language:jao',
+  'language:jic',
+  'language:jiv',
+  'language:jpn',
+  'language:jvn',
+  'language:kaq',
+  'language:kbc',
+  'language:kbh',
+  'language:kbm',
+  'language:kdc',
+  'language:kde',
+  'language:kdl',
+  'language:kek',
+  'language:ken',
+  'language:kew',
+  'language:kgk',
+  'language:kgp',
+  'language:khs',
+  'language:kje',
+  'language:kjs',
+  'language:kkc',
+  'language:kky',
+  'language:klt',
+  'language:klv',
+  'language:kms',
+  'language:kmu',
+  'language:kne',
+  'language:knf',
+  'language:knj',
+  'language:kos',
+  'language:kpf',
+  'language:kpg',
+  'language:kpj',
+  'language:kpw',
+  'language:kqa',
+  'language:kqc',
+  'language:kqf',
+  'language:kql',
+  'language:kqw',
+  'language:ksj',
+  'language:ksr',
+  'language:ktm',
+  'language:kto',
+  'language:kud',
+  'language:kue',
+  'language:kup',
+  'language:kvn',
+  'language:kwd',
+  'language:kwf',
+  'language:kwi',
+  'language:kwj',
+  'language:kyf',
+  'language:kyg',
+  'language:kyq',
+  'language:kyz',
+  'language:kze',
+  'language:lac',
+  'language:lat',
+  'language:lbb',
+  'language:leu',
+  'language:lex',
+  'language:lgl',
+  'language:lid',
+  'language:lif',
+  'language:lww',
+  'language:maa',
+  'language:maj',
+  'language:maq',
+  'language:mau',
+  'language:mav',
+  'language:maz',
+  'language:mbb',
+  'language:mbc',
+  'language:mbh',
+  'language:mbl',
+  'language:mbt',
+  'language:mca',
+  'language:mcb',
+  'language:mcd',
+  'language:mcf',
+  'language:mcp',
+  'language:mdy',
+  'language:med',
+  'language:mee',
+  'language:mek',
+  'language:meq',
+  'language:met',
+  'language:meu',
+  'language:mgh',
+  'language:mgw',
+  'language:mhl',
+  'language:mib',
+  'language:mic',
+  'language:mie',
+  'language:mig',
+  'language:mih',
+  'language:mil',
+  'language:mio',
+  'language:mir',
+  'language:mit',
+  'language:miz',
+  'language:mjc',
+  'language:mkn',
+  'language:mks',
+  'language:mlh',
+  'language:mlp',
+  'language:mmx',
+  'language:mna',
+  'language:mop',
+  'language:mox',
+  'language:mph',
+  'language:mpj',
+  'language:mpm',
+  'language:mpp',
+  'language:mps',
+  'language:mpx',
+  'language:mqb',
+  'language:mqj',
+  'language:msb',
+  'language:msc',
+  'language:msk',
+  'language:msm',
+  'language:msy',
+  'language:mti',
+  'language:muy',
+  'language:mva',
+  'language:mvn',
+  'language:mwc',
+  'language:mxb',
+  'language:mxp',
+  'language:mxq',
+  'language:mxt',
+  'language:myu',
+  'language:myw',
+  'language:myy',
+  'language:mzz',
+  'language:nab',
+  'language:naf',
+  'language:nak',
+  'language:nay',
+  'language:nbq',
+  'language:nca',
+  'language:nch',
+  'language:ncj',
+  'language:ncl',
+  'language:ncu',
+  'language:ndj',
+  'language:nfa',
+  'language:ngp',
+  'language:ngu',
+  'language:nhg',
+  'language:nhi',
+  'language:nho',
+  'language:nhr',
+  'language:nhu',
+  'language:nhw',
+  'language:nhy',
+  'language:nif',
+  'language:nin',
+  'language:nko',
+  'language:nld',
+  'language:nlg',
+  'language:nna',
+  'language:nnq',
+  'language:not',
+  'language:nou',
+  'language:npl',
+  'language:nsn',
+  'language:nss',
+  'language:ntj',
+  'language:ntp',
+  'language:nwi',
+  'language:nyu',
+  'language:obo',
+  'language:ong',
+  'language:ons',
+  'language:ood',
+  'language:opm',
+  'language:ote',
+  'language:otm',
+  'language:otn',
+  'language:otq',
+  'language:ots',
+  'language:pab',
+  'language:pad',
+  'language:pah',
+  'language:pao',
+  'language:pes',
+  'language:pib',
+  'language:pio',
+  'language:pir',
+  'language:pjt',
+  'language:plu',
+  'language:pma',
+  'language:poe',
+  'language:poi',
+  'language:pon',
+  'language:poy',
+  'language:ppo',
+  'language:prf',
+  'language:pri',
+  'language:ptp',
+  'language:ptu',
+  'language:pwg',
+  'language:quc',
+  'language:quf',
+  'language:quh',
+  'language:qul',
+  'language:qup',
+  'language:qvc',
+  'language:qve',
+  'language:qvh',
+  'language:qvm',
+  'language:qvn',
+  'language:qvs',
+  'language:qvw',
+  'language:qvz',
+  'language:qwh',
+  'language:qxh',
+  'language:qxn',
+  'language:qxo',
+  'language:rai',
+  'language:rkb',
+  'language:rmc',
+  'language:roo',
+  'language:rop',
+  'language:rro',
+  'language:ruf',
+  'language:rug',
+  'language:rus',
+  'language:sab',
+  'language:san',
+  'language:sbe',
+  'language:seh',
+  'language:sey',
+  'language:sgz',
+  'language:shj',
+  'language:shp',
+  'language:sim',
+  'language:sja',
+  'language:sll',
+  'language:smk',
+  'language:snc',
+  'language:snn',
+  'language:sny',
+  'language:som',
+  'language:soq',
+  'language:spa',
+  'language:spl',
+  'language:spm',
+  'language:sps',
+  'language:spy',
+  'language:sri',
+  'language:srm',
+  'language:srn',
+  'language:srp',
+  'language:srq',
+  'language:ssd',
+  'language:ssg',
+  'language:ssx',
+  'language:stp',
+  'language:sua',
+  'language:sue',
+  'language:sus',
+  'language:suz',
+  'language:swe',
+  'language:swh',
+  'language:swp',
+  'language:sxb',
+  'language:tac',
+  'language:tav',
+  'language:tbc',
+  'language:tbl',
+  'language:tbo',
+  'language:tbz',
+  'language:tca',
+  'language:tee',
+  'language:ter',
+  'language:tew',
+  'language:tfr',
+  'language:tgp',
+  'language:tif',
+  'language:tim',
+  'language:tiy',
+  'language:tke',
+  'language:tku',
+  'language:tna',
+  'language:tnc',
+  'language:tnn',
+  'language:tnp',
+  'language:toc',
+  'language:tod',
+  'language:toj',
+  'language:ton',
+  'language:too',
+  'language:top',
+  'language:tos',
+  'language:tpt',
+  'language:trc',
+  'language:tsw',
+  'language:ttc',
+  'language:tue',
+  'language:tuo',
+  'language:txu',
+  'language:ubr',
+  'language:udu',
+  'language:ukr',
+  'language:uli',
+  'language:ura',
+  'language:urb',
+  'language:usa',
+  'language:usp',
+  'language:uvl',
+  'language:vid',
+  'language:vie',
+  'language:viv',
+  'language:vmy',
+  'language:waj',
+  'language:wal',
+  'language:wap',
+  'language:wat',
+  'language:wbp',
+  'language:wed',
+  'language:wer',
+  'language:wim',
+  'language:wmt',
+  'language:wmw',
+  'language:wnc',
+  'language:wnu',
+  'language:wos',
+  'language:wrk',
+  'language:wro',
+  'language:wsk',
+  'language:wuv',
+  'language:xav',
+  'language:xed',
+  'language:xla',
+  'language:xnn',
+  'language:xon',
+  'language:xsi',
+  'language:xtd',
+  'language:xtm',
+  'language:yaa',
+  'language:yad',
+  'language:yal',
+  'language:yap',
+  'language:yaq',
+  'language:yby',
+  'language:ycn',
+  'language:yka',
+  'language:yml',
+  'language:yre',
+  'language:yuj',
+  'language:yut',
+  'language:yuw',
+  'language:yva',
+  'language:zaa',
+  'language:zab',
+  'language:zac',
+  'language:zad',
+  'language:zai',
+  'language:zaj',
+  'language:zam',
+  'language:zao',
+  'language:zar',
+  'language:zas',
+  'language:zat',
+  'language:zav',
+  'language:zaw',
+  'language:zca',
+  'language:zia',
+  'language:ziw',
+  'language:zos',
+  'language:zpc',
+  'language:zpl',
+  'language:zpo',
+  'language:zpq',
+  'language:zpu',
+  'language:zpv',
+  'language:zpz',
+  'language:zsr',
+  'language:ztq',
+  'language:zty',
+  'language:zyp',
+  'language:be',
+  'language:br',
+  'language:cs',
+  'language:ch',
+  'language:zh',
+  'language:de',
+  'language:en',
+  'language:eo',
+  'language:fr',
+  'language:ht',
+  'language:he',
+  'language:hr',
+  'language:id',
+  'language:it',
+  'language:ja',
+  'language:la',
+  'language:nl',
+  'language:ru',
+  'language:sa',
+  'language:so',
+  'language:es',
+  'language:sr',
+  'language:sv',
+  'language:to',
+  'language:uk',
+  'language:vi',
+  'license:cc-by-4.0',
+  'license:other']]</code></pre>
+</div>
+</div>
+<p>We can see that in this case many of the tags relate to language. Since the dataset is bible related and the bible has been heavily translated this might not be as surprising.</p>
+<p>Although these high-level stats are somewhat interesting we probably want to break these numbers down. At a high level we can groupby datasets vs models.</p>
+<div id="cell-39" class="cell" data-execution_count="21">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>df.groupby(<span class="st">"type"</span>)[<span class="st">"number_of_tags"</span>].describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="21">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">count</th>
+<th data-quarto-table-cell-role="th">mean</th>
+<th data-quarto-table-cell-role="th">std</th>
+<th data-quarto-table-cell-role="th">min</th>
+<th data-quarto-table-cell-role="th">25%</th>
+<th data-quarto-table-cell-role="th">50%</th>
+<th data-quarto-table-cell-role="th">75%</th>
+<th data-quarto-table-cell-role="th">max</th>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">type</th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">dataset</td>
+<td>19576.0</td>
+<td>2.46935</td>
+<td>13.137220</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>2.0</td>
+<td>650.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">model</td>
+<td>131767.0</td>
+<td>4.06151</td>
+<td>5.327066</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>4.0</td>
+<td>6.0</td>
+<td>413.0</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>We can see that the mean number of tags for models is higher than datasets. We can also see at the 75% percentile models also have more tags compared to datasets. The possible reasons for this (and whether this is a problem or not) is something we may wish to explore further…</p>
+<p>Since the hub hosts models from different libraries we may want to also breakdown by library. First let’s grab only the model part of our DataFrame.</p>
+<div id="cell-41" class="cell" data-execution_count="22">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>models_df <span class="op">=</span> df[df[<span class="st">"type"</span>] <span class="op">==</span> <span class="st">"model"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The <code>library_name</code> column contains info about the library. Let’s see how many unique libraries we have.</p>
+<div id="cell-43" class="cell" data-execution_count="23">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>models_df.library_name.unique().shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="23">
+<pre><code>(63,)</code></pre>
+</div>
+</div>
+<p>This is quite a few! We can do a groupby on this column</p>
+<div id="cell-45" class="cell" data-execution_count="24">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>models_df.groupby(<span class="st">"library_name"</span>)[<span class="st">"number_of_tags"</span>].describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="24">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">count</th>
+<th data-quarto-table-cell-role="th">mean</th>
+<th data-quarto-table-cell-role="th">std</th>
+<th data-quarto-table-cell-role="th">min</th>
+<th data-quarto-table-cell-role="th">25%</th>
+<th data-quarto-table-cell-role="th">50%</th>
+<th data-quarto-table-cell-role="th">75%</th>
+<th data-quarto-table-cell-role="th">max</th>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">library_name</th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">BERT</td>
+<td>1.0</td>
+<td>7.0</td>
+<td>NaN</td>
+<td>7.0</td>
+<td>7.0</td>
+<td>7.0</td>
+<td>7.0</td>
+<td>7.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">Doc-UFCN</td>
+<td>2.0</td>
+<td>4.0</td>
+<td>0.000000</td>
+<td>4.0</td>
+<td>4.0</td>
+<td>4.0</td>
+<td>4.0</td>
+<td>4.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">EveryDream</td>
+<td>2.0</td>
+<td>7.0</td>
+<td>0.000000</td>
+<td>7.0</td>
+<td>7.0</td>
+<td>7.0</td>
+<td>7.0</td>
+<td>7.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">FastAI</td>
+<td>1.0</td>
+<td>1.0</td>
+<td>NaN</td>
+<td>1.0</td>
+<td>1.0</td>
+<td>1.0</td>
+<td>1.0</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">JoeyNMT</td>
+<td>1.0</td>
+<td>4.0</td>
+<td>NaN</td>
+<td>4.0</td>
+<td>4.0</td>
+<td>4.0</td>
+<td>4.0</td>
+<td>4.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">ultralytics</td>
+<td>4.0</td>
+<td>10.0</td>
+<td>1.414214</td>
+<td>8.0</td>
+<td>9.5</td>
+<td>10.5</td>
+<td>11.0</td>
+<td>11.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">ultralyticsplus</td>
+<td>1.0</td>
+<td>9.0</td>
+<td>NaN</td>
+<td>9.0</td>
+<td>9.0</td>
+<td>9.0</td>
+<td>9.0</td>
+<td>9.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">yolor</td>
+<td>2.0</td>
+<td>9.0</td>
+<td>0.000000</td>
+<td>9.0</td>
+<td>9.0</td>
+<td>9.0</td>
+<td>9.0</td>
+<td>9.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">yolov5</td>
+<td>36.0</td>
+<td>9.0</td>
+<td>0.000000</td>
+<td>9.0</td>
+<td>9.0</td>
+<td>9.0</td>
+<td>9.0</td>
+<td>9.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">yolov6detect</td>
+<td>1.0</td>
+<td>10.0</td>
+<td>NaN</td>
+<td>10.0</td>
+<td>10.0</td>
+<td>10.0</td>
+<td>10.0</td>
+<td>10.0</td>
+</tr>
+</tbody>
+</table>
+
+<p>62 rows × 8 columns</p>
+</div>
+</div>
+</div>
+<p>We might find this a bit tricky to look at. We may want to only include the top n libraries since some of these libraries may be less well used.</p>
+<div id="cell-47" class="cell" data-execution_count="25">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>models_df.library_name.value_counts()[:<span class="dv">15</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="25">
+<pre><code>transformers             63754
+stable-baselines3         3183
+diffusers                 2802
+sentence-transformers     1273
+ml-agents                  763
+keras                      470
+timm                       383
+espnet                     381
+spacy                      296
+sample-factory             273
+adapter-transformers       201
+sklearn                    113
+nemo                       103
+fastai                      99
+speechbrain                 94
+Name: library_name, dtype: int64</code></pre>
+</div>
+</div>
+<div id="cell-48" class="cell" data-execution_count="26">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>top_libraries <span class="op">=</span> models_df.library_name.value_counts()[:<span class="dv">9</span>].index.to_list()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-49" class="cell" data-execution_count="27">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>top_libraries_df <span class="op">=</span> models_df[models_df.library_name.isin(top_libraries)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-50" class="cell" data-execution_count="28">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>top_libraries_df.groupby(<span class="st">"library_name"</span>)[<span class="st">"number_of_tags"</span>].describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="28">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">count</th>
+<th data-quarto-table-cell-role="th">mean</th>
+<th data-quarto-table-cell-role="th">std</th>
+<th data-quarto-table-cell-role="th">min</th>
+<th data-quarto-table-cell-role="th">25%</th>
+<th data-quarto-table-cell-role="th">50%</th>
+<th data-quarto-table-cell-role="th">75%</th>
+<th data-quarto-table-cell-role="th">max</th>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">library_name</th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">diffusers</td>
+<td>2802.0</td>
+<td>4.374732</td>
+<td>2.171226</td>
+<td>1.0</td>
+<td>3.0</td>
+<td>4.0</td>
+<td>5.0</td>
+<td>18.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">espnet</td>
+<td>381.0</td>
+<td>6.965879</td>
+<td>0.595060</td>
+<td>3.0</td>
+<td>7.0</td>
+<td>7.0</td>
+<td>7.0</td>
+<td>9.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">keras</td>
+<td>470.0</td>
+<td>3.842553</td>
+<td>14.422674</td>
+<td>1.0</td>
+<td>1.0</td>
+<td>2.0</td>
+<td>5.0</td>
+<td>311.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">ml-agents</td>
+<td>763.0</td>
+<td>6.965924</td>
+<td>0.273775</td>
+<td>2.0</td>
+<td>7.0</td>
+<td>7.0</td>
+<td>7.0</td>
+<td>7.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">sentence-transformers</td>
+<td>1273.0</td>
+<td>6.984289</td>
+<td>3.221840</td>
+<td>2.0</td>
+<td>6.0</td>
+<td>6.0</td>
+<td>7.0</td>
+<td>36.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">spacy</td>
+<td>296.0</td>
+<td>4.611486</td>
+<td>0.985180</td>
+<td>2.0</td>
+<td>4.0</td>
+<td>5.0</td>
+<td>5.0</td>
+<td>10.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">stable-baselines3</td>
+<td>3183.0</td>
+<td>4.997801</td>
+<td>0.163426</td>
+<td>3.0</td>
+<td>5.0</td>
+<td>5.0</td>
+<td>5.0</td>
+<td>8.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">timm</td>
+<td>383.0</td>
+<td>3.548303</td>
+<td>1.315291</td>
+<td>2.0</td>
+<td>3.0</td>
+<td>3.0</td>
+<td>3.0</td>
+<td>13.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">transformers</td>
+<td>63754.0</td>
+<td>6.912037</td>
+<td>5.262633</td>
+<td>1.0</td>
+<td>5.0</td>
+<td>6.0</td>
+<td>8.0</td>
+<td>240.0</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>Let’s take a quick look at some examples from the library with the highest and lowest number or tags.</p>
+<div id="cell-52" class="cell" data-execution_count="29">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>top_libraries_df[top_libraries_df.library_name <span class="op">==</span> <span class="st">"sentence-transformers"</span>].sample(<span class="dv">15</span>)[</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"tags"</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="29">
+<pre><code>6123      [pytorch, gpt_neo, arxiv:2202.08904, sentence-...
+2488      [pytorch, distilbert, sentence-transformers, f...
+37669     [pytorch, distilbert, sentence-transformers, f...
+71483     [pytorch, bert, sentence-transformers, feature...
+20710     [pytorch, tf, roberta, ko, sentence-transforme...
+27073     [pytorch, tf, jax, roberta, arxiv:1908.10084, ...
+92037     [pytorch, mpnet, sentence-transformers, featur...
+90320     [pytorch, mpnet, sentence-transformers, featur...
+63555     [pytorch, bert, sentence-transformers, feature...
+87707     [pytorch, mpnet, sentence-transformers, featur...
+80570     [pytorch, bert, sentence-transformers, feature...
+111407    [pytorch, bert, sentence-transformers, feature...
+82690     [pytorch, mpnet, sentence-transformers, featur...
+36217     [pytorch, bert, pl, dataset:Wikipedia, arxiv:1...
+100086    [pytorch, roberta, sentence-transformers, feat...
+Name: tags, dtype: object</code></pre>
+</div>
+</div>
+<div id="cell-54" class="cell" data-execution_count="30">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>top_libraries_df[top_libraries_df.library_name <span class="op">==</span> <span class="st">"timm"</span>].sample(<span class="dv">15</span>)[<span class="st">"tags"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="30">
+<pre><code>104432                [pytorch, timm, image-classification]
+110296    [pytorch, arxiv:2301.00808, timm, image-classi...
+24158                 [pytorch, timm, image-classification]
+26471                 [pytorch, timm, image-classification]
+104437                [pytorch, timm, image-classification]
+61630     [pytorch, dataset:beans, timm, image-classific...
+110298    [pytorch, arxiv:2301.00808, timm, image-classi...
+104015                [pytorch, timm, image-classification]
+101124                [pytorch, timm, image-classification]
+57882     [coreml, onnx, en, dataset:imagenet-1k, arxiv:...
+83459     [pytorch, timm, image-classification, vision, ...
+99461                 [pytorch, timm, image-classification]
+104029                [pytorch, timm, image-classification]
+84402     [pytorch, timm, image-classification, vision, ...
+104428                [pytorch, timm, image-classification]
+Name: tags, dtype: object</code></pre>
+</div>
+</div>
+<p>We can see here that some tags for <code>sentence-transformers</code> are very closely tied to that libraries purpose e.g.&nbsp;the <code>sentence-similarity</code> tag. This tag migth be useful when a user is looking for models to do <code>sentence-similarity</code> but might be less useful if you are trying to choose <em>between</em> models for this task i.e.&nbsp;trying to find the <code>setence-transformer</code> model that will be useful for you. We should be careful, therefore, in treating number of tags as a proxy for quality.</p>
+<section id="grouping-by-pipeline-tags" class="level3">
+<h3 class="anchored" data-anchor-id="grouping-by-pipeline-tags">Grouping by pipeline tags</h3>
+<p>We have a column in our dataframe <code>pipeline</code> tag, which refers to the type of task a model is for. We should be careful relying too much on this but we can have a quick look at how often these are used.</p>
+<div id="cell-57" class="cell" data-execution_count="31">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>models_df[<span class="st">"pipeline_tag"</span>].value_counts()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="31">
+<pre><code>text-classification               14479
+text2text-generation               8102
+text-generation                    7602
+reinforcement-learning             6885
+token-classification               6386
+automatic-speech-recognition       6238
+fill-mask                          5447
+question-answering                 3147
+feature-extraction                 2661
+translation                        1837
+conversational                     1770
+image-classification               1760
+text-to-image                      1604
+sentence-similarity                1248
+summarization                       735
+unconditional-image-generation      428
+text-to-speech                      244
+audio-classification                234
+multiple-choice                     169
+object-detection                    158
+image-segmentation                  134
+audio-to-audio                      130
+tabular-classification               97
+zero-shot-classification             97
+image-to-text                        76
+zero-shot-image-classification       56
+video-classification                 50
+table-question-answering             47
+tabular-regression                   44
+image-to-image                       43
+depth-estimation                     37
+document-question-answering          18
+visual-question-answering            13
+voice-activity-detection              6
+other                                 4
+time-series-forecasting               1
+Name: pipeline_tag, dtype: int64</code></pre>
+</div>
+</div>
+<p>We may also want to see if there are some type of task that have more tags.</p>
+<div id="cell-59" class="cell" data-execution_count="32">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>models_df.groupby(<span class="st">"pipeline_tag"</span>)[<span class="st">"number_of_tags"</span>].mean().sort_values().plot.barh()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2023_01_16_hub_api_explore copy_files/figure-html/cell-33-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We can also look at the breakdown for a particular task</p>
+<div id="cell-61" class="cell" data-execution_count="98">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>text_classification_df <span class="op">=</span> models_df[models_df[<span class="st">"pipeline_tag"</span>] <span class="op">==</span> <span class="st">"text-classification"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-62" class="cell" data-execution_count="99">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>text_classification_df[<span class="st">"number_of_tags"</span>].describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="99">
+<pre><code>count    14479.000000
+mean         5.948822
+std          3.718800
+min          1.000000
+25%          4.000000
+50%          5.000000
+75%          7.000000
+max        240.000000
+Name: number_of_tags, dtype: float64</code></pre>
+</div>
+</div>
+<p>Again, we have some extreme outliers</p>
+<div id="cell-64" class="cell" data-execution_count="100">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>text_classification_df[text_classification_df.number_of_tags <span class="op">&gt;</span> <span class="dv">230</span>][[<span class="st">"tags"</span>, <span class="st">"modelId"</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="100">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">tags</th>
+<th data-quarto-table-cell-role="th">modelId</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">22457</td>
+<td>[pytorch, tf, roberta, text-classification, mu...</td>
+<td>m3hrdadfi/zabanshenas-roberta-base-mix</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">101628</td>
+<td>[pytorch, canine, text-classification, ace, af...</td>
+<td>SebOchs/canine-c-lang-id</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>We see that these mostly seem to relate to language. Let’s remove these outliers and look at the distribution in the number of tags without these.</p>
+<div id="cell-66" class="cell" data-execution_count="114">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>text_classification_df_no_outliers <span class="op">=</span> text_classification_df[</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>    text_classification_df[<span class="st">"number_of_tags"</span>]</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;=</span> text_classification_df[<span class="st">"number_of_tags"</span>].quantile(<span class="fl">0.95</span>)</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>text_classification_df_no_outliers[<span class="st">"number_of_tags"</span>].plot.hist(bins<span class="op">=</span><span class="dv">9</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2023_01_16_hub_api_explore copy_files/figure-html/cell-37-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="why-counting-tags-might-not-make-sense" class="level2">
+<h2 class="anchored" data-anchor-id="why-counting-tags-might-not-make-sense">Why counting tags might not make sense</h2>
+<p>I’e already hinted at why looking at raw number of tags might not be a good idea. Let’s close this blog by briefly digging into at least one reason why. We’ll use the toolz library for some of this analysis.</p>
+<div id="cell-68" class="cell" data-execution_count="102">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> toolz <span class="im">import</span> concat</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>First we grab all the tags and put them in a single list.</p>
+<div id="cell-70" class="cell" data-execution_count="103">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>all_tags <span class="op">=</span> <span class="bu">list</span>(concat(df.tags.tolist()))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>If we look at some examples, we’ll see some tags are in the form of <code>something:somethingelse</code>.</p>
+<div id="cell-72" class="cell" data-execution_count="104">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>all_tags[:<span class="dv">10</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="104">
+<pre><code>['pytorch',
+ 'tf',
+ 'albert',
+ 'fill-mask',
+ 'en',
+ 'dataset:bookcorpus',
+ 'dataset:wikipedia',
+ 'arxiv:1909.11942',
+ 'transformers',
+ 'exbert']</code></pre>
+</div>
+</div>
+<p>for example <code>dataset:wikipedia</code>, we should therefore avoid treating all tags as the same since tags can have a particular purpose. i.e.&nbsp;indicating a dataset is associated with a model.</p>
+<div id="cell-74" class="cell" data-execution_count="105">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> is_special_tag(tag: <span class="bu">str</span>):</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">":"</span> <span class="kw">in</span> tag</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-75" class="cell" data-execution_count="106">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> toolz <span class="im">import</span> countby, valmap</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-76" class="cell" data-execution_count="107">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>special_tag_vs_normal <span class="op">=</span> countby(is_special_tag, all_tags)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-77" class="cell" data-execution_count="108">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>special_tag_vs_normal</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="108">
+<pre><code>{False: 467758, True: 115755}</code></pre>
+</div>
+</div>
+<div id="cell-78" class="cell" data-execution_count="109">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>total <span class="op">=</span> <span class="bu">sum</span>(special_tag_vs_normal.values())</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>valmap(<span class="kw">lambda</span> x: x <span class="op">/</span> total, special_tag_vs_normal)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="109">
+<pre><code>{False: 0.8016239569641121, True: 0.1983760430358878}</code></pre>
+</div>
+</div>
+<p>We can see that a good chunk of tags are ‘special’ tags. i.e.&nbsp;they have a ‘type’ associated with them. If we want to explore tags on the hub more carefully we’ll need to take this into account…</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/danielvanstrien\.xyz");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

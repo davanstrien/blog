@@ -1,108 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url>
-<loc>https://danielvanstrien.xyz/metadata/multi-model/2020/05/03/multi-model.html</loc>
-<lastmod>2020-05-03T00:00:00-05:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/hyperparameter%20optimisation/optimisation/optuna/fastai2/transfer%20learning/2020/07/01/optuna.html</loc>
-<lastmod>2020-07-01T00:00:00-05:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/fastai/conda/pandas/2020/08/29/code_snippets.html</loc>
-<lastmod>2020-08-29T00:00:00-05:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/models/labels/loss%20functions/2020/10/12/labelling_vs_classification_models.html</loc>
-<lastmod>2020-10-12T00:00:00-05:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/fastai%20course/ethics/2020/11/05/power-ethics-and-ai-in-glams.html</loc>
-<lastmod>2020-11-05T00:00:00-06:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/fastai/callbacks/learning/2021/03/04/callbacks-and-debugging-part-one.html</loc>
-<lastmod>2021-03-04T00:00:00-06:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/deployment/ethics/glam/full%20stack%20deep%20learning%20notes/2021/03/06/full-stack-deep-learning-glam-notes-5.html</loc>
-<lastmod>2021-03-06T00:00:00-06:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/deployment/ethics/glam/full%20stack%20deep%20learning%20notes/2021/03/13/full-stack-deep-learning-lesson-6-tooling.html</loc>
-<lastmod>2021-03-13T00:00:00-06:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/deployment/glam/full%20stack%20deep%20learning%20notes/2021/03/13/full-stack-deep-learning-lesson-7-debugging.html</loc>
-<lastmod>2021-03-13T00:00:00-06:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/deployment/glam/flyswot/2021/12/22/flyswot.html</loc>
-<lastmod>2021-12-22T00:00:00-06:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/metadata/deployment/huggingface/flyswot/2021/12/30/hf-hub-model-storage.html</loc>
-<lastmod>2021-12-30T00:00:00-06:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/metadata/deployment/huggingface/ethics/huggingface-datasets/faiss/2022/01/13/image_search.html</loc>
-<lastmod>2022-01-13T00:00:00-06:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/huggingface/huggingface-datasets/dask/2022/06/20/dask-and-datasets.html</loc>
-<lastmod>2022-06-20T00:00:00-05:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/huggingface/huggingface-datasets/semantic-search/2022/07/26/semantic-search-ml-models.html</loc>
-<lastmod>2022-07-26T00:00:00-05:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/huggingface/huggingface-datasets/transformers/2022/08/16/detr-object-detection.html</loc>
-<lastmod>2022-08-16T00:00:00-05:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/huggingface/huggingface-datasets/annotation/full%20stack%20deep%20learning%20notes/2022/09/07/label-studio-annotations-hub.html</loc>
-<lastmod>2022-09-07T00:00:00-05:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/huggingface/autotrain/2023/02/22/autotrain.html</loc>
-<lastmod>2023-02-22T00:00:00-06:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/metadata/huggingface/2023/03/07/readme-template.html</loc>
-<lastmod>2023-03-07T00:00:00-06:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/huggingface/datasets/2023/09/18/datasets-groupby.html</loc>
-<lastmod>2023-09-18T00:00:00-05:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/huggingface/datasets/qdrant/vector-search/2023/11/08/datasets_to_qdrant.html</loc>
-<lastmod>2023-11-08T00:00:00-06:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/huggingface/metadata/2024/08/07/_01_16_hub_api_explore.html</loc>
-<lastmod>2024-08-07T00:00:00-05:00</lastmod>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/about/</loc>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/</loc>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/projects/</loc>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/search/</loc>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/categories/</loc>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/page2/</loc>
-</url>
-<url>
-<loc>https://danielvanstrien.xyz/page3/</loc>
-</url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://danielvanstrien.xyz/posts/post-with-code/optuna/2020-07-01-optuna.html</loc>
+    <lastmod>2024-08-08T16:04:43.018Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/posts/post-with-code/datasets-with-qdrant/2023-11-08-datasets_to_qdrant.html</loc>
+    <lastmod>2024-08-08T16:04:42.990Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/posts/post-with-code/2023-06-07-hub-dataset-danguage_detection.html</loc>
+    <lastmod>2024-08-08T16:04:42.982Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/posts/post-with-code/2020-05-03-multi-model.html</loc>
+    <lastmod>2024-08-08T16:04:42.918Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/posts/post-with-code/semantic-model-search/2022-07-26-semantic-search-ml-models.html</loc>
+    <lastmod>2024-08-08T16:04:43.022Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/posts/post-with-code/label-studio-hub/2022-09-07-label-studio-annotations-hub.html</loc>
+    <lastmod>2024-08-08T16:04:43.010Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/posts/post-with-code/detr/2022-08-16-detr-object-detection.html</loc>
+    <lastmod>2024-08-08T16:04:43.002Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/posts/post-with-code/langfuse-tracing/Langfuse_+_HF_inference_endpoints.html</loc>
+    <lastmod>2024-08-08T16:04:43.010Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/posts/plain-text/autotrain/2023-02-22-autotrain.html</loc>
+    <lastmod>2024-08-08T16:04:42.910Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/pages/projects.html</loc>
+    <lastmod>2024-08-08T16:04:42.910Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/about.html</loc>
+    <lastmod>2024-08-08T16:04:42.910Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/index.html</loc>
+    <lastmod>2024-08-08T16:04:42.910Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/pages/cv.html</loc>
+    <lastmod>2024-08-08T16:04:42.910Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/posts/plain-text/flyswot/2021-12-22-flyswot.html</loc>
+    <lastmod>2024-08-08T16:04:42.914Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/posts/post-with-code/2020-10-12-labelling_vs_classification_models.html</loc>
+    <lastmod>2024-08-08T16:04:42.934Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/posts/post-with-code/2021-12-30-hf-hub-model-storage.html</loc>
+    <lastmod>2024-08-08T16:04:42.934Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/posts/post-with-code/metadata-explore/2023_01_16_hub_api_explore copy.html</loc>
+    <lastmod>2024-08-08T16:04:43.014Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/posts/post-with-code/datasets-groupby/2023-09-18-datasets-groupby.html</loc>
+    <lastmod>2024-08-08T16:04:42.986Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/posts/post-with-code/2022-01-13-image_search.html</loc>
+    <lastmod>2024-08-08T16:04:42.982Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/posts/post-with-code/readme_auto_generate/2023-03-07-readme-template.html</loc>
+    <lastmod>2024-08-08T16:04:43.018Z</lastmod>
+  </url>
+  <url>
+    <loc>https://danielvanstrien.xyz/posts/post-with-code/dask/2022-06-20-dask-and-datasets.html</loc>
+    <lastmod>2024-08-08T16:04:42.986Z</lastmod>
+  </url>
 </urlset>
