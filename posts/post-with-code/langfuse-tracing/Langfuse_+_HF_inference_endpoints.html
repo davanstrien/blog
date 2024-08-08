@@ -204,26 +204,25 @@ gtag('config', 'G-F61N6B5LBY', { 'anonymize_ip': true});
 </header>
 
 
-<div id="cell-1" class="cell" data-outputid="be7ed8e0-ad25-4d97-88a8-799f85591f8f" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>pip install openai langfuse</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-1" class="cell" data-outputid="be7ed8e0-ad25-4d97-88a8-799f85591f8f" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>pip install openai langfuse <span class="op">--</span>quiet</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>/Users/davanstrien/Documents/daniel/new_blog/.venv/bin/python: No module named pip
-Note: you may need to restart the kernel to use updated packages.</code></pre>
+<pre><code>Note: you may need to restart the kernel to use updated packages.</code></pre>
 </div>
 </div>
 <pre><code>LANGFUSE_SECRET_KEY="sk-lf-..."
 LANGFUSE_PUBLIC_KEY="pk-lf-..."
 LANGFUSE_HOST="https://cloud.langfuse.com" # 🇪🇺 EU region</code></pre>
-<div id="cell-4" class="cell">
+<div id="cell-3" class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> google.colab <span class="im">import</span> userdata</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-5" class="cell">
+<div id="cell-4" class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">"LANGFUSE_SECRET_KEY"</span>] <span class="op">=</span> userdata.get(<span class="st">'LANGFUSE_SECRET_KEY'</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">"LANGFUSE_PUBLIC_KEY"</span>] <span class="op">=</span> userdata.get(<span class="st">'LANGFUSE_PUBLIC_KEY'</span>)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>HF_TOKEN <span class="op">=</span> userdata.get(<span class="st">'HF_TOKEN'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-7" class="cell">
+<div id="cell-6" class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> langfuse.decorators <span class="im">import</span> observe</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> langfuse.openai <span class="im">import</span> openai, OpenAI <span class="co"># OpenAI integration</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -233,7 +232,7 @@ LANGFUSE_HOST="https://cloud.langfuse.com" # 🇪🇺 EU region</code></pre>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        api_key<span class="op">=</span>HF_TOKEN,</span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-8" class="cell">
+<div id="cell-7" class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>chat_completion <span class="op">=</span> client.chat.completions.create(</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    model<span class="op">=</span><span class="st">"tgi"</span>,</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    messages<span class="op">=</span>[</span>
@@ -242,7 +241,7 @@ LANGFUSE_HOST="https://cloud.langfuse.com" # 🇪🇺 EU region</code></pre>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    stream<span class="op">=</span><span class="va">False</span></span>
 <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-9" class="cell" data-outputid="9ecdea98-6c15-464c-e9c8-1425188b63fd">
+<div id="cell-8" class="cell" data-outputid="9ecdea98-6c15-464c-e9c8-1425188b63fd">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>chat_completion</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="14">
 <pre><code>ChatCompletion(id='', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content=" Hugging Face is a technology company that specializes in natural language processing (NLP) and artificial intelligence (AI). The company is best known for its development of Transformers, an open-source library that provides a wide range of pre-trained models for various NLP tasks, such as text classification, question answering, and language translation.\n\nHugging Face's Transformers library has gained widespread popularity among developers and researchers due to its ease of use, flexibility, and", role='assistant', function_call=None, tool_calls=None))], created=1712314124, model='text-generation-inference/Mixtral-8x7B-Instruct-v0.1-medusa', object='text_completion', system_fingerprint='1.4.3-sha-e6bb3ff', usage=CompletionUsage(completion_tokens=100, prompt_tokens=15, total_tokens=115))</code></pre>
