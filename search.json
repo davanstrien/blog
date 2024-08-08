@@ -462,6 +462,20 @@
     "text": "What can I do with this model?\nThere are various ways in which you can use the model you’ve created. How you want to use it depends largely on your use case. In a follow-up blog post I’ll suggest a few options for how you can continue on the no/low-code journey to creating and using ML tools customised to your needs and data 🤗.\n\nShow me the models!\nYou can find the best models shown above here:\n\nhttps://huggingface.co/davanstrien/autotrain-ia-useful-covers-3665397856\nhttps://huggingface.co/davanstrien/autotrain-encyclopaedia-illustrations-blog-post-3327992158"
   },
   {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Posts",
+    "section": "",
+    "text": "Tracing Text Generation Inference calls\n\n\n\n\n\nHow to trace text generation inference calls with Langfuse.\n\n\n\n\n\nApr 5, 2024\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nHow to load a Hugging Face dataset into Qdrant?\n\n\n\n\n\nLoading a Hugging Face dataset into Qdrant is easy. This post shows how to do it.\n\n\n\n\n\nNov 8, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nHow to do groupby for Hugging Face datasets\n\n\n\n\n\nHow can you groupby in Hugging Face datasets?\n\n\n\n\n\nSep 18, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nExploring language metadata for datasets on the Hugging Face Hub\n\n\n\n\n\nUsing the huggingface_hub library to asses metadata on the hub\n\n\n\n\n\nJun 7, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nDynamically updating a Hugging Face hub organization README\n\n\n\n\n\nUsing the huggingface_hub library and Jinja to update a README dynamically\n\n\n\n\n\nMar 7, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nUsing Hugging Face AutoTrain to train an image classifier without writing any code.\n\n\n\n\n\n\nautotrain\n\n\n\nHow can we train useful machine learning models without writing code?\n\n\n\n\n\nFeb 22, 2023\n\n\n\n\n\n\n\n\n\n\n\n\nA (very brief) intro to exploring metadata on the Hugging Face Hub\n\n\n\n\n\nHow we can use the huggingface_hub library to explore metadata on the Hugging Face Hub.\n\n\n\n\n\nJan 16, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nLabel Studio x Hugging Face datasets hub\n\n\n\n\n\nUsing label studio and the Hugging Face datasets hub to iteratively annotate a dataset\n\n\n\n\n\nSep 7, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nTraining an object detection model using Hugging Face\n\n\n\n\n\nTraining a Detr object detection model using Hugging Face transformers and datasets\n\n\n\n\n\nAug 16, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nSearching for machine learning models using semantic search\n\n\n\n\n\nFinding models on the Hugging Face hub using semantic search\n\n\n\n\n\nJul 26, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nCombining Hugging Face datasets with dask\n\n\n\n\n\nUsing 🤗 datasets in combination with dask\n\n\n\n\n\nJun 20, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nUsing 🤗 datasets for image search\n\n\n\n\n\nUsing the 🤗 datasets to make an image search engine for British Library Book Illustrations\n\n\n\n\n\nJan 13, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nUsing the 🤗 Hub for model storage\n\n\n\n\n\nHow I’m planning to use the huggingface hub for storing flyswot models\n\n\n\n\n\nDec 30, 2021\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nflyswot\n\n\n\n\n\n\nglam\n\n\nflyswot\n\n\n\nAttempting to deploy machine learning in an existing workflow\n\n\n\n\n\nDec 22, 2021\n\n\n\n\n\n\n\n\n\n\n\n\nImage labeling vs classification models\n\n\n\n\n\nComparing the loss functions of label and classification models\n\n\n\n\n\nOct 12, 2020\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nHyperparameter Optimization for Transfer Learning\n\n\n\n\n\nOptimising Hyperparameters using optuna and fastai2\n\n\n\n\n\nJul 1, 2020\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nMulti-model metadata generation\n\n\n\n\n\nExperiment in combining text and tabular models to generate web archive metadata\n\n\n\n\n\nMay 3, 2020\n\n\nDaniel van Strien\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About Me",
+    "section": "",
+    "text": "Hi, I’m Daniel a Machine Learning Librarian at Hugging Face."
+  },
+  {
     "objectID": "pages/projects.html",
     "href": "pages/projects.html",
     "title": "Selected projects",
@@ -495,27 +509,6 @@
     "title": "Selected projects",
     "section": "Tutorials",
     "text": "Tutorials\n\nJupyter book showing how to build an ML powered book genre classifier\nA (brief) history of advertising in US Newspapers using computer vision\n(Under review) Computer Vision for the Humanities: An Introduction to Deep Learning for Image Classification, Programming Historian lessons\n(Under development) Intro to AI for GLAM, Carpentries Lesson"
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About Me",
-    "section": "",
-    "text": "Hi, I’m Daniel a Machine Learning Librarian at Hugging Face."
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Posts",
-    "section": "",
-    "text": "Tracing Text Generation Inference calls\n\n\n\n\n\nHow to trace text generation inference calls with Langfuse.\n\n\n\n\n\nApr 5, 2024\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nHow to load a Hugging Face dataset into Qdrant?\n\n\n\n\n\nLoading a Hugging Face dataset into Qdrant is easy. This post shows how to do it.\n\n\n\n\n\nNov 8, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nHow to do groupby for Hugging Face datasets\n\n\n\n\n\nHow can you groupby in Hugging Face datasets?\n\n\n\n\n\nSep 18, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nExploring language metadata for datasets on the Hugging Face Hub\n\n\n\n\n\nUsing the huggingface_hub library to asses metadata on the hub\n\n\n\n\n\nJun 7, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nDynamically updating a Hugging Face hub organization README\n\n\n\n\n\nUsing the huggingface_hub library and Jinja to update a README dynamically\n\n\n\n\n\nMar 7, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nUsing Hugging Face AutoTrain to train an image classifier without writing any code.\n\n\n\n\n\n\nautotrain\n\n\n\nHow can we train useful machine learning models without writing code?\n\n\n\n\n\nFeb 22, 2023\n\n\n\n\n\n\n\n\n\n\n\n\nA (very brief) intro to exploring metadata on the Hugging Face Hub\n\n\n\n\n\nHow we can use the huggingface_hub library to explore metadata on the Hugging Face Hub.\n\n\n\n\n\nJan 16, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nLabel Studio x Hugging Face datasets hub\n\n\n\n\n\nUsing label studio and the Hugging Face datasets hub to iteratively annotate a dataset\n\n\n\n\n\nSep 7, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nTraining an object detection model using Hugging Face\n\n\n\n\n\nTraining a Detr object detection model using Hugging Face transformers and datasets\n\n\n\n\n\nAug 16, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nSearching for machine learning models using semantic search\n\n\n\n\n\nFinding models on the Hugging Face hub using semantic search\n\n\n\n\n\nJul 26, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nCombining Hugging Face datasets with dask\n\n\n\n\n\nUsing 🤗 datasets in combination with dask\n\n\n\n\n\nJun 20, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nUsing 🤗 datasets for image search\n\n\n\n\n\nUsing the 🤗 datasets to make an image search engine for British Library Book Illustrations\n\n\n\n\n\nJan 13, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nUsing the 🤗 Hub for model storage\n\n\n\n\n\nHow I’m planning to use the huggingface hub for storing flyswot models\n\n\n\n\n\nDec 30, 2021\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nflyswot\n\n\n\n\n\n\nglam\n\n\nflyswot\n\n\n\nAttempting to deploy machine learning in an existing workflow\n\n\n\n\n\nDec 22, 2021\n\n\n\n\n\n\n\n\n\n\n\n\nImage labeling vs classification models\n\n\n\n\n\nComparing the loss functions of label and classification models\n\n\n\n\n\nOct 12, 2020\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nHyperparameter Optimization for Transfer Learning\n\n\n\n\n\nOptimising Hyperparameters using optuna and fastai2\n\n\n\n\n\nJul 1, 2020\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nMulti-model metadata generation\n\n\n\n\n\nExperiment in combining text and tabular models to generate web archive metadata\n\n\n\n\n\nMay 3, 2020\n\n\nDaniel van Strien\n\n\n\n\n\n\nNo matching items"
-  },
-  {
-    "objectID": "pages/cv.html",
-    "href": "pages/cv.html",
-    "title": "CV",
-    "section": "",
-    "text": "Welcome to my blog! This is my CV"
   },
   {
     "objectID": "posts/plain-text/flyswot/2021-12-22-flyswot.html",
