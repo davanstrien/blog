@@ -1,6 +1,8 @@
 project:
   type: website
-
+  google-analytics: G-F61N6B5LBY
+  storage: none
+  anonymize-ip: true
 # R, Python, and Julia code is only executed locally
 execute:
   freeze: auto
@@ -22,8 +24,3 @@ format:
   html:
     theme: cosmo
     css: styles.css
-
-website:
-  google-analytics: G-F61N6B5LBY
-  storage: none
-  anonymize-ip: true
