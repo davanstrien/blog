@@ -5,3 +5,4 @@ logs/
 __pycache__/
 /.quarto/
 /_site/
+.DS_Store
