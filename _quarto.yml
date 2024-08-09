@@ -7,6 +7,7 @@ execute:
 
 website:
   title: "Daniel van Strien"
+  favicon: icons/favicon.ico
   navbar:
     right:
       - text: "About"
