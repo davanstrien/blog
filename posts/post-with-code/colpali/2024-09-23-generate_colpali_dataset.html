@@ -239,6 +239,7 @@ gtag('config', 'G-F61N6B5LBY', { 'anonymize_ip': true});
 <p><a href="https://colab.research.google.com/github/davanstrien/blog/blob/main/posts/post-with-code/colpali/2024-09-23-generate_colpali_dataset.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid"></a></p>
 <section id="introduction-to-colpali" class="level2">
 <h2 class="anchored" data-anchor-id="introduction-to-colpali">Introduction to ColPali</h2>
+<p>tl;dr this blog post covers how to generate a dataset for training/fine-tuning ColPali models an open VLM to generate queries. You can find the dataset produced by this approach <a href="https://huggingface.co/datasets/davanstrien/ufo-ColPali">here</a>.</p>
 <p>ColPali is a new multimodal approach to retrieval which aims to replace existing document retrievers which often rely on an OCR step with an end-to-end multimodal approach. This approach also aims to take into account the visual content and layout of the documents, in addition to the textual content. Looking at an example of a document:</p>
 <p><img src="doc.png" class="img-fluid"></p>
 <p>we could rely only on the text, but the page also has a table which could be relevant for retrieving the most useful document either for direct use or in a RAG pipeline. In many documents we will find that pages don’t just contain images but also other rich sources of visual information that could be relevant for retrieval.</p>
