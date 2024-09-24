@@ -1,7 +1,6 @@
 project:
   type: website
 
-# R, Python, and Julia code is only executed locally
 execute:
   freeze: auto
 
@@ -17,12 +16,10 @@ website:
       - icon: twitter
         href: https://twitter.com/vanstriendaniel
 
-    body-footer: |
-      <!-- 100% privacy-first analytics -->
-      <script async defer src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
-      <noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif" alt="" referrerpolicy="no-referrer-when-downgrade" /></noscript>
-
 format:
   html:
     theme: cosmo
     css: styles.css
+    include-in-header:
+      - text: |
+          <script defer src="https://cloud.umami.is/script.js" data-website-id="85cb27d6-dbf9-43d7-97d0-be4e6724de7a"></script>
