@@ -166,6 +166,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#the-training-data-for-colpali" id="toc-the-training-data-for-colpali" class="nav-link" data-scroll-target="#the-training-data-for-colpali">The training data for ColPali</a></li>
   </ul></li>
+  <li><a href="#creating-queries-from-documents" id="toc-creating-queries-from-documents" class="nav-link" data-scroll-target="#creating-queries-from-documents">Creating queries from documents</a></li>
   <li><a href="#ufo-colpali-creating-a-domain-specific-dataset" id="toc-ufo-colpali-creating-a-domain-specific-dataset" class="nav-link" data-scroll-target="#ufo-colpali-creating-a-domain-specific-dataset">UFO ColPali: creating a domain specific dataset</a></li>
   <li><a href="#using-qwen2-vl-to-generate-queries" id="toc-using-qwen2-vl-to-generate-queries" class="nav-link" data-scroll-target="#using-qwen2-vl-to-generate-queries">Using Qwen2-VL to generate queries</a></li>
   <li><a href="#building-colpali-queries" id="toc-building-colpali-queries" class="nav-link" data-scroll-target="#building-colpali-queries">Building Colpali queries</a>
@@ -323,52 +324,62 @@ Audited 54 packages in 0.08ms</code></pre>
  'What are some factors to consider for CAES facility development in different parts of New York?']</code></pre>
 </div>
 </div>
-<pre class="tip"><code>One thing you might notice about these queries is that many of them are more focused on "questions" about documents rather than traditional search queries. We'll shortly see the prompting approach used to generate these queries but we might already want to consider, depending on our use case, whether we want to generate more "search"-like queries or more "question"-like queries.
-
-## Creating queries from documents 
-
-For the data using in ColPali, part of the dataset was sourced from existing document question answering datasets. Another component was generated using Claude 3.0 Sonnet with the following prompt:
-
-::: {#cell-15 .cell}
-``` {.python .cell-code}
-prompt = """
-You are an assistant specialized in Multimodal RAG tasks.
-
-The task is the following: given an image from a pdf page, you will have to generate questions that can be asked by a user to retrieve information from a large documentary corpus.
-
-The question should be relevant to the page, and should not be too specific or too general. The question should be about the subject of the page, and the answer needs to be found in the page.
-
-Remember that the question is asked by a user to get some information from a large documentary corpus that contains multimodal data. Generate a question that could be asked by a user without knowing the existence and the content of the corpus.
-
-Generate as well the answer to the question, which should be found in the page. And the format of the answer should be a list of words answering the question.
-
-Generate at most THREE pairs of questions and answers per page in a dictionary with the following format, answer ONLY this dictionary NOTHING ELSE:
-
-{
-    "questions": [
-        {
-            "question": "XXXXXX",
-            "answer": ["YYYYYY"]
-        },
-        {
-            "question": "XXXXXX",
-            "answer": ["YYYYYY"]
-        },
-        {
-            "question": "XXXXXX",
-            "answer": ["YYYYYY"]
-        }
-    ]
-}
-where XXXXXX is the question and ['YYYYYY'] is the corresponding list of answers that could be as long as needed.
-
-Note: If there are no questions to ask about the page, return an empty list. Focus on making relevant questions concerning the page.
-
-Here is the page:"""</code></pre>
-<p>:::</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>One thing you might notice about these queries is that many of them are more focused on “questions” about documents rather than traditional search queries. We’ll shortly see the prompting approach used to generate these queries but we might already want to consider, depending on our use case, whether we want to generate more “search”-like queries or more “question”-like queries.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="creating-queries-from-documents" class="level2">
+<h2 class="anchored" data-anchor-id="creating-queries-from-documents">Creating queries from documents</h2>
+<p>For the data using in ColPali, part of the dataset was sourced from existing document question answering datasets. Another component was generated using Claude 3.0 Sonnet with the following prompt:</p>
+<div id="cell-15" class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>prompt <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="st">You are an assistant specialized in Multimodal RAG tasks.</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="st">The task is the following: given an image from a pdf page, you will have to generate questions that can be asked by a user to retrieve information from a large documentary corpus.</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="st">The question should be relevant to the page, and should not be too specific or too general. The question should be about the subject of the page, and the answer needs to be found in the page.</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="st">Remember that the question is asked by a user to get some information from a large documentary corpus that contains multimodal data. Generate a question that could be asked by a user without knowing the existence and the content of the corpus.</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="st">Generate as well the answer to the question, which should be found in the page. And the format of the answer should be a list of words answering the question.</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="st">Generate at most THREE pairs of questions and answers per page in a dictionary with the following format, answer ONLY this dictionary NOTHING ELSE:</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="st">{</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="st">    "questions": [</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="st">        {</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="st">            "question": "XXXXXX",</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="st">            "answer": ["YYYYYY"]</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="st">        },</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="st">        {</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="st">            "question": "XXXXXX",</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a><span class="st">            "answer": ["YYYYYY"]</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="st">        },</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a><span class="st">        {</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="st">            "question": "XXXXXX",</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a><span class="st">            "answer": ["YYYYYY"]</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a><span class="st">        }</span></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a><span class="st">    ]</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a><span class="st">where XXXXXX is the question and ['YYYYYY'] is the corresponding list of answers that could be as long as needed.</span></span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a><span class="st">Note: If there are no questions to ask about the page, return an empty list. Focus on making relevant questions concerning the page.</span></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a><span class="st">Here is the page:"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 <p>As you can see this prompt is focused on generating questions that are relevant to the page and that could be asked by a user and answered by the document. One thing I noticed from the queries generated with this prompt is that I think some of the generated queries strayed a bit from the prompts request to not assume the user knew the content of the document. Some of the questions were quite specific and it seemed like they were tailored to the particular page they were generated from.</p>
 <p>Whilst out of the box performance of ColPali is likely to be good for many domains and use cases it it likely that fine tuning ColPali on domain specific data will lead to improved performance. We’ll now turn to how we can generate our own queries for ColPali.</p>
-</section>
 </section>
 <section id="ufo-colpali-creating-a-domain-specific-dataset" class="level2">
 <h2 class="anchored" data-anchor-id="ufo-colpali-creating-a-domain-specific-dataset">UFO ColPali: creating a domain specific dataset</h2>
