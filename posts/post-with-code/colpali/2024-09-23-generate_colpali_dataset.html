@@ -166,6 +166,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#the-training-data-for-colpali" id="toc-the-training-data-for-colpali" class="nav-link" data-scroll-target="#the-training-data-for-colpali">The training data for ColPali</a></li>
   </ul></li>
+  <li><a href="#ufo-colpali-creating-a-domain-specific-dataset" id="toc-ufo-colpali-creating-a-domain-specific-dataset" class="nav-link" data-scroll-target="#ufo-colpali-creating-a-domain-specific-dataset">UFO ColPali: creating a domain specific dataset</a></li>
   <li><a href="#using-qwen2-vl-to-generate-queries" id="toc-using-qwen2-vl-to-generate-queries" class="nav-link" data-scroll-target="#using-qwen2-vl-to-generate-queries">Using Qwen2-VL to generate queries</a></li>
   <li><a href="#building-colpali-queries" id="toc-building-colpali-queries" class="nav-link" data-scroll-target="#building-colpali-queries">Building Colpali queries</a>
   <ul class="collapse">
@@ -327,34 +328,62 @@ Audited 54 packages in 0.08ms</code></pre>
 ## Creating queries from documents 
 
 For the data using in ColPali, part of the dataset was sourced from existing document question answering datasets. Another component was generated using Claude 3.0 Sonnet with the following prompt:
-</code></pre>
-<p>You are an assistant specialized in → Multimodal RAG tasks. The task is the following: given an image → from a pdf page, you will have to generate questions that can be asked by a → user to retrieve information from a large documentary corpus. The question should be relevant to the → page, and should not be too specific or too general. The question should be → about the subject of the page, and the answer needs to be found in the page. → </p>
-<p>Remember that the question is asked by a → user to get some information from a large documentary corpus that contains → multimodal data. Generate a question that could be asked by a user without → knowing the existence and the content of the corpus. Generate as well the answer to the → question, which should be found in the page. And the format of the answer should → be a list of words answering the question. </p>
-<p>Generate at most THREE pairs of questions → and answers per page in a dictionary with the following format, → answer ONLY this dictionary NOTHING ELSE: </p>
-<p>{ “questions”: [ { “question”: “XXXXXX”, “answer”: [“YYYYYY”] }, { “question”: “XXXXXX”, “answer”: [“YYYYYY”] }, { “question”: “XXXXXX”, “answer”: [“YYYYYY”] }, ] } where XXXXXX is the question and → [‘YYYYYY’] is the corresponding list → of answers that could be as long as needed. </p>
-<p>Note: If there are no questions to ask → about the page, return an empty list. Focus on making relevant questions → concerning the page. Here is the page: </p>
-<pre><code>
-As you can see this prompt is focused on generating questions that are relevant to the page and that could be asked by a user and answered by the document. One thing I noticed from the queries generated with this prompt is that I think some of the generated queries strayed a bit from the prompts request to not assume the user knew the content of the document. Some of the questions were quite specific and it seemed like they were tailored to the particular page they were generated from. 
 
-Whilst out of the box performance of ColPali is likely to be good for many domains and use cases it it likely that fine tuning ColPali on domain specific data will lead to improved performance. We'll now turn to how we can generate our own queries for ColPali. 
-
-## UFO ColPali: creating a domain specific dataset 
-
-Let's now turn to how we could approach generating our own query image pairs for training — or more likely fine tuning — a ColPali model on domain specific data. 
-
-To make the example slightly more interesting we'll stray away from using an existing document dataset and use a UFO dateset which has been sourced from an Internet Archive [Collection of UFO newsletters](https://archive.org/details/ufonewsletters). This dataset was created from a sample of PDFs from this collection which were then split into single page images using the [pdf-to-page-images-dataset](https://huggingface.co/spaces/Dataset-Creation-Tools/pdf-to-page-images-dataset) Hugging Face Space. If you have a collection of PDFs related to your domain you could also use this Space to quickly create a dataset for your use case. 
-
-::: {#cell-16 .cell outputId='7d9282e5-2c9b-4894-d480-e916ae940681'}
+::: {#cell-15 .cell}
 ``` {.python .cell-code}
-import os
-from datasets import load_dataset</code></pre>
+prompt = """
+You are an assistant specialized in Multimodal RAG tasks.
+
+The task is the following: given an image from a pdf page, you will have to generate questions that can be asked by a user to retrieve information from a large documentary corpus.
+
+The question should be relevant to the page, and should not be too specific or too general. The question should be about the subject of the page, and the answer needs to be found in the page.
+
+Remember that the question is asked by a user to get some information from a large documentary corpus that contains multimodal data. Generate a question that could be asked by a user without knowing the existence and the content of the corpus.
+
+Generate as well the answer to the question, which should be found in the page. And the format of the answer should be a list of words answering the question.
+
+Generate at most THREE pairs of questions and answers per page in a dictionary with the following format, answer ONLY this dictionary NOTHING ELSE:
+
+{
+    "questions": [
+        {
+            "question": "XXXXXX",
+            "answer": ["YYYYYY"]
+        },
+        {
+            "question": "XXXXXX",
+            "answer": ["YYYYYY"]
+        },
+        {
+            "question": "XXXXXX",
+            "answer": ["YYYYYY"]
+        }
+    ]
+}
+where XXXXXX is the question and ['YYYYYY'] is the corresponding list of answers that could be as long as needed.
+
+Note: If there are no questions to ask about the page, return an empty list. Focus on making relevant questions concerning the page.
+
+Here is the page:"""</code></pre>
 <p>:::</p>
+<p>As you can see this prompt is focused on generating questions that are relevant to the page and that could be asked by a user and answered by the document. One thing I noticed from the queries generated with this prompt is that I think some of the generated queries strayed a bit from the prompts request to not assume the user knew the content of the document. Some of the questions were quite specific and it seemed like they were tailored to the particular page they were generated from.</p>
+<p>Whilst out of the box performance of ColPali is likely to be good for many domains and use cases it it likely that fine tuning ColPali on domain specific data will lead to improved performance. We’ll now turn to how we can generate our own queries for ColPali.</p>
+</section>
+</section>
+<section id="ufo-colpali-creating-a-domain-specific-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="ufo-colpali-creating-a-domain-specific-dataset">UFO ColPali: creating a domain specific dataset</h2>
+<p>Let’s now turn to how we could approach generating our own query image pairs for training — or more likely fine tuning — a ColPali model on domain specific data.</p>
+<p>To make the example slightly more interesting we’ll stray away from using an existing document dataset and use a UFO dateset which has been sourced from an Internet Archive <a href="https://archive.org/details/ufonewsletters">Collection of UFO newsletters</a>. This dataset was created from a sample of PDFs from this collection which were then split into single page images using the <a href="https://huggingface.co/spaces/Dataset-Creation-Tools/pdf-to-page-images-dataset">pdf-to-page-images-dataset</a> Hugging Face Space. If you have a collection of PDFs related to your domain you could also use this Space to quickly create a dataset for your use case.</p>
+<div id="cell-18" class="cell" data-outputid="7d9282e5-2c9b-4894-d480-e916ae940681">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 <p>If you are running on a machine with quite a fast connection, the following environment variable may increase the speed of the model and dataset downloads.</p>
-<div id="cell-18" class="cell" data-execution_count="2">
+<div id="cell-20" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">"HF_HUB_ENABLE_HF_TRANSFER"</span>] <span class="op">=</span> <span class="st">"1"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s start by loading the UFO dataset and taking a look at a few examples.</p>
-<div id="cell-20" class="cell" data-execution_count="3">
+<div id="cell-22" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> load_dataset(<span class="st">"davanstrien/ufo"</span>, split<span class="op">=</span><span class="st">"train"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
@@ -363,19 +392,19 @@ from datasets import load_dataset</code></pre>
 </div>
 </div>
 <p>Let’s see what a row looks like</p>
-<div id="cell-22" class="cell" data-execution_count="4">
+<div id="cell-24" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>ds[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="4">
 <pre><code>{'image': &lt;PIL.JpegImagePlugin.JpegImageFile image mode=RGB size=596x842&gt;}</code></pre>
 </div>
 </div>
 <p>and look at an example document</p>
-<div id="cell-24" class="cell" data-execution_count="5">
+<div id="cell-26" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>ds[<span class="dv">3</span>][<span class="st">"image"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="5">
 <div>
 <figure class="figure">
-<p><img src="2024-09-23-generate_colpali_dataset_files/figure-html/cell-12-output-1.png" class="img-fluid figure-img"></p>
+<p><img src="2024-09-23-generate_colpali_dataset_files/figure-html/cell-13-output-1.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
 </div>
@@ -383,13 +412,12 @@ from datasets import load_dataset</code></pre>
 <p>We can see that the dataset currently just contains images which map to a single page of a document. We can also see from the example document that the document does contain some visual elements which could be relevant for retrieval.</p>
 <p>What we need to train or fine tune ColPali is at least one query for each of our the document images in our dataset.</p>
 </section>
-</section>
 <section id="using-qwen2-vl-to-generate-queries" class="level2">
 <h2 class="anchored" data-anchor-id="using-qwen2-vl-to-generate-queries">Using Qwen2-VL to generate queries</h2>
 <p>Whilst the original ColPali paper used the Claude 3.0 Sonnet model to generate queries for the UFO dataset, we’ll use the Qwen2-VL model to generate queries for our UFO dataset. Specifcally we’ll use the 7B variant of the model (<a href="https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct">Qwen/Qwen2-VL-7B-Instruct</a>). This is an open VLLM (Apache 2.0 licensed) Vision Language Model which has shown strong performance on a variety of vision and language tasks. Whilst the model won’t run on a standard T4 Google Colab instance we can run the model either on a L4 or an A100 GPU on Google Colab or you can use the Hugging Face Jupyter Spaces <a href="https://huggingface.co/spaces/SpacesExamples/jupyterlab?duplicate=true">template</a> to run the model on an L40s as I did.</p>
 <p>To start let’s load the model and get a sense of how we can use it. We’ll do this through the Transformers library. It’s also possible to run the model using the vLLM library but since we’re only focusing on generating a relatively small number of queries this extra set up probably isn’t worth it in this case (I’d be interested to hear in the comments if you try it out and how it goes).</p>
 <p>To start we’ll load the model. We’ll use <code>flash_attention_2</code> which should help a bit with the performance and memory usage of the model.</p>
-<div id="cell-28" class="cell" data-execution_count="6">
+<div id="cell-30" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qwen_vl_utils <span class="im">import</span> process_vision_info</span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
@@ -412,12 +440,12 @@ You are attempting to use Flash Attention 2.0 without specifying a torch dtype. 
 </div>
 </div>
 <p>We next define the processor. This is the component that will help us prepare the inputs for the model.</p>
-<div id="cell-30" class="cell" data-execution_count="7">
+<div id="cell-32" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># default processer</span></span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>processor <span class="op">=</span> AutoProcessor.from_pretrained(<span class="st">"Qwen/Qwen2-VL-7B-Instruct"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>As with many more recent models, we can use a chat template to help us prepare the inputs for the model. Here is the example from the Qwen2-VL-7B-Instruct model card.</p>
-<div id="cell-32" class="cell" data-execution_count="2">
+<div id="cell-34" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>messages <span class="op">=</span> [</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    {</span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"role"</span>: <span class="st">"user"</span>,</span>
@@ -432,18 +460,18 @@ You are attempting to use Flash Attention 2.0 without specifying a torch dtype. 
 <span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can now pass this to the processor to get the inputs ready for the model. You’ll see here we first pass in the messages to the <code>apply_chat_template</code> method of the processor and then use the <code>process_vision_info</code> helper function which comes from the <code>qwen_vl_utils</code> library to prepare images and videos (which are not relevant here).</p>
-<div id="cell-34" class="cell" data-execution_count="8">
+<div id="cell-36" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>text <span class="op">=</span> processor.apply_chat_template(</span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    messages, tokenize<span class="op">=</span><span class="va">False</span>, add_generation_prompt<span class="op">=</span><span class="va">True</span></span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>image_inputs, video_inputs <span class="op">=</span> process_vision_info(messages)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>If we take a look at the <code>text</code> we can see that the processor has applied a chat template to the messages.</p>
-<div id="cell-36" class="cell">
+<div id="cell-38" class="cell">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>text</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We now pass the text, image and video inputs (in this case <code>None</code>) to the processor and prepare the inputs for the model.</p>
-<div id="cell-38" class="cell" data-execution_count="10">
+<div id="cell-40" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>inputs <span class="op">=</span> processor(</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    text<span class="op">=</span>[text],</span>
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    images<span class="op">=</span>image_inputs,</span>
@@ -454,7 +482,7 @@ You are attempting to use Flash Attention 2.0 without specifying a torch dtype. 
 <span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>inputs <span class="op">=</span> inputs.to(<span class="st">"cuda"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>we can see what this input looks like</p>
-<div id="cell-40" class="cell" data-execution_count="11">
+<div id="cell-42" class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>inputs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="11">
 <pre><code>{'input_ids': tensor([[151644,   8948,    198,  ..., 151644,  77091,    198]],
@@ -469,7 +497,7 @@ You are attempting to use Flash Attention 2.0 without specifying a torch dtype. 
 </div>
 </div>
 <p>Now the inputs are ready to pass to the model. BTW, all of this inference code is copied straight from the Qwen2-VL-7B-Instruct model card on Hugging Face. There are a few things we might want to tweak but the basic examples are pretty much all we need for our use case.</p>
-<div id="cell-42" class="cell" data-execution_count="12">
+<div id="cell-44" class="cell" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>generated_ids <span class="op">=</span> model.generate(<span class="op">**</span>inputs, max_new_tokens<span class="op">=</span><span class="dv">200</span>)</span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>generated_ids_trimmed <span class="op">=</span> [</span>
 <span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    out_ids[<span class="bu">len</span>(in_ids) :] <span class="cf">for</span> in_ids, out_ids <span class="kw">in</span> <span class="bu">zip</span>(inputs.input_ids, generated_ids)</span>
@@ -486,7 +514,7 @@ You are attempting to use Flash Attention 2.0 without specifying a torch dtype. 
 <section id="building-colpali-queries" class="level2">
 <h2 class="anchored" data-anchor-id="building-colpali-queries">Building Colpali queries</h2>
 <p>We now have a sense of how to generate responses using both a text and image input using the Qwen2-VL-7B-Instruct model. We’ll now use this model to generate queries for our UFO dataset. To start, let’s see how the prompt from the paper looks. The only thing we modified from the original prompt was to ask for JSON output rather than dictionaries since this model seemed to work better with this approach in my (somewhat limited) testing.</p>
-<div id="cell-44" class="cell" data-execution_count="20">
+<div id="cell-46" class="cell" data-execution_count="20">
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>prompt <span class="op">=</span> <span class="st">"""You are an assistant specialized in Multimodal RAG tasks.</span></span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="st">The task is the following: given an image from a pdf page, you will have to generate questions that can be asked by a user to retrieve information from a large documentary corpus.</span></span>
@@ -524,7 +552,7 @@ You are attempting to use Flash Attention 2.0 without specifying a torch dtype. 
 <span id="cb30-35"><a href="#cb30-35" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We’ll copy and paste all of the previous code to generate a response from the model for an example from our UFO dataset. We’ll wrap this in a function once we’ve got a better sense of what we’re looking for.</p>
-<div id="cell-46" class="cell" data-execution_count="21">
+<div id="cell-48" class="cell" data-execution_count="21">
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>messages <span class="op">=</span> [</span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>    {</span>
 <span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"role"</span>: <span class="st">"user"</span>,</span>
@@ -538,7 +566,7 @@ You are attempting to use Flash Attention 2.0 without specifying a torch dtype. 
 <span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>    }</span>
 <span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-47" class="cell" data-execution_count="22">
+<div id="cell-49" class="cell" data-execution_count="22">
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>text <span class="op">=</span> processor.apply_chat_template(</span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    messages, tokenize<span class="op">=</span><span class="va">False</span>, add_generation_prompt<span class="op">=</span><span class="va">True</span></span>
 <span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>)</span>
@@ -552,7 +580,7 @@ You are attempting to use Flash Attention 2.0 without specifying a torch dtype. 
 <span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>inputs <span class="op">=</span> inputs.to(<span class="st">"cuda"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-48" class="cell" data-execution_count="23">
+<div id="cell-50" class="cell" data-execution_count="23">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>generated_ids <span class="op">=</span> model.generate(<span class="op">**</span>inputs, max_new_tokens<span class="op">=</span><span class="dv">200</span>)</span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>generated_ids_trimmed <span class="op">=</span> [</span>
 <span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    out_ids[<span class="bu">len</span>(in_ids) :] <span class="cf">for</span> in_ids, out_ids <span class="kw">in</span> <span class="bu">zip</span>(inputs.input_ids, generated_ids)</span>
@@ -569,10 +597,10 @@ You are attempting to use Flash Attention 2.0 without specifying a torch dtype. 
 <section id="validating-the-responses" class="level3">
 <h3 class="anchored" data-anchor-id="validating-the-responses">Validating the responses</h3>
 <p>One of the big challenges you can have in generating synthetic data at scale is ensuring that you get valid responses that you can use in downstream tasks for training without having to do a lot of manual verification. Let’s see if we can load the response as valid JSON</p>
-<div id="cell-51" class="cell" data-execution_count="24">
+<div id="cell-53" class="cell" data-execution_count="24">
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-52" class="cell" data-execution_count="25">
+<div id="cell-54" class="cell" data-execution_count="25">
 <div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>json.loads(output_text[<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="25">
 <pre><code>{'questions': [{'question': 'What is the main subject of the page?',
@@ -585,7 +613,7 @@ You are attempting to use Flash Attention 2.0 without specifying a torch dtype. 
    'answer': ['discovery of singing aliens on the Moon']}]}</code></pre>
 </div>
 </div>
-<div id="cell-53" class="cell" data-execution_count="26">
+<div id="cell-55" class="cell" data-execution_count="26">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(output_text[<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>{
@@ -607,7 +635,7 @@ You are attempting to use Flash Attention 2.0 without specifying a torch dtype. 
 </div>
 </div>
 <p>Having a valid JSON is a good start but in many synthetic data generation tasks, people are increasingly using Pydantic to ensure outputs are valid in other ways. Let’s take a look at a rewritten prompt I created for generating queries. In this prompt we ask the VLLM model to generate 3 different types of retrieval queries:</p>
-<div id="cell-55" class="cell">
+<div id="cell-57" class="cell">
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>prompt <span class="op">=</span> <span class="st">"""You are an AI assistant specialized in document retrieval tasks. Given an image of a document page, your task is to generate retrieval queries that someone might use to find this document in a large corpus.</span></span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="st">Please generate 3 different types of retrieval queries:</span></span>
@@ -642,7 +670,7 @@ You are attempting to use Flash Attention 2.0 without specifying a torch dtype. 
 <span id="cb40-32"><a href="#cb40-32" aria-hidden="true" tabindex="-1"></a><span class="st">Generate the queries based on this image and provide the response in the specified JSON format."""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We ask the model for JSON output, we can represent this using a simple Pydantic model.</p>
-<div id="cell-57" class="cell">
+<div id="cell-59" class="cell">
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pydantic <span class="im">import</span> BaseModel</span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> Tuple</span>
 <span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -660,7 +688,7 @@ You are attempting to use Flash Attention 2.0 without specifying a torch dtype. 
 </section>
 <section id="an-update-retrieval-focused-prompt" class="level2">
 <h2 class="anchored" data-anchor-id="an-update-retrieval-focused-prompt">An update retrieval focused prompt</h2>
-<div id="cell-60" class="cell" data-execution_count="5">
+<div id="cell-62" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_retrieval_prompt(prompt_name: <span class="bu">str</span>) <span class="op">-&gt;</span> Tuple[<span class="bu">str</span>, GeneralRetrievalQuery]:</span>
 <span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> prompt_name <span class="op">!=</span> <span class="st">"general"</span>:</span>
@@ -747,7 +775,7 @@ Pydantic model for this prompt: &lt;class '__main__.GeneralRetrievalQuery'&gt;</
 </div>
 </div>
 <p>We’ll now also wrap this in a function to generate a response from the model using our Pydantic model. We could probably do a bit more refactoring here but this will do for now.</p>
-<div id="cell-62" class="cell" data-execution_count="50">
+<div id="cell-64" class="cell" data-execution_count="50">
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_response(prompt, image):</span>
 <span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>    messages <span class="op">=</span> [</span>
 <span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>        {</span>
@@ -792,7 +820,7 @@ Pydantic model for this prompt: &lt;class '__main__.GeneralRetrievalQuery'&gt;</
 <span id="cb44-42"><a href="#cb44-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> output_text</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s now generate a response from the model for an example image from our UFO dataset.</p>
-<div id="cell-64" class="cell" data-execution_count="51">
+<div id="cell-66" class="cell" data-execution_count="51">
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>generate_response(prompt, ds[<span class="dv">2</span>][<span class="st">"image"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="51">
 <pre><code>['{\n  "broad_topical_query": "Document discussing the possibility of a cameraman going on the record in the future",\n  "broad_topical_explanation": "This query focuses on the main topic of the document, which is the discussion about the cameraman\'s potential to go on the record.",\n  "specific_detail_query": "Document mentioning Ray Santilli and his attempts to persuade the cameraman",\n  "specific_detail_explanation": "This query targets a specific detail in the document, which is Ray Santilli\'s efforts to contact the cameraman.",\n  "visual_element_query": "Document containing images of a damaged leg and an alien\'s foot",\n  "visual_element_explanation": "This query refers to the visual elements present in the document, which are images of a damaged leg and an alien\'s foot."\n}']</code></pre>
@@ -805,7 +833,7 @@ Pydantic model for this prompt: &lt;class '__main__.GeneralRetrievalQuery'&gt;</
 <section id="generating-the-full-dataset" class="level2">
 <h2 class="anchored" data-anchor-id="generating-the-full-dataset">Generating the full dataset</h2>
 <p>As we play with the prompts and refine the queries we will often iterate quite quickly on a few examples. Once we’re reasonably confident in the queries we can generate a larger dataset to see how well our prompts work across a larger set of examples.</p>
-<div id="cell-69" class="cell" data-execution_count="84">
+<div id="cell-71" class="cell" data-execution_count="84">
 <div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>ds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="84">
 <pre><code>Dataset({
@@ -814,11 +842,11 @@ Pydantic model for this prompt: &lt;class '__main__.GeneralRetrievalQuery'&gt;</
 })</code></pre>
 </div>
 </div>
-<div id="cell-70" class="cell" data-execution_count="53">
+<div id="cell-72" class="cell" data-execution_count="53">
 <div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>sample <span class="op">=</span> ds.take(<span class="dv">100</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>To generate our full dataset we just wrap our previous code in a loop and run it for all the examples in our dataset. We add a very broad exception handler to catch any errors and continue with the next example. This is obviously not production code but it’s good enough to get started with. If we scale to a much bigger dataset we might want to add some more robust error handling.</p>
-<div id="cell-72" class="cell" data-execution_count="54">
+<div id="cell-74" class="cell" data-execution_count="54">
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.auto <span class="im">import</span> tqdm</span>
 <span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>responses <span class="op">=</span> []</span>
 <span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> tqdm(sample):</span>
@@ -833,14 +861,14 @@ Pydantic model for this prompt: &lt;class '__main__.GeneralRetrievalQuery'&gt;</
 </script>
 </div>
 </div>
-<div id="cell-73" class="cell" data-execution_count="55">
+<div id="cell-75" class="cell" data-execution_count="55">
 <div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>responses[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="55">
 <pre><code>['{\n  "broad_topical_query": "Document about the Sun and its influence on life",\n  "broad_topical_explanation": "This query focuses on the main subject of the document, which is the Sun and its impact on life.",\n  "specific_detail_query": "New York Times article on the Sun",\n  "specific_detail_explanation": "This query targets a specific detail mentioned in the document, which is the New York Times article on the Sun.",\n  "visual_element_query": "Document with a black and white image",\n  "visual_element_explanation": "This query refers to the visual element present in the document, which is a black and white image."\n}']</code></pre>
 </div>
 </div>
 <p>We can see how many errors we have in our dataset.</p>
-<div id="cell-75" class="cell" data-execution_count="56">
+<div id="cell-77" class="cell" data-execution_count="56">
 <div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>([r <span class="cf">for</span> r <span class="kw">in</span> responses <span class="cf">if</span> r <span class="kw">is</span> <span class="va">None</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="56">
 <pre><code>0</code></pre>
@@ -848,14 +876,14 @@ Pydantic model for this prompt: &lt;class '__main__.GeneralRetrievalQuery'&gt;</
 </div>
 <p>No bad generations!</p>
 <p>We can also look at the first response to see what it looks like.</p>
-<div id="cell-78" class="cell" data-execution_count="58">
+<div id="cell-80" class="cell" data-execution_count="58">
 <div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>responses[<span class="dv">0</span>][<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="58">
 <pre><code>'{\n  "broad_topical_query": "Document about the Sun and its influence on life",\n  "broad_topical_explanation": "This query focuses on the main subject of the document, which is the Sun and its impact on life.",\n  "specific_detail_query": "New York Times article on the Sun",\n  "specific_detail_explanation": "This query targets a specific detail mentioned in the document, which is the New York Times article on the Sun.",\n  "visual_element_query": "Document with a black and white image",\n  "visual_element_explanation": "This query refers to the visual element present in the document, which is a black and white image."\n}'</code></pre>
 </div>
 </div>
 <p>Let’s see if we can parse this into a JSON object.</p>
-<div id="cell-80" class="cell" data-execution_count="59">
+<div id="cell-82" class="cell" data-execution_count="59">
 <div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>json.loads(responses[<span class="dv">0</span>][<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="59">
 <pre><code>{'broad_topical_query': 'Document about the Sun and its influence on life',
@@ -867,10 +895,10 @@ Pydantic model for this prompt: &lt;class '__main__.GeneralRetrievalQuery'&gt;</
 </div>
 </div>
 <p>first example seems to work, now let’s add this to our dataset and see how many we can parse.</p>
-<div id="cell-82" class="cell" data-execution_count="61">
+<div id="cell-84" class="cell" data-execution_count="61">
 <div class="sourceCode cell-code" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>sample <span class="op">=</span> sample.add_column(<span class="st">"raw_queries"</span>, responses)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-83" class="cell" data-execution_count="62">
+<div id="cell-85" class="cell" data-execution_count="62">
 <div class="sourceCode cell-code" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>sample</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="62">
 <pre><code>Dataset({
@@ -880,7 +908,7 @@ Pydantic model for this prompt: &lt;class '__main__.GeneralRetrievalQuery'&gt;</
 </div>
 </div>
 <p>To deal with bad generations we’ll create just fill out these column with <code>None</code> values. We can grab all the required keys from the valid first response.</p>
-<div id="cell-85" class="cell" data-execution_count="71">
+<div id="cell-87" class="cell" data-execution_count="71">
 <div class="sourceCode cell-code" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>keys <span class="op">=</span> <span class="bu">list</span>(json.loads(responses[<span class="dv">0</span>][<span class="dv">0</span>]).keys())</span>
 <span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>keys</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="71">
@@ -893,7 +921,7 @@ Pydantic model for this prompt: &lt;class '__main__.GeneralRetrievalQuery'&gt;</
 </div>
 </div>
 <p>and do something like this to fill out this row</p>
-<div id="cell-87" class="cell" data-execution_count="73">
+<div id="cell-89" class="cell" data-execution_count="73">
 <div class="sourceCode cell-code" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>{k: <span class="va">None</span> <span class="cf">for</span> k <span class="kw">in</span> keys}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="73">
 <pre><code>{'broad_topical_query': None,
@@ -905,7 +933,7 @@ Pydantic model for this prompt: &lt;class '__main__.GeneralRetrievalQuery'&gt;</
 </div>
 </div>
 <p>We create a function to extract the data from the raw queries and parse them into a JSON object.</p>
-<div id="cell-89" class="cell" data-execution_count="74">
+<div id="cell-91" class="cell" data-execution_count="74">
 <div class="sourceCode cell-code" id="cb68"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> extract_data(row):</span>
 <span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
 <span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a>        data <span class="op">=</span> json.loads(row[<span class="st">"raw_queries"</span>][<span class="dv">0</span>])</span>
@@ -917,11 +945,11 @@ Pydantic model for this prompt: &lt;class '__main__.GeneralRetrievalQuery'&gt;</
 <span id="cb68-9"><a href="#cb68-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can now use the <code>map</code> method to apply this function to our dataset.</p>
-<div id="cell-91" class="cell" data-execution_count="76">
+<div id="cell-93" class="cell" data-execution_count="76">
 <div class="sourceCode cell-code" id="cb69"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>parsed_ds <span class="op">=</span> sample.<span class="bu">map</span>(extract_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can then see how many we’ve successfully parsed.</p>
-<div id="cell-93" class="cell" data-execution_count="79">
+<div id="cell-95" class="cell" data-execution_count="79">
 <div class="sourceCode cell-code" id="cb70"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> collections <span class="im">import</span> Counter</span>
 <span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a>Counter(parsed_ds[<span class="st">"parsed_into_json"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -935,10 +963,10 @@ Pydantic model for this prompt: &lt;class '__main__.GeneralRetrievalQuery'&gt;</
 <h2 class="anchored" data-anchor-id="pushing-to-the-hub">Pushing to the Hub</h2>
 <p>We can now push this dataset to the Hugging Face Hub. This will also allow us to view the dataset in the Dataset Viewer. This can often be a very nice way of quickly checking through examples in a dataset to see how the quality looks.</p>
 <p>If you are not authenticated you can use the <code>login</code> function to authenticate with the Hub.</p>
-<div id="cell-97" class="cell" data-execution_count="80">
+<div id="cell-99" class="cell" data-execution_count="80">
 <div class="sourceCode cell-code" id="cb72"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> login</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-98" class="cell" data-execution_count="81">
+<div id="cell-100" class="cell" data-execution_count="81">
 <div class="sourceCode cell-code" id="cb73"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>login()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
@@ -946,7 +974,7 @@ Pydantic model for this prompt: &lt;class '__main__.GeneralRetrievalQuery'&gt;</
 </script>
 </div>
 </div>
-<div id="cell-99" class="cell" data-execution_count="82">
+<div id="cell-101" class="cell" data-execution_count="82">
 <div class="sourceCode cell-code" id="cb74"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>parsed_ds.push_to_hub(<span class="st">"davanstrien/ufo-ColPali"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
@@ -990,7 +1018,7 @@ Pydantic model for this prompt: &lt;class '__main__.GeneralRetrievalQuery'&gt;</
 <section id="appendix-more-diverse-queries" class="level2">
 <h2 class="anchored" data-anchor-id="appendix-more-diverse-queries">Appendix more diverse queries</h2>
 <p>Here are a few more examples of prompts I am experimenting with.</p>
-<div id="cell-104" class="cell">
+<div id="cell-106" class="cell">
 <div class="sourceCode cell-code" id="cb76"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pydantic <span class="im">import</span> BaseModel</span>
 <span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> List, Optional, Tuple, Union</span>
 <span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a></span>
