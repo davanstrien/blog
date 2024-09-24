@@ -16,10 +16,11 @@ website:
         href: https://github.com/davanstrien
       - icon: twitter
         href: https://twitter.com/vanstriendaniel
-  google-analytics:
-    tracking-id: "G-F61N6B5LBY"
-    anonymize-ip: true
-    storage: none
+
+    body-footer: |
+      <!-- 100% privacy-first analytics -->
+      <script async defer src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+      <noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif" alt="" referrerpolicy="no-referrer-when-downgrade" /></noscript>
 
 format:
   html:
