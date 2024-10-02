@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Daniel van Strien">
+<meta name="dcterms.date" content="2024-09-23">
+<meta name="description" content="Using Qdrant multivectors to index and search a UFO document dataset">
+
+<title>Indexing and searching a UFO dataset with Qdrant and ColPali – Daniel van Strien</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../icons/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+<script src="https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
+<script defer="" src="https://cloud.umami.is/script.js" data-website-id="85cb27d6-dbf9-43d7-97d0-be4e6724de7a"></script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Daniel van Strien</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Indexing and searching a UFO dataset with Qdrant and ColPali</h1>
+</div>
+
+<div>
+  <div class="description">
+    Using Qdrant multivectors to index and search a UFO document dataset
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Daniel van Strien </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 23, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>tl;dr: How can use <a href="https://qdrant.tech/">Qdrant</a> + <a href="https://github.com/daniel-avn/colpali">ColPali</a> to index and search a UFO dataset.</p>
+<p>ColPali is a new multimodal retrieval approach that aims to replace existing document retrievers, which often rely on an OCR step, with an end-to-end multimodal approach. This approach also aims to take into account the visual content and layout of the documents in addition to the textual content.</p>
+<p>In a <a href="https://danielvanstrien.xyz/posts/post-with-code/colpali/2024-09-23-generate_colpali_dataset.html">previous blog post</a>, I showed how a VLM can create synthetic data for fine-tuning a ColPali model. In this post, we will examine how to index and search a UFO dataset using Qdrant and ColPali.</p>
+<section id="multivector-databases-support" class="level2">
+<h2 class="anchored" data-anchor-id="multivector-databases-support">Multivector Databases support</h2>
+<p>The last few years have seen an explosion of vector databases. These databases are optimized for storing and searching for high-dimensional data. Traditionally most of the vectors these databases have been storing are single-vector embeddings i.e a vector that looks like:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>[<span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>These vectors can store rich representations of the data they are encoding. However, more recently, several new techniques have been proposed which don’t rely on a single vector but instead use a set of vectors i.e.&nbsp;something like this:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>[[<span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span>], </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>[<span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span>], </span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>[<span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>In the case of ColBERT, these multiple vectors represent the query and document tokens. These are then compared using a late interaction mechanism. This “late interaction” essentially means that rather than creating a pooled representation of the document and query, we compare each query token to each document token individually.</p>
+<p>This similarity has mostly been calculated using MaxSim, which takes the element-wise maximum similarity between the query and document tokens. ColPali uses a similar late interaction mechanism to compare the query and document tokens.</p>
+<p>I won’t go into the details too much since other posts cover this well already. Instead, I will show how we can use ColPali using the Qdrant vector database.</p>
+<section id="what-is-qdrant" class="level3">
+<h3 class="anchored" data-anchor-id="what-is-qdrant">What is Qdrant?</h3>
+<p>Qdrant is a vector database. Many open-source and closed-source vector databases exist, and many “traditional” databases have also added support for vectors.</p>
+<p>Currently, only a small number of databases support multivectors. I am aware of the following:</p>
+<ul>
+<li><a href="https://vespa.ai/">Vespa</a></li>
+<li><a href="https://qdrant.tech/">Qdrant</a></li>
+</ul>
+<p>From what I have understood, Weaviate has an example recipe for <a href="https://github.com/weaviate/recipes/blob/main/weaviate-features/named-vectors/NamedVectors-ColPali-POC.ipynb">ColPali</a>. However, they don’t currently natively support MaxSim, so I haven’t included them in the list since using the DB would require a lot more custom code.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Vespa, and in particular, <a href="https://x.com/jobergum">Jo Kristian Bergum</a>, have done a lot of work on ColPali and are well worth following if you are interested in this area. It’s on my list to finally try Vespa!</p>
+</div>
+</div>
+<p>We’ll start by installing the requirements. For the example, we’ll use a local in-memory Qdrant DB, so you don’t need to worry about any setup. You can easily swap this out for a remote DB or an on-disk DB if you want to use this approach in production.</p>
+<div id="cell-5" class="cell" data-outputid="8343c73a-5831-4204-8802-7b4a4fab9af8">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install uv</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>uv pip install <span class="op">--</span>system colpali_engine<span class="op">&gt;=</span><span class="fl">0.3.1</span> datasets huggingface_hub[hf_transfer] qdrant<span class="op">-</span>client transformers<span class="op">&gt;=</span><span class="fl">4.45.0</span> stamina rich</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Requirement already satisfied: uv in /usr/local/lib/python3.10/dist-packages (0.4.18)
+Audited 7 packages in 69ms</code></pre>
+</div>
+</div>
+<div id="cell-6" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdrant_client <span class="im">import</span> QdrantClient</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdrant_client.http <span class="im">import</span> models</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm <span class="im">import</span> tqdm</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can set the <code>HF_HUB_ENABLE_HF_TRANSFER</code> environment variable to 1 to enable faster downloads. This is optional but should help if you have a fast connection.</p>
+<div id="cell-8" class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">'HF_HUB_ENABLE_HF_TRANSFER'</span>] <span class="op">=</span> <span class="st">"1"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>For this example blog, we’ll use the <a href="https://huggingface.co/datasets/davanstrien/ufo-ColPali">ufo-ColPali</a> dataset that I created as part of my <a href="https://danielvanstrien.xyz/posts/post-with-code/colpali/2024-09-23-generate_colpali_dataset.html">previous post</a>. If you have your own PDFs you want to work with you can use the <a href="https://huggingface.co/spaces/Dataset-Creation-Tools/pdf-to-page-images-dataset">PDF to Page Images Dataset Space</a> to convert your PDFs into a Hugging Face dataset of page images.</p>
+<div id="cell-10" class="cell" data-execution_count="94">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> load_dataset(<span class="st">"davanstrien/ufo-ColPali"</span>, split<span class="op">=</span><span class="st">'train'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>As a reminder of what the dataset looks like</p>
+<div id="cell-12" class="cell" data-outputid="c9662182-026e-4d1b-8c7f-d90745d70137" data-execution_count="95">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dataset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="95">
+<pre><code>Dataset({
+    features: ['image', 'raw_queries', 'broad_topical_query', 'broad_topical_explanation', 'specific_detail_query', 'specific_detail_explanation', 'visual_element_query', 'visual_element_explanation', 'parsed_into_json'],
+    num_rows: 2243
+})</code></pre>
+</div>
+</div>
+<p>In this particular example, we’ll just work with the images, but for many ‘real world’ document collections, you are likely to have at least some metadata associated with the documents that could also be indexed in the DB. These could include things like the title, author, date, etc. These additional metadata fields can also be used as part of the search query and for retrieval.</p>
+<p>Let’s look at an example image to see what sort of data we are working with.</p>
+<div id="cell-15" class="cell" data-outputid="6e41d4e9-9d0c-45d1-d128-63348039cc25" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>dataset[<span class="dv">0</span>][<span class="st">'image'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="12">
+<div>
+<figure class="figure">
+<p><img src="index_qdrant_colpali_files/figure-html/cell-7-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="indexing-the-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="indexing-the-dataset">Indexing the dataset</h2>
+<p>Let’s now walk through how to index the dataset using Qdrant.</p>
+<section id="creating-a-qdrant-client" class="level3">
+<h3 class="anchored" data-anchor-id="creating-a-qdrant-client">Creating a Qdrant client</h3>
+<p>We can use the Qdrant Python client to interact with a Qdrant database. One of the nice features of this client is its in-memory implementation, which is very useful for testing. It’s not recommended for production use, but it’s great for getting started and means we can jump right into the code without having to worry about setting up a database.</p>
+<div id="cell-17" class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Only for colab, otherwise can load from a `.env` file or similar</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># from google.colab import userdata</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>To prove that switching between the in-memory and remote clients is easy, the code below is all I need to use a DB running on a Qdrant cloud free tier. Qdrant is open source, so you can run it on your infrastructure.</p>
+<div id="cell-19" class="cell" data-outputid="8f893c87-480e-484a-f80d-348624d75164" data-execution_count="142">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># qdrant_client = QdrantClient(</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co">#     url="https://e25145aa-1e00-489a-948f-4633d3dd8a37.europe-west3-0.gcp.cloud.qdrant.io",</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#     api_key=userdata.get('qdrantcloud'),</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># )</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>collections=[CollectionDescription(name='ufo2'), CollectionDescription(name='ufo')]</code></pre>
+</div>
+</div>
+<div id="cell-20" class="cell" data-execution_count="113">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>qdrant_client <span class="op">=</span> QdrantClient(</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">":memory:"</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>)  <span class="co"># Use ":memory:" for in-memory database or "path/to/db" for persistent storage</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="setting-up-the-colpali-model" class="level3">
+<h3 class="anchored" data-anchor-id="setting-up-the-colpali-model">Setting up the ColPali model</h3>
+<p>We’ll use a ColPali model <a href="https://huggingface.co/davanstrien/finetune_colpali_v1_2-ufo-4bit/settings">davanstrien/finetune_colpali_v1_2-ufo-4bit</a> fine-tuned on the <a href="https://huggingface.co/datasets/davanstrien/ufo-ColPali">ufo-ColPali</a> dataset. This model was trained using the excellent notebook in the <a href="https://github.com/tonywu71/colpali-cookbooks">ColPali cookbooks repo</a> from <a href="https://huggingface.co/tonywu71">Tony Wu</a>.</p>
+<p>If you want to use a standard ColPali model that is not optimized for UFO document retrieval, you may want to try the newly released <a href="https://huggingface.co/vidore/colqwen2-v0.1">vidore/colqwen2-v0.1</a> model instead.</p>
+<div id="cell-22" class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># from colpali_engine.models import ColQwen2, ColQwen2Processor</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co"># model = ColQwen2.from_pretrained(</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co">#     "vidore/colqwen2-v0.1",</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co">#     torch_dtype=torch.bfloat16,</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co">#     device_map="cuda:0",  # or "mps" if on Apple Silicon</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co"># )</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="co"># processor = ColQwen2Processor.from_pretrained("vidore/colqwen2-v0.1")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-23" class="cell" data-outputid="834f8b1b-d3cf-48c5-bf9b-7aa28c1f2d65" data-execution_count="55">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> colpali_engine.models <span class="im">import</span> ColPali, ColPaliProcessor</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize ColPali model and processor</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>model_name <span class="op">=</span> (</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"davanstrien/finetune_colpali_v1_2-ufo-4bit"</span>  <span class="co"># Use the latest version available</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>colpali_model <span class="op">=</span> ColPali.from_pretrained(</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    model_name,</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    torch_dtype<span class="op">=</span>torch.bfloat16,</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    device_map<span class="op">=</span><span class="st">"cuda:0"</span>,  <span class="co"># Use "cuda:0" for GPU, "cpu" for CPU, or "mps" for Apple Silicon</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>colpali_processor <span class="op">=</span> ColPaliProcessor.from_pretrained(</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"vidore/colpaligemma-3b-pt-448-base"</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"e3437d645f4847c4ae244382eaa198ff","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+</div>
+</section>
+<section id="what-is-a-multivector-and-how-do-we-use-it-in-qdrant" class="level3">
+<h3 class="anchored" data-anchor-id="what-is-a-multivector-and-how-do-we-use-it-in-qdrant">What is a multivector, and how do we use it in Qdrant?</h3>
+<p>To use multivectors in Qdrant, we need to specify the dimensions of the vectors. From the Qdrant docs:</p>
+<blockquote class="blockquote">
+<p>The length of the matrix is fixed, but the number of vectors in the matrix can be different for each point.</p>
+</blockquote>
+<p>So, in order to use multivectors, we need to specify their length. We can check this by passing in an example image to the model and checking the shape of the output.</p>
+<div id="cell-25" class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>sample_image <span class="op">=</span> dataset[<span class="dv">0</span>][<span class="st">"image"</span>]</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad():</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    sample_batch <span class="op">=</span> colpali_processor.process_images([sample_image]).to(</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>        colpali_model.device</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    sample_embedding <span class="op">=</span> colpali_model(<span class="op">**</span>sample_batch)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Since it’s always fun to look at tensors, let’s see what they output embeddings from the ColPali model looks like</p>
+<div id="cell-27" class="cell" data-outputid="3ded594d-7ef6-420f-f3c3-4f4d85f10d0b" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>sample_embedding</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="17">
+<pre><code>tensor([[[ 0.0093, -0.0045,  0.1445,  ...,  0.0248, -0.0820, -0.1641],
+         [-0.0021,  0.1758,  0.1699,  ...,  0.0179, -0.0952, -0.1138],
+         [-0.0237,  0.0366,  0.0732,  ...,  0.0449, -0.0918, -0.1738],
+         ...,
+         [-0.0588, -0.0243,  0.1650,  ..., -0.0703,  0.0767,  0.0486],
+         [-0.1108,  0.0986,  0.1826,  ...,  0.0278, -0.0576, -0.0520],
+         [-0.0693,  0.1123,  0.2207,  ...,  0.0172, -0.0679, -0.0830]]],
+       device='cuda:0', dtype=torch.bfloat16)</code></pre>
+</div>
+</div>
+<p>and check the shape</p>
+<div id="cell-29" class="cell" data-outputid="e1e1af79-f752-4dff-aa3c-913d9d983cf6" data-execution_count="18">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>sample_embedding.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="18">
+<pre><code>torch.Size([1, 1030, 128])</code></pre>
+</div>
+</div>
+<p>As we can see, compared to a usual dense embedding, the output of the ColPali model is a multivector. We can see that the shape of the output is <code>(1, 1030, 128)</code>. We can check the length of the vectors by looking at the last dimension of the tensor. In this case, the length of the vectors is 128.</p>
+<div id="cell-31" class="cell" data-outputid="0f8697dd-ae8a-41ec-9b02-c11730211aed" data-execution_count="22">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>vector_size <span class="op">=</span> sample_embedding.shape[<span class="dv">2</span>]</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>vector_size</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="22">
+<pre><code>128</code></pre>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="create-a-collection-in-qdrant-with-a-multivector-configuration" class="level1">
+<h1>Create a collection in Qdrant with a multivector configuration</h1>
+<p>Now that we know the length of the vectors, we can create a collection in Qdrant using the correct configuration.</p>
+<p>Qdrant has a lot of knobs and dials that you can use to optimize the search for your particular use case. We’ll see a few of these, but there are likely to be many more optimizations that you can still make.</p>
+<p>First, we define a name for our collection. If needed, we can store multiple collections in a single Qdrant instance.</p>
+<div id="cell-33" class="cell" data-execution_count="143">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>collection_name <span class="op">=</span> <span class="st">"ufo"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We need to define several different parameters for the collection. One of these is the <code>VectorParams</code>. These let Qdrant know what size of vectors we want to store and what similarity metrics we want to use for comparing vectors. In this case, we also pass in a <code>MultivVectorConfig</code>, which tells Qdrant that we are storing multivectors.</p>
+<p>At the moment, Qdrant supports a single comparator for multivectors, <code>MaxSim</code>. A nice blog post goes through this in more detail <a href="https://huggingface.co/blog/fsommers/document-similarity-colpali">here</a>.</p>
+<div id="cell-35" class="cell" data-execution_count="25">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>vector_params <span class="op">=</span> models.VectorParams(</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    size<span class="op">=</span>vector_size,</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    distance<span class="op">=</span>models.Distance.COSINE,</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    multivector_config<span class="op">=</span>models.MultiVectorConfig(</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>        comparator<span class="op">=</span>models.MultiVectorComparator.MAX_SIM</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-36" class="cell" data-outputid="b3a82ffd-41e4-427b-c33d-977528e38d35" data-execution_count="27">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(vector_params)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>size=128 distance=&lt;Distance.COSINE: 'Cosine'&gt; hnsw_config=None quantization_config=None on_disk=None datatype=None multivector_config=MultiVectorConfig(comparator=&lt;MultiVectorComparator.MAX_SIM: 'max_sim'&gt;)</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>There has been some dunking on Twitter about the potential cost of scaling multivector approaches. This is a big topic which I won’t cover in detail in this post, but Jo Kristian Bergum (<a href="https://x.com/jobergum">jobergum</a> on Twitter) wrote a great blog post on how to scale ColPali to billions of documents: <a href="https://blog.vespa.ai/scaling-colpali-to-billions/">https://blog.vespa.ai/scaling-colpali-to-billions/</a>.</p>
+<p>One of the possible optimizations discussed in this post was switching from using MaxSim to a hamming-based MaxSim that works using binary vectors. It is possible to convert the vectors from the ColPali model to binary vectors within Qdrant, but currently, they don’t support this new similarity metric.</p>
+</div>
+</div>
+<p>As mentioned above, one of the criticisms of ColPali and ColBert is that you suddenly need to store many more vectors. One way of reducing this with minimal performance degradation is to use some form of quantization. There are a few different approaches supported by Qdrant (<a href="https://qdrant.tech/documentation/guides/quantization/">docs</a>). One of these is Scaler Quantization:</p>
+<blockquote class="blockquote">
+<p>Scalar quantization, in the context of vector search engines, is a compression technique that compresses vectors by reducing the number of bits used to represent each vector component.</p>
+</blockquote>
+<blockquote class="blockquote">
+<p>For instance, Qdrant uses 32-bit floating numbers to represent the original vector components. Scalar quantization allows you to reduce the number of bits used to 8. In other words, Qdrant performs float32 -&gt; uint8 conversion for each vector component. Effectively, this means that the amount of memory required to store a vector is reduced by a factor of 4.</p>
+</blockquote>
+<blockquote class="blockquote">
+<p>In addition to reducing the memory footprint, scalar quantization also speeds up the search process. Qdrant uses a special SIMD CPU instruction to perform fast vector comparison. This instruction works with 8-bit integers, so the conversion to uint8 allows Qdrant to perform the comparison faster. <a href="https://qdrant.tech/documentation/guides/quantization/#scalar-quantization">source</a></p>
+</blockquote>
+<p>We can define a <code>ScalarQuantizationConfig</code> and pass it when creating the collection. On the server side, Qdrant will convert the vectors to 8-bit integers, reducing the memory footprint and speeding up the search process. You can also switch on or off the <code>always_ram</code> parameter, keeping the vectors in RAM. This will increase performance at the cost of memory usage.</p>
+<div id="cell-39" class="cell" data-execution_count="28">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>scalar_quant <span class="op">=</span> models.ScalarQuantizationConfig(</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">type</span><span class="op">=</span>models.ScalarType.INT8,</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    quantile<span class="op">=</span><span class="fl">0.99</span>,</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    always_ram<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can pass in all of these options when creating the collection.</p>
+<div id="cell-41" class="cell" data-outputid="89000961-0a65-4fef-d0af-d81e5abddf9a" data-execution_count="148">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>qdrant_client.recreate_collection(</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    collection_name<span class="op">=</span>collection_name, <span class="co"># the name of the collection</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    on_disk_payload<span class="op">=</span><span class="va">True</span>, <span class="co"># store the payload on disk</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    optimizers_config<span class="op">=</span>models.OptimizersConfigDiff(</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>        indexing_threshold<span class="op">=</span><span class="dv">100</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    ),  <span class="co"># it can be useful to swith this off when doing a bulk upload and then manually trigger the indexing once the upload is done</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>    vectors_config<span class="op">=</span>models.VectorParams(</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>        size<span class="op">=</span>vector_size,</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>        distance<span class="op">=</span>models.Distance.COSINE,</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>        multivector_config<span class="op">=</span>models.MultiVectorConfig(</span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>            comparator<span class="op">=</span>models.MultiVectorComparator.MAX_SIM</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>        quantization_config<span class="op">=</span>models.ScalarQuantization(</span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>            scalar<span class="op">=</span>models.ScalarQuantizationConfig(</span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>                <span class="bu">type</span><span class="op">=</span>models.ScalarType.INT8,</span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>                quantile<span class="op">=</span><span class="fl">0.99</span>,</span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>                always_ram<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>            ),</span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>DeprecationWarning: `recreate_collection` method is deprecated and will be removed in the future. Use `collection_exists` to check collection existence and `create_collection` instead.
+  qdrant_client.recreate_collection(</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="148">
+<pre><code>True</code></pre>
+</div>
+</div>
+<p>We define a helper function to upload points to Qdrant via the client. We use the <code>stamina</code> library to enable retries in case of network issues (I didn’t have any issues with the in-memory client, but having this in place can be useful if you are doing a large upload).</p>
+<div id="cell-43" class="cell" data-execution_count="149">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> stamina</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="at">@stamina.retry</span>(on<span class="op">=</span><span class="pp">Exception</span>, attempts<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> upsert_to_qdrant(batch):</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>        qdrant_client.upsert(</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>        collection_name<span class="op">=</span>collection_name,</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>            points<span class="op">=</span>points,</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>            wait<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Error during upsert: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">False</span></span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="va">True</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We will now upload the vectors to qdrant. We do this by creating batches of data, passing it through the ColPali model and then adding the embeddings to a qdrant <code>PointStruct</code>. If you have a smaller GPU you will likely want to reduce the batch size down a bit.</p>
+<div id="cell-45" class="cell" data-outputid="340301f9-86ce-4b62-ae68-b796348248e2">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>batch_size <span class="op">=</span> <span class="dv">6</span>  <span class="co"># Adjust based on your GPU memory constraints</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Use tqdm to create a progress bar</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> tqdm(total<span class="op">=</span><span class="bu">len</span>(dataset), desc<span class="op">=</span><span class="st">"Indexing Progress"</span>) <span class="im">as</span> pbar:</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>, <span class="bu">len</span>(dataset), batch_size):</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>        batch <span class="op">=</span> dataset[i:i<span class="op">+</span>batch_size]</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>        <span class="co"># The images are already PIL Image objects, so we can use them directly</span></span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>        images <span class="op">=</span> batch[<span class="st">'image'</span>]</span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Process and encode images</span></span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> torch.no_grad():</span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a>            batch_images <span class="op">=</span> colpali_processor.process_images(images).to(colpali_model.device)</span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a>            image_embeddings <span class="op">=</span> colpali_model(<span class="op">**</span>batch_images)</span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Prepare points for Qdrant</span></span>
+<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a>        points <span class="op">=</span> []</span>
+<span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> j, embedding <span class="kw">in</span> <span class="bu">enumerate</span>(image_embeddings):</span>
+<span id="cb33-20"><a href="#cb33-20" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Convert the embedding to a list of vectors</span></span>
+<span id="cb33-21"><a href="#cb33-21" aria-hidden="true" tabindex="-1"></a>            multivector <span class="op">=</span> embedding.cpu().<span class="bu">float</span>().numpy().tolist()</span>
+<span id="cb33-22"><a href="#cb33-22" aria-hidden="true" tabindex="-1"></a>            points.append(models.PointStruct(</span>
+<span id="cb33-23"><a href="#cb33-23" aria-hidden="true" tabindex="-1"></a>                <span class="bu">id</span><span class="op">=</span>i<span class="op">+</span>j, <span class="co"># we just use the index as the ID</span></span>
+<span id="cb33-24"><a href="#cb33-24" aria-hidden="true" tabindex="-1"></a>                vector<span class="op">=</span>multivector,  <span class="co"># This is now a list of vectors</span></span>
+<span id="cb33-25"><a href="#cb33-25" aria-hidden="true" tabindex="-1"></a>                 payload<span class="op">=</span>{<span class="st">"source"</span>: <span class="st">"internet archive"</span>} <span class="co"># can also add other metadata/data</span></span>
+<span id="cb33-26"><a href="#cb33-26" aria-hidden="true" tabindex="-1"></a>            ))</span>
+<span id="cb33-27"><a href="#cb33-27" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Upload points to Qdrant</span></span>
+<span id="cb33-28"><a href="#cb33-28" aria-hidden="true" tabindex="-1"></a>        <span class="cf">try</span>:</span>
+<span id="cb33-29"><a href="#cb33-29" aria-hidden="true" tabindex="-1"></a>            upsert_to_qdrant(points)</span>
+<span id="cb33-30"><a href="#cb33-30" aria-hidden="true" tabindex="-1"></a>        <span class="co"># clown level error handling here 🤡</span></span>
+<span id="cb33-31"><a href="#cb33-31" aria-hidden="true" tabindex="-1"></a>        <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb33-32"><a href="#cb33-32" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="ss">f"Error during upsert: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb33-33"><a href="#cb33-33" aria-hidden="true" tabindex="-1"></a>            <span class="cf">continue</span></span>
+<span id="cb33-34"><a href="#cb33-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-35"><a href="#cb33-35" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Update the progress bar</span></span>
+<span id="cb33-36"><a href="#cb33-36" aria-hidden="true" tabindex="-1"></a>        pbar.update(batch_size)</span>
+<span id="cb33-37"><a href="#cb33-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-38"><a href="#cb33-38" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Indexing complete!"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Indexing Progress:  25%|██▍       | 558/2243 [04:16&lt;13:14,  2.12it/s]</code></pre>
+</div>
+</div>
+<p>If you had the indexing off during the upload you can trigger an index by setting a lower indexing threshold.</p>
+<div id="cell-47" class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>qdrant_client.update_collection(</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    collection_name<span class="op">=</span>collection_name,</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    optimizer_config<span class="op">=</span>models.OptimizersConfigDiff(indexing_threshold<span class="op">=</span><span class="dv">10</span>),</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s take a look at some info about the collection (we’ll use <code>rich</code> to make the output a bit nicer to look at)</p>
+<div id="cell-49" class="cell" data-outputid="2e7369de-1868-42cd-d27a-a85a7c30f794" data-execution_count="118">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> rich <span class="im">import</span> <span class="bu">print</span> <span class="im">as</span> r_print</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>collection <span class="op">=</span> qdrant_client.get_collection(collection_name)</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>r_print(collection)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #800080; text-decoration-color: #800080; font-weight: bold">CollectionInfo</span><span style="font-weight: bold">(</span>
+    <span style="color: #808000; text-decoration-color: #808000">status</span>=<span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">CollectionStatus.GREEN:</span><span style="color: #000000; text-decoration-color: #000000"> </span><span style="color: #008000; text-decoration-color: #008000">'green'</span><span style="color: #000000; text-decoration-color: #000000">&gt;,</span>
+<span style="color: #000000; text-decoration-color: #000000">    </span><span style="color: #808000; text-decoration-color: #808000">optimizer_status</span><span style="color: #000000; text-decoration-color: #000000">=&lt;OptimizersStatusOneOf.OK: </span><span style="color: #008000; text-decoration-color: #008000">'ok'</span><span style="color: #000000; text-decoration-color: #000000">&gt;,</span>
+<span style="color: #000000; text-decoration-color: #000000">    </span><span style="color: #808000; text-decoration-color: #808000">vectors_count</span><span style="color: #000000; text-decoration-color: #000000">=</span><span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="color: #000000; text-decoration-color: #000000">,</span>
+<span style="color: #000000; text-decoration-color: #000000">    </span><span style="color: #808000; text-decoration-color: #808000">indexed_vectors_count</span><span style="color: #000000; text-decoration-color: #000000">=</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span><span style="color: #000000; text-decoration-color: #000000">,</span>
+<span style="color: #000000; text-decoration-color: #000000">    </span><span style="color: #808000; text-decoration-color: #808000">points_count</span><span style="color: #000000; text-decoration-color: #000000">=</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">2243</span><span style="color: #000000; text-decoration-color: #000000">,</span>
+<span style="color: #000000; text-decoration-color: #000000">    </span><span style="color: #808000; text-decoration-color: #808000">segments_count</span><span style="color: #000000; text-decoration-color: #000000">=</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span><span style="color: #000000; text-decoration-color: #000000">,</span>
+<span style="color: #000000; text-decoration-color: #000000">    </span><span style="color: #808000; text-decoration-color: #808000">config</span><span style="color: #000000; text-decoration-color: #000000">=</span><span style="color: #800080; text-decoration-color: #800080; font-weight: bold">CollectionConfig</span><span style="color: #000000; text-decoration-color: #000000; font-weight: bold">(</span>
+<span style="color: #000000; text-decoration-color: #000000">        </span><span style="color: #808000; text-decoration-color: #808000">params</span><span style="color: #000000; text-decoration-color: #000000">=</span><span style="color: #800080; text-decoration-color: #800080; font-weight: bold">CollectionParams</span><span style="color: #000000; text-decoration-color: #000000; font-weight: bold">(</span>
+<span style="color: #000000; text-decoration-color: #000000">            </span><span style="color: #808000; text-decoration-color: #808000">vectors</span><span style="color: #000000; text-decoration-color: #000000">=</span><span style="color: #800080; text-decoration-color: #800080; font-weight: bold">VectorParams</span><span style="color: #000000; text-decoration-color: #000000; font-weight: bold">(</span>
+<span style="color: #000000; text-decoration-color: #000000">                </span><span style="color: #808000; text-decoration-color: #808000">size</span><span style="color: #000000; text-decoration-color: #000000">=</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">128</span><span style="color: #000000; text-decoration-color: #000000">,</span>
+<span style="color: #000000; text-decoration-color: #000000">                </span><span style="color: #808000; text-decoration-color: #808000">distance</span><span style="color: #000000; text-decoration-color: #000000">=&lt;Distance.COSINE: </span><span style="color: #008000; text-decoration-color: #008000">'Cosine'</span><span style="color: #000000; text-decoration-color: #000000">&gt;,</span>
+<span style="color: #000000; text-decoration-color: #000000">                </span><span style="color: #808000; text-decoration-color: #808000">hnsw_config</span><span style="color: #000000; text-decoration-color: #000000">=</span><span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="color: #000000; text-decoration-color: #000000">,</span>
+<span style="color: #000000; text-decoration-color: #000000">                </span><span style="color: #808000; text-decoration-color: #808000">quantization_config</span><span style="color: #000000; text-decoration-color: #000000">=</span><span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="color: #000000; text-decoration-color: #000000">,</span>
+<span style="color: #000000; text-decoration-color: #000000">                </span><span style="color: #808000; text-decoration-color: #808000">on_disk</span><span style="color: #000000; text-decoration-color: #000000">=</span><span style="color: #00ff00; text-decoration-color: #00ff00; font-style: italic">True</span><span style="color: #000000; text-decoration-color: #000000">,</span>
+<span style="color: #000000; text-decoration-color: #000000">                </span><span style="color: #808000; text-decoration-color: #808000">datatype</span><span style="color: #000000; text-decoration-color: #000000">=</span><span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span><span style="color: #000000; text-decoration-color: #000000">,</span>
+<span style="color: #000000; text-decoration-color: #000000">                </span><span style="color: #808000; text-decoration-color: #808000">multivector_config</span><span style="color: #000000; text-decoration-color: #000000">=</span><span style="color: #800080; text-decoration-color: #800080; font-weight: bold">MultiVectorConfig</span><span style="color: #000000; text-decoration-color: #000000; font-weight: bold">(</span><span style="color: #808000; text-decoration-color: #808000">comparator</span><span style="color: #000000; text-decoration-color: #000000">=&lt;MultiVectorComparator.MAX_SIM: </span><span style="color: #008000; text-decoration-color: #008000">'max_sim'</span><span style="font-weight: bold">&gt;)</span>
+            <span style="font-weight: bold">)</span>,
+            <span style="color: #808000; text-decoration-color: #808000">shard_number</span>=<span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,
+            <span style="color: #808000; text-decoration-color: #808000">sharding_method</span>=<span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,
+            <span style="color: #808000; text-decoration-color: #808000">replication_factor</span>=<span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,
+            <span style="color: #808000; text-decoration-color: #808000">write_consistency_factor</span>=<span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,
+            <span style="color: #808000; text-decoration-color: #808000">read_fan_out_factor</span>=<span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,
+            <span style="color: #808000; text-decoration-color: #808000">on_disk_payload</span>=<span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,
+            <span style="color: #808000; text-decoration-color: #808000">sparse_vectors</span>=<span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>
+        <span style="font-weight: bold">)</span>,
+        <span style="color: #808000; text-decoration-color: #808000">hnsw_config</span>=<span style="color: #800080; text-decoration-color: #800080; font-weight: bold">HnswConfig</span><span style="font-weight: bold">(</span>
+            <span style="color: #808000; text-decoration-color: #808000">m</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">16</span>,
+            <span style="color: #808000; text-decoration-color: #808000">ef_construct</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">100</span>,
+            <span style="color: #808000; text-decoration-color: #808000">full_scan_threshold</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10000</span>,
+            <span style="color: #808000; text-decoration-color: #808000">max_indexing_threads</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>,
+            <span style="color: #808000; text-decoration-color: #808000">on_disk</span>=<span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,
+            <span style="color: #808000; text-decoration-color: #808000">payload_m</span>=<span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>
+        <span style="font-weight: bold">)</span>,
+        <span style="color: #808000; text-decoration-color: #808000">optimizer_config</span>=<span style="color: #800080; text-decoration-color: #800080; font-weight: bold">OptimizersConfig</span><span style="font-weight: bold">(</span>
+            <span style="color: #808000; text-decoration-color: #808000">deleted_threshold</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.2</span>,
+            <span style="color: #808000; text-decoration-color: #808000">vacuum_min_vector_number</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1000</span>,
+            <span style="color: #808000; text-decoration-color: #808000">default_segment_number</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>,
+            <span style="color: #808000; text-decoration-color: #808000">max_segment_size</span>=<span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,
+            <span style="color: #808000; text-decoration-color: #808000">memmap_threshold</span>=<span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>,
+            <span style="color: #808000; text-decoration-color: #808000">indexing_threshold</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">20000</span>,
+            <span style="color: #808000; text-decoration-color: #808000">flush_interval_sec</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>,
+            <span style="color: #808000; text-decoration-color: #808000">max_optimization_threads</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>
+        <span style="font-weight: bold">)</span>,
+        <span style="color: #808000; text-decoration-color: #808000">wal_config</span>=<span style="color: #800080; text-decoration-color: #800080; font-weight: bold">WalConfig</span><span style="font-weight: bold">(</span><span style="color: #808000; text-decoration-color: #808000">wal_capacity_mb</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">32</span>, <span style="color: #808000; text-decoration-color: #808000">wal_segments_ahead</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span><span style="font-weight: bold">)</span>,
+        <span style="color: #808000; text-decoration-color: #808000">quantization_config</span>=<span style="color: #800080; text-decoration-color: #800080; font-style: italic">None</span>
+    <span style="font-weight: bold">)</span>,
+    <span style="color: #808000; text-decoration-color: #808000">payload_schema</span>=<span style="font-weight: bold">{}</span>
+<span style="font-weight: bold">)</span>
+</pre>
+</div>
+</div>
+<p>We can see a bunch of different info about the status of the collection, including a bunch of optimization configuration options we could adjust. You’ll also see currently, no vectors are indexed. These vectors will be indexed in the background, but we can already start searching.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Depending on your hardware, the initial indexing might take some time. I found that sometimes the <code>QdrantClient</code> could timeout while the indexing was in progress. When interacting with the client, you can adjust the timeout by passing in a <code>timeout</code> parameter. This usually resolves any issues with not getting results back. If you are using Qdrant in production, you will want to ensure you have a sensible timeout and that if you are getting timeouts, they are fixed by ensuring the DB is configured well for your use case.</p>
+</div>
+</div>
+<section id="searching-our-ufo-database" class="level3">
+<h3 class="anchored" data-anchor-id="searching-our-ufo-database">Searching our UFO database</h3>
+<p>Now that we have uploaded the vectors to Qdrant we can start searching. To start we can use the scroll method to just get the first 10 results.</p>
+<div id="cell-53" class="cell" data-outputid="6d16c7ea-dcd0-4245-e24b-729da1325a21" data-execution_count="119">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>qdrant_client.scroll(collection_name<span class="op">=</span>collection_name, limit<span class="op">=</span><span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="119">
+<pre><code>([Record(id=0, payload={}, vector=None, shard_key=None, order_value=None),
+  Record(id=1, payload={}, vector=None, shard_key=None, order_value=None),
+  Record(id=2, payload={}, vector=None, shard_key=None, order_value=None),
+  Record(id=3, payload={}, vector=None, shard_key=None, order_value=None),
+  Record(id=4, payload={}, vector=None, shard_key=None, order_value=None),
+  Record(id=5, payload={}, vector=None, shard_key=None, order_value=None),
+  Record(id=6, payload={}, vector=None, shard_key=None, order_value=None),
+  Record(id=7, payload={}, vector=None, shard_key=None, order_value=None),
+  Record(id=8, payload={}, vector=None, shard_key=None, order_value=None),
+  Record(id=9, payload={}, vector=None, shard_key=None, order_value=None)],
+ 10)</code></pre>
+</div>
+</div>
+<p>Let’s see how we can query the DB. We first need to process our query text using the <code>process_queries</code> method. We then pass this through the model to get the embeddings.</p>
+<div id="cell-55" class="cell" data-outputid="e245895f-91b8-4c85-d022-f04ae560effc" data-execution_count="120">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>query_text <span class="op">=</span> <span class="st">"top secret"</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad():</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    batch_query <span class="op">=</span> colpali_processor.process_queries([query_text]).to(colpali_model.device)</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    query_embedding <span class="op">=</span> colpali_model(<span class="op">**</span>batch_query)</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>query_embedding</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="120">
+<pre><code>tensor([[[ 0.1494, -0.0186,  0.0889,  ..., -0.0186, -0.0767, -0.0330],
+         [-0.0830, -0.1094,  0.0447,  ..., -0.0078, -0.0928,  0.0835],
+         [-0.1167, -0.0349,  0.0649,  ..., -0.0093,  0.0022, -0.0206],
+         ...,
+         [-0.0688,  0.0322,  0.0532,  ...,  0.0188,  0.0479,  0.0430],
+         [-0.0752,  0.0295,  0.0471,  ...,  0.0199,  0.0493,  0.0267],
+         [-0.0564,  0.0530,  0.0635,  ..., -0.0029,  0.0486,  0.0173]]],
+       device='cuda:0', dtype=torch.bfloat16)</code></pre>
+</div>
+</div>
+<p>Let’s see what the output of the model looks like</p>
+<div id="cell-57" class="cell" data-outputid="471fbffd-09f6-4721-b69e-7f48ebe60b9a" data-execution_count="121">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>query_embedding[<span class="dv">0</span>].shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="121">
+<pre><code>torch.Size([16, 128])</code></pre>
+</div>
+</div>
+<p>We need to put the embeddings on the CPU and convert them to a list which we can pass to the Qdrant client.</p>
+<div id="cell-59" class="cell" data-execution_count="122">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the query embedding to a list of vectors</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>multivector_query <span class="op">=</span> query_embedding[<span class="dv">0</span>].cpu().<span class="bu">float</span>().numpy().tolist()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We use the <code>query_points</code> method to search the DB. We can pass in a number of different parameters to control the search. In this case we’’ll just limit the number of results to 10.</p>
+<div id="cell-61" class="cell" data-outputid="c6a28243-0565-4243-db45-d633a4a705fb" data-execution_count="124">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Search in Qdrant</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>search_result <span class="op">=</span> qdrant_client.query_points(</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>    collection_name<span class="op">=</span>collection_name, query<span class="op">=</span>multivector_query, limit<span class="op">=</span><span class="dv">10</span>, timeout<span class="op">=</span><span class="dv">60</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>search_result.points</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="124">
+<pre><code>[ScoredPoint(id=2178, version=0, score=12.130735098964559, payload={}, vector=None, shard_key=None, order_value=None),
+ ScoredPoint(id=1381, version=0, score=12.022836438326163, payload={}, vector=None, shard_key=None, order_value=None),
+ ScoredPoint(id=928, version=0, score=11.337400593495904, payload={}, vector=None, shard_key=None, order_value=None),
+ ScoredPoint(id=2235, version=0, score=11.24344362149126, payload={}, vector=None, shard_key=None, order_value=None),
+ ScoredPoint(id=2026, version=0, score=10.998634505160364, payload={}, vector=None, shard_key=None, order_value=None),
+ ScoredPoint(id=528, version=0, score=10.956125884478812, payload={}, vector=None, shard_key=None, order_value=None),
+ ScoredPoint(id=1370, version=0, score=10.878949565786773, payload={}, vector=None, shard_key=None, order_value=None),
+ ScoredPoint(id=0, version=0, score=10.854501769864028, payload={}, vector=None, shard_key=None, order_value=None),
+ ScoredPoint(id=1964, version=0, score=10.517656939461483, payload={}, vector=None, shard_key=None, order_value=None),
+ ScoredPoint(id=1789, version=0, score=10.489377576467938, payload={}, vector=None, shard_key=None, order_value=None)]</code></pre>
+</div>
+</div>
+<p>What did we actually get back? We can see the results are a list of <code>PointStruct</code> objects. We can see the <code>id</code> of the document, the <code>distance</code> from the query and the <code>payload</code>, which is the metadata associated with the document.</p>
+<p>When we uploaded the data to Qdrant, we just used the index of the rows in the original dataset as the document’s <code>ID</code>. This means we can easily look up the original document in the dataset. Let’s see what we find when searching for “top secret”.</p>
+<div id="cell-63" class="cell" data-outputid="f47083e4-9062-439c-fbaa-98293f2b31aa" data-execution_count="128">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>idx <span class="op">=</span> search_result.points[<span class="dv">0</span>].<span class="bu">id</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>dataset[idx][<span class="st">'image'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="128">
+<div>
+<figure class="figure">
+<p><img src="index_qdrant_colpali_files/figure-html/cell-31-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Looks pretty top secret! We can also wrap this up in a nice function to make it easier to search the DB.</p>
+<div id="cell-65" class="cell" data-outputid="c2797630-8534-4106-fff3-d7cf92531548" data-execution_count="129">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> search_images_by_text(query_text, top_k<span class="op">=</span><span class="dv">5</span>):</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Process and encode the text query</span></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> torch.no_grad():</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>        batch_query <span class="op">=</span> colpali_processor.process_queries([query_text]).to(colpali_model.device)</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>        query_embedding <span class="op">=</span> colpali_model(<span class="op">**</span>batch_query)</span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Convert the query embedding to a list of vectors</span></span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>    multivector_query <span class="op">=</span> query_embedding[<span class="dv">0</span>].cpu().<span class="bu">float</span>().numpy().tolist()</span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Search in Qdrant</span></span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>    search_result <span class="op">=</span> qdrant_client.query_points(</span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>        collection_name<span class="op">=</span>collection_name,</span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>        query<span class="op">=</span>multivector_query,</span>
+<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>        limit<span class="op">=</span>top_k</span>
+<span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> search_result</span>
+<span id="cb47-17"><a href="#cb47-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-18"><a href="#cb47-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Example usage</span></span>
+<span id="cb47-19"><a href="#cb47-19" aria-hidden="true" tabindex="-1"></a>query_text <span class="op">=</span> <span class="st">"declassified data"</span></span>
+<span id="cb47-20"><a href="#cb47-20" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> search_images_by_text(query_text)</span>
+<span id="cb47-21"><a href="#cb47-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-22"><a href="#cb47-22" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> result <span class="kw">in</span> results.points:</span>
+<span id="cb47-23"><a href="#cb47-23" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>id=67 version=0 score=12.138390401267928 payload={} vector=None shard_key=None order_value=None
+id=65 version=0 score=11.913804148078945 payload={} vector=None shard_key=None order_value=None
+id=64 version=0 score=11.10246256038046 payload={} vector=None shard_key=None order_value=None
+id=40 version=0 score=10.984743759976059 payload={} vector=None shard_key=None order_value=None
+id=59 version=0 score=10.78073398079465 payload={} vector=None shard_key=None order_value=None</code></pre>
+</div>
+</div>
+<p>and in this case, we can also return the images from the dataset</p>
+<div id="cell-67" class="cell" data-execution_count="137">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> search_by_text_and_return_images(query_text, top_k<span class="op">=</span><span class="dv">5</span>):</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>    results <span class="op">=</span> search_images_by_text(query_text, top_k)</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>    row_ids <span class="op">=</span> [r.<span class="bu">id</span> <span class="cf">for</span> r <span class="kw">in</span> results.points]</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dataset.select(row_ids)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s take a look at a few more results for “top secret”</p>
+<div id="cell-69" class="cell" data-outputid="9131f8f2-7bce-4a2b-f47b-b9823f1c45f4" data-execution_count="138">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>results_ds <span class="op">=</span> search_by_text_and_return_images(<span class="st">"top secret"</span>)</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> results_ds:</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># display image</span></span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>    display(row[<span class="st">'image'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_qdrant_colpali_files/figure-html/cell-34-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_qdrant_colpali_files/figure-html/cell-34-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_qdrant_colpali_files/figure-html/cell-34-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_qdrant_colpali_files/figure-html/cell-34-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_qdrant_colpali_files/figure-html/cell-34-output-5.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="colpali-vs-ocr" class="level3">
+<h3 class="anchored" data-anchor-id="colpali-vs-ocr">ColPali vs OCR</h3>
+<p>Here are a couple of notes on these results. The use case here is obviously a bit of a toy example since we only index a relatively small number of documents, but even in these results, we see some examples of why ColPali is such an intriguing approach.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="meme.png" class="img-fluid figure-img"></p>
+<figcaption>I always cite my memes: https://x.com/jobergum/status/1839915957298315424</figcaption>
+</figure>
+</div>
+<section id="weird-fonts" class="level4">
+<h4 class="anchored" data-anchor-id="weird-fonts">Weird fonts</h4>
+<p>One of the challenges of traditional document retrieval is that there is often a complex pipeline of layout recognition, line segmentation, OCR, etc. This approach works well on simple documents but fails on more complex ones. It might be worthwhile and practical to develop a custom pipeline for your documents if you have very consistent document layouts. However, if you have a lot of different document layouts this can be very challenging.</p>
+<p>One of the areas where OCR can often struggle is with weird fonts. For example in one of our results, we had this:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="font.png" class="img-fluid figure-img"></p>
+<figcaption>Example of a heading font that is useful for retreival</figcaption>
+</figure>
+</div>
+<p>It’s possible some OCR engines would correctly parse this, but this kind of text can trip up OCR engines. Some missing text might not always be important, but weird fonts are often used to highlight important information or as headings. In this case, the ColPali model has no problem with this heading font.</p>
+</section>
+<section id="layout" class="level4">
+<h4 class="anchored" data-anchor-id="layout">Layout</h4>
+<p>Another area where OCR engines and traditional layout methods struggle is with documents which contain tables or other complex layouts. For example, in one of our results, we had this:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="layout.png" class="img-fluid figure-img"></p>
+<figcaption>Example where text is in a table that might confuse an OCR engine</figcaption>
+</figure>
+</div>
+<p>Whilst there are models for doing layout recognition on tables, these can be quite complex and often require a lot of manual intervention. It is almost certainly worth doing this work if you want to <em>extract</em> the information from this document but it’s sometimes sufficient just to <em>retrieve</em> the document and either pass it to another model or (shock horror) have a human look at it. In this case, the ColPali model has no problem with the layout of the document.</p>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>ColPali remains a relatively novel approach to retrieval, and it’s likely to take some time for all vector DBs to implement proper support for multi-vectors. The community is likely to also discover new optimization approaches to both the ColPali model itself and its integration with vector DBs.</p>
+<p>I left some further resources below and am happy to get feedback on any improvements I can make to this blog post.</p>
+<section id="further-resources" class="level3">
+<h3 class="anchored" data-anchor-id="further-resources">Further resources</h3>
+<ul>
+<li>Hugging Face Hub organization for the ColPali authors: https://huggingface.co/vidore</li>
+<li>Blog post on the rise of vision-driven document retrieval for RAG: https://blog.vespa.ai/the-rise-of-vision-driven-document-retrieval-for-rag/</li>
+<li>Blog post on scaling ColPali using the Vespa database: https://blog.vespa.ai/scaling-colpali-to-billions/</li>
+</ul>
+</section>
+<section id="bonus-tips" class="level3">
+<h3 class="anchored" data-anchor-id="bonus-tips">Bonus tips</h3>
+<p>A few other things I think are worth exploring if you plan to use this in a production setting.</p>
+<section id="pre-filtering" class="level4">
+<h4 class="anchored" data-anchor-id="pre-filtering">Pre-filtering</h4>
+<p>It’s likely in many real use cases that you either have, or can create, some metadata for your documents. These can also be indexed in Qdrant and may help improve the search results and performance of the a multivector approach. If for example, you can filter to remove all documents before/after a certain date, you can reduce the amount of vectors that Qdrant needs to search through.</p>
+</section>
+</section>
+<section id="combining-vectors" class="level3">
+<h3 class="anchored" data-anchor-id="combining-vectors">Combining vectors</h3>
+<p>It’s also possible to use other vectors for the same points in Qdrant. For example, you may want to use a dense vector to store a representation of the text extracted through an existing OCR pipeline (if you already have this to hand it’s worth trying to use it), you can then use these vectors do a first large search and then use the multivector embeddings to do a second stage search limited only to results from the first step. See the <a href="https://qdrant.tech/documentation/concepts/filtering/#has-id">filtering docs</a> for more info on how to do this. This could look something like:</p>
+<ul>
+<li>search for “top secret” using the dense vectors and get the top 1000 results</li>
+<li>search for “top secret” using the multivectors but only search in the top 1000 results from the first search</li>
+</ul>
+<section id="binary-quantization" class="level4">
+<h4 class="anchored" data-anchor-id="binary-quantization">Binary Quantization</h4>
+<p>It’s very likely to make sense to explore using Binary Quantization for storing your vectors since it can reduce the memory footprint and speed up the search process. You can set this up by doing something like this in the collection creation step</p>
+<div id="cell-73" class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>quantization_config <span class="op">=</span> models.BinaryQuantization(</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>    binary<span class="op">=</span>models.BinaryQuantizationConfig(</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>        always_ram<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="some-more-search-examples" class="level3">
+<h3 class="anchored" data-anchor-id="some-more-search-examples">Some more search examples</h3>
+<div id="cell-75" class="cell" data-outputid="8d847827-5531-46c3-aee7-65a22d94e768" data-execution_count="140">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>results_ds <span class="op">=</span> search_by_text_and_return_images(<span class="st">"sightings data table"</span>)</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> results_ds:</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># display image</span></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>    display(row[<span class="st">'image'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_qdrant_colpali_files/figure-html/cell-36-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_qdrant_colpali_files/figure-html/cell-36-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_qdrant_colpali_files/figure-html/cell-36-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_qdrant_colpali_files/figure-html/cell-36-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_qdrant_colpali_files/figure-html/cell-36-output-5.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-76" class="cell" data-outputid="b46f62e6-7f43-4cd2-ca40-87204681f811" data-execution_count="141">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>results_ds <span class="op">=</span> search_by_text_and_return_images(<span class="st">"ufo experiences"</span>)</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> results_ds:</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>    display(row[<span class="st">'image'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_qdrant_colpali_files/figure-html/cell-37-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_qdrant_colpali_files/figure-html/cell-37-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_qdrant_colpali_files/figure-html/cell-37-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_qdrant_colpali_files/figure-html/cell-37-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_qdrant_colpali_files/figure-html/cell-37-output-5.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script type="application/vnd.jupyter.widget-state+json">
+{"23b92371927c42c4b399e75d916cee28":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_8ae1924287534db19328d41bfbec30f9","placeholder":"​","style":"IPY_MODEL_e1f6079a2ca440d4b50d08619fbb91ac","value":" 2/2 [00:02&lt;00:00,  1.32s/it]"}},"2f54872d045f47b4b98287bf9e2d54db":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"FloatProgressModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"FloatProgressModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"ProgressView","bar_style":"success","description":"","description_tooltip":null,"layout":"IPY_MODEL_4174b6ed4bfc431299ed1dce82bac601","max":2,"min":0,"orientation":"horizontal","style":"IPY_MODEL_f0f7931756d249c39bda1237bba5df88","value":2}},"4174b6ed4bfc431299ed1dce82bac601":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"56105f8574b04cab9a9cbb89c08211e5":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"791bc1a990b84b39b3f7bef13b34168d":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"80c5d89eb4634266aafc5ef13d2bcce0":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"8ae1924287534db19328d41bfbec30f9":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"93dbd40184334bbb8ba801d3b2766c01":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_56105f8574b04cab9a9cbb89c08211e5","placeholder":"​","style":"IPY_MODEL_80c5d89eb4634266aafc5ef13d2bcce0","value":"Loading checkpoint shards: 100%"}},"e1f6079a2ca440d4b50d08619fbb91ac":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"e3437d645f4847c4ae244382eaa198ff":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HBoxModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HBoxModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HBoxView","box_style":"","children":["IPY_MODEL_93dbd40184334bbb8ba801d3b2766c01","IPY_MODEL_2f54872d045f47b4b98287bf9e2d54db","IPY_MODEL_23b92371927c42c4b399e75d916cee28"],"layout":"IPY_MODEL_791bc1a990b84b39b3f7bef13b34168d"}},"f0f7931756d249c39bda1237bba5df88":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"ProgressStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"ProgressStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","bar_color":null,"description_width":""}}}
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/danielvanstrien\.xyz");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
