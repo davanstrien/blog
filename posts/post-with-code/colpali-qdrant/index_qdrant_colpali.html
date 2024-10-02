@@ -210,8 +210,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>[<span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span>], </span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>[<span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>In the case of ColBERT, these multiple vectors represent the query and document tokens. These are then compared using a late interaction mechanism. This “late interaction” essentially means that rather than creating a pooled representation of the document and query, we compare each query token to each document token individually.</p>
-<p>This similarity has mostly been calculated using MaxSim, which takes the element-wise maximum similarity between the query and document tokens. ColPali uses a similar late interaction mechanism to compare the query and document tokens.</p>
-<p>I won’t go into the details too much since other posts cover this well already. Instead, I will show how we can use ColPali using the Qdrant vector database.</p>
+<p>This similarity has mostly been calculated using MaxSim, which takes the element-wise maximum similarity between the query and document tokens. ColPali uses a similar late interaction mechanism to compare the query and document tokens. The tl;dr is that instead of comparing a single vector to another single vector, we compare a set of vectors to another set of vectors. This approach is borrowed from ColBERT. The diagram below shows how this works in the case of ColBERT.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://www.answer.ai/posts/colbert_pooling/colbert.png" class="img-fluid figure-img"></p>
+<figcaption>Visual representation of ColBERT (source: https://www.answer.ai/posts/colbert-pooling.html)</figcaption>
+</figure>
+</div>
+<p>I won’t go into the details too much here, since <a href="https://blog.vespa.ai/pretrained-transformer-language-models-for-search-part-3/">other posts</a> cover this already. Instead, I will show how we can use ColPali using the Qdrant vector database.</p>
 <section id="what-is-qdrant" class="level3">
 <h3 class="anchored" data-anchor-id="what-is-qdrant">What is Qdrant?</h3>
 <p>Qdrant is a vector database. Many open-source and closed-source vector databases exist, and many “traditional” databases have also added support for vectors.</p>
@@ -946,9 +952,30 @@ id=59 version=0 score=10.78073398079465 payload={} vector=None shard_key=None or
 </div>
 </div>
 </div>
-
-
 </section>
+</section>
+<section id="glossary" class="level2">
+<h2 class="anchored" data-anchor-id="glossary">Glossary</h2>
+<ul>
+<li><p><strong>ColPali</strong>: A multimodal retrieval approach for document search.</p></li>
+<li><p><strong>Qdrant</strong>: An open-source vector database.</p></li>
+<li><p><strong>Vector Database</strong>: A database optimized for storing and searching high-dimensional vector data.</p></li>
+<li><p><strong>Multivector</strong>: A set of vectors used to represent a single item, as opposed to a single vector.</p></li>
+<li><p><strong>Late Interaction</strong>: A mechanism used in ColPali to compare query and document tokens individually at query time.</p></li>
+<li><p><strong>MaxSim</strong>: A similarity calculation method used in ColPali and ColBERT.</p></li>
+<li><p><strong>Quantization</strong>: A compression technique used to reduce the memory footprint of vectors.</p></li>
+<li><p><strong>Scalar Quantization</strong>: A specific type of quantization that reduces the number of bits used to represent vector components.</p></li>
+<li><p><strong>OCR (Optical Character Recognition)</strong>: Technology used to convert images of text into machine-readable text.</p></li>
+<li><p><strong>VLM (Vision Language Model)</strong>: A type of AI model that can process both image and text data.</p></li>
+<li><p><strong>Multimodal</strong>: Relating to multiple modes of data, such as text and images.</p></li>
+<li><p><strong>Embedding</strong>: A numerical representation of data in a vector space.</p></li>
+<li><p><strong>Cosine Similarity</strong>: A measure of similarity between two vectors.</p></li>
+<li><p><strong>Indexing</strong>: The process of organizing data in a database to optimize search and retrieval.</p></li>
+<li><p><strong>Binary Quantization</strong>: A form of quantization that converts vectors to binary (0 or 1) values.</p></li>
+<li><p><strong>RAG (Retrieval-Augmented Generation)</strong>: A technique that combines retrieval of relevant information with text generation.</p></li>
+</ul>
+
+
 </section>
 </section>
 
