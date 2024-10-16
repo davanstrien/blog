@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2023-11-27">
+<meta name="description" content="What do people talk about in their model cards?">
+
+<title>Extracting Insights from Model Cards Using Open Large Language Models – Daniel van Strien</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../icons/favicon.ico" rel="icon">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script defer="" src="https://cloud.umami.is/script.js" data-website-id="85cb27d6-dbf9-43d7-97d0-be4e6724de7a"></script>
+<meta name="msvalidate.01" content="4246174F24A3CB7C9CBEAA94E1FF8E84">
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Daniel van Strien</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Extracting Insights from Model Cards Using Open Large Language Models</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Hugging Face</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    What do people talk about in their model cards?
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 27, 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><a href="https://huggingface.co/docs/hub/model-cards">Model Cards</a> are a vital tool for documenting machine learning models. Model Cards are stored in <code>README.md</code> files on the Hugging Face Hub.</p>
+<p>There are currently over 400,000 models openly shared on the Hugging Face Hub. How can we better understand what information is shared in these model cards?</p>
+<p align="center">
+<img src="https://cdn-uploads.huggingface.co/production/uploads/60107b385ac3e86b3ea4fc34/of0NdtzeiXm6JEN2HCCAE.png" alt="Wordcloud image with words like training, model, information. "><br> <em>Some of the concepts we’ll see emerge from Model Card READMEs</em>
+</p>
+<section id="what-do-people-talk-about-in-their-model-readme.md" class="level2">
+<h2 class="anchored" data-anchor-id="what-do-people-talk-about-in-their-model-readme.md">What do people talk about in their model README.md?</h2>
+<p>Various organisations, groups and individuals develop models on the Hugging Face Hub; they cover a broad range of tasks and have a wide variety of audiences in mind. In turn, READMEs for models are also diverse. Some READMEs will follow a Model Card <a href="https://huggingface.co/docs/hub/model-card-annotated">template</a>, whilst others will use a very different format and focus on describing very different attributes of a model. How can we better understand what people discuss in model cards?</p>
+</section>
+<section id="can-we-extract-metadata-from-model-readmes" class="level2">
+<h2 class="anchored" data-anchor-id="can-we-extract-metadata-from-model-readmes">Can we extract metadata from model READMEs?</h2>
+<p>One of the things I want to understand better is what information people are talking about in their READMEs. Are they mostly talking about the training? How often do they mention the dataset? Do they discuss evaluations in detail? Partly, I want to understand this purely out of curiosity, but I am also interested in knowing if there are features that regularly appear in model cards that could potentially be extracted into more structured metadata for a model.</p>
+<p>As an example of this kind of work, recently, the Hub added a metadata field for <code>base_model</code>. This metadata makes it easier to know the model used as a starting point for fine-tuning a new model. You can, for example, find models fine-tuned from <a href="https://huggingface.co/mistralai/Mistral-7B-v0.1">mistralai/Mistral-7B-v0.1</a> using this filter <a href="">https://huggingface.co/models?other=base_model:mistralai/Mistral-7B-v0.1</a>. However, for this to be possible, the <code>base_model</code> field has to be stored as metadata. In the run to adding this <code>base_model</code> filtering to the Hub via <a href="https://huggingface.co/librarian-bots">Librarian-Bots</a>, I made a bunch of automated pull requests adding this metadata using the information available in the model <code>README.md</code>.</p>
+<p align="center">
+<img src="https://cdn-uploads.huggingface.co/production/uploads/60107b385ac3e86b3ea4fc34/VHDwba0v0YB4IZCbMBtnh.png" alt="Screenshot of a Pull Request"><br> <em>An example of a pull request made to add metadata to a model</em>
+</p>
+<p>Potentially, other data of this kind could also be drawn out of model cards and exposed in a more structured way, which makes filtering and searching for models on the Hub easier.</p>
+</section>
+<section id="annotating-with-large-language-models" class="level2">
+<h2 class="anchored" data-anchor-id="annotating-with-large-language-models">Annotating with Large Language Models?</h2>
+<p>As part of my work as Hugging Face’s Machine Learning Librarian, I have created a <a href="https://huggingface.co/datasets/librarian-bots/model_cards_with_metadata">dataset</a> of model cards from the Hugging Face Hub. This dataset is updated daily. This dataset currently has over 400,000 rows. This makes analysing this data by hand difficult.</p>
+<p>A recent <a href="https://www.numind.ai/blog/a-foundation-model-for-entity-recognition">blog post</a> from NuMind discusses their approach to creating a foundation model for Named Entity Recognition. As part of this work, they created a large dataset using an LLM to annotate concepts — the term they use for entities — in a large dataset derived from the Pile. They do this by prompting the model to annotate in an open-ended way, i.e.&nbsp;instead of prompting the model to label specific types of entities; they prompt the model to label “as many entities, concepts, and ideas as possible in the input text.”</p>
+<p>Whilst we sometimes want to have an LLM help annotate a specific type of entity, this open approach allows us to use an LLM to <em>help</em> us explore a dataset.</p>
+<p>In the NuMind work, they used GPT-4. I wanted to use an open LLM instead. After some exploring I landed on <a href="https://huggingface.co/teknium/OpenHermes-2.5-Mistral-7B">teknium/OpenHermes-2.5-Mistral-7B</a>:</p>
+<blockquote class="blockquote">
+<p>OpenHermes 2.5 Mistral 7B is a state of the art Mistral Fine-tune, a continuation of OpenHermes 2 model, which trained on additional code datasets.</p>
+</blockquote>
+<p>I found that the model responded well to an adapted version of the original prompt used by NuMind, and since the model is a 7 Billion parameter model, it’s a little expensive to run both financially and in terms of environmental impact compared to other larger models which could also be used for this task.</p>
+<p>I hosted the model on <a href="https://huggingface.co/inference-endpoints">Inference Endpoints</a> and ran inference using the <code>huggingface_hub</code> Python library. The code for getting an annotation looked roughly like this:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_annotations(<span class="bu">input</span>):</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    message <span class="op">=</span> <span class="ss">f"""</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ss">    The goal is to create a dataset for entity recognition.</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ss">    Label as many entities, concepts, and ideas as possible in the input text.</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ss">    Invent new entity types that may not exist in traditional NER Tasks such as more abstract concepts and ideas.</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ss">    Make sure the entity concept is not part of speech but something more meaningful.</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ss">    Avoid finding meaningless entities.</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ss">    Output format (separate entities with new lines, everything, including description, and entity concept is written in English): entity from the text -|- entity concept -|- description of entity group/concept.</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ss">    Example:</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ss">    Input: "Fine-tuned XLSR-53 large model for speech recognition in English"</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="ss">    Output:</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="ss">    XLSR-53 -|- model -|- a large pre-trained language model specifically designed for speech recognition in English.</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="ss">    English -|- language -|- the language of the text and the model's target language.</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="ss">    Fine-tuned -|- model modification -|- the process of adapting the pre-trained model to a specific task, in this case, speech recognition.</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="ss">    Input: "</span><span class="sc">{</span><span class="bu">input</span><span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="ss">    Output:"""</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    messages <span class="op">=</span> [</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        {</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>            <span class="st">"role"</span>: <span class="st">"system"</span>,</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>            <span class="st">"content"</span>: <span class="st">"You are Hermes 2. A system designed to annotate textual data"</span>,</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        },</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        {<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: message},</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    gen_input <span class="op">=</span> tokenizer.apply_chat_template(messages, tokenize<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> client.text_generation(</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>        gen_input,</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>        max_new_tokens<span class="op">=</span><span class="dv">450</span>,</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>        do_sample<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>        temperature<span class="op">=</span><span class="fl">0.7</span>,</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>        top_k<span class="op">=</span><span class="dv">50</span>,</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>        top_p<span class="op">=</span><span class="fl">0.95</span>,</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Some examples of output I got from this:</p>
+<pre><code>Input: Fine-tuned XLSR-53 large model for speech recognition in English
+
+Output:
+
+XLSR-53 -|- model -|- a large pre-trained language model specifically designed for speech recognition in English.
+
+English -|- language -|- the language of the text and the model's target language.
+
+Fine-tuned -|- model modification -|- the process of adapting the pre-trained model to a specific task, in this case, speech recognition.</code></pre>
+<p>As you can see, the model did a pretty good job of labelling concepts. Let’s take a deeper dive into the results.</p>
+</section>
+<section id="what-concepts-did-we-find-in-model-cards" class="level2">
+<h2 class="anchored" data-anchor-id="what-concepts-did-we-find-in-model-cards">What concepts did we find in Model Cards?</h2>
+<p>The dataset we’ve produced via this approach contains annotations for the original entity/concept, i.e.&nbsp;the word that the model annotated, a “category”, which is the type of that concept (as labelled by the model), as well as a description produced by the LLM about that category.</p>
+<p>To start, here is some high-level information about our dataset:</p>
+<ul>
+<li>146,800 total annotations, i.e.&nbsp;concepts</li>
+<li>46,240 unique subjects</li>
+<li>16,581 unique categories</li>
+</ul>
+<p>We can see the number of unique subjects and even unique subjects and categories. Whilst this wouldn’t be desirable if we had a fixed set of labels we wanted to annotate, for this more open-ended exploration, this is less of an issue and more of a challenge for us in how best to understand this data!</p>
+<section id="the-most-frequently-appearing-subjects" class="level3">
+<h3 class="anchored" data-anchor-id="the-most-frequently-appearing-subjects">The most frequently appearing subjects</h3>
+<p>To start with let’s take a look at the top 20 most frequently appearing subjects in our model cards:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>subject</th>
+<th>proportion (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Training</td>
+<td>1.00272</td>
+</tr>
+<tr class="even">
+<td>Entry</td>
+<td>0.807221</td>
+</tr>
+<tr class="odd">
+<td>More</td>
+<td>0.651226</td>
+</tr>
+<tr class="even">
+<td>Model</td>
+<td>0.612398</td>
+</tr>
+<tr class="odd">
+<td>model</td>
+<td>0.54564</td>
+</tr>
+<tr class="even">
+<td>information</td>
+<td>0.504087</td>
+</tr>
+<tr class="odd">
+<td>needed</td>
+<td>0.501362</td>
+</tr>
+<tr class="even">
+<td>Limitations</td>
+<td>0.472071</td>
+</tr>
+<tr class="odd">
+<td>More Information Needed</td>
+<td>0.433243</td>
+</tr>
+<tr class="even">
+<td>learning_rate</td>
+<td>0.398501</td>
+</tr>
+<tr class="odd">
+<td>Fine-tuned</td>
+<td>0.387602</td>
+</tr>
+<tr class="even">
+<td>Transformers</td>
+<td>0.378747</td>
+</tr>
+<tr class="odd">
+<td>Tokenizers</td>
+<td>0.376703</td>
+</tr>
+<tr class="even">
+<td>Intended uses</td>
+<td>0.370572</td>
+</tr>
+<tr class="odd">
+<td>hyperparameters</td>
+<td>0.361717</td>
+</tr>
+<tr class="even">
+<td>Evaluation</td>
+<td>0.360354</td>
+</tr>
+<tr class="odd">
+<td>Training procedure</td>
+<td>0.358992</td>
+</tr>
+<tr class="even">
+<td>Versions</td>
+<td>0.352861</td>
+</tr>
+<tr class="odd">
+<td>Adam</td>
+<td>0.34673</td>
+</tr>
+<tr class="even">
+<td>Hyperparameters</td>
+<td>0.343324</td>
+</tr>
+</tbody>
+</table>
+<p>We may see some of these terms like “More”, “information”, “needed” are artefacts from placeholder text put into the model card templates. It’s reassuring to see “Evaluation” and “Intended uses” appearing this frequently. Since the “subjects” are quite diverse, let’s also take a look at the 20 most common categories:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>category</th>
+<th>proportion</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>model</td>
+<td>3.97752</td>
+</tr>
+<tr class="even">
+<td>model modification</td>
+<td>2.29837</td>
+</tr>
+<tr class="odd">
+<td>numerical value</td>
+<td>2.01226</td>
+</tr>
+<tr class="even">
+<td>action</td>
+<td>1.68869</td>
+</tr>
+<tr class="odd">
+<td>dataset</td>
+<td>1.53951</td>
+</tr>
+<tr class="even">
+<td>metric</td>
+<td>1.25409</td>
+</tr>
+<tr class="odd">
+<td>process</td>
+<td>1.23229</td>
+</tr>
+<tr class="even">
+<td>software</td>
+<td>1.22684</td>
+</tr>
+<tr class="odd">
+<td>entity</td>
+<td>1.15736</td>
+</tr>
+<tr class="even">
+<td>software version</td>
+<td>1.14237</td>
+</tr>
+<tr class="odd">
+<td>concept</td>
+<td>1.09741</td>
+</tr>
+<tr class="even">
+<td>data</td>
+<td>0.936649</td>
+</tr>
+<tr class="odd">
+<td>data type</td>
+<td>0.867166</td>
+</tr>
+<tr class="even">
+<td>person</td>
+<td>0.787466</td>
+</tr>
+<tr class="odd">
+<td>quantity</td>
+<td>0.773842</td>
+</tr>
+<tr class="even">
+<td>organization</td>
+<td>0.730926</td>
+</tr>
+<tr class="odd">
+<td>language</td>
+<td>0.729564</td>
+</tr>
+<tr class="even">
+<td>library</td>
+<td>0.647139</td>
+</tr>
+<tr class="odd">
+<td>numeric value</td>
+<td>0.626022</td>
+</tr>
+<tr class="even">
+<td>version</td>
+<td>0.613079</td>
+</tr>
+</tbody>
+</table>
+<p>We would expect to see many of these categories, i.e.&nbsp;‘model’ and ‘model modification’, ‘numerical value’. Some of these categories are a little more abstract, i.e.&nbsp;‘action’. Let’s look at the <code>description</code> field for some of these:</p>
+<pre><code>['the process of adding new software to a system.',
+ 'the action of preserving or retaining something.',
+ 'an invitation to interact with the content, usually by clicking on a link or button.',
+ 'the action of visiting or viewing the webpage.',
+ 'the interaction between the user and the software.']</code></pre>
+<p>and at the actual “subjects” where this has been applied</p>
+<pre><code>['install', 'Kept', 'click', 'accessed', 'experience']</code></pre>
+<p>We can also view these categories as a wordcloud (the subject wordcloud is at the start of this post) <img src="https://cdn-uploads.huggingface.co/production/uploads/60107b385ac3e86b3ea4fc34/Pf7-6Kx3O_O13rZL03HgF.png" class="img-fluid" alt="image/png"></p>
+</section>
+</section>
+<section id="what-can-we-extract" class="level2">
+<h2 class="anchored" data-anchor-id="what-can-we-extract">What can we extract?</h2>
+<p>Coming back to one of the motivations of this work, trying to find ‘concepts’ in model cards that could be extracted as metadata, what might we consider interesting to extract? From the categories, we can see datasets appear frequently. While I have already done some work to extract those, there is more to be done on extracting all dataset mentions from model cards.</p>
+<p>Whilst likely more challenging, we can see that the ‘metric’ category appears pretty often. Let’s filter the dataset to examples where the category has been labelled ‘metric’ and take the top 30 most frequent examples.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">subject</th>
+<th style="text-align: right;">proportion</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Validation Loss</td>
+<td style="text-align: right;">11.6212</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Training Loss</td>
+<td style="text-align: right;">7.63271</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Accuracy</td>
+<td style="text-align: right;">6.97274</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Loss</td>
+<td style="text-align: right;">6.74319</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">f1</td>
+<td style="text-align: right;">5.39455</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">accuracy</td>
+<td style="text-align: right;">3.18508</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">results</td>
+<td style="text-align: right;">2.38164</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">recall</td>
+<td style="text-align: right;">2.066</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Recall</td>
+<td style="text-align: right;">2.066</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">precision</td>
+<td style="text-align: right;">1.95122</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Validation Accuracy</td>
+<td style="text-align: right;">1.66428</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Results</td>
+<td style="text-align: right;">1.5495</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">‘f1’</td>
+<td style="text-align: right;">1.46341</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">‘precision’</td>
+<td style="text-align: right;">1.43472</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">‘recall’</td>
+<td style="text-align: right;">1.43472</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Train Loss</td>
+<td style="text-align: right;">1.34864</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">training_precision</td>
+<td style="text-align: right;">1.34864</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Precision</td>
+<td style="text-align: right;">1.29125</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Rouge1</td>
+<td style="text-align: right;">0.774749</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">“accuracy”</td>
+<td style="text-align: right;">0.774749</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Validation</td>
+<td style="text-align: right;">0.659971</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Performance</td>
+<td style="text-align: right;">0.631277</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Rouge2</td>
+<td style="text-align: right;">0.573888</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Train Accuracy</td>
+<td style="text-align: right;">0.573888</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">F1</td>
+<td style="text-align: right;">0.516499</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Bleu</td>
+<td style="text-align: right;">0.487805</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Iou</td>
+<td style="text-align: right;">0.45911</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">num_epochs</td>
+<td style="text-align: right;">0.45911</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Micro F1 score</td>
+<td style="text-align: right;">0.373027</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Matthews Correlation</td>
+<td style="text-align: right;">0.344333</td>
+</tr>
+</tbody>
+</table>
+<p>While the results here are a little noisy, with a bit of work, we can potentially begin to think about how to extract mentions of metrics from model cards and merge duplicated metrics that have been expressed differently. This sort of data could start to give us very interesting ‘on-the-ground’ insights into how people are evaluating their models.</p>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>If you want to play with the results yourself, you can find the full dataset here: <a href="https://huggingface.co/datasets/librarian-bots/model-card-sentences-annotated">librarian-bots/model-card-sentences-annotated</a>.</p>
+<p>You may also want to check out the <a href="https://huggingface.co/docs/hub/model-card-guidebook">Model Card GuideBook</a></p>
+<p>If you have other ideas about working with this kind of data, I’d love to hear from you! You can follow me on the <a href="https://huggingface.co/davanstrien">Hub</a> (you should also follow <a href="https://huggingface.co/librarian-bot">Librarian bot!</a>).</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/danielvanstrien\.xyz");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
