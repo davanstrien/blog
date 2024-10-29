@@ -4,6 +4,8 @@ execute:
   freeze: auto
 website:
   title: "Daniel van Strien"
+  site-url: https://danielvanstrien.xyz
+  description: "Daniel van Strien's blog"
   favicon: icons/favicon.ico
   navbar:
     right:
@@ -13,6 +15,8 @@ website:
         href: https://github.com/davanstrien
       - icon: twitter
         href: https://twitter.com/vanstriendaniel
+      - icon: rss
+        href: index.xml
 format:
   html:
     theme: cosmo
