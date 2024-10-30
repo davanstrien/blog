@@ -202,6 +202,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<p><strong>updates</strong></p>
+<ul>
+<li>2024-10-30: Sabrina Esaquino from Qdrant made a very nice <a href="https://youtu.be/_A90A-grwIc?si=MS5RV17D6sgirCRm">video</a> extending this blog post to use Binary Quantization to speed up the search process.</li>
+</ul>
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
 <p>tl;dr: How can use <a href="https://qdrant.tech/">Qdrant</a> + <a href="https://github.com/daniel-avn/colpali">ColPali</a> to index and search a UFO dataset.</p>
@@ -247,7 +251,7 @@ Tip
 </div>
 </div>
 <p>We’ll start by installing the requirements. For the example, we’ll use a local in-memory Qdrant DB, so you don’t need to worry about any setup. You can easily swap this out for a remote DB or an on-disk DB if you want to use this approach in production.</p>
-<div id="cell-5" class="cell" data-outputid="8343c73a-5831-4204-8802-7b4a4fab9af8">
+<div id="cell-6" class="cell" data-outputid="8343c73a-5831-4204-8802-7b4a4fab9af8">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install uv</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>uv pip install <span class="op">--</span>system colpali_engine<span class="op">&gt;=</span><span class="fl">0.3.1</span> datasets huggingface_hub[hf_transfer] qdrant<span class="op">-</span>client transformers<span class="op">&gt;=</span><span class="fl">4.45.0</span> stamina rich</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -255,7 +259,7 @@ Tip
 Audited 7 packages in 69ms</code></pre>
 </div>
 </div>
-<div id="cell-6" class="cell" data-execution_count="9">
+<div id="cell-7" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -265,15 +269,15 @@ Audited 7 packages in 69ms</code></pre>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can set the <code>HF_HUB_ENABLE_HF_TRANSFER</code> environment variable to 1 to enable faster downloads. This is optional but should help if you have a fast connection.</p>
-<div id="cell-8" class="cell">
+<div id="cell-9" class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">"HF_HUB_ENABLE_HF_TRANSFER"</span>] <span class="op">=</span> <span class="st">"1"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>For this example blog, we’ll use the <a href="https://huggingface.co/datasets/davanstrien/ufo-ColPali">ufo-ColPali</a> dataset that I created as part of my <a href="https://danielvanstrien.xyz/posts/post-with-code/colpali/2024-09-23-generate_colpali_dataset.html">previous post</a>. If you have your own PDFs you want to work with you can use the <a href="https://huggingface.co/spaces/Dataset-Creation-Tools/pdf-to-page-images-dataset">PDF to Page Images Dataset Space</a> to convert your PDFs into a Hugging Face dataset of page images.</p>
-<div id="cell-10" class="cell" data-execution_count="94">
+<div id="cell-11" class="cell" data-execution_count="94">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> load_dataset(<span class="st">"davanstrien/ufo-ColPali"</span>, split<span class="op">=</span><span class="st">"train"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>As a reminder of what the dataset looks like</p>
-<div id="cell-12" class="cell" data-outputid="c9662182-026e-4d1b-8c7f-d90745d70137" data-execution_count="95">
+<div id="cell-13" class="cell" data-outputid="c9662182-026e-4d1b-8c7f-d90745d70137" data-execution_count="95">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dataset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="95">
 <pre><code>Dataset({
@@ -284,7 +288,7 @@ Audited 7 packages in 69ms</code></pre>
 </div>
 <p>In this particular example, we’ll just work with the images, but for many ‘real world’ document collections, you are likely to have at least some metadata associated with the documents that could also be indexed in the DB. These could include things like the title, author, date, etc. These additional metadata fields can also be used as part of the search query and for retrieval.</p>
 <p>Let’s look at an example image to see what sort of data we are working with.</p>
-<div id="cell-15" class="cell" data-outputid="6e41d4e9-9d0c-45d1-d128-63348039cc25" data-execution_count="12">
+<div id="cell-16" class="cell" data-outputid="6e41d4e9-9d0c-45d1-d128-63348039cc25" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>dataset[<span class="dv">0</span>][<span class="st">"image"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="12">
 <div>
@@ -302,12 +306,12 @@ Audited 7 packages in 69ms</code></pre>
 <section id="creating-a-qdrant-client" class="level3">
 <h3 class="anchored" data-anchor-id="creating-a-qdrant-client">Creating a Qdrant client</h3>
 <p>We can use the Qdrant Python client to interact with a Qdrant database. One of the nice features of this client is its in-memory implementation, which is very useful for testing. It’s not recommended for production use, but it’s great for getting started and means we can jump right into the code without having to worry about setting up a database.</p>
-<div id="cell-17" class="cell" data-execution_count="10">
+<div id="cell-18" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Only for colab, otherwise can load from a `.env` file or similar</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># from google.colab import userdata</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>To prove that switching between the in-memory and remote clients is easy, the code below is all I need to use a DB running on a Qdrant cloud free tier. Qdrant is open source, so you can run it on your infrastructure.</p>
-<div id="cell-19" class="cell" data-outputid="8f893c87-480e-484a-f80d-348624d75164" data-execution_count="142">
+<div id="cell-20" class="cell" data-outputid="8f893c87-480e-484a-f80d-348624d75164" data-execution_count="142">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># qdrant_client = QdrantClient(</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co">#     url="https://e25145aa-1e00-489a-948f-4633d3dd8a37.europe-west3-0.gcp.cloud.qdrant.io",</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#     api_key=userdata.get('qdrantcloud'),</span></span>
@@ -316,7 +320,7 @@ Audited 7 packages in 69ms</code></pre>
 <pre><code>collections=[CollectionDescription(name='ufo2'), CollectionDescription(name='ufo')]</code></pre>
 </div>
 </div>
-<div id="cell-20" class="cell" data-execution_count="113">
+<div id="cell-21" class="cell" data-execution_count="113">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>qdrant_client <span class="op">=</span> QdrantClient(</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">":memory:"</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>)  <span class="co"># Use ":memory:" for in-memory database or "path/to/db" for persistent storage</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -326,7 +330,7 @@ Audited 7 packages in 69ms</code></pre>
 <h3 class="anchored" data-anchor-id="setting-up-the-colpali-model">Setting up the ColPali model</h3>
 <p>We’ll use a ColPali model <a href="https://huggingface.co/davanstrien/finetune_colpali_v1_2-ufo-4bit">davanstrien/finetune_colpali_v1_2-ufo-4bit</a> fine-tuned on the <a href="https://huggingface.co/datasets/davanstrien/ufo-ColPali">ufo-ColPali</a> dataset. This model was trained using the excellent notebook in the <a href="https://github.com/tonywu71/colpali-cookbooks">ColPali cookbooks repo</a> from <a href="https://huggingface.co/tonywu71">Tony Wu</a>.</p>
 <p>If you want to use a standard ColPali model that is not optimized for UFO document retrieval, you may want to try the newly released <a href="https://huggingface.co/vidore/colqwen2-v0.1">vidore/colqwen2-v0.1</a> model instead.</p>
-<div id="cell-22" class="cell">
+<div id="cell-23" class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># from colpali_engine.models import ColQwen2, ColQwen2Processor</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co"># model = ColQwen2.from_pretrained(</span></span>
@@ -336,7 +340,7 @@ Audited 7 packages in 69ms</code></pre>
 <span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co"># )</span></span>
 <span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="co"># processor = ColQwen2Processor.from_pretrained("vidore/colqwen2-v0.1")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-23" class="cell" data-outputid="834f8b1b-d3cf-48c5-bf9b-7aa28c1f2d65" data-execution_count="55">
+<div id="cell-24" class="cell" data-outputid="834f8b1b-d3cf-48c5-bf9b-7aa28c1f2d65" data-execution_count="55">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> colpali_engine.models <span class="im">import</span> ColPali, ColPaliProcessor</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize ColPali model and processor</span></span>
@@ -365,7 +369,7 @@ Audited 7 packages in 69ms</code></pre>
 <p>The length of the matrix is fixed, but the number of vectors in the matrix can be different for each point.</p>
 </blockquote>
 <p>So, in order to use multivectors, we need to specify their length. We can check this by passing in an example image to the model and checking the shape of the output.</p>
-<div id="cell-25" class="cell">
+<div id="cell-26" class="cell">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>sample_image <span class="op">=</span> dataset[<span class="dv">0</span>][<span class="st">"image"</span>]</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad():</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    sample_batch <span class="op">=</span> colpali_processor.process_images([sample_image]).to(</span>
@@ -374,7 +378,7 @@ Audited 7 packages in 69ms</code></pre>
 <span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    sample_embedding <span class="op">=</span> colpali_model(<span class="op">**</span>sample_batch)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Since it’s always fun to look at tensors, let’s see what they output embeddings from the ColPali model looks like</p>
-<div id="cell-27" class="cell" data-outputid="3ded594d-7ef6-420f-f3c3-4f4d85f10d0b" data-execution_count="17">
+<div id="cell-28" class="cell" data-outputid="3ded594d-7ef6-420f-f3c3-4f4d85f10d0b" data-execution_count="17">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>sample_embedding</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="17">
 <pre><code>tensor([[[ 0.0093, -0.0045,  0.1445,  ...,  0.0248, -0.0820, -0.1641],
@@ -388,14 +392,14 @@ Audited 7 packages in 69ms</code></pre>
 </div>
 </div>
 <p>and check the shape</p>
-<div id="cell-29" class="cell" data-outputid="e1e1af79-f752-4dff-aa3c-913d9d983cf6" data-execution_count="18">
+<div id="cell-30" class="cell" data-outputid="e1e1af79-f752-4dff-aa3c-913d9d983cf6" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>sample_embedding.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="18">
 <pre><code>torch.Size([1, 1030, 128])</code></pre>
 </div>
 </div>
 <p>As we can see, compared to a usual dense embedding, the output of the ColPali model is a multivector. We can see that the shape of the output is <code>(1, 1030, 128)</code>. We can check the length of the vectors by looking at the last dimension of the tensor. In this case, the length of the vectors is 128.</p>
-<div id="cell-31" class="cell" data-outputid="0f8697dd-ae8a-41ec-9b02-c11730211aed" data-execution_count="22">
+<div id="cell-32" class="cell" data-outputid="0f8697dd-ae8a-41ec-9b02-c11730211aed" data-execution_count="22">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>vector_size <span class="op">=</span> sample_embedding.shape[<span class="dv">2</span>]</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>vector_size</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="22">
@@ -410,12 +414,12 @@ Audited 7 packages in 69ms</code></pre>
 <p>Now that we know the length of the vectors, we can create a collection in Qdrant using the correct configuration.</p>
 <p>Qdrant has a lot of knobs and dials that you can use to optimize the search for your particular use case. We’ll see a few of these, but there are likely to be many more optimizations that you can still make.</p>
 <p>First, we define a name for our collection. If needed, we can store multiple collections in a single Qdrant instance.</p>
-<div id="cell-33" class="cell" data-execution_count="143">
+<div id="cell-34" class="cell" data-execution_count="143">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>collection_name <span class="op">=</span> <span class="st">"ufo"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We need to define several different parameters for the collection. One of these is the <code>VectorParams</code>. These let Qdrant know what size of vectors we want to store and what similarity metrics we want to use for comparing vectors. In this case, we also pass in a <code>MultivVectorConfig</code>, which tells Qdrant that we are storing multivectors.</p>
 <p>At the moment, Qdrant supports a single comparator for multivectors, <code>MaxSim</code>. A nice blog post goes through this in more detail <a href="https://huggingface.co/blog/fsommers/document-similarity-colpali">here</a>.</p>
-<div id="cell-35" class="cell" data-execution_count="25">
+<div id="cell-36" class="cell" data-execution_count="25">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>vector_params <span class="op">=</span> models.VectorParams(</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    size<span class="op">=</span>vector_size,</span>
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    distance<span class="op">=</span>models.Distance.COSINE,</span>
@@ -424,7 +428,7 @@ Audited 7 packages in 69ms</code></pre>
 <span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    ),</span>
 <span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-36" class="cell" data-outputid="b3a82ffd-41e4-427b-c33d-977528e38d35" data-execution_count="27">
+<div id="cell-37" class="cell" data-outputid="b3a82ffd-41e4-427b-c33d-977528e38d35" data-execution_count="27">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(vector_params)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>size=128 distance=&lt;Distance.COSINE: 'Cosine'&gt; hnsw_config=None quantization_config=None on_disk=None datatype=None multivector_config=MultiVectorConfig(comparator=&lt;MultiVectorComparator.MAX_SIM: 'max_sim'&gt;)</code></pre>
@@ -455,7 +459,7 @@ Tip
 <p>In addition to reducing the memory footprint, scalar quantization also speeds up the search process. Qdrant uses a special SIMD CPU instruction to perform fast vector comparison. This instruction works with 8-bit integers, so the conversion to uint8 allows Qdrant to perform the comparison faster. <a href="https://qdrant.tech/documentation/guides/quantization/#scalar-quantization">source</a></p>
 </blockquote>
 <p>We can define a <code>ScalarQuantizationConfig</code> and pass it when creating the collection. On the server side, Qdrant will convert the vectors to 8-bit integers, reducing the memory footprint and speeding up the search process. You can also switch on or off the <code>always_ram</code> parameter, keeping the vectors in RAM. This will increase performance at the cost of memory usage.</p>
-<div id="cell-39" class="cell" data-execution_count="28">
+<div id="cell-40" class="cell" data-execution_count="28">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>scalar_quant <span class="op">=</span> models.ScalarQuantizationConfig(</span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">type</span><span class="op">=</span>models.ScalarType.INT8,</span>
 <span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    quantile<span class="op">=</span><span class="fl">0.99</span>,</span>
@@ -463,7 +467,7 @@ Tip
 <span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can pass in all of these options when creating the collection.</p>
-<div id="cell-41" class="cell" data-outputid="89000961-0a65-4fef-d0af-d81e5abddf9a" data-execution_count="148">
+<div id="cell-42" class="cell" data-outputid="89000961-0a65-4fef-d0af-d81e5abddf9a" data-execution_count="148">
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>qdrant_client.recreate_collection(</span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    collection_name<span class="op">=</span>collection_name,  <span class="co"># the name of the collection</span></span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    on_disk_payload<span class="op">=</span><span class="va">True</span>,  <span class="co"># store the payload on disk</span></span>
@@ -494,7 +498,7 @@ Tip
 </div>
 </div>
 <p>We define a helper function to upload points to Qdrant via the client. We use the <code>stamina</code> library to enable retries in case of network issues (I didn’t have any issues with the in-memory client, but having this in place can be useful if you are doing a large upload).</p>
-<div id="cell-43" class="cell" data-execution_count="149">
+<div id="cell-44" class="cell" data-execution_count="149">
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> stamina</span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -512,7 +516,7 @@ Tip
 <span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="va">True</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We will now upload the vectors to qdrant. We do this by creating batches of data, passing it through the ColPali model and then adding the embeddings to a qdrant <code>PointStruct</code>. If you have a smaller GPU you will likely want to reduce the batch size down a bit.</p>
-<div id="cell-45" class="cell" data-outputid="340301f9-86ce-4b62-ae68-b796348248e2">
+<div id="cell-46" class="cell" data-outputid="340301f9-86ce-4b62-ae68-b796348248e2">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>batch_size <span class="op">=</span> <span class="dv">6</span>  <span class="co"># Adjust based on your GPU memory constraints</span></span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Use tqdm to create a progress bar</span></span>
@@ -561,14 +565,14 @@ Tip
 </div>
 </div>
 <p>If you had the indexing off during the upload you can trigger an index by setting a lower indexing threshold.</p>
-<div id="cell-47" class="cell">
+<div id="cell-48" class="cell">
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>qdrant_client.update_collection(</span>
 <span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    collection_name<span class="op">=</span>collection_name,</span>
 <span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    optimizer_config<span class="op">=</span>models.OptimizersConfigDiff(indexing_threshold<span class="op">=</span><span class="dv">10</span>),</span>
 <span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s take a look at some info about the collection (we’ll use <code>rich</code> to make the output a bit nicer to look at)</p>
-<div id="cell-49" class="cell" data-outputid="2e7369de-1868-42cd-d27a-a85a7c30f794" data-execution_count="118">
+<div id="cell-50" class="cell" data-outputid="2e7369de-1868-42cd-d27a-a85a7c30f794" data-execution_count="118">
 <div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> rich <span class="im">import</span> <span class="bu">print</span> <span class="im">as</span> r_print</span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>collection <span class="op">=</span> qdrant_client.get_collection(collection_name)</span>
@@ -643,7 +647,7 @@ Tip
 <section id="searching-our-ufo-database" class="level3">
 <h3 class="anchored" data-anchor-id="searching-our-ufo-database">Searching our UFO database</h3>
 <p>Now that we have uploaded the vectors to Qdrant we can start searching. To start we can use the scroll method to just get the first 10 results.</p>
-<div id="cell-53" class="cell" data-outputid="6d16c7ea-dcd0-4245-e24b-729da1325a21" data-execution_count="119">
+<div id="cell-54" class="cell" data-outputid="6d16c7ea-dcd0-4245-e24b-729da1325a21" data-execution_count="119">
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>qdrant_client.scroll(collection_name<span class="op">=</span>collection_name, limit<span class="op">=</span><span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="119">
 <pre><code>([Record(id=0, payload={}, vector=None, shard_key=None, order_value=None),
@@ -660,7 +664,7 @@ Tip
 </div>
 </div>
 <p>Let’s see how we can query the DB. We first need to process our query text using the <code>process_queries</code> method. We then pass this through the model to get the embeddings.</p>
-<div id="cell-55" class="cell" data-outputid="e245895f-91b8-4c85-d022-f04ae560effc" data-execution_count="120">
+<div id="cell-56" class="cell" data-outputid="e245895f-91b8-4c85-d022-f04ae560effc" data-execution_count="120">
 <div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>query_text <span class="op">=</span> <span class="st">"top secret"</span></span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad():</span>
 <span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    batch_query <span class="op">=</span> colpali_processor.process_queries([query_text]).to(</span>
@@ -680,19 +684,19 @@ Tip
 </div>
 </div>
 <p>Let’s see what the output of the model looks like</p>
-<div id="cell-57" class="cell" data-outputid="471fbffd-09f6-4721-b69e-7f48ebe60b9a" data-execution_count="121">
+<div id="cell-58" class="cell" data-outputid="471fbffd-09f6-4721-b69e-7f48ebe60b9a" data-execution_count="121">
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>query_embedding[<span class="dv">0</span>].shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="121">
 <pre><code>torch.Size([16, 128])</code></pre>
 </div>
 </div>
 <p>We need to put the embeddings on the CPU and convert them to a list which we can pass to the Qdrant client.</p>
-<div id="cell-59" class="cell" data-execution_count="122">
+<div id="cell-60" class="cell" data-execution_count="122">
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the query embedding to a list of vectors</span></span>
 <span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>multivector_query <span class="op">=</span> query_embedding[<span class="dv">0</span>].cpu().<span class="bu">float</span>().numpy().tolist()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We use the <code>query_points</code> method to search the DB. We can pass in a number of different parameters to control the search. In this case we’’ll just limit the number of results to 10.</p>
-<div id="cell-61" class="cell" data-outputid="c6a28243-0565-4243-db45-d633a4a705fb" data-execution_count="124">
+<div id="cell-62" class="cell" data-outputid="c6a28243-0565-4243-db45-d633a4a705fb" data-execution_count="124">
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Search in Qdrant</span></span>
 <span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>search_result <span class="op">=</span> qdrant_client.query_points(</span>
 <span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>    collection_name<span class="op">=</span>collection_name, query<span class="op">=</span>multivector_query, limit<span class="op">=</span><span class="dv">10</span>, timeout<span class="op">=</span><span class="dv">60</span></span>
@@ -714,7 +718,7 @@ Tip
 </div>
 <p>What did we actually get back? We can see the results are a list of <code>PointStruct</code> objects. We can see the <code>id</code> of the document, the <code>distance</code> from the query and the <code>payload</code>, which is the metadata associated with the document.</p>
 <p>When we uploaded the data to Qdrant, we just used the index of the rows in the original dataset as the document’s <code>ID</code>. This means we can easily look up the original document in the dataset. Let’s see what we find when searching for “top secret”.</p>
-<div id="cell-63" class="cell" data-outputid="f47083e4-9062-439c-fbaa-98293f2b31aa" data-execution_count="128">
+<div id="cell-64" class="cell" data-outputid="f47083e4-9062-439c-fbaa-98293f2b31aa" data-execution_count="128">
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>idx <span class="op">=</span> search_result.points[<span class="dv">0</span>].<span class="bu">id</span></span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>dataset[idx][<span class="st">"image"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="128">
@@ -726,7 +730,7 @@ Tip
 </div>
 </div>
 <p>Looks pretty top secret! We can also wrap this up in a nice function to make it easier to search the DB.</p>
-<div id="cell-65" class="cell" data-outputid="c2797630-8534-4106-fff3-d7cf92531548" data-execution_count="129">
+<div id="cell-66" class="cell" data-outputid="c2797630-8534-4106-fff3-d7cf92531548" data-execution_count="129">
 <div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> search_images_by_text(query_text, top_k<span class="op">=</span><span class="dv">5</span>):</span>
 <span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Process and encode the text query</span></span>
 <span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> torch.no_grad():</span>
@@ -760,14 +764,14 @@ id=59 version=0 score=10.78073398079465 payload={} vector=None shard_key=None or
 </div>
 </div>
 <p>and in this case, we can also return the images from the dataset</p>
-<div id="cell-67" class="cell" data-execution_count="137">
+<div id="cell-68" class="cell" data-execution_count="137">
 <div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> search_by_text_and_return_images(query_text, top_k<span class="op">=</span><span class="dv">5</span>):</span>
 <span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>    results <span class="op">=</span> search_images_by_text(query_text, top_k)</span>
 <span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>    row_ids <span class="op">=</span> [r.<span class="bu">id</span> <span class="cf">for</span> r <span class="kw">in</span> results.points]</span>
 <span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dataset.select(row_ids)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s take a look at a few more results for “top secret”</p>
-<div id="cell-69" class="cell" data-outputid="9131f8f2-7bce-4a2b-f47b-b9823f1c45f4" data-execution_count="138">
+<div id="cell-70" class="cell" data-outputid="9131f8f2-7bce-4a2b-f47b-b9823f1c45f4" data-execution_count="138">
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>results_ds <span class="op">=</span> search_by_text_and_return_images(<span class="st">"top secret"</span>)</span>
 <span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> results_ds:</span>
@@ -873,7 +877,7 @@ id=59 version=0 score=10.78073398079465 payload={} vector=None shard_key=None or
 <section id="binary-quantization" class="level4">
 <h4 class="anchored" data-anchor-id="binary-quantization">Binary Quantization</h4>
 <p>It’s very likely to make sense to explore using Binary Quantization for storing your vectors since it can reduce the memory footprint and speed up the search process. You can set this up by doing something like this in the collection creation step</p>
-<div id="cell-73" class="cell">
+<div id="cell-74" class="cell">
 <div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>quantization_config <span class="op">=</span> models.BinaryQuantization(</span>
 <span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>    binary<span class="op">=</span>models.BinaryQuantizationConfig(</span>
 <span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>        always_ram<span class="op">=</span><span class="va">True</span>,</span>
@@ -884,7 +888,7 @@ id=59 version=0 score=10.78073398079465 payload={} vector=None shard_key=None or
 </section>
 <section id="some-more-search-examples" class="level3">
 <h3 class="anchored" data-anchor-id="some-more-search-examples">Some more search examples</h3>
-<div id="cell-75" class="cell" data-outputid="8d847827-5531-46c3-aee7-65a22d94e768" data-execution_count="140">
+<div id="cell-76" class="cell" data-outputid="8d847827-5531-46c3-aee7-65a22d94e768" data-execution_count="140">
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>results_ds <span class="op">=</span> search_by_text_and_return_images(<span class="st">"sightings data table"</span>)</span>
 <span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> results_ds:</span>
@@ -926,7 +930,7 @@ id=59 version=0 score=10.78073398079465 payload={} vector=None shard_key=None or
 </div>
 </div>
 </div>
-<div id="cell-76" class="cell" data-outputid="b46f62e6-7f43-4cd2-ca40-87204681f811" data-execution_count="141">
+<div id="cell-77" class="cell" data-outputid="b46f62e6-7f43-4cd2-ca40-87204681f811" data-execution_count="141">
 <div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>results_ds <span class="op">=</span> search_by_text_and_return_images(<span class="st">"ufo experiences"</span>)</span>
 <span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> results_ds:</span>
 <span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>    display(row[<span class="st">"image"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>

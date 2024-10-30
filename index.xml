@@ -1749,6 +1749,10 @@ Wall time: 12min 20s</code></pre>
 
 
 
+<p><strong>updates</strong></p>
+<ul>
+<li>2024-10-30: Sabrina Esaquino from Qdrant made a very nice <a href="https://youtu.be/_A90A-grwIc?si=MS5RV17D6sgirCRm">video</a> extending this blog post to use Binary Quantization to speed up the search process.</li>
+</ul>
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
 <p>tl;dr: How can use <a href="https://qdrant.tech/">Qdrant</a> + <a href="https://github.com/daniel-avn/colpali">ColPali</a> to index and search a UFO dataset.</p>
@@ -1834,7 +1838,7 @@ Tip
 </div>
 </div>
 <p>We’ll start by installing the requirements. For the example, we’ll use a local in-memory Qdrant DB, so you don’t need to worry about any setup. You can easily swap this out for a remote DB or an on-disk DB if you want to use this approach in production.</p>
-<div id="cell-5" class="cell" data-outputid="8343c73a-5831-4204-8802-7b4a4fab9af8">
+<div id="cell-6" class="cell" data-outputid="8343c73a-5831-4204-8802-7b4a4fab9af8">
 <div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">!</span>pip install uv</span>
@@ -1858,7 +1862,7 @@ font-style: inherit;">4.45.0</span> stamina rich</span></code></pre></div>
 Audited 7 packages in 69ms</code></pre>
 </div>
 </div>
-<div id="cell-6" class="cell" data-execution_count="9">
+<div id="cell-7" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> os</span>
@@ -1892,7 +1896,7 @@ background-color: null;
 font-style: inherit;">import</span> load_dataset</span></code></pre></div>
 </div>
 <p>We can set the <code>HF_HUB_ENABLE_HF_TRANSFER</code> environment variable to 1 to enable faster downloads. This is optional but should help if you have a fast connection.</p>
-<div id="cell-8" class="cell">
+<div id="cell-9" class="cell">
 <div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1">os.environ[<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"HF_HUB_ENABLE_HF_TRANSFER"</span>] <span class="op" style="color: #5E5E5E;
@@ -1902,7 +1906,7 @@ background-color: null;
 font-style: inherit;">"1"</span></span></code></pre></div>
 </div>
 <p>For this example blog, we’ll use the <a href="https://huggingface.co/datasets/davanstrien/ufo-ColPali">ufo-ColPali</a> dataset that I created as part of my <a href="https://danielvanstrien.xyz/posts/post-with-code/colpali/2024-09-23-generate_colpali_dataset.html">previous post</a>. If you have your own PDFs you want to work with you can use the <a href="https://huggingface.co/spaces/Dataset-Creation-Tools/pdf-to-page-images-dataset">PDF to Page Images Dataset Space</a> to convert your PDFs into a Hugging Face dataset of page images.</p>
-<div id="cell-10" class="cell" data-execution_count="94">
+<div id="cell-11" class="cell" data-execution_count="94">
 <div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1">dataset <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> load_dataset(<span class="st" style="color: #20794D;
@@ -1914,7 +1918,7 @@ background-color: null;
 font-style: inherit;">"train"</span>)</span></code></pre></div>
 </div>
 <p>As a reminder of what the dataset looks like</p>
-<div id="cell-12" class="cell" data-outputid="c9662182-026e-4d1b-8c7f-d90745d70137" data-execution_count="95">
+<div id="cell-13" class="cell" data-outputid="c9662182-026e-4d1b-8c7f-d90745d70137" data-execution_count="95">
 <div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1">dataset</span></code></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="95">
 <pre><code>Dataset({
@@ -1925,7 +1929,7 @@ font-style: inherit;">"train"</span>)</span></code></pre></div>
 </div>
 <p>In this particular example, we’ll just work with the images, but for many ‘real world’ document collections, you are likely to have at least some metadata associated with the documents that could also be indexed in the DB. These could include things like the title, author, date, etc. These additional metadata fields can also be used as part of the search query and for retrieval.</p>
 <p>Let’s look at an example image to see what sort of data we are working with.</p>
-<div id="cell-15" class="cell" data-outputid="6e41d4e9-9d0c-45d1-d128-63348039cc25" data-execution_count="12">
+<div id="cell-16" class="cell" data-outputid="6e41d4e9-9d0c-45d1-d128-63348039cc25" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1">dataset[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">0</span>][<span class="st" style="color: #20794D;
@@ -1947,7 +1951,7 @@ font-style: inherit;">"image"</span>]</span></code></pre></div>
 <section id="creating-a-qdrant-client" class="level3">
 <h3 class="anchored" data-anchor-id="creating-a-qdrant-client">Creating a Qdrant client</h3>
 <p>We can use the Qdrant Python client to interact with a Qdrant database. One of the nice features of this client is its in-memory implementation, which is very useful for testing. It’s not recommended for production use, but it’s great for getting started and means we can jump right into the code without having to worry about setting up a database.</p>
-<div id="cell-17" class="cell" data-execution_count="10">
+<div id="cell-18" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Only for colab, otherwise can load from a `.env` file or similar</span></span>
@@ -1956,7 +1960,7 @@ background-color: null;
 font-style: inherit;"># from google.colab import userdata</span></span></code></pre></div>
 </div>
 <p>To prove that switching between the in-memory and remote clients is easy, the code below is all I need to use a DB running on a Qdrant cloud free tier. Qdrant is open source, so you can run it on your infrastructure.</p>
-<div id="cell-19" class="cell" data-outputid="8f893c87-480e-484a-f80d-348624d75164" data-execution_count="142">
+<div id="cell-20" class="cell" data-outputid="8f893c87-480e-484a-f80d-348624d75164" data-execution_count="142">
 <div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># qdrant_client = QdrantClient(</span></span>
@@ -1973,7 +1977,7 @@ font-style: inherit;"># )</span></span></code></pre></div>
 <pre><code>collections=[CollectionDescription(name='ufo2'), CollectionDescription(name='ufo')]</code></pre>
 </div>
 </div>
-<div id="cell-20" class="cell" data-execution_count="113">
+<div id="cell-21" class="cell" data-execution_count="113">
 <div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1">qdrant_client <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> QdrantClient(</span>
@@ -1989,7 +1993,7 @@ font-style: inherit;"># Use ":memory:" for in-memory database or "path/to/db" fo
 <h3 class="anchored" data-anchor-id="setting-up-the-colpali-model">Setting up the ColPali model</h3>
 <p>We’ll use a ColPali model <a href="https://huggingface.co/davanstrien/finetune_colpali_v1_2-ufo-4bit">davanstrien/finetune_colpali_v1_2-ufo-4bit</a> fine-tuned on the <a href="https://huggingface.co/datasets/davanstrien/ufo-ColPali">ufo-ColPali</a> dataset. This model was trained using the excellent notebook in the <a href="https://github.com/tonywu71/colpali-cookbooks">ColPali cookbooks repo</a> from <a href="https://huggingface.co/tonywu71">Tony Wu</a>.</p>
 <p>If you want to use a standard ColPali model that is not optimized for UFO document retrieval, you may want to try the newly released <a href="https://huggingface.co/vidore/colqwen2-v0.1">vidore/colqwen2-v0.1</a> model instead.</p>
-<div id="cell-22" class="cell">
+<div id="cell-23" class="cell">
 <div class="sourceCode cell-code" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># from colpali_engine.models import ColQwen2, ColQwen2Processor</span></span>
@@ -2013,7 +2017,7 @@ font-style: inherit;"># )</span></span>
 background-color: null;
 font-style: inherit;"># processor = ColQwen2Processor.from_pretrained("vidore/colqwen2-v0.1")</span></span></code></pre></div>
 </div>
-<div id="cell-23" class="cell" data-outputid="834f8b1b-d3cf-48c5-bf9b-7aa28c1f2d65" data-execution_count="55">
+<div id="cell-24" class="cell" data-outputid="834f8b1b-d3cf-48c5-bf9b-7aa28c1f2d65" data-execution_count="55">
 <div class="sourceCode cell-code" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> colpali_engine.models <span class="im" style="color: #00769E;
@@ -2068,7 +2072,7 @@ font-style: inherit;">"vidore/colpaligemma-3b-pt-448-base"</span></span>
 <p>The length of the matrix is fixed, but the number of vectors in the matrix can be different for each point.</p>
 </blockquote>
 <p>So, in order to use multivectors, we need to specify their length. We can check this by passing in an example image to the model and checking the shape of the output.</p>
-<div id="cell-25" class="cell">
+<div id="cell-26" class="cell">
 <div class="sourceCode cell-code" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1">sample_image <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> dataset[<span class="dv" style="color: #AD0000;
@@ -2092,7 +2096,7 @@ background-color: null;
 font-style: inherit;">**</span>sample_batch)</span></code></pre></div>
 </div>
 <p>Since it’s always fun to look at tensors, let’s see what they output embeddings from the ColPali model looks like</p>
-<div id="cell-27" class="cell" data-outputid="3ded594d-7ef6-420f-f3c3-4f4d85f10d0b" data-execution_count="17">
+<div id="cell-28" class="cell" data-outputid="3ded594d-7ef6-420f-f3c3-4f4d85f10d0b" data-execution_count="17">
 <div class="sourceCode cell-code" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1">sample_embedding</span></code></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="17">
 <pre><code>tensor([[[ 0.0093, -0.0045,  0.1445,  ...,  0.0248, -0.0820, -0.1641],
@@ -2106,14 +2110,14 @@ font-style: inherit;">**</span>sample_batch)</span></code></pre></div>
 </div>
 </div>
 <p>and check the shape</p>
-<div id="cell-29" class="cell" data-outputid="e1e1af79-f752-4dff-aa3c-913d9d983cf6" data-execution_count="18">
+<div id="cell-30" class="cell" data-outputid="e1e1af79-f752-4dff-aa3c-913d9d983cf6" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1">sample_embedding.shape</span></code></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="18">
 <pre><code>torch.Size([1, 1030, 128])</code></pre>
 </div>
 </div>
 <p>As we can see, compared to a usual dense embedding, the output of the ColPali model is a multivector. We can see that the shape of the output is <code>(1, 1030, 128)</code>. We can check the length of the vectors by looking at the last dimension of the tensor. In this case, the length of the vectors is 128.</p>
-<div id="cell-31" class="cell" data-outputid="0f8697dd-ae8a-41ec-9b02-c11730211aed" data-execution_count="22">
+<div id="cell-32" class="cell" data-outputid="0f8697dd-ae8a-41ec-9b02-c11730211aed" data-execution_count="22">
 <div class="sourceCode cell-code" id="cb22" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1">vector_size <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> sample_embedding.shape[<span class="dv" style="color: #AD0000;
@@ -2132,7 +2136,7 @@ font-style: inherit;">2</span>]</span>
 <p>Now that we know the length of the vectors, we can create a collection in Qdrant using the correct configuration.</p>
 <p>Qdrant has a lot of knobs and dials that you can use to optimize the search for your particular use case. We’ll see a few of these, but there are likely to be many more optimizations that you can still make.</p>
 <p>First, we define a name for our collection. If needed, we can store multiple collections in a single Qdrant instance.</p>
-<div id="cell-33" class="cell" data-execution_count="143">
+<div id="cell-34" class="cell" data-execution_count="143">
 <div class="sourceCode cell-code" id="cb24" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1">collection_name <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
@@ -2141,7 +2145,7 @@ font-style: inherit;">"ufo"</span></span></code></pre></div>
 </div>
 <p>We need to define several different parameters for the collection. One of these is the <code>VectorParams</code>. These let Qdrant know what size of vectors we want to store and what similarity metrics we want to use for comparing vectors. In this case, we also pass in a <code>MultivVectorConfig</code>, which tells Qdrant that we are storing multivectors.</p>
 <p>At the moment, Qdrant supports a single comparator for multivectors, <code>MaxSim</code>. A nice blog post goes through this in more detail <a href="https://huggingface.co/blog/fsommers/document-similarity-colpali">here</a>.</p>
-<div id="cell-35" class="cell" data-execution_count="25">
+<div id="cell-36" class="cell" data-execution_count="25">
 <div class="sourceCode cell-code" id="cb25" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1">vector_params <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> models.VectorParams(</span>
@@ -2160,7 +2164,7 @@ font-style: inherit;">=</span>models.MultiVectorComparator.MAX_SIM</span>
 <span id="cb25-6">    ),</span>
 <span id="cb25-7">)</span></code></pre></div>
 </div>
-<div id="cell-36" class="cell" data-outputid="b3a82ffd-41e4-427b-c33d-977528e38d35" data-execution_count="27">
+<div id="cell-37" class="cell" data-outputid="b3a82ffd-41e4-427b-c33d-977528e38d35" data-execution_count="27">
 <div class="sourceCode cell-code" id="cb26" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>(vector_params)</span></code></pre></div>
@@ -2193,7 +2197,7 @@ Tip
 <p>In addition to reducing the memory footprint, scalar quantization also speeds up the search process. Qdrant uses a special SIMD CPU instruction to perform fast vector comparison. This instruction works with 8-bit integers, so the conversion to uint8 allows Qdrant to perform the comparison faster. <a href="https://qdrant.tech/documentation/guides/quantization/#scalar-quantization">source</a></p>
 </blockquote>
 <p>We can define a <code>ScalarQuantizationConfig</code> and pass it when creating the collection. On the server side, Qdrant will convert the vectors to 8-bit integers, reducing the memory footprint and speeding up the search process. You can also switch on or off the <code>always_ram</code> parameter, keeping the vectors in RAM. This will increase performance at the cost of memory usage.</p>
-<div id="cell-39" class="cell" data-execution_count="28">
+<div id="cell-40" class="cell" data-execution_count="28">
 <div class="sourceCode cell-code" id="cb28" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1">scalar_quant <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> models.ScalarQuantizationConfig(</span>
@@ -2215,7 +2219,7 @@ font-style: inherit;">False</span>,</span>
 <span id="cb28-5">)</span></code></pre></div>
 </div>
 <p>We can pass in all of these options when creating the collection.</p>
-<div id="cell-41" class="cell" data-outputid="89000961-0a65-4fef-d0af-d81e5abddf9a" data-execution_count="148">
+<div id="cell-42" class="cell" data-outputid="89000961-0a65-4fef-d0af-d81e5abddf9a" data-execution_count="148">
 <div class="sourceCode cell-code" id="cb29" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1">qdrant_client.recreate_collection(</span>
 <span id="cb29-2">    collection_name<span class="op" style="color: #5E5E5E;
 background-color: null;
@@ -2290,7 +2294,7 @@ font-style: inherit;">True</span>,</span>
 </div>
 </div>
 <p>We define a helper function to upload points to Qdrant via the client. We use the <code>stamina</code> library to enable retries in case of network issues (I didn’t have any issues with the in-memory client, but having this in place can be useful if you are doing a large upload).</p>
-<div id="cell-43" class="cell" data-execution_count="149">
+<div id="cell-44" class="cell" data-execution_count="149">
 <div class="sourceCode cell-code" id="cb32" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> stamina</span>
@@ -2361,7 +2365,7 @@ background-color: null;
 font-style: inherit;">True</span></span></code></pre></div>
 </div>
 <p>We will now upload the vectors to qdrant. We do this by creating batches of data, passing it through the ColPali model and then adding the embeddings to a qdrant <code>PointStruct</code>. If you have a smaller GPU you will likely want to reduce the batch size down a bit.</p>
-<div id="cell-45" class="cell" data-outputid="340301f9-86ce-4b62-ae68-b796348248e2">
+<div id="cell-46" class="cell" data-outputid="340301f9-86ce-4b62-ae68-b796348248e2">
 <div class="sourceCode cell-code" id="cb33" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1">batch_size <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
@@ -2535,7 +2539,7 @@ font-style: inherit;">"Indexing complete!"</span>)</span></code></pre></div>
 </div>
 </div>
 <p>If you had the indexing off during the upload you can trigger an index by setting a lower indexing threshold.</p>
-<div id="cell-47" class="cell">
+<div id="cell-48" class="cell">
 <div class="sourceCode cell-code" id="cb35" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1">qdrant_client.update_collection(</span>
 <span id="cb35-2">    collection_name<span class="op" style="color: #5E5E5E;
 background-color: null;
@@ -2550,7 +2554,7 @@ font-style: inherit;">10</span>),</span>
 <span id="cb35-4">)</span></code></pre></div>
 </div>
 <p>Let’s take a look at some info about the collection (we’ll use <code>rich</code> to make the output a bit nicer to look at)</p>
-<div id="cell-49" class="cell" data-outputid="2e7369de-1868-42cd-d27a-a85a7c30f794" data-execution_count="118">
+<div id="cell-50" class="cell" data-outputid="2e7369de-1868-42cd-d27a-a85a7c30f794" data-execution_count="118">
 <div class="sourceCode cell-code" id="cb36" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> rich <span class="im" style="color: #00769E;
@@ -2635,7 +2639,7 @@ Tip
 <section id="searching-our-ufo-database" class="level3">
 <h3 class="anchored" data-anchor-id="searching-our-ufo-database">Searching our UFO database</h3>
 <p>Now that we have uploaded the vectors to Qdrant we can start searching. To start we can use the scroll method to just get the first 10 results.</p>
-<div id="cell-53" class="cell" data-outputid="6d16c7ea-dcd0-4245-e24b-729da1325a21" data-execution_count="119">
+<div id="cell-54" class="cell" data-outputid="6d16c7ea-dcd0-4245-e24b-729da1325a21" data-execution_count="119">
 <div class="sourceCode cell-code" id="cb37" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1">qdrant_client.scroll(collection_name<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>collection_name, limit<span class="op" style="color: #5E5E5E;
@@ -2658,7 +2662,7 @@ font-style: inherit;">10</span>)</span></code></pre></div>
 </div>
 </div>
 <p>Let’s see how we can query the DB. We first need to process our query text using the <code>process_queries</code> method. We then pass this through the model to get the embeddings.</p>
-<div id="cell-55" class="cell" data-outputid="e245895f-91b8-4c85-d022-f04ae560effc" data-execution_count="120">
+<div id="cell-56" class="cell" data-outputid="e245895f-91b8-4c85-d022-f04ae560effc" data-execution_count="120">
 <div class="sourceCode cell-code" id="cb39" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1">query_text <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
@@ -2691,7 +2695,7 @@ font-style: inherit;">**</span>batch_query)</span>
 </div>
 </div>
 <p>Let’s see what the output of the model looks like</p>
-<div id="cell-57" class="cell" data-outputid="471fbffd-09f6-4721-b69e-7f48ebe60b9a" data-execution_count="121">
+<div id="cell-58" class="cell" data-outputid="471fbffd-09f6-4721-b69e-7f48ebe60b9a" data-execution_count="121">
 <div class="sourceCode cell-code" id="cb41" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1">query_embedding[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">0</span>].shape</span></code></pre></div>
@@ -2700,7 +2704,7 @@ font-style: inherit;">0</span>].shape</span></code></pre></div>
 </div>
 </div>
 <p>We need to put the embeddings on the CPU and convert them to a list which we can pass to the Qdrant client.</p>
-<div id="cell-59" class="cell" data-execution_count="122">
+<div id="cell-60" class="cell" data-execution_count="122">
 <div class="sourceCode cell-code" id="cb43" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Convert the query embedding to a list of vectors</span></span>
@@ -2713,7 +2717,7 @@ background-color: null;
 font-style: inherit;">float</span>().numpy().tolist()</span></code></pre></div>
 </div>
 <p>We use the <code>query_points</code> method to search the DB. We can pass in a number of different parameters to control the search. In this case we’’ll just limit the number of results to 10.</p>
-<div id="cell-61" class="cell" data-outputid="c6a28243-0565-4243-db45-d633a4a705fb" data-execution_count="124">
+<div id="cell-62" class="cell" data-outputid="c6a28243-0565-4243-db45-d633a4a705fb" data-execution_count="124">
 <div class="sourceCode cell-code" id="cb44" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Search in Qdrant</span></span>
@@ -2751,7 +2755,7 @@ font-style: inherit;">60</span></span>
 </div>
 <p>What did we actually get back? We can see the results are a list of <code>PointStruct</code> objects. We can see the <code>id</code> of the document, the <code>distance</code> from the query and the <code>payload</code>, which is the metadata associated with the document.</p>
 <p>When we uploaded the data to Qdrant, we just used the index of the rows in the original dataset as the document’s <code>ID</code>. This means we can easily look up the original document in the dataset. Let’s see what we find when searching for “top secret”.</p>
-<div id="cell-63" class="cell" data-outputid="f47083e4-9062-439c-fbaa-98293f2b31aa" data-execution_count="128">
+<div id="cell-64" class="cell" data-outputid="f47083e4-9062-439c-fbaa-98293f2b31aa" data-execution_count="128">
 <div class="sourceCode cell-code" id="cb46" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1">idx <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> search_result.points[<span class="dv" style="color: #AD0000;
@@ -2771,7 +2775,7 @@ font-style: inherit;">"image"</span>]</span></code></pre></div>
 </div>
 </div>
 <p>Looks pretty top secret! We can also wrap this up in a nice function to make it easier to search the DB.</p>
-<div id="cell-65" class="cell" data-outputid="c2797630-8534-4106-fff3-d7cf92531548" data-execution_count="129">
+<div id="cell-66" class="cell" data-outputid="c2797630-8534-4106-fff3-d7cf92531548" data-execution_count="129">
 <div class="sourceCode cell-code" id="cb47" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
@@ -2860,7 +2864,7 @@ id=59 version=0 score=10.78073398079465 payload={} vector=None shard_key=None or
 </div>
 </div>
 <p>and in this case, we can also return the images from the dataset</p>
-<div id="cell-67" class="cell" data-execution_count="137">
+<div id="cell-68" class="cell" data-execution_count="137">
 <div class="sourceCode cell-code" id="cb49" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
@@ -2889,7 +2893,7 @@ font-weight: bold;
 font-style: inherit;">return</span> dataset.select(row_ids)</span></code></pre></div>
 </div>
 <p>Let’s take a look at a few more results for “top secret”</p>
-<div id="cell-69" class="cell" data-outputid="9131f8f2-7bce-4a2b-f47b-b9823f1c45f4" data-execution_count="138">
+<div id="cell-70" class="cell" data-outputid="9131f8f2-7bce-4a2b-f47b-b9823f1c45f4" data-execution_count="138">
 <div class="sourceCode cell-code" id="cb50" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1">results_ds <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> search_by_text_and_return_images(<span class="st" style="color: #20794D;
@@ -3009,7 +3013,7 @@ font-style: inherit;">"image"</span>])</span></code></pre></div>
 <section id="binary-quantization" class="level4">
 <h4 class="anchored" data-anchor-id="binary-quantization">Binary Quantization</h4>
 <p>It’s very likely to make sense to explore using Binary Quantization for storing your vectors since it can reduce the memory footprint and speed up the search process. You can set this up by doing something like this in the collection creation step</p>
-<div id="cell-73" class="cell">
+<div id="cell-74" class="cell">
 <div class="sourceCode cell-code" id="cb51" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1">quantization_config <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> models.BinaryQuantization(</span>
@@ -3028,7 +3032,7 @@ font-style: inherit;">True</span>,</span>
 </section>
 <section id="some-more-search-examples" class="level3">
 <h3 class="anchored" data-anchor-id="some-more-search-examples">Some more search examples</h3>
-<div id="cell-75" class="cell" data-outputid="8d847827-5531-46c3-aee7-65a22d94e768" data-execution_count="140">
+<div id="cell-76" class="cell" data-outputid="8d847827-5531-46c3-aee7-65a22d94e768" data-execution_count="140">
 <div class="sourceCode cell-code" id="cb52" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1">results_ds <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> search_by_text_and_return_images(<span class="st" style="color: #20794D;
@@ -3084,7 +3088,7 @@ font-style: inherit;">"image"</span>])</span></code></pre></div>
 </div>
 </div>
 </div>
-<div id="cell-76" class="cell" data-outputid="b46f62e6-7f43-4cd2-ca40-87204681f811" data-execution_count="141">
+<div id="cell-77" class="cell" data-outputid="b46f62e6-7f43-4cd2-ca40-87204681f811" data-execution_count="141">
 <div class="sourceCode cell-code" id="cb53" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1">results_ds <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> search_by_text_and_return_images(<span class="st" style="color: #20794D;
