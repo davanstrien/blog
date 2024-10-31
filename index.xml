@@ -3182,6 +3182,10 @@ font-style: inherit;">"image"</span>])</span></code></pre></div>
 
 
 <p><a href="https://colab.research.google.com/github/davanstrien/blog/blob/main/posts/post-with-code/colpali/2024-09-23-generate_colpali_dataset.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid"></a></p>
+<p><strong>updates</strong></p>
+<ul>
+<li>You can find a follow up blog post on <a href="https://danielvanstrien.xyz/posts/post-with-code/colpali-qdrant/2024-10-02_using_colpali_with_qdrant.html">using ColPali with Qdrant</a> which covers how to use the fine-tuned ColPali model with the Qdrant vector database to implement a multimodal retrieval pipeline.</li>
+</ul>
 <section id="introduction-to-colpali" class="level2">
 <h2 class="anchored" data-anchor-id="introduction-to-colpali">Introduction to ColPali</h2>
 <p>tl;dr this blog post covers how to generate a dataset for training/fine-tuning ColPali models an open VLM to generate queries. You can find the dataset produced by this approach <a href="https://huggingface.co/datasets/davanstrien/ufo-ColPali">here</a>.</p>
@@ -3208,7 +3212,7 @@ font-style: inherit;">"image"</span>])</span></code></pre></div>
 <p>You’ll see that each row contains a bunch of metadata about the source of the document and other information but the key parts for the actual training of the model are the image and the queries pairs. When training ColPali we want a dataset of images with queries that relate to the image. This will allow the model to learn how queries are related to the images. To help the model learn it can also be helpful to have negative examples.</p>
 <p>Let’s take a closer look at a few examples from the data before we jump into generating our own.</p>
 <p>For this notebook I’m using <code>uv</code> to manage Python installs because I find it to be a lot quicker but you can use <code>pip</code> if you prefer.</p>
-<div id="cell-4" class="cell" data-execution_count="1">
+<div id="cell-5" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">%</span>pip install uv</span></code></pre></div>
@@ -3222,7 +3226,7 @@ Successfully installed uv-0.4.15
 Note: you may need to restart the kernel to use updated packages.</code></pre>
 </div>
 </div>
-<div id="cell-5" class="cell" data-outputid="17fc22ef-46e9-4008-d83f-02dfba8d3051" data-execution_count="2">
+<div id="cell-6" class="cell" data-outputid="17fc22ef-46e9-4008-d83f-02dfba8d3051" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">!</span>uv pip install accelerate qwen<span class="op" style="color: #5E5E5E;
@@ -3251,7 +3255,7 @@ Resolved 54 packages in 230ms
 Audited 54 packages in 0.08ms</code></pre>
 </div>
 </div>
-<div id="cell-6" class="cell" data-execution_count="3">
+<div id="cell-7" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">!</span>uv pip install flash<span class="op" style="color: #5E5E5E;
@@ -3270,7 +3274,7 @@ font-style: inherit;">--</span>system</span></code></pre></div>
 </div>
 </div>
 <p>We can take a look at a few examples from the data using Polars.</p>
-<div id="cell-8" class="cell" data-execution_count="3">
+<div id="cell-9" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> polars <span class="im" style="color: #00769E;
@@ -3301,7 +3305,7 @@ font-style: inherit;">"train"</span>],</span>
 <span id="cb7-6">)</span></code></pre></div>
 </div>
 <p>Let’s see what columns we have in the dataset.</p>
-<div id="cell-10" class="cell" data-execution_count="18">
+<div id="cell-11" class="cell" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1">df.columns</span></code></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="18">
 <pre><code>['image',
@@ -3317,7 +3321,7 @@ font-style: inherit;">"train"</span>],</span>
 </div>
 </div>
 <p>Since we’re shortly going to turn to how we can generate our own queries, let’s take a look at a few examples from the data. We’ll filter to focus on the <code>pdf</code> source, since these are the ones created by the authors of ColPali (the other sources are from existing datasets).</p>
-<div id="cell-12" class="cell" data-execution_count="16">
+<div id="cell-13" class="cell" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1">filtered_df <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> (</span>
@@ -3372,7 +3376,7 @@ Tip
 <section id="creating-queries-from-documents" class="level2">
 <h2 class="anchored" data-anchor-id="creating-queries-from-documents">Creating queries from documents</h2>
 <p>For the data using in ColPali, part of the dataset was sourced from existing document question answering datasets. Another component was generated using Claude 3.0 Sonnet with the following prompt:</p>
-<div id="cell-15" class="cell">
+<div id="cell-16" class="cell">
 <div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1">prompt <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
@@ -3469,7 +3473,7 @@ font-style: inherit;">Here is the page:"""</span></span></code></pre></div>
 <h2 class="anchored" data-anchor-id="ufo-colpali-creating-a-domain-specific-dataset">UFO ColPali: creating a domain specific dataset</h2>
 <p>Let’s now turn to how we could approach generating our own query image pairs for training — or more likely fine tuning — a ColPali model on domain specific data.</p>
 <p>To make the example slightly more interesting we’ll stray away from using an existing document dataset and use a UFO dateset which has been sourced from an Internet Archive <a href="https://archive.org/details/ufonewsletters">Collection of UFO newsletters</a>. This dataset was created from a sample of PDFs from this collection which were then split into single page images using the <a href="https://huggingface.co/spaces/Dataset-Creation-Tools/pdf-to-page-images-dataset">pdf-to-page-images-dataset</a> Hugging Face Space. If you have a collection of PDFs related to your domain you could also use this Space to quickly create a dataset for your use case.</p>
-<div id="cell-18" class="cell" data-outputid="7d9282e5-2c9b-4894-d480-e916ae940681">
+<div id="cell-19" class="cell" data-outputid="7d9282e5-2c9b-4894-d480-e916ae940681">
 <div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> os</span>
@@ -3480,7 +3484,7 @@ background-color: null;
 font-style: inherit;">import</span> load_dataset</span></code></pre></div>
 </div>
 <p>If you are running on a machine with quite a fast connection, the following environment variable may increase the speed of the model and dataset downloads.</p>
-<div id="cell-20" class="cell" data-execution_count="2">
+<div id="cell-21" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1">os.environ[<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"HF_HUB_ENABLE_HF_TRANSFER"</span>] <span class="op" style="color: #5E5E5E;
@@ -3490,7 +3494,7 @@ background-color: null;
 font-style: inherit;">"1"</span></span></code></pre></div>
 </div>
 <p>Let’s start by loading the UFO dataset and taking a look at a few examples.</p>
-<div id="cell-22" class="cell" data-execution_count="3">
+<div id="cell-23" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1">ds <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> load_dataset(<span class="st" style="color: #20794D;
@@ -3507,7 +3511,7 @@ font-style: inherit;">"train"</span>)</span></code></pre></div>
 </div>
 </div>
 <p>Let’s see what a row looks like</p>
-<div id="cell-24" class="cell" data-execution_count="4">
+<div id="cell-25" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1">ds[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">0</span>]</span></code></pre></div>
@@ -3516,7 +3520,7 @@ font-style: inherit;">0</span>]</span></code></pre></div>
 </div>
 </div>
 <p>and look at an example document</p>
-<div id="cell-26" class="cell" data-execution_count="5">
+<div id="cell-27" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1">ds[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">3</span>][<span class="st" style="color: #20794D;
@@ -3538,7 +3542,7 @@ font-style: inherit;">"image"</span>]</span></code></pre></div>
 <p>Whilst the original ColPali paper used the Claude 3.0 Sonnet model to generate queries for the UFO dataset, we’ll use the Qwen2-VL model to generate queries for our UFO dataset. Specifcally we’ll use the 7B variant of the model (<a href="https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct">Qwen/Qwen2-VL-7B-Instruct</a>). This is an open VLLM (Apache 2.0 licensed) Vision Language Model which has shown strong performance on a variety of vision and language tasks. Whilst the model won’t run on a standard T4 Google Colab instance we can run the model either on a L4 or an A100 GPU on Google Colab or you can use the Hugging Face Jupyter Spaces <a href="https://huggingface.co/spaces/SpacesExamples/jupyterlab?duplicate=true">template</a> to run the model on an L40s as I did.</p>
 <p>To start let’s load the model and get a sense of how we can use it. We’ll do this through the Transformers library. It’s also possible to run the model using the vLLM library but since we’re only focusing on generating a relatively small number of queries this extra set up probably isn’t worth it in this case (I’d be interested to hear in the comments if you try it out and how it goes).</p>
 <p>To start we’ll load the model. We’ll use <code>flash_attention_2</code> which should help a bit with the performance and memory usage of the model.</p>
-<div id="cell-30" class="cell" data-execution_count="6">
+<div id="cell-31" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> transformers <span class="im" style="color: #00769E;
@@ -3585,7 +3589,7 @@ You are attempting to use Flash Attention 2.0 without specifying a torch dtype. 
 </div>
 </div>
 <p>We next define the processor. This is the component that will help us prepare the inputs for the model.</p>
-<div id="cell-32" class="cell" data-execution_count="7">
+<div id="cell-33" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb21" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># default processer</span></span>
@@ -3596,7 +3600,7 @@ background-color: null;
 font-style: inherit;">"Qwen/Qwen2-VL-7B-Instruct"</span>)</span></code></pre></div>
 </div>
 <p>As with many more recent models, we can use a chat template to help us prepare the inputs for the model. Here is the example from the Qwen2-VL-7B-Instruct model card.</p>
-<div id="cell-34" class="cell" data-execution_count="2">
+<div id="cell-35" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb22" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1">messages <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> [</span>
@@ -3635,7 +3639,7 @@ font-style: inherit;">"Describe this image."</span>},</span>
 <span id="cb22-12">]</span></code></pre></div>
 </div>
 <p>We can now pass this to the processor to get the inputs ready for the model. You’ll see here we first pass in the messages to the <code>apply_chat_template</code> method of the processor and then use the <code>process_vision_info</code> helper function which comes from the <code>qwen_vl_utils</code> library to prepare images and videos (which are not relevant here).</p>
-<div id="cell-36" class="cell" data-execution_count="8">
+<div id="cell-37" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1">text <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> processor.apply_chat_template(</span>
@@ -3654,11 +3658,11 @@ background-color: null;
 font-style: inherit;">=</span> process_vision_info(messages)</span></code></pre></div>
 </div>
 <p>If we take a look at the <code>text</code> we can see that the processor has applied a chat template to the messages.</p>
-<div id="cell-38" class="cell">
+<div id="cell-39" class="cell">
 <div class="sourceCode cell-code" id="cb24" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1">text</span></code></pre></div>
 </div>
 <p>We now pass the text, image and video inputs (in this case <code>None</code>) to the processor and prepare the inputs for the model.</p>
-<div id="cell-40" class="cell" data-execution_count="10">
+<div id="cell-41" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb25" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1">inputs <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> processor(</span>
@@ -3689,7 +3693,7 @@ background-color: null;
 font-style: inherit;">"cuda"</span>)</span></code></pre></div>
 </div>
 <p>we can see what this input looks like</p>
-<div id="cell-42" class="cell" data-execution_count="11">
+<div id="cell-43" class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb26" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1">inputs</span></code></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="11">
 <pre><code>{'input_ids': tensor([[151644,   8948,    198,  ..., 151644,  77091,    198]],
@@ -3704,7 +3708,7 @@ font-style: inherit;">"cuda"</span>)</span></code></pre></div>
 </div>
 </div>
 <p>Now the inputs are ready to pass to the model. BTW, all of this inference code is copied straight from the Qwen2-VL-7B-Instruct model card on Hugging Face. There are a few things we might want to tweak but the basic examples are pretty much all we need for our use case.</p>
-<div id="cell-44" class="cell" data-execution_count="12">
+<div id="cell-45" class="cell" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb28" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1">generated_ids <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> model.generate(<span class="op" style="color: #5E5E5E;
@@ -3844,7 +3848,7 @@ font-style: inherit;">Here is the page:</span></span>
 background-color: null;
 font-style: inherit;">"""</span></span></code></pre></div>
 <p>We’ll copy and paste all of the previous code to generate a response from the model for an example from our UFO dataset. We’ll wrap this in a function once we’ve got a better sense of what we’re looking for.</p>
-<div id="cell-48" class="cell" data-execution_count="21">
+<div id="cell-49" class="cell" data-execution_count="21">
 <div class="sourceCode cell-code" id="cb31" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1">messages <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> [</span>
@@ -3882,7 +3886,7 @@ font-style: inherit;">"text"</span>: prompt},</span>
 <span id="cb31-11">    }</span>
 <span id="cb31-12">]</span></code></pre></div>
 </div>
-<div id="cell-49" class="cell" data-execution_count="22">
+<div id="cell-50" class="cell" data-execution_count="22">
 <div class="sourceCode cell-code" id="cb32" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1">text <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> processor.apply_chat_template(</span>
@@ -3928,7 +3932,7 @@ font-style: inherit;">=</span> inputs.to(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"cuda"</span>)</span></code></pre></div>
 </div>
-<div id="cell-50" class="cell" data-execution_count="23">
+<div id="cell-51" class="cell" data-execution_count="23">
 <div class="sourceCode cell-code" id="cb33" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1">generated_ids <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> model.generate(<span class="op" style="color: #5E5E5E;
@@ -3975,12 +3979,12 @@ font-style: inherit;">False</span></span>
 <section id="validating-the-responses" class="level3">
 <h3 class="anchored" data-anchor-id="validating-the-responses">Validating the responses</h3>
 <p>One of the big challenges you can have in generating synthetic data at scale is ensuring that you get valid responses that you can use in downstream tasks for training without having to do a lot of manual verification. Let’s see if we can load the response as valid JSON</p>
-<div id="cell-53" class="cell" data-execution_count="24">
+<div id="cell-54" class="cell" data-execution_count="24">
 <div class="sourceCode cell-code" id="cb35" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> json</span></code></pre></div>
 </div>
-<div id="cell-54" class="cell" data-execution_count="25">
+<div id="cell-55" class="cell" data-execution_count="25">
 <div class="sourceCode cell-code" id="cb36" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1">json.loads(output_text[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">0</span>])</span></code></pre></div>
@@ -3995,7 +3999,7 @@ font-style: inherit;">0</span>])</span></code></pre></div>
    'answer': ['discovery of singing aliens on the Moon']}]}</code></pre>
 </div>
 </div>
-<div id="cell-55" class="cell" data-execution_count="26">
+<div id="cell-56" class="cell" data-execution_count="26">
 <div class="sourceCode cell-code" id="cb38" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>(output_text[<span class="dv" style="color: #AD0000;
@@ -4021,7 +4025,7 @@ font-style: inherit;">0</span>])</span></code></pre></div>
 </div>
 </div>
 <p>Having a valid JSON is a good start but in many synthetic data generation tasks, people are increasingly using Pydantic to ensure outputs are valid in other ways. Let’s take a look at a rewritten prompt I created for generating queries. In this prompt we ask the VLLM model to generate 3 different types of retrieval queries:</p>
-<div id="cell-57" class="cell">
+<div id="cell-58" class="cell">
 <div class="sourceCode cell-code" id="cb40" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1">prompt <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
@@ -4104,7 +4108,7 @@ background-color: null;
 font-style: inherit;">Generate the queries based on this image and provide the response in the specified JSON format."""</span></span></code></pre></div>
 </div>
 <p>We ask the model for JSON output, we can represent this using a simple Pydantic model.</p>
-<div id="cell-59" class="cell">
+<div id="cell-60" class="cell">
 <div class="sourceCode cell-code" id="cb41" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> pydantic <span class="im" style="color: #00769E;
@@ -4146,7 +4150,7 @@ font-style: inherit;">str</span></span></code></pre></div>
 </section>
 <section id="an-update-retrieval-focused-prompt" class="level2">
 <h2 class="anchored" data-anchor-id="an-update-retrieval-focused-prompt">An update retrieval focused prompt</h2>
-<div id="cell-62" class="cell" data-execution_count="5">
+<div id="cell-63" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb42" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
@@ -4340,7 +4344,7 @@ Pydantic model for this prompt: &lt;class '__main__.GeneralRetrievalQuery'&gt;</
 </div>
 </div>
 <p>We’ll now also wrap this in a function to generate a response from the model using our Pydantic model. We could probably do a bit more refactoring here but this will do for now.</p>
-<div id="cell-64" class="cell" data-execution_count="50">
+<div id="cell-65" class="cell" data-execution_count="50">
 <div class="sourceCode cell-code" id="cb44" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
@@ -4473,7 +4477,7 @@ font-weight: bold;
 font-style: inherit;">return</span> output_text</span></code></pre></div>
 </div>
 <p>Let’s now generate a response from the model for an example image from our UFO dataset.</p>
-<div id="cell-66" class="cell" data-execution_count="51">
+<div id="cell-67" class="cell" data-execution_count="51">
 <div class="sourceCode cell-code" id="cb45" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1">generate_response(prompt, ds[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">2</span>][<span class="st" style="color: #20794D;
@@ -4490,7 +4494,7 @@ font-style: inherit;">"image"</span>])</span></code></pre></div>
 <section id="generating-the-full-dataset" class="level2">
 <h2 class="anchored" data-anchor-id="generating-the-full-dataset">Generating the full dataset</h2>
 <p>As we play with the prompts and refine the queries we will often iterate quite quickly on a few examples. Once we’re reasonably confident in the queries we can generate a larger dataset to see how well our prompts work across a larger set of examples.</p>
-<div id="cell-71" class="cell" data-execution_count="84">
+<div id="cell-72" class="cell" data-execution_count="84">
 <div class="sourceCode cell-code" id="cb49" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1">ds</span></code></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="84">
 <pre><code>Dataset({
@@ -4499,7 +4503,7 @@ font-style: inherit;">"image"</span>])</span></code></pre></div>
 })</code></pre>
 </div>
 </div>
-<div id="cell-72" class="cell" data-execution_count="53">
+<div id="cell-73" class="cell" data-execution_count="53">
 <div class="sourceCode cell-code" id="cb51" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1">sample <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> ds.take(<span class="dv" style="color: #AD0000;
@@ -4507,7 +4511,7 @@ background-color: null;
 font-style: inherit;">100</span>)</span></code></pre></div>
 </div>
 <p>To generate our full dataset we just wrap our previous code in a loop and run it for all the examples in our dataset. We add a very broad exception handler to catch any errors and continue with the next example. This is obviously not production code but it’s good enough to get started with. If we scale to a much bigger dataset we might want to add some more robust error handling.</p>
-<div id="cell-74" class="cell" data-execution_count="54">
+<div id="cell-75" class="cell" data-execution_count="54">
 <div class="sourceCode cell-code" id="cb52" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> tqdm.auto <span class="im" style="color: #00769E;
@@ -4551,7 +4555,7 @@ font-style: inherit;">None</span>)</span></code></pre></div>
 </script>
 </div>
 </div>
-<div id="cell-75" class="cell" data-execution_count="55">
+<div id="cell-76" class="cell" data-execution_count="55">
 <div class="sourceCode cell-code" id="cb53" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1">responses[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">0</span>]</span></code></pre></div>
@@ -4560,7 +4564,7 @@ font-style: inherit;">0</span>]</span></code></pre></div>
 </div>
 </div>
 <p>We can see how many errors we have in our dataset.</p>
-<div id="cell-77" class="cell" data-execution_count="56">
+<div id="cell-78" class="cell" data-execution_count="56">
 <div class="sourceCode cell-code" id="cb55" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">len</span>([r <span class="cf" style="color: #003B4F;
@@ -4584,7 +4588,7 @@ font-style: inherit;">None</span>])</span></code></pre></div>
 </div>
 <p>No bad generations!</p>
 <p>We can also look at the first response to see what it looks like.</p>
-<div id="cell-80" class="cell" data-execution_count="58">
+<div id="cell-81" class="cell" data-execution_count="58">
 <div class="sourceCode cell-code" id="cb57" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1">responses[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">0</span>][<span class="dv" style="color: #AD0000;
@@ -4595,7 +4599,7 @@ font-style: inherit;">0</span>]</span></code></pre></div>
 </div>
 </div>
 <p>Let’s see if we can parse this into a JSON object.</p>
-<div id="cell-82" class="cell" data-execution_count="59">
+<div id="cell-83" class="cell" data-execution_count="59">
 <div class="sourceCode cell-code" id="cb59" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1">json.loads(responses[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">0</span>][<span class="dv" style="color: #AD0000;
@@ -4611,14 +4615,14 @@ font-style: inherit;">0</span>])</span></code></pre></div>
 </div>
 </div>
 <p>first example seems to work, now let’s add this to our dataset and see how many we can parse.</p>
-<div id="cell-84" class="cell" data-execution_count="61">
+<div id="cell-85" class="cell" data-execution_count="61">
 <div class="sourceCode cell-code" id="cb61" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1">sample <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> sample.add_column(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"raw_queries"</span>, responses)</span></code></pre></div>
 </div>
-<div id="cell-85" class="cell" data-execution_count="62">
+<div id="cell-86" class="cell" data-execution_count="62">
 <div class="sourceCode cell-code" id="cb62" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1">sample</span></code></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="62">
 <pre><code>Dataset({
@@ -4628,7 +4632,7 @@ font-style: inherit;">"raw_queries"</span>, responses)</span></code></pre></div>
 </div>
 </div>
 <p>To deal with bad generations we’ll create just fill out these column with <code>None</code> values. We can grab all the required keys from the valid first response.</p>
-<div id="cell-87" class="cell" data-execution_count="71">
+<div id="cell-88" class="cell" data-execution_count="71">
 <div class="sourceCode cell-code" id="cb64" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1">keys <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="bu" style="color: null;
@@ -4649,7 +4653,7 @@ font-style: inherit;">0</span>]).keys())</span>
 </div>
 </div>
 <p>and do something like this to fill out this row</p>
-<div id="cell-89" class="cell" data-execution_count="73">
+<div id="cell-90" class="cell" data-execution_count="73">
 <div class="sourceCode cell-code" id="cb66" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1">{k: <span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">None</span> <span class="cf" style="color: #003B4F;
@@ -4669,7 +4673,7 @@ font-style: inherit;">in</span> keys}</span></code></pre></div>
 </div>
 </div>
 <p>We create a function to extract the data from the raw queries and parse them into a JSON object.</p>
-<div id="cell-91" class="cell" data-execution_count="74">
+<div id="cell-92" class="cell" data-execution_count="74">
 <div class="sourceCode cell-code" id="cb68" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb68-1"><span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
@@ -4726,7 +4730,7 @@ font-weight: bold;
 font-style: inherit;">return</span> data</span></code></pre></div>
 </div>
 <p>We can now use the <code>map</code> method to apply this function to our dataset.</p>
-<div id="cell-93" class="cell" data-execution_count="76">
+<div id="cell-94" class="cell" data-execution_count="76">
 <div class="sourceCode cell-code" id="cb69" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1">parsed_ds <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> sample.<span class="bu" style="color: null;
@@ -4734,7 +4738,7 @@ background-color: null;
 font-style: inherit;">map</span>(extract_data)</span></code></pre></div>
 </div>
 <p>We can then see how many we’ve successfully parsed.</p>
-<div id="cell-95" class="cell" data-execution_count="79">
+<div id="cell-96" class="cell" data-execution_count="79">
 <div class="sourceCode cell-code" id="cb70" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb70-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> collections <span class="im" style="color: #00769E;
@@ -4754,14 +4758,14 @@ font-style: inherit;">"parsed_into_json"</span>])</span></code></pre></div>
 <h2 class="anchored" data-anchor-id="pushing-to-the-hub">Pushing to the Hub</h2>
 <p>We can now push this dataset to the Hugging Face Hub. This will also allow us to view the dataset in the Dataset Viewer. This can often be a very nice way of quickly checking through examples in a dataset to see how the quality looks.</p>
 <p>If you are not authenticated you can use the <code>login</code> function to authenticate with the Hub.</p>
-<div id="cell-99" class="cell" data-execution_count="80">
+<div id="cell-100" class="cell" data-execution_count="80">
 <div class="sourceCode cell-code" id="cb72" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb72-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> huggingface_hub <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> login</span></code></pre></div>
 </div>
-<div id="cell-100" class="cell" data-execution_count="81">
+<div id="cell-101" class="cell" data-execution_count="81">
 <div class="sourceCode cell-code" id="cb73" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb73-1">login()</span></code></pre></div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
@@ -4769,7 +4773,7 @@ font-style: inherit;">import</span> login</span></code></pre></div>
 </script>
 </div>
 </div>
-<div id="cell-101" class="cell" data-execution_count="82">
+<div id="cell-102" class="cell" data-execution_count="82">
 <div class="sourceCode cell-code" id="cb74" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb74-1">parsed_ds.push_to_hub(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"davanstrien/ufo-ColPali"</span>)</span></code></pre></div>
@@ -4815,7 +4819,7 @@ font-style: inherit;">"davanstrien/ufo-ColPali"</span>)</span></code></pre></div
 <section id="appendix-more-diverse-queries" class="level2">
 <h2 class="anchored" data-anchor-id="appendix-more-diverse-queries">Appendix more diverse queries</h2>
 <p>Here are a few more examples of prompts I am experimenting with.</p>
-<div id="cell-106" class="cell">
+<div id="cell-107" class="cell">
 <div class="sourceCode cell-code" id="cb76" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb76-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> pydantic <span class="im" style="color: #00769E;
