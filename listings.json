@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/2024/12/23/fineweb-filter-polars.html",
       "/posts/2024/11/local-vision-language-model-lm-studio.html",
       "/posts/post-with-code/colpali-qdrant/2024-10-02_using_colpali_with_qdrant.html",
       "/posts/post-with-code/colpali/2024-09-23-generate_colpali_dataset.html",

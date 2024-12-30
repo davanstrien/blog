@@ -1,0 +1,2165 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.39">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Daniel van Strien">
+<meta name="dcterms.date" content="2024-12-30">
+<meta name="description" content="Using Polars to filter the FineWeb2 dataset and other large Hugging Face datasets">
+
+<title>Filtering FineWeb2 using Polars – Daniel van Strien</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../../">
+<link href="../../../../icons/favicon.ico" rel="icon">
+<script src="../../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../../site_libs/quarto-html/quarto-syntax-highlighting-e26003cea8cd680ca0c55a263523d882.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../../site_libs/bootstrap/bootstrap-659650fc26dc25888fc1474f317bb8ac.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+<script defer="" src="https://cloud.umami.is/script.js" data-website-id="85cb27d6-dbf9-43d7-97d0-be4e6724de7a"></script>
+<meta name="msvalidate.01" content="4246174F24A3CB7C9CBEAA94E1FF8E84">
+<meta name="google-site-verification" content="C7WoFOEuA4Msbvvk-kgDd_C6VGphZTp3awy_acXjZYU">
+
+
+<link rel="stylesheet" href="../../../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../../index.html">
+    <span class="navbar-title">Daniel van Strien</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../../index.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Filtering FineWeb2 using Polars</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">polars</div>
+    <div class="quarto-category">huggingface</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Using Polars to filter the FineWeb2 dataset and other large Hugging Face datasets
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Daniel van Strien </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">December 30, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Recently <a href="https://huggingface.co/datasets/HuggingFaceFW/fineweb-2">FineWeb2</a> was released. FineWeb2 builds on the previous <a href="https://huggingface.co/datasets/HuggingFaceFW/fineweb">FineWeb</a> dataset to add data for many languages. Building on this work we recently launched a community effort to build educational quality filters for many languages. See this <a href="https://huggingface.co/blog/davanstrien/fineweb2-community">blog post</a> for more details.</p>
+<section id="filtering-the-fineweb2-dataset-to-improve-educational-quality-and-or-filtering-for-a-language" class="level3">
+<h3 class="anchored" data-anchor-id="filtering-the-fineweb2-dataset-to-improve-educational-quality-and-or-filtering-for-a-language">Filtering the FineWeb2 dataset to improve educational quality and or filtering for a language</h3>
+<p>One of the goals of the FineWeb-c project is to build educational quality filters for many languages. To do this the community has been annotating the data with educational quality scores. So far, the majority of the datasets for each language consist of a random sample of 1,000 examples from FineWeb2 for that lanugage. However, for some languages, the community has found that: - the language identification is not always correct - the educational quality is very low in the sample</p>
+<p>For these languages, we want to enable the community to create extra filters to either help with the language identification or to filter for educational quality. This blog post shows some ways in which you can use Polars to filter the FineWeb2 dataset to improve educational quality and or filtering for a language.</p>
+<p>First we’ll install the necessary libraries. We’ll use <code>polars</code> for the data manipulation and <code>huggingface_hub</code> to interact with the Hugging Face Hub. The <code>dask</code> library is another good option for working with large datasets.</p>
+<div id="cell-3" class="cell" data-outputid="63d40d1b-b125-4d11-e2dc-f556126a71ac" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># %pip install polars huggingface_hub tld rich tqdm --upgrade</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-4" class="cell" data-execution_count="31">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> list_repo_files, hf_hub_download</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tld <span class="im">import</span> get_tld</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.auto <span class="im">import</span> tqdm</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-5" class="cell" data-execution_count="32">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># increase amount of data polars shows</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>pl.Config.set_tbl_rows(<span class="dv">100</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="32">
+<pre><code>polars.config.Config</code></pre>
+</div>
+</div>
+<p>Many large datasets on the Hub will be organised into different configurations. These configurations are often named after the language they are in. For example, the FineWeb dataset is organised into different languages. Many large datasets will either have structured folders or the names of files can be used to filter the dataset. Let’s look at the FineWeb dataset. We can use the wonderful <code>huggingface_hub</code> library to list the files in a repository.</p>
+<div id="cell-7" class="cell" data-outputid="c890a004-c9c9-4968-8176-20456bfba91a" data-execution_count="33">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>paths <span class="op">=</span> list_repo_files(<span class="st">"HuggingFaceFW/fineweb-2"</span>, repo_type<span class="op">=</span><span class="st">"dataset"</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>paths[:<span class="dv">10</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="33">
+<pre><code>['.gitattributes',
+ 'README.md',
+ 'data/aai_Latn/test/000_00000.parquet',
+ 'data/aai_Latn/train/000_00000.parquet',
+ 'data/aai_Latn_removed/train/000_00000.parquet',
+ 'data/aak_Latn/test/000_00000.parquet',
+ 'data/aak_Latn/train/000_00000.parquet',
+ 'data/aak_Latn_removed/train/000_00000.parquet',
+ 'data/aau_Latn/test/000_00000.parquet',
+ 'data/aau_Latn/train/000_00000.parquet']</code></pre>
+</div>
+</div>
+<p>You can see we have a hidden <code>.gitattributes</code> file and a README.md + a <code>data</code> directory containing parquet files organised into different subdirectories. Since these names are very clear we create a very simple filter to get the scots language files we’re interested in. We’ll look for <code>scots</code> in the file name and make sure it ends with <code>.parquet</code> and doesn’t have <code>removed</code> in the file name since these are files that were removed in the FineWeb2 filtering process.</p>
+<div id="cell-9" class="cell" data-outputid="8d379554-5a63-49cb-8925-f331f686bc04" data-execution_count="34">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>scots <span class="op">=</span> [</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    f <span class="cf">for</span> f <span class="kw">in</span> paths <span class="cf">if</span> (<span class="st">"sco"</span> <span class="kw">in</span> f <span class="kw">and</span> f.endswith(<span class="st">"parquet"</span>) <span class="kw">and</span> <span class="st">"removed"</span> <span class="kw">not</span> <span class="kw">in</span> f)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>scots</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="34">
+<pre><code>['data/sco_Latn/test/000_00000.parquet',
+ 'data/sco_Latn/train/000_00000.parquet']</code></pre>
+</div>
+</div>
+</section>
+<section id="loading-the-data-in-polars" class="level2">
+<h2 class="anchored" data-anchor-id="loading-the-data-in-polars">Loading the data in Polars</h2>
+<p>We can directly load the data from the Hugging Face Hub using the <code>hf://</code> protocol. In this case we’ll just load the <code>train</code> file for the scots language. We’ll use <code>read_parquet</code> to load the data for now but we’ll see below a better way to load the data if you are working with large datasets.</p>
+<div id="cell-11" class="cell" data-execution_count="35">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pl.read_parquet(<span class="ss">f"hf://datasets/HuggingFaceFW/fineweb-2/</span><span class="sc">{</span>scots[<span class="op">-</span><span class="dv">1</span>]<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s take a look at the data. We can see we have a number of columns including the actual text but also some other metadata fields that could be useful for filtering.</p>
+<div id="cell-13" class="cell" data-outputid="9eb35e28-268e-4577-832c-6bb3be50be0a" data-execution_count="36">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df.head(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="36">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (5, 11)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">text</th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">dump</th>
+<th data-quarto-table-cell-role="th">url</th>
+<th data-quarto-table-cell-role="th">date</th>
+<th data-quarto-table-cell-role="th">file_path</th>
+<th data-quarto-table-cell-role="th">language</th>
+<th data-quarto-table-cell-role="th">language_score</th>
+<th data-quarto-table-cell-role="th">language_script</th>
+<th data-quarto-table-cell-role="th">minhash_cluster_size</th>
+<th data-quarto-table-cell-role="th">top_langs</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>f64</th>
+<th>str</th>
+<th>i64</th>
+<th>str</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"2010 All Ford Mustangs Car Sho…</td>
+<td>"&lt;urn:uuid:06f10aff-f1da-4d33-b…</td>
+<td>"CC-MAIN-2013-20"</td>
+<td>"http://www.allfordmustangs.com…</td>
+<td>"2013-05-23T16:34:05Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>0.764794</td>
+<td>"Latn"</td>
+<td>1258</td>
+<td>"{"sco_Latn_score": 0.764793634…</td>
+</tr>
+<tr class="even">
+<td>"Interested in France? We'll se…</td>
+<td>"&lt;urn:uuid:abc6bfe8-7af5-40b9-9…</td>
+<td>"CC-MAIN-2013-20"</td>
+<td>"http://www.tripadvisor.com/All…</td>
+<td>"2013-05-23T16:36:10Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>0.651096</td>
+<td>"Latn"</td>
+<td>12</td>
+<td>"{"sco_Latn_score": 0.651095628…</td>
+</tr>
+<tr class="odd">
+<td>"Sherlock Holmes Sherlock Holme…</td>
+<td>"&lt;urn:uuid:11ceff04-f5f5-418c-8…</td>
+<td>"CC-MAIN-2014-10"</td>
+<td>"http://sco.wikipedia.org/wiki/…</td>
+<td>"2014-03-08T05:12:30Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>1.000008</td>
+<td>"Latn"</td>
+<td>58</td>
+<td>"{"sco_Latn_score": 1.000008225…</td>
+</tr>
+<tr class="even">
+<td>"Munster History[eedit | eedit …</td>
+<td>"&lt;urn:uuid:5fd5fa85-72b1-43d3-b…</td>
+<td>"CC-MAIN-2014-15"</td>
+<td>"http://sco.wikipedia.org/wiki/…</td>
+<td>"2014-04-19T09:31:48Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>1.00001</td>
+<td>"Latn"</td>
+<td>79</td>
+<td>"{"sco_Latn_score": 1.000009536…</td>
+</tr>
+<tr class="odd">
+<td>"Snawbuirdin Frae Wikipedia Sna…</td>
+<td>"&lt;urn:uuid:72c97fcb-4820-4a52-b…</td>
+<td>"CC-MAIN-2014-15"</td>
+<td>"http://sco.wikipedia.org/wiki/…</td>
+<td>"2014-04-19T09:31:00Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>1.00001</td>
+<td>"Latn"</td>
+<td>66</td>
+<td>"{"sco_Latn_score": 1.000010013…</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>We can do some simple EDA style analysis if we want. For example, we can look at the distribution of the language scores.</p>
+<div id="cell-15" class="cell" data-execution_count="37">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>df.select(pl.col(<span class="st">"language_score"</span>)).describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="37">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (9, 2)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">statistic</th>
+<th data-quarto-table-cell-role="th">language_score</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>f64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"count"</td>
+<td>75821.0</td>
+</tr>
+<tr class="even">
+<td>"null_count"</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"mean"</td>
+<td>0.537262</td>
+</tr>
+<tr class="even">
+<td>"std"</td>
+<td>0.214123</td>
+</tr>
+<tr class="odd">
+<td>"min"</td>
+<td>0.300002</td>
+</tr>
+<tr class="even">
+<td>"25%"</td>
+<td>0.371339</td>
+</tr>
+<tr class="odd">
+<td>"50%"</td>
+<td>0.465798</td>
+</tr>
+<tr class="even">
+<td>"75%"</td>
+<td>0.634602</td>
+</tr>
+<tr class="odd">
+<td>"max"</td>
+<td>1.00001</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>Do a groupby year of dump and language score and plot a bar chart to see if there is a trend.</p>
+<div id="cell-17" class="cell" data-execution_count="38">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>df.with_columns(</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"dump"</span>).<span class="bu">str</span>.extract(<span class="vs">r"(\d</span><span class="sc">{4}</span><span class="vs">)"</span>).cast(pl.Utf8).alias(<span class="st">"year"</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>).group_by(<span class="st">"year"</span>).agg(pl.col(<span class="st">"language_score"</span>).mean()).sort(</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"year"</span>, descending<span class="op">=</span><span class="va">True</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>).plot.bar(x<span class="op">=</span><span class="st">"year"</span>, y<span class="op">=</span><span class="st">"language_score"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="38">
+
+<style>
+  #altair-viz-fe0da1ebeea8457488a525510d17e309.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #altair-viz-fe0da1ebeea8457488a525510d17e309.vega-embed details,
+  #altair-viz-fe0da1ebeea8457488a525510d17e309.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="altair-viz-fe0da1ebeea8457488a525510d17e309"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-fe0da1ebeea8457488a525510d17e309") {
+      outputDiv = document.getElementById("altair-viz-fe0da1ebeea8457488a525510d17e309");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@5?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@5.20.1?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@6?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "5")
+        .then(() => maybeLoadScript("vega-lite", "5.20.1"))
+        .then(() => maybeLoadScript("vega-embed", "6"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "data": {"name": "data-a2dac3cae28f3776a0afe23aa10e9d95"}, "mark": {"type": "bar", "tooltip": true}, "encoding": {"x": {"field": "year", "type": "nominal"}, "y": {"field": "language_score", "type": "quantitative"}}, "params": [{"name": "param_3", "select": {"type": "interval", "encodings": ["x", "y"]}, "bind": "scales"}], "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-a2dac3cae28f3776a0afe23aa10e9d95": [{"year": "2024", "language_score": 0.59630706703263}, {"year": "2023", "language_score": 0.5990225852939871}, {"year": "2022", "language_score": 0.556792496579454}, {"year": "2021", "language_score": 0.5684881852470515}, {"year": "2020", "language_score": 0.5589367822780985}, {"year": "2019", "language_score": 0.5021168049377785}, {"year": "2018", "language_score": 0.5071491739213441}, {"year": "2017", "language_score": 0.5866420439482936}, {"year": "2016", "language_score": 0.5692852422268722}, {"year": "2015", "language_score": 0.634930242881453}, {"year": "2014", "language_score": 0.7056941382838908}, {"year": "2013", "language_score": 0.6501463920454825}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+</div>
+</section>
+<section id="heuristics-for-filtering-for-higher-educational-quality-in-fineweb2" class="level2">
+<h2 class="anchored" data-anchor-id="heuristics-for-filtering-for-higher-educational-quality-in-fineweb2">Heuristics for filtering for higher educational quality in FineWeb2</h2>
+<p>Whilst the authors of FineWeb2 aimed to do general quality filtering, there are often additional heuristics that can be used to filter for higher educational quality. For example, we can use the <code>tld</code> to filter for higher quality websites. We can also use the <code>url</code> to filter for higher quality websites. Many of these heuristics will require some domain knowledge for a particular language and the web ecosystem for tha language.</p>
+<p>The top level domain (tld) is a good heuristic for filtering for higher quality websites. The top level domain is the part of the url that is after the last dot. For example, the tld of <code>https://www.wikipedia.org/</code> is <code>org</code>. This often corresponds to a country or organization. For example, <code>ac.uk</code> is the UK’s higher education domain. We can use this to filter for higher quality websites.</p>
+<p>We can do this by mapping the <code>url</code> column to the tld and then filtering for the tlds we’re interested in. Let’s add a new column with the tld and then filter for the tlds we’re interested in.</p>
+<div id="cell-20" class="cell" data-execution_count="39">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.with_columns(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"url"</span>).map_elements(<span class="kw">lambda</span> x: get_tld(x), return_dtype<span class="op">=</span>pl.Utf8).alias(<span class="st">"tld"</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-21" class="cell" data-outputid="8e1242da-ca7e-4a88-ba62-f6b57080498c" data-execution_count="40">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> altair <span class="im">as</span> alt</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>df.select(<span class="st">"tld"</span>).to_series().value_counts(sort<span class="op">=</span><span class="va">True</span>).sort(</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"count"</span>, descending<span class="op">=</span><span class="va">True</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>).head(<span class="dv">20</span>).plot.bar(</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    x<span class="op">=</span>alt.X(<span class="st">"tld"</span>, sort<span class="op">=</span><span class="st">"-y"</span>),  <span class="co"># Sort x-axis based on y values in descending order</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    y<span class="op">=</span><span class="st">"count"</span>,</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="40">
+
+<style>
+  #altair-viz-95698fadffd0471baf22cc86326ce299.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #altair-viz-95698fadffd0471baf22cc86326ce299.vega-embed details,
+  #altair-viz-95698fadffd0471baf22cc86326ce299.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="altair-viz-95698fadffd0471baf22cc86326ce299"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-95698fadffd0471baf22cc86326ce299") {
+      outputDiv = document.getElementById("altair-viz-95698fadffd0471baf22cc86326ce299");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@5?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@5.20.1?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@6?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "5")
+        .then(() => maybeLoadScript("vega-lite", "5.20.1"))
+        .then(() => maybeLoadScript("vega-embed", "6"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "data": {"name": "data-ab15e82854278db245b37c0358920c89"}, "mark": {"type": "bar", "tooltip": true}, "encoding": {"x": {"field": "tld", "sort": "-y", "type": "nominal"}, "y": {"field": "count", "type": "quantitative"}}, "params": [{"name": "param_4", "select": {"type": "interval", "encodings": ["x", "y"]}, "bind": "scales"}], "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-ab15e82854278db245b37c0358920c89": [{"tld": "com", "count": 25240}, {"tld": "info", "count": 15820}, {"tld": "org", "count": 8806}, {"tld": "us", "count": 4655}, {"tld": "me", "count": 4114}, {"tld": "net", "count": 3416}, {"tld": "co", "count": 2258}, {"tld": "ru", "count": 2110}, {"tld": "nl", "count": 1247}, {"tld": "site", "count": 832}, {"tld": "club", "count": 807}, {"tld": "co.uk", "count": 659}, {"tld": "blogspot.com", "count": 561}, {"tld": "de", "count": 362}, {"tld": "eu", "count": 275}, {"tld": "org.uk", "count": 267}, {"tld": "ac.uk", "count": 255}, {"tld": "mobi", "count": 183}, {"tld": "online", "count": 182}, {"tld": "fr", "count": 141}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+</div>
+<p>We may already have some knowledge or intuitions about the tlds that are more likely to be higher quality. For example <code>.us</code> is relatively high, this is likely partially due this domain being more present in the Web generally. We may also see some personal blogs using this domain. Let’s take a look at a few examples.</p>
+<div id="cell-23" class="cell" data-execution_count="41">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>df.<span class="bu">filter</span>(pl.col(<span class="st">"tld"</span>).<span class="bu">str</span>.contains(<span class="st">"us"</span>)).sort(</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"language_score"</span>, descending<span class="op">=</span><span class="va">True</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>).select(<span class="st">"url"</span>).to_series().to_list()[:<span class="dv">30</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="41">
+<pre><code>['https://coremc.us/forno-microonde-incasso.html',
+ 'https://www.awesomedownloadfilestoday.us/1141-haircut-places-near-my-location.html',
+ 'https://www.awesomedownloadfilestoday.us/1376-haircut-near-my-location.html',
+ 'https://www.awesomedownloadfilestoday.us/1857-short-haircuts-for-fine-straight-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/2081-twa-styles-4c-hair.html',
+ 'http://winserver.us/mid-century-modern-front-door-colors/mid-century-modern-front-door-colors-mid-century-modern-front-doors-door-colors-handles-mi-mid-century-modern-front-door-colours/',
+ 'https://www.awesomedownloadfilestoday.us/3450-hair-styles-for-thick-short-hair.html',
+ 'https://notwttodaytes.us/casa-mezcal-mexican-grill-cantina.html',
+ 'https://www.awesomedownloadfilestoday.us/1857-short-haircuts-for-fine-straight-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/1737-short-haircuts-for-curly-thick-hair.html',
+ 'http://uggbootsclearanceoutlet.us/jaguar-xj-sport-2003-2003-jaguar-xj-car-for-sale-in.html',
+ 'https://www.awesomedownloadfilestoday.us/5489-hair-colour-and-styles-for-short-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/6213-short-haircuts-for-thick-hair-pictures.html',
+ 'https://www.awesomedownloadfilestoday.us/4993-short-haircuts-for-thick-curly-frizzy-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/1773-short-hair-styles-for-thick-wavy-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/6129-short-haircuts-for-very-fine-thin-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/1808-haircuts-for-straight-thin-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/4478-best-short-haircuts-for-thick-coarse-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/9513-short-haircuts-for-thin-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/3414-short-sassy-haircuts-for-thin-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/4630-very-short-haircuts-for-thin-hair.html',
+ 'https://joesstuff.us/search.php?mfr=141',
+ 'https://www.awesomedownloadfilestoday.us/3738-short-hair-styles-for-thick-curly-hair.html',
+ 'https://layartancep.us/twa-hairstyles.html',
+ 'https://www.awesomedownloadfilestoday.us/1101-best-haircuts-for-fine-thin-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/4963-short-haircut-for-fine-thin-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/4963-short-haircut-for-fine-thin-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/5010-haircuts-for-coarse-wavy-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/5201-best-short-haircuts-for-fine-thin-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/1911-haircut-for-round-face-and-thin-hair.html']</code></pre>
+</div>
+</div>
+<p>These don’t look super promising! Some domains where we might expect higher quality text for scots are the <code>.sco</code> domain which is a domain for websites relating to Scotland.</p>
+<div id="cell-25" class="cell" data-outputid="9c11eb91-821e-4551-8a2e-ac376323ec90" data-execution_count="42">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>df.<span class="bu">filter</span>(pl.col(<span class="st">"tld"</span>).<span class="bu">str</span>.contains(<span class="st">"sco"</span>)).sort(</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"language_score"</span>, descending<span class="op">=</span><span class="va">True</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>).select(<span class="st">"url"</span>).to_series().to_list()[:<span class="dv">30</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="42">
+<pre><code>['https://stormplay.scot/sco/aboot.html',
+ 'https://www.makforrit.scot/2020/08/29/anent-the-scots-wikipedia-an-sundays-editathon/',
+ 'https://www.makforrit.scot/2018/12/23/daein-it-yersel/',
+ 'https://www.makforrit.scot/2019/09/22/uisin-oor-vyce-hou-we-can-gar-political-action-on-scots-inevitable/',
+ 'https://www.makforrit.scot/2018/02/03/naewey-tae-bide/',
+ 'https://www.makforrit.scot/',
+ 'https://www.makforrit.scot/2018/01/27/than-an-nou-poverty-makkin-dae-an-leukin-out-for-ilk-ither/',
+ 'https://www.makforrit.scot/',
+ 'https://salvo.scot/the-scottis-constitutional-covin/',
+ 'https://amylord.scot/gd/hello-welcome/',
+ 'https://www.makforrit.scot/category/scotland/',
+ 'https://projects.handsupfortrad.scot/scotslanguageawards/gies-a-scots-phrase-day-2021/',
+ 'https://scoblog.stormplay.scot/t3ngist-is-gaunae-need-tae-be-delayed.html',
+ 'https://www.makforrit.scot/2019/10/29/halloween/',
+ 'https://www.makforrit.scot/category/history/',
+ 'https://www.makforrit.scot/2018/11/19/three-days-in-october/',
+ 'http://mindyerlanguage.scot/teachin',
+ 'http://mindyerlanguage.scot/category/video',
+ 'https://scoblog.stormplay.scot/rossies-3d-an-t3ngist-are-gaunae-be-delayed.html',
+ 'https://www.gov.scot/publications/consultation-scots-government-commitments-tae-gaelic-scots-scots-langages-bill/pages/2/',
+ 'https://projects.handsupfortrad.scot/scotslanguageawards/nominations-open-for-scots-language-awards-2020/',
+ 'https://scoblog.stormplay.scot/were-gaunae-mak-big-chynges-tae-wir-main-wabsteid-an-a-cynge-o-hou-we-dae-things.html',
+ 'https://newsnet.scot/archive/mono-or-stereo/',
+ 'https://scoblog.stormplay.scot/happy-birthday-gamerstorm.html',
+ 'http://mindyerlanguage.scot/aboot',
+ 'https://www.makforrit.scot/category/opinion/',
+ 'https://projects.handsupfortrad.scot/scotslanguageawards/gies-a-scots-phrase-day-2022/',
+ 'https://newsnet.scot/archive/scots-railweys-scots-leids-an-scots-cairtes/',
+ 'https://www.makforrit.scot/author/jamie/',
+ 'https://stormplay.scot/games/pinkeye/sco/scotland.html']</code></pre>
+</div>
+</div>
+<p>Even inside these URLs we can see some scots language so this is promising.</p>
+<p>One of the issues with some of the Scots data in FineWeb2 is that it is in the wrong language. One way we can try and get a sense of where better language data might be in FineWeb2 is to look at the tlds that have the highest language scores. We can do this by grouping by tld and then taking the mean of the language scores. We can then filter for the tlds that have more than 50 row to make sure we’re considering the tlds that have a good amount of data.</p>
+<div id="cell-27" class="cell" data-outputid="c417173b-1650-4a47-c685-da43499bd878" data-execution_count="43">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>(</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    df.group_by(<span class="st">"tld"</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    .agg(</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>        [</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>            pl.col(<span class="st">"language_score"</span>).count().alias(<span class="st">"count"</span>),</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>            pl.col(<span class="st">"language_score"</span>).mean().alias(<span class="st">"language_score"</span>),</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"count"</span>) <span class="op">&gt;</span> <span class="dv">50</span>)  <span class="co"># Replace n with your desired minimum count</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"language_score"</span>, descending<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="43">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (41, 3)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">tld</th>
+<th data-quarto-table-cell-role="th">count</th>
+<th data-quarto-table-cell-role="th">language_score</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>u32</th>
+<th>f64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"scot"</td>
+<td>102</td>
+<td>0.998978</td>
+</tr>
+<tr class="even">
+<td>"ac.uk"</td>
+<td>255</td>
+<td>0.95732</td>
+</tr>
+<tr class="odd">
+<td>"org.uk"</td>
+<td>267</td>
+<td>0.926128</td>
+</tr>
+<tr class="even">
+<td>"org"</td>
+<td>8806</td>
+<td>0.814764</td>
+</tr>
+<tr class="odd">
+<td>"co.uk"</td>
+<td>659</td>
+<td>0.770529</td>
+</tr>
+<tr class="even">
+<td>"blogspot.com"</td>
+<td>561</td>
+<td>0.65765</td>
+</tr>
+<tr class="odd">
+<td>"top"</td>
+<td>85</td>
+<td>0.581157</td>
+</tr>
+<tr class="even">
+<td>"eu"</td>
+<td>275</td>
+<td>0.558302</td>
+</tr>
+<tr class="odd">
+<td>"de"</td>
+<td>362</td>
+<td>0.544635</td>
+</tr>
+<tr class="even">
+<td>"club"</td>
+<td>807</td>
+<td>0.543638</td>
+</tr>
+<tr class="odd">
+<td>"co"</td>
+<td>2258</td>
+<td>0.530558</td>
+</tr>
+<tr class="even">
+<td>"nl"</td>
+<td>1247</td>
+<td>0.52335</td>
+</tr>
+<tr class="odd">
+<td>"ca"</td>
+<td>75</td>
+<td>0.521135</td>
+</tr>
+<tr class="even">
+<td>"com.co"</td>
+<td>54</td>
+<td>0.520628</td>
+</tr>
+<tr class="odd">
+<td>"ie"</td>
+<td>52</td>
+<td>0.514327</td>
+</tr>
+<tr class="even">
+<td>"info"</td>
+<td>15820</td>
+<td>0.506197</td>
+</tr>
+<tr class="odd">
+<td>"com.au"</td>
+<td>88</td>
+<td>0.505842</td>
+</tr>
+<tr class="even">
+<td>"com"</td>
+<td>25240</td>
+<td>0.500029</td>
+</tr>
+<tr class="odd">
+<td>"me"</td>
+<td>4114</td>
+<td>0.490317</td>
+</tr>
+<tr class="even">
+<td>"online"</td>
+<td>182</td>
+<td>0.489941</td>
+</tr>
+<tr class="odd">
+<td>"mobi"</td>
+<td>183</td>
+<td>0.484193</td>
+</tr>
+<tr class="even">
+<td>"pl"</td>
+<td>78</td>
+<td>0.475017</td>
+</tr>
+<tr class="odd">
+<td>"net"</td>
+<td>3416</td>
+<td>0.473797</td>
+</tr>
+<tr class="even">
+<td>"es"</td>
+<td>56</td>
+<td>0.466831</td>
+</tr>
+<tr class="odd">
+<td>"tk"</td>
+<td>53</td>
+<td>0.461307</td>
+</tr>
+<tr class="even">
+<td>"fr"</td>
+<td>141</td>
+<td>0.461128</td>
+</tr>
+<tr class="odd">
+<td>"it"</td>
+<td>79</td>
+<td>0.460331</td>
+</tr>
+<tr class="even">
+<td>"site"</td>
+<td>832</td>
+<td>0.456072</td>
+</tr>
+<tr class="odd">
+<td>"xyz"</td>
+<td>122</td>
+<td>0.450356</td>
+</tr>
+<tr class="even">
+<td>"co.za"</td>
+<td>66</td>
+<td>0.450212</td>
+</tr>
+<tr class="odd">
+<td>"store"</td>
+<td>119</td>
+<td>0.443785</td>
+</tr>
+<tr class="even">
+<td>"in"</td>
+<td>135</td>
+<td>0.439045</td>
+</tr>
+<tr class="odd">
+<td>"co.ke"</td>
+<td>135</td>
+<td>0.433248</td>
+</tr>
+<tr class="even">
+<td>"us"</td>
+<td>4655</td>
+<td>0.43162</td>
+</tr>
+<tr class="odd">
+<td>"pro"</td>
+<td>131</td>
+<td>0.431553</td>
+</tr>
+<tr class="even">
+<td>"pages.dev"</td>
+<td>92</td>
+<td>0.422582</td>
+</tr>
+<tr class="odd">
+<td>"ru"</td>
+<td>2110</td>
+<td>0.416347</td>
+</tr>
+<tr class="even">
+<td>"live"</td>
+<td>64</td>
+<td>0.404111</td>
+</tr>
+<tr class="odd">
+<td>"edu"</td>
+<td>102</td>
+<td>0.386884</td>
+</tr>
+<tr class="even">
+<td>"website"</td>
+<td>54</td>
+<td>0.371444</td>
+</tr>
+<tr class="odd">
+<td>"cn"</td>
+<td>97</td>
+<td>0.366857</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>We can see some other potentially promising tlds. For example, <code>ac.uk</code> is the UK’s higher education domain. We can take a look at the urls that have this tld.</p>
+<div id="cell-29" class="cell" data-outputid="4a0d6c47-e4a1-4eac-fc36-a1fff3379437" data-execution_count="44">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>df.<span class="bu">filter</span>(pl.col(<span class="st">"tld"</span>).<span class="bu">str</span>.contains(<span class="st">"ac.uk"</span>)).sort(</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"language_score"</span>, descending<span class="op">=</span><span class="va">True</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>).select(<span class="st">"url"</span>).to_series().to_list()[:<span class="dv">30</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="44">
+<pre><code>['https://www.scottishcorpus.ac.uk/document/?documentid=1699',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1759',
+ 'https://www.abdn.ac.uk/elphinstone/kist/search/display.php?sblk65.dat',
+ 'https://www.abdn.ac.uk/elphinstone/kist/display/folk-history/357/',
+ 'https://scotslanguagepolicy.ac.uk/warkshoaps/',
+ 'https://scotslanguagepolicy.ac.uk/survey-final-weekend/',
+ 'http://www.abdn.ac.uk/elphinstone/kist/search/display.php?fhrg01.dat',
+ 'https://www.abdn.ac.uk/elphinstone/kist/display/761/',
+ 'https://scotslanguagepolicy.glasgow.ac.uk/hae-yer-say/',
+ 'http://www.abdn.ac.uk/elphinstone/kist/search/display.php?lwee66.dat',
+ 'https://scotslanguagepolicy.ac.uk/jist-fir-burns-nicht/',
+ 'https://scotslanguagepolicy.ac.uk/aboot/',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=122',
+ 'http://www.abdn.ac.uk/elphinstone/kist/search/display.php?bgre04.dat',
+ 'http://www.abdn.ac.uk/elphinstone/kist/search/display.php?arob01.dat',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1713&amp;highlight=athort',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1695&amp;highlight=projeck',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1709&amp;highlight=projeck',
+ 'https://www.abdn.ac.uk/elphinstone/kist/display/work/938/',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1714',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1739',
+ 'https://www.abdn.ac.uk/elphinstone/kist/display/work/341/',
+ 'http://www.abdn.ac.uk/elphinstone/kist/search/display.php?acru01.dat',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1697&amp;highlight=aroon',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1742&amp;highlight=projeck',
+ 'https://www.abdn.ac.uk/elphinstone/kist/search/display.php?kmac01.dat',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1704&amp;highlight=projeck',
+ 'https://scottishcorpus.ac.uk/document/?documentid=1710',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1725&amp;highlight=direck',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1715&amp;highlight=projeck']</code></pre>
+</div>
+</div>
+<p>In this case using some EDA and domain knowledge we can filter for the tlds which are likely to be:</p>
+<ul>
+<li>in the scots language</li>
+<li>higher quality educational websites</li>
+</ul>
+<p>We can reduce the FineWeb2 dataset to only include the rows that have these tlds.</p>
+<div id="cell-31" class="cell" data-execution_count="45">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>good_tlds <span class="op">=</span> [<span class="st">"sco"</span>, <span class="st">"ac.uk"</span>, <span class="st">"org.uk"</span>, <span class="st">"org"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-32" class="cell" data-execution_count="46">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>df.<span class="bu">filter</span>(pl.col(<span class="st">"tld"</span>).is_in(good_tlds)).sort(<span class="st">"language_score"</span>, descending<span class="op">=</span><span class="va">True</span>).head(</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    <span class="dv">5</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="46">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (5, 12)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">text</th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">dump</th>
+<th data-quarto-table-cell-role="th">url</th>
+<th data-quarto-table-cell-role="th">date</th>
+<th data-quarto-table-cell-role="th">file_path</th>
+<th data-quarto-table-cell-role="th">language</th>
+<th data-quarto-table-cell-role="th">language_score</th>
+<th data-quarto-table-cell-role="th">language_script</th>
+<th data-quarto-table-cell-role="th">minhash_cluster_size</th>
+<th data-quarto-table-cell-role="th">top_langs</th>
+<th data-quarto-table-cell-role="th">tld</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>f64</th>
+<th>str</th>
+<th>i64</th>
+<th>str</th>
+<th>str</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"Snawbuirdin Frae Wikipedia Sna…</td>
+<td>"&lt;urn:uuid:72c97fcb-4820-4a52-b…</td>
+<td>"CC-MAIN-2014-15"</td>
+<td>"http://sco.wikipedia.org/wiki/…</td>
+<td>"2014-04-19T09:31:00Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>1.00001</td>
+<td>"Latn"</td>
+<td>66</td>
+<td>"{"sco_Latn_score": 1.000010013…</td>
+<td>"org"</td>
+</tr>
+<tr class="even">
+<td>"Banner o the Sahrawi Arab Demo…</td>
+<td>"&lt;urn:uuid:67052692-6020-4870-9…</td>
+<td>"CC-MAIN-2014-15"</td>
+<td>"http://sco.wikipedia.org/wiki/…</td>
+<td>"2014-04-24T06:38:13Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>1.00001</td>
+<td>"Latn"</td>
+<td>27</td>
+<td>"{"sco_Latn_score": 1.000010013…</td>
+<td>"org"</td>
+</tr>
+<tr class="odd">
+<td>"Potosí is a ceety an the caipi…</td>
+<td>"&lt;urn:uuid:e49b07bb-d7c9-4905-b…</td>
+<td>"CC-MAIN-2014-15"</td>
+<td>"http://sco.wikipedia.org/wiki/…</td>
+<td>"2014-04-21T15:05:27Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>1.00001</td>
+<td>"Latn"</td>
+<td>34</td>
+<td>"{"sco_Latn_score": 1.000010013…</td>
+<td>"org"</td>
+</tr>
+<tr class="even">
+<td>"Port Moresby Port Moresby (Ing…</td>
+<td>"&lt;urn:uuid:bb6b995d-b3e8-4dcd-9…</td>
+<td>"CC-MAIN-2014-35"</td>
+<td>"http://sco.wikipedia.org/wiki/…</td>
+<td>"2014-08-30T16:16:49Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>1.00001</td>
+<td>"Latn"</td>
+<td>80</td>
+<td>"{"sco_Latn_score": 1.000010013…</td>
+<td>"org"</td>
+</tr>
+<tr class="odd">
+<td>"Seville Seville is a ceety in …</td>
+<td>"&lt;urn:uuid:cdcca31a-693e-463b-a…</td>
+<td>"CC-MAIN-2014-42"</td>
+<td>"http://sco.wikipedia.org/wiki/…</td>
+<td>"2014-10-22T21:45:17Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>1.00001</td>
+<td>"Latn"</td>
+<td>31</td>
+<td>"{"sco_Latn_score": 1.000010013…</td>
+<td>"org"</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="cell-33" class="cell" data-execution_count="47">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>filtered_df <span class="op">=</span> df.<span class="bu">filter</span>(pl.col(<span class="st">"tld"</span>).is_in(good_tlds)).sort(</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"language_score"</span>, descending<span class="op">=</span><span class="va">True</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can now save the filtered data to a new file. We’ll save the ids of the rows that are in the filtered dataset to a file. These ids can then be used to upload additional filtered data to the Argilla dataset for the language we’re working on.</p>
+<div id="cell-35" class="cell" data-execution_count="48">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"good_ids"</span>, <span class="st">"w"</span>) <span class="im">as</span> f:</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="bu">id</span> <span class="kw">in</span> filtered_df.select(<span class="st">"id"</span>).to_series().to_list():</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>        f.write(<span class="ss">f"</span><span class="sc">{</span><span class="bu">id</span><span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="filtering-other-languages" class="level2">
+<h2 class="anchored" data-anchor-id="filtering-other-languages">Filtering other languages</h2>
+<p>We can also use the same techniques to filter other languages. Some languages have a lot of data and so we can use the <code>scan_parquet</code> function to create a <code>LazyFrame</code> this will avoid loading all the data into memory. In addition, Polars will perform query optimizations on the <code>LazyFrame</code>. This will make the code we use for filtering more efficient without much work on our part.</p>
+<div id="cell-37" class="cell" data-execution_count="49">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_paths_for_language(language: <span class="bu">str</span>):</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>        path</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> path <span class="kw">in</span> list_repo_files(<span class="st">"HuggingFaceFW/fineweb-2"</span>, repo_type<span class="op">=</span><span class="st">"dataset"</span>)</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> path.endswith(<span class="st">"parquet"</span>)</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>        <span class="kw">and</span> <span class="st">"removed"</span> <span class="kw">not</span> <span class="kw">in</span> path</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>        <span class="kw">and</span> <span class="st">"train"</span> <span class="kw">in</span> path</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>        <span class="kw">and</span> language <span class="kw">in</span> path</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="filtering-with-a-higher-language-score" class="level2">
+<h2 class="anchored" data-anchor-id="filtering-with-a-higher-language-score">Filtering with a higher language score</h2>
+<p>Some language in fineweb2 are not identified as the correct language. Language identification is still not a “solved” problem but we may be able to use a higher confidence filter to get a set of data that is more likely to be the correct language. We can then label this data for the educational quality of the text without having to remove as many examples as being in the incorrect language.</p>
+<div id="cell-39" class="cell" data-execution_count="50">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>paths <span class="op">=</span> get_paths_for_language(<span class="st">"asm"</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>paths</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="50">
+<pre><code>['data/asm_Beng/train/000_00000.parquet',
+ 'data/asm_Latn/train/000_00000.parquet']</code></pre>
+</div>
+</div>
+<p>Let’s load the data for the Assamese language using only the <code>train</code> file.</p>
+<div id="cell-41" class="cell" data-execution_count="51">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pl.read_parquet(<span class="ss">f"hf://datasets/HuggingFaceFW/fineweb-2/</span><span class="sc">{</span>paths[<span class="op">-</span><span class="dv">1</span>]<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-42" class="cell" data-execution_count="52">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>df.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="52">
+<pre><code>(1104, 11)</code></pre>
+</div>
+</div>
+<p>We can use the <code>describe</code> function to get a sense of the distribution of the language scores.</p>
+<div id="cell-44" class="cell" data-execution_count="53">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>df.select(<span class="st">"language_score"</span>).describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="53">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (9, 2)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">statistic</th>
+<th data-quarto-table-cell-role="th">language_score</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>f64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"count"</td>
+<td>1104.0</td>
+</tr>
+<tr class="even">
+<td>"null_count"</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"mean"</td>
+<td>0.829071</td>
+</tr>
+<tr class="even">
+<td>"std"</td>
+<td>0.231866</td>
+</tr>
+<tr class="odd">
+<td>"min"</td>
+<td>0.303687</td>
+</tr>
+<tr class="even">
+<td>"25%"</td>
+<td>0.660899</td>
+</tr>
+<tr class="odd">
+<td>"50%"</td>
+<td>0.970777</td>
+</tr>
+<tr class="even">
+<td>"75%"</td>
+<td>0.995925</td>
+</tr>
+<tr class="odd">
+<td>"max"</td>
+<td>0.999965</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>You can see that compared to some other languages the mean language score is quite low. We might be able to get a better subset of data by filtering for a higher language score. Let’s take a look at some examples of the text that have a high language score. This can help give us a sense of what threshold might have less false positives.</p>
+<div id="cell-46" class="cell" data-execution_count="33">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> rich <span class="im">import</span> <span class="bu">print</span> <span class="im">as</span> rprint</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>examples_to_show <span class="op">=</span> <span class="dv">3</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>rprint(</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    df.<span class="bu">filter</span>(pl.col(<span class="st">"language_score"</span>) <span class="op">&gt;</span> <span class="fl">0.9</span>)</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>    .head(examples_to_show)</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"text"</span>)</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>    .to_series()</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>    .to_list()</span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">[</span>
+    <span style="color: #008000; text-decoration-color: #008000">'eitu ajir pora 2 bosor agor kotha moi NIT r pora pass out hoisu just. Vaal job nopowa baabe moi keidinmaanor </span>
+<span style="color: #008000; text-decoration-color: #008000">babe temporary hisape eta national company t humai asilu. Tate moi taniya k log palu , tai tate as aadvise r hisape</span>
+<span style="color: #008000; text-decoration-color: #008000">humaise.Prothom dekhate taik kiba vaal lagi gol. Dekha t tai bor dhuniya, mihi gulopia gaal, dudu keita niomia </span>
+<span style="color: #008000; text-decoration-color: #008000">akaror, khali olop sapor. jetiya tai r logot kotha pati thaku, tetiya moi issa koi pen tu tolot palai dio, aru tai </span>
+<span style="color: #008000; text-decoration-color: #008000">jetiya pen tu uthaboloi hauli diye moi tair dudu keitar dorshon koru aru gharat jai tair kotha vabi pura haat </span>
+<span style="color: #008000; text-decoration-color: #008000">maaru. Eitu mur kiba eta routine r dore hoi goisil .\nEdin moi duporia duty t kaam koi vagor logat olop rest lobor </span>
+<span style="color: #008000; text-decoration-color: #008000">babe kahote thoka rest roomot goi bohilu, ami praye kaam koi koi boar hole rest roomot goi olop hui ahi fresh hoi </span>
+<span style="color: #008000; text-decoration-color: #008000">kamot lagi jau. Restroom mane eta medium size r room aru ekhon soki aru bisona. Hadharonote ejon rest koi thoka </span>
+<span style="color: #008000; text-decoration-color: #008000">homoyot oin manuh restroomoloi nahe. Heidinau moi tenekoi ahi restroomor bisonat bagor dilu, hui thakute ketiya </span>
+<span style="color: #008000; text-decoration-color: #008000">tuponi ahi gol gomei napalu. Hothate kiba eta gaat loga jen pai soku khul khale, dekhilu taniyai mur pantor uporote</span>
+<span style="color: #008000; text-decoration-color: #008000">tika khon sui ase, tai gomei pua nasil moi har pua buli, lahe lahe tai haat khon mur jounangor uporot muharibo </span>
+<span style="color: #008000; text-decoration-color: #008000">dhorile, tai pura habodhane moi jate haar napau tenekoi sui asil, mur bor moja lagil, vabilu aji hopun pura </span>
+<span style="color: #008000; text-decoration-color: #008000">hobo.Moi suddenly huar pora uthi bohi golu, tai sok khai uthil aru lajot ronga poi gol, tai haat khon mur baridalor</span>
+<span style="color: #008000; text-decoration-color: #008000">uporor pora putkoi atorai dile aru muk sorry sorry buli kobo dhorile. Moi kolu sorry kole ki hobo tumi mur tika aru</span>
+<span style="color: #008000; text-decoration-color: #008000">lingo duita sula dekhun moiu tumar bostu bilaak soom.Tai sage bhobai nasil enekua situation ahi jabo pare buli , </span>
+<span style="color: #008000; text-decoration-color: #008000">heye tai thor lagi mur pine saie thakil.Moi bisonat bohiye bhori duta bisonar pora nomai dilu aru dui hatere dhori </span>
+<span style="color: #008000; text-decoration-color: #008000">taik mur usorot loi ahilu, tai kole ki koribo khujisa rubul. Moi kolu moi just badla lom tumi mur ji ji suisa moiu </span>
+<span style="color: #008000; text-decoration-color: #008000">tumaar soom buli koi haat duta tair pithir pora nomai thoi dui tika r uporot tholu aru jure jure tika khon tipibo </span>
+<span style="color: #008000; text-decoration-color: #008000">dhorilu, ki mast gand asil tair mur bari dall pantor vitorot ei for forai asil.Lahe lahe moi hat dukhonere tair </span>
+<span style="color: #008000; text-decoration-color: #008000">tika r major angso tu anguli etare subo dhorilu aru anguli tu aru honmukhor fale koi diyat moi tair boos khon feel </span>
+<span style="color: #008000; text-decoration-color: #008000">koibo dhoilu . Mor tair boos khon suar bohut mon hobo dhorile aru tair salwaror pant tu tolfale tanibo dhorilu </span>
+<span style="color: #008000; text-decoration-color: #008000">kintu kokalot rosire gathi thua babe tolfale nahil. Moi eibaar tair kurta tu uporoloi uthai dilu aru tair salwaror </span>
+<span style="color: #008000; text-decoration-color: #008000">rosi dal khuli dilu ,nije nije eibaar pant tu tololoi naami ahil. moi tair boga vorikhon sai aru thakibo nuarilu , </span>
+<span style="color: #008000; text-decoration-color: #008000">bisonar pora nami tair thigh khonot pura suma khabo dhorilu, aru maje maje kamuribo dhorilu, laheke aru olop </span>
+<span style="color: #008000; text-decoration-color: #008000">uporoloi juat tair heujiya rongor panty tu dekha palu , panty r uporote moi tair boos khonot suma khabo dhorilu, </span>
+<span style="color: #008000; text-decoration-color: #008000">olop homoi teneke thokar pisot moi tair panty tu tolfale nomai dilu aru taniya r mukholoi salu , tai mur kando </span>
+<span style="color: #008000; text-decoration-color: #008000">karkhana bilakor pora moja pai ase buli gam palu. Tair booskhon gulopia boosor uporor sulikhini shave kora kintu </span>
+<span style="color: #008000; text-decoration-color: #008000">kahe kahe thoka suli khini thaki goisil. Bor moja gundho eta ahisil booskhonor pora, moi tairboos khon dui hatere </span>
+<span style="color: #008000; text-decoration-color: #008000">meli dhori boosor uporor angso tu jivare subo dhorilu, tair gaat current loga r nisinake jopiai uthil , tair val </span>
+<span style="color: #008000; text-decoration-color: #008000">loga buli gam pai moi aru jure jure boos khon supibo dhorilu, taik moi bisonar uporot uthai dilu, salwaror pant </span>
+<span style="color: #008000; text-decoration-color: #008000">korobat poi rol , aru tair kurta tu petoloike uthai akou moi tair boos khonot mukh maribo dhorilu, jivare boos khon</span>
+<span style="color: #008000; text-decoration-color: #008000">seleki seleki , right handor anguli eta tair pokoror futat humai dilu, ki masti lagisil kintu tai bohut dukh pale </span>
+<span style="color: #008000; text-decoration-color: #008000">karone moi pokoror pora anguli tu ulai dibo loga hol.\nEibaar moi mur pantu khuli bari dal ulai hatere sui sui </span>
+<span style="color: #008000; text-decoration-color: #008000">boosot humuar babe ready koibo dhorilu. Moi tair kurta tu ekebare khuli dilu, aru boga bra tu tololoi tani dilu, </span>
+<span style="color: #008000; text-decoration-color: #008000">tair dudu duta moi bhobatkoi olop horu, holeo moi dui hater pura tipibo dhorilu, aru nipple tu maje maje suhibo </span>
+<span style="color: #008000; text-decoration-color: #008000">dhorilu. Hothate mur eta B.F t dekha pose monot poile aru moi tair bukut bohi lolu aru mur 7 inchi r bari daal tair</span>
+<span style="color: #008000; text-decoration-color: #008000">dudu dutar majot rakhi dui hatere dudu keitare sepi dhorilu, dudu dutar majot ji olop thai baki rol heikonokei boos</span>
+<span style="color: #008000; text-decoration-color: #008000">morar nisinake kokal maribo dhorilu , eibar aru olop uporoloi uthi bari daal taniya r mukhor vitorot humuai dilu, </span>
+<span style="color: #008000; text-decoration-color: #008000">tai ready hua nasil jodiyo jur jobordosti humuai dilu mukhot, olop apsot tai adjust hol aru mur lund daal bor </span>
+<span style="color: #008000; text-decoration-color: #008000">moromere ice cream khuar nisinake suhibo dhorile, tai mur guti duta eta hatere sui, eta hater bari dal muthi mari </span>
+<span style="color: #008000; text-decoration-color: #008000">pura jure jure suhi asil.\nMur ulabo hua jen logat tair mukhor pora bari daal ulialu aru eibaar tair boosor kahot </span>
+<span style="color: #008000; text-decoration-color: #008000">goi boosot baari daal thoi thela marilu. kintu tair boos khon pura tight thoka babe moi bohut sesta koiu humaabo </span>
+<span style="color: #008000; text-decoration-color: #008000">nuarilu, Tetiya mur monot poril uth fota babe maie muk vaseline r tema eta disil. ajihe vaseline tur asol upojug </span>
+<span style="color: #008000; text-decoration-color: #008000">hobo buli moi poketor pora vaseline tema tu uliyai olop maan vaseline mur baari dalor agtut aru tair boosot hani </span>
+<span style="color: #008000; text-decoration-color: #008000">dilu, eibar eke thelate fir firkoi baari daal humai gol, taar pasot aru kune pai pura tika dangi dangi taik sudibo </span>
+<span style="color: #008000; text-decoration-color: #008000">dhorilu. Dui hater bike r handle dhorar dore tair dudu keita dhori taik sudilu. 45 min maan sudar pasot maalpani </span>
+<span style="color: #008000; text-decoration-color: #008000">ulai gol, boosor vitorote uliai dilu, vabilu ji hoi hobo sala imaan controll koibo nuari. Olop homoy teneke hui </span>
+<span style="color: #008000; text-decoration-color: #008000">thaki dui jone dress thik koi rest room r pora ulai duty korat lagilu.\nEtiya ami prai hodayei restroomot sex koru,</span>
+<span style="color: #008000; text-decoration-color: #008000">ami duijone rest room tur naam sex room thoisu. Taniya mur girlfriend nohol jodiyo, mur best friend hoi thakil, </span>
+<span style="color: #008000; text-decoration-color: #008000">etiya ami prayei kotha patu aru phonote bea bea kotha pati thaku.'</span>,
+    <span style="color: #008000; text-decoration-color: #008000">"Front Page\nHome\nChat\nEntertainment Page\nAssamese Music\nAssamese Lyrics\nBest viewed @ 1024x768 </span>
+<span style="color: #008000; text-decoration-color: #008000">resolution\nXoixobote Dhemalite - Lyrics of Assamese Songs\nSinger : Dr. Bhupen Hazarika\nMusic Director : Dr. </span>
+<span style="color: #008000; text-decoration-color: #008000">Bhupen Hazarika\nLyricist : Dr. Bhupen Hazarika\nXoixobote(Shoishobot) Dhemalite tumaare umola monot aase..\nBohag </span>
+<span style="color: #008000; text-decoration-color: #008000">maahor luit khonot duyu xaature monot aase\nJowbonote duyure dehaar laajuki porox monot aase\nMur abihone sip jori </span>
+<span style="color: #008000; text-decoration-color: #008000">loba buli kuwa mur monot aase..\nBohag maahor logote edin aahil bordoisila\nXei dhumuhat kaarubar xote tumi dekhu </span>
+<span style="color: #008000; text-decoration-color: #008000">gusi gola\nMonor goraaki eri tumi Dhonor goraaki bolila\nDhon Dhon buli dhonor premere swarup prakax korila\nBohu </span>
+<span style="color: #008000; text-decoration-color: #008000">din gol hothaate xidina tumak dekh monot aase..\naatoror pora dekhilu tumar swarna gohona jilikise\nTumar abihone </span>
+<span style="color: #008000; text-decoration-color: #008000">sip jori lom buli tumi bhaabisa\nBhul korisa xunjoni mur\nAleek xapun dekhisa\nJiyaai thaakim..\nJiyaai thaaki </span>
+<span style="color: #008000; text-decoration-color: #008000">ekhon xomaj gorhibor mur mon aase\nJot xunot koiu manuhor damm olop holeu besi aase!!\n*** 'X' stands for assamese </span>
+<span style="color: #008000; text-decoration-color: #008000">phonetic letter whose pronounciation is in between 'H' and 'KH'.\nYou can listen to this song in the\nAssamese </span>
+<span style="color: #008000; text-decoration-color: #008000">Songs Playlist\nDiscuss, query and comments on Assamese songs and music in this\nforum\n.\nCopyright © 2007-2008 </span>
+<span style="color: #008000; text-decoration-color: #008000">onlinesivasagar.com(Abhijit Borah)"</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'\n\n#1\n\n\nAssamese Sex Stories\nMOI ARU MAUSUMI (Assamese Sex Stories)\nHi friends aitu mur first post, akha</span>
+<span style="color: #008000; text-decoration-color: #008000">koru apunalukor val lagibo... mur nam Momi moi aji apunalukok mur nijor first sex\nexperienceor bikhoya jonabo </span>
+<span style="color: #008000; text-decoration-color: #008000">bisarisu. Moi akhon grils collegeot TDC\n2nd year scienceot porhi asu. Ghorot khub strict babe muk porhat </span>
+<span style="color: #008000; text-decoration-color: #008000">bhal\nholeo muk bahirot porhibo jabo nidile. Ghorot muk okole kotu jabo\nnidea, korbat gole maa nohole papa nohole </span>
+<span style="color: #008000; text-decoration-color: #008000">dada logot jai, kintu mur\nchildhood friend Mausumi,k amar ghorot khub trust kore babe tair logot\nkorbat gole </span>
+<span style="color: #008000; text-decoration-color: #008000">badha nidiya. Mausumi mur akai batchor kintu tai artsot\nakai collegeot porha. ami duyu khub bhal friend, ami duyu </span>
+<span style="color: #008000; text-decoration-color: #008000">hokolu kotha\nshare koru, even tair boyfriendor logot kora romanceor bikhoye hokolu\nkotha. Tair boyfriend notunke </span>
+<span style="color: #008000; text-decoration-color: #008000">Bankot join korise, tar nam Pallab.mur\nhihotor romanceor kotha huni khub bhal lage. Katiyaba bhabu muru </span>
+<span style="color: #008000; text-decoration-color: #008000">jodi\nkunuba boyfriend thakil haten moyu sage tair nisina romance koribo\nparilu haten, kintu mur ja ulai juar </span>
+<span style="color: #008000; text-decoration-color: #008000">chance nai. Mausumir kintu ghorot\nkunu restriction nai tai bindas ghuribo pare. Tai bohudin amar\nghororloi oha </span>
+<span style="color: #008000; text-decoration-color: #008000">nasil haibabe adin collegot taik ghoroloi ahibo kolu\n(actually tair romanceor kotha hunibole bor mon goisil). Tai </span>
+<span style="color: #008000; text-decoration-color: #008000">ata\nSunday ahibo buli kole. Mur montu bhal lagi gol, moi bor akhare Sunday\nloi wait koribo dhorilu..\nSunday </span>
+<span style="color: #008000; text-decoration-color: #008000">hunkale uthi moi hokolu kam hekh kori tair babe wait koribo\ndhorilu tair dari hua babe abar taik fon kori hunkale </span>
+<span style="color: #008000; text-decoration-color: #008000">matilu, tai ahi\nthoka buli kole aru thik 15 minitor pasot tai amar ghorot palehi, amar\nghorot coffee khai </span>
+<span style="color: #008000; text-decoration-color: #008000">hokolure logot kotha pati ami mur roomot humalu…\nkisu homoi kotha potar pasot moi tair boyfriendor logot hua </span>
+<span style="color: #008000; text-decoration-color: #008000">romanceor\nkotha hudhilu.. tai koi jabo dhorile… hihotor first sex lifeor kotha….\nLove huar pasot hihot priya </span>
+<span style="color: #008000; text-decoration-color: #008000">outing jai jodeo hihotor majot sex hua\nnasil… last month first weekor kotha hihote outing plan korisil.\nPallabe </span>
+<span style="color: #008000; text-decoration-color: #008000">taik collegor pora pickup kori lunchor babe resturentor\ncabinot loi gol, waiterok lunch order kori pallabe bahiror</span>
+<span style="color: #008000; text-decoration-color: #008000">pora\nnadekhakoi cabinor porda tani dile, tar pasot hi tair usorot bohi tair\nhatkhon nijor hatot loi kotha patibo </span>
+<span style="color: #008000; text-decoration-color: #008000">dhorile… Pallabe tair hatkhon\nmuhari taik koisil – tumak aji bor dhunia lagise mousumi….. tumak pai\nmoi bohut </span>
+<span style="color: #008000; text-decoration-color: #008000">lucky…. Moi tumak bohut bhal pao…. Aibuli pallabe tar akhon\nhat tair galot moromera muharibo dhorile.. mausumie </span>
+<span style="color: #008000; text-decoration-color: #008000">mathu tar kotha\nhuni tak support kori asil…. Aibar hi mousumik kobo dhorile mousumi\ntumar gal dukhon gulopia hoi </span>
+<span style="color: #008000; text-decoration-color: #008000">goise, voi lagise niki ? voi koribo\nnalage moi tumak bhal pao…. Mousumie kole … nai voi loga nai tumak\nkiyo voi </span>
+<span style="color: #008000; text-decoration-color: #008000">korim?... moiu tumak bahut val pao…. Pallabe kole… mausumi\ntumar gulopia galkhonot ata kiss korile beya paba niki?</span>
+<span style="color: #008000; text-decoration-color: #008000">Mousumia kole\nnai kintu kunuba ahibo para… pallabe kole… kunu nahe, order ahibo dari\nase…. Aibuli koi pallabe tar</span>
+<span style="color: #008000; text-decoration-color: #008000">mukhon mousumir galot logai kiss koribo\ndhorile.. mousumir tar hator touch pai aru tar moromor kiss pai\nuttejona </span>
+<span style="color: #008000; text-decoration-color: #008000">barhibo dhorile… taiu pallabok support kori tair duyukhon\nhat tar chulit khamus mari dhori tair lips kait pallabor</span>
+<span style="color: #008000; text-decoration-color: #008000">lipsor fale\naag borhai dile… pallabe chance api tair lipsot kiss kori tair lips\nduta chupibo dhorile… aidore kisu</span>
+<span style="color: #008000; text-decoration-color: #008000">homoi kiss kori thakute hothat\ncabinor doorot knock poril. Hunkale duyu easy hoi waitarok vitoroloi\nahibo kole, </span>
+<span style="color: #008000; text-decoration-color: #008000">waiter ahi lunch di gol.. waiter juar pasot aibar bipllobe\ncabinor door khon bandh kori di tair usorot bohi loi </span>
+<span style="color: #008000; text-decoration-color: #008000">taik haboti loi\npunor lipsot koribo dhrile aru aibar olop aag barhi goi akhon hatare\ntair boobs ata laheka </span>
+<span style="color: #008000; text-decoration-color: #008000">kapuror uporote laheka muharibo dhorile mousumir\nprotest korar sťance nasil.. tairu bhal lagi tak support </span>
+<span style="color: #008000; text-decoration-color: #008000">koribo\ndhorile… pallabe gom pale ja mousumie tar pora aru bisarise … aibar hi\nakhon hat tair thaisot thoi </span>
+<span style="color: #008000; text-decoration-color: #008000">mousumir laggingor uporedi laheka muharibo\ndhorile…. Mousumi uttajonat aku kobo pora nasil mathu choku kaita </span>
+<span style="color: #008000; text-decoration-color: #008000">mudi\npleasure loi asil…. Pallabe chance pai tair dangor dangor thais kaita\nmuhari muhari hat khon duyu thaisor </span>
+<span style="color: #008000; text-decoration-color: #008000">major pussy area loi nibor babe\nthais kaita fak koribo dhorile… mousumie kunu protest nokori vori\nkaita fak kori </span>
+<span style="color: #008000; text-decoration-color: #008000">dile… pallabe hubidha pai tar hatkhon tair pussy loi ni\nkapuror uporote pussy muharibo dhorile…. Pussyt hat porar </span>
+<span style="color: #008000; text-decoration-color: #008000">loge loge\nmousumir mukhera aahhh… aaahhhh… ulai gol , tai uttajonat robo pora\nnasil tai tak support kori tar </span>
+<span style="color: #008000; text-decoration-color: #008000">hatkhon khamusi dhori aru jure pussy\nhasi dile…. Pallabe tair condition buji tair kane kane kole mousumi\nplease </span>
+<span style="color: #008000; text-decoration-color: #008000">tumar legging tu khuli diyana… mousumie kole nai pallab ai\nresturent amar babe safe nohoi… pallabe kole….. aku </span>
+<span style="color: #008000; text-decoration-color: #008000">nohoi cabinor\ndorja lock ase… kunu nahe .. aibuli koi hi mousumir legging or\nelastic dalot anguli duta vorai </span>
+<span style="color: #008000; text-decoration-color: #008000">legging tu knee level loika tani nomai\ndile…. Mousumieu badha nidi tak legging tu toloi nomuat hohai kori\ndile… </span>
+<span style="color: #008000; text-decoration-color: #008000">tai ata off white color panty pindhi asil … tair panty tu dekhi\nhi robo nuari tair pantyr uporote pussy khon </span>
+<span style="color: #008000; text-decoration-color: #008000">khumusi dhori muharibo\ndhorile… aidore kori abar pallabe tar hatkhon tair pantyr vitoroloi ni\ntair pussy fakot </span>
+<span style="color: #008000; text-decoration-color: #008000">ata anguli thoi lahekoi pussyr vitoroloi vorai de\nangulitu ulua humua koribo dhorile… aidore korat mousumi robo </span>
+<span style="color: #008000; text-decoration-color: #008000">nuari\ntai pussyra pani uliai panty aru pallabor hat tiyai dile… aibar\npallabe robo nuari mausumik kole … mousumi </span>
+<span style="color: #008000; text-decoration-color: #008000">tumar pantytu khuli\ndibaniki? Mausumie kole … etiya nalage eaat ami safe nohoi… balag adin\nkorim.. pallab manti </span>
+<span style="color: #008000; text-decoration-color: #008000">hoi kole… thik ase mousumi tumak aru alop basi\nmorom koribo mon goise, please tumi olop uthi diyana tumak valke </span>
+<span style="color: #008000; text-decoration-color: #008000">morom\nkoru…. mausumia chairor pora uthi dile.. loge loge pallabe taik\nhoabti dhori kiss kori kori akhon hatare </span>
+<span style="color: #008000; text-decoration-color: #008000">tar pantor chain dal khuli\ntar erect pains tu uliai mausumir hatot dhorai dile…. Aru mausumir\nkanot kole… please </span>
+<span style="color: #008000; text-decoration-color: #008000">mausomi tumar pussyt logai diyana…. Mousumie kole\nnalage pallab please aibur nokoriba…. Pallabe kole … nohoi </span>
+<span style="color: #008000; text-decoration-color: #008000">mousumi\nnakoru nohoi tumar pantyr uporot pussyt logoi diya… Mausumie manti\nhol… tar panes tu tair pantyr uporedi </span>
+<span style="color: #008000; text-decoration-color: #008000">pussyt logai dile…. Pallabe tar\npanes tu tair pussyt gohabo dhorile…. Aidore korat mausumi uttajonat\npallabok </span>
+<span style="color: #008000; text-decoration-color: #008000">haboti dhori tak support koribo dhorile aru 2nd time pani\nulieai dele…. Aidore kisu homoi korat pallaboru spurm </span>
+<span style="color: #008000; text-decoration-color: #008000">ulai gol aru\nmousumir panty tar spurme tiay dile….. tar pasot duyu lunch kori ghuri\nahil……..\nAi story huni muru </span>
+<span style="color: #008000; text-decoration-color: #008000">excitement barhi goisil aru……..\nMausumie muk hudhile kua Momi storitu huni kanakua lagil…. Moi kolu …\nval lagil …</span>
+<span style="color: #008000; text-decoration-color: #008000">tai kole okol val lagil ne aru kiba hol …. moi kolu.. mur\nexperience nai babe moi tumar feelings pabo pora nai…. </span>
+<span style="color: #008000; text-decoration-color: #008000">mur jodi kunuba\nboyfriend thakil haten moiu tumar dore enjoy kkoribo parilu haten….\ntai kole thik ase tumar </span>
+<span style="color: #008000; text-decoration-color: #008000">boyfriend nathkileo moi tumak real sex felling\nkanekua dibo paru….. moi hudhilu kintu atiya kanakoi muk sex </span>
+<span style="color: #008000; text-decoration-color: #008000">feelings\ndiba… tai kole first tumi rumor door khon valka lock kora jate kunu\nahibo nuare… moi kolu tumi chinta </span>
+<span style="color: #008000; text-decoration-color: #008000">nokoriba door lock ase aru atiya\nrumoloi kunu nahe… tai kole thik ase tumi bisonat mur logot boha aru\nchoku kaita</span>
+<span style="color: #008000; text-decoration-color: #008000">mudi diya aru feel kora ja moi tumar boyfriend… moi\nbisonat tair usorot bohi choku kaita mudi dilu aru mind tu </span>
+<span style="color: #008000; text-decoration-color: #008000">concentrate\nkori bhabibo lolu ja mur boyfriend mur kakhot bohi ase… aibar tai muk\nlahikoi kokalot hat thoi </span>
+<span style="color: #008000; text-decoration-color: #008000">muharibo dhorile aru mur lipsot kiss koribo\ndhorile… prothombar karubar kiss pai mur ata ojan feelings </span>
+<span style="color: #008000; text-decoration-color: #008000">ahibo\ndhorile aru moyu taik lips kiss koribo dhorilu… tai kiss kori kori\ntair hatkhon lahekoi mur boobs kaita </span>
+<span style="color: #008000; text-decoration-color: #008000">muharibo dhorile…. Boobsot tair\nhat porar loge loge moi pagolor dore hobo dhorilu aru taik haboti\ndhori kiss </span>
+<span style="color: #008000; text-decoration-color: #008000">koribo dhorilu… aibar tai kurtistur vitoriloi hat vorai\nbratu uporoloi dangi mur boobs kaita muharibo dhorile… mur</span>
+<span style="color: #008000; text-decoration-color: #008000">excitement\naru barhi gol… tai boobs kaita tapi tapi mur nipple kaita muhari diat\nmoi uttajonat 1st time pussyre </span>
+<span style="color: #008000; text-decoration-color: #008000">pani uleai dilu……. aibar tai toptu\nboobsor uporoloika uthai tair mukhon boobsoloi ni nipple kaita suck\nkoribo </span>
+<span style="color: #008000; text-decoration-color: #008000">dhorile… moi uttajonat tair murot hat thoi murtu jurke chapi\ndhorilu… aibar tai muk bisonat huai di boobs kaita </span>
+<span style="color: #008000; text-decoration-color: #008000">suck kori tair\nhatkhon mur Thaisor uporot thoi kapuror uporote muharibo dhorile…\naidore kori tair hatkhon lahekoi</span>
+<span style="color: #008000; text-decoration-color: #008000">mur kapuror uporote mur pussy\nmuharibo dhorile aru angulire mur pussy fakot press dibo dhorile….\nUttajonat moi </span>
+<span style="color: #008000; text-decoration-color: #008000">dui vorire tair hatkhon chapa mari dhorilu… aibar tair\nhatkhon mur salwar pantor rosidalot gol…. Laheka tai pantor</span>
+<span style="color: #008000; text-decoration-color: #008000">rosidal\nkhuli pantu tololoi nomabo dhorile…. Moi taik pantu khulat help kori\ndilu.. pantu khuli tai mur vori </span>
+<span style="color: #008000; text-decoration-color: #008000">kaita fak kori panty tur uporote\nhatere muhari angulire pussy hole tu press kori muharibo dhorile…\nhosakoi… </span>
+<span style="color: #008000; text-decoration-color: #008000">jibonot eman hukh moi katiyau pua nasilu… aibar tai muk\nbisonar pora uthibo kole … moi bisonar pora uthat tai mur </span>
+<span style="color: #008000; text-decoration-color: #008000">toptu khuli\nbra aru panty khuli muk naked kori dile…. Mousumiru sex fellings\nhoisil.. muk naked kori tai nijor </span>
+<span style="color: #008000; text-decoration-color: #008000">t-shirt tu muror uporere khuli loi\nbra tur huk khuli bratu khuli palala tar pasot tai jeans tu khulibo\ndhorile.. </span>
+<span style="color: #008000; text-decoration-color: #008000">jeans tu khulat tai pindhi thoka light pink color panty tu\nmur chokut poril.. tair panty tu titi asil.. aibar tai </span>
+<span style="color: #008000; text-decoration-color: #008000">panty tu khuli\npalai complete naked hoi gol…… tar pasot tai muk bisonat huai di mur\nvori kaita fak kori mur </span>
+<span style="color: #008000; text-decoration-color: #008000">pussyt tair mukhon ni mur pussy suck koribo\ndhorile.. aibar uttajonat mur mukhere aahhhh… aahhhh…moaning </span>
+<span style="color: #008000; text-decoration-color: #008000">ulabo\ndhorile.. tai suck kori kori tair jivakhon mur pussy fakot vorai diat\nmur uttajona barhi gol aru 2nd time </span>
+<span style="color: #008000; text-decoration-color: #008000">pani ulai tair mukh tiaye dile…\ntai aidore kisu homoi korar pasot muk kole … momi moi aibar tumak\ncomplete </span>
+<span style="color: #008000; text-decoration-color: #008000">satisfaction dim… tumar eat candle ase niki..? moi kolu\ntableor drawerot ase tai draweror pora adal candal ani mur</span>
+<span style="color: #008000; text-decoration-color: #008000">pussyt\nlaheke logai press dibo dhorile… aru vitoriloi press koribo dhorile…\nhosai mur ane lagisil jan kunuba </span>
+<span style="color: #008000; text-decoration-color: #008000">loraya muk fuck korise… first tai\nlahekoi candledal vitoroloi ni pasot jure ulua humua koribo dhorat moi\nrobo </span>
+<span style="color: #008000; text-decoration-color: #008000">nuari 3rd time… pani uleai dilu…… already tairu uttajona barhi\ngoisil… aru tai robo nuari candle dal mur pussyr </span>
+<span style="color: #008000; text-decoration-color: #008000">pora uleai tair nijor\npussyt vorai in-out kori pani uleai dile… ami duyu bahut tired hoi\ngoisilu, ami duyu bohu </span>
+<span style="color: #008000; text-decoration-color: #008000">homoi naked hoi bisonat pori thokar pasot dress\nkori lolu…..\nAidore ji dhorone tai muk sex satisfaction dile… moi</span>
+<span style="color: #008000; text-decoration-color: #008000">jibonot pahoribo\nnuaru…..\napunalukor hohari pale pasot aru potham..\nLast edited by sourav002 : 8th June 2013 at </span>
+<span style="color: #008000; text-decoration-color: #008000">02:15 PM.\n|Thread Tools||Search this Thread|\n\n'</span>
+<span style="font-weight: bold">]</span>
+</pre>
+</div>
+</div>
+<p>If we find a better language score we can filter for this. For example, we can filter for the language score to be greater than 0.95.</p>
+<div id="cell-48" class="cell" data-execution_count="35">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>df_filtered <span class="op">=</span> df.<span class="bu">filter</span>(pl.col(<span class="st">"language_score"</span>) <span class="op">&gt;</span> <span class="fl">0.95</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="35">
+<pre><code>(697, 11)</code></pre>
+</div>
+</div>
+<div id="cell-49" class="cell" data-execution_count="36">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"good_ids"</span>, <span class="st">"w"</span>) <span class="im">as</span> f:</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="bu">id</span> <span class="kw">in</span> df_filtered.select(<span class="st">"id"</span>).to_series().to_list():</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>        f.write(<span class="ss">f"</span><span class="sc">{</span><span class="bu">id</span><span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="filtering-bigger-languages" class="level2">
+<h2 class="anchored" data-anchor-id="filtering-bigger-languages">Filtering bigger languages</h2>
+<p>Some languages have a lot of data and so we can use the <code>scan_parquet</code> function to create a <code>LazyFrame</code>. Let’s see how we can do this for the Japanese language.</p>
+<div id="cell-51" class="cell" data-execution_count="54">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>paths <span class="op">=</span> get_paths_for_language(<span class="st">"jpn"</span>)</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(paths)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="54">
+<pre><code>148</code></pre>
+</div>
+</div>
+<p>You can see here we have many more files. If you have a lot of memory, you could use the standard <code>read_parquet</code> function. However, if you don’t have a lot of memory, you could use the <code>scan_parquet</code> function. This will read the data in chunks and is more memory efficient. Even with this we might want to start with a subset of the data to experiment with and then work with the full dataset once we’re confident in our filtering.</p>
+<div id="cell-53" class="cell" data-execution_count="38">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> random</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>random.seed(<span class="dv">42</span>)</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>sample_paths <span class="op">=</span> random.choices(paths, k<span class="op">=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-54" class="cell" data-execution_count="39">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">"HF_HUB_ENABLE_HF_TRANSFER"</span>] <span class="op">=</span> <span class="st">"1"</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>Path(<span class="st">"temp_data"</span>).mkdir(exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> path <span class="kw">in</span> tqdm(sample_paths):</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>    hf_hub_download(</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>        repo_id<span class="op">=</span><span class="st">"HuggingFaceFW/fineweb-2"</span>,</span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>        repo_type<span class="op">=</span><span class="st">"dataset"</span>,</span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>        filename<span class="op">=</span>path,</span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>        local_dir<span class="op">=</span><span class="st">"temp_data"</span>,</span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>  0%|          | 0/2 [00:00&lt;?, ?it/s]100%|██████████| 2/2 [00:00&lt;00:00,  5.87it/s]</code></pre>
+</div>
+</div>
+<div id="cell-55" class="cell" data-execution_count="26">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pl.scan_parquet(<span class="st">"temp_data/**/*.parquet"</span>)</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>df.head(<span class="dv">5</span>).collect()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="26">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (5, 11)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">text</th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">dump</th>
+<th data-quarto-table-cell-role="th">url</th>
+<th data-quarto-table-cell-role="th">date</th>
+<th data-quarto-table-cell-role="th">file_path</th>
+<th data-quarto-table-cell-role="th">language</th>
+<th data-quarto-table-cell-role="th">language_score</th>
+<th data-quarto-table-cell-role="th">language_script</th>
+<th data-quarto-table-cell-role="th">minhash_cluster_size</th>
+<th data-quarto-table-cell-role="th">top_langs</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>f64</th>
+<th>str</th>
+<th>i64</th>
+<th>str</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"欲しかった車を探せるサイト 独身時代は、ただ乗れればいいと思…</td>
+<td>"&lt;urn:uuid:9221bbac-4ab3-4d7b-9…</td>
+<td>"CC-MAIN-2013-20"</td>
+<td>"http://careerspaceezine.com/"</td>
+<td>"2013-05-20T01:19:20Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"jpn"</td>
+<td>1.000009</td>
+<td>"Jpan"</td>
+<td>1</td>
+<td>"{"jpn_Jpan_score": 1.000009059…</td>
+</tr>
+<tr class="even">
+<td>" ふくむすめどうわしゅう(Hukumusume fairy…</td>
+<td>"&lt;urn:uuid:d03fc65f-99bb-4095-b…</td>
+<td>"CC-MAIN-2013-20"</td>
+<td>"http://hukumusume.com/douwa/En…</td>
+<td>"2013-05-20T01:18:14Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"jpn"</td>
+<td>0.992212</td>
+<td>"Jpan"</td>
+<td>2</td>
+<td>"{"jpn_Jpan_score": 0.992212295…</td>
+</tr>
+<tr class="odd">
+<td>"家電通信をお届けします 家電は一度購入したら、何年も使い続け…</td>
+<td>"&lt;urn:uuid:89b3dae5-8a49-4d51-a…</td>
+<td>"CC-MAIN-2013-20"</td>
+<td>"http://wnclivehosting.com/inde…</td>
+<td>"2013-05-20T01:57:39Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"jpn"</td>
+<td>1.00001</td>
+<td>"Jpan"</td>
+<td>1</td>
+<td>"{"jpn_Jpan_score": 1.000010013…</td>
+</tr>
+<tr class="even">
+<td>"出版社からのコメント MovableTypeの特徴のひとつと…</td>
+<td>"&lt;urn:uuid:84019b07-0424-4d79-b…</td>
+<td>"CC-MAIN-2013-20"</td>
+<td>"http://www.amazon.co.jp/MOVABL…</td>
+<td>"2013-05-20T01:50:55Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"jpn"</td>
+<td>1.000009</td>
+<td>"Jpan"</td>
+<td>2</td>
+<td>"{"jpn_Jpan_score": 1.000008940…</td>
+</tr>
+<tr class="odd">
+<td>"FrontPage 私も結婚することで、今の保険に入ろうか考…</td>
+<td>"&lt;urn:uuid:3fc5c2a5-c3a7-409c-b…</td>
+<td>"CC-MAIN-2013-20"</td>
+<td>"http://www.christian-louboutin…</td>
+<td>"2013-05-20T01:59:19Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"jpn"</td>
+<td>1.00001</td>
+<td>"Jpan"</td>
+<td>15</td>
+<td>"{"jpn_Jpan_score": 1.000009894…</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="cell-56" class="cell" data-execution_count="27">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>df.select(<span class="st">"language_score"</span>).describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="27">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (9, 2)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">statistic</th>
+<th data-quarto-table-cell-role="th">language_score</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>f64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"count"</td>
+<td>3.3735e7</td>
+</tr>
+<tr class="even">
+<td>"null_count"</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"mean"</td>
+<td>0.999791</td>
+</tr>
+<tr class="even">
+<td>"std"</td>
+<td>0.002776</td>
+</tr>
+<tr class="odd">
+<td>"min"</td>
+<td>0.886358</td>
+</tr>
+<tr class="even">
+<td>"25%"</td>
+<td>0.999996</td>
+</tr>
+<tr class="odd">
+<td>"50%"</td>
+<td>1.000007</td>
+</tr>
+<tr class="even">
+<td>"75%"</td>
+<td>1.000009</td>
+</tr>
+<tr class="odd">
+<td>"max"</td>
+<td>1.00001</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="cell-57" class="cell" data-execution_count="28">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>df.<span class="bu">filter</span>(pl.col(<span class="st">"url"</span>).<span class="bu">str</span>.contains(<span class="st">"wikipedia"</span>)).count().collect(streaming<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="28">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (1, 11)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">text</th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">dump</th>
+<th data-quarto-table-cell-role="th">url</th>
+<th data-quarto-table-cell-role="th">date</th>
+<th data-quarto-table-cell-role="th">file_path</th>
+<th data-quarto-table-cell-role="th">language</th>
+<th data-quarto-table-cell-role="th">language_score</th>
+<th data-quarto-table-cell-role="th">language_script</th>
+<th data-quarto-table-cell-role="th">minhash_cluster_size</th>
+<th data-quarto-table-cell-role="th">top_langs</th>
+</tr>
+<tr class="even">
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>55053</td>
+<td>55053</td>
+<td>55053</td>
+<td>55053</td>
+<td>55053</td>
+<td>55053</td>
+<td>55053</td>
+<td>55053</td>
+<td>55053</td>
+<td>55053</td>
+<td>55053</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="cell-58" class="cell" data-execution_count="29">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>japanese_edu_domains <span class="op">=</span> [</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"http://www.asagaku.com/"</span>,</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"www3.nhk.or.jp/news/easy/"</span>,</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"http://kids.yahoo.co.jp/"</span>,</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-59" class="cell" data-execution_count="30">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>df.<span class="bu">filter</span>(pl.col(<span class="st">"url"</span>).is_in(japanese_edu_domains)).count().collect(streaming<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="30">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (1, 11)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">text</th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">dump</th>
+<th data-quarto-table-cell-role="th">url</th>
+<th data-quarto-table-cell-role="th">date</th>
+<th data-quarto-table-cell-role="th">file_path</th>
+<th data-quarto-table-cell-role="th">language</th>
+<th data-quarto-table-cell-role="th">language_score</th>
+<th data-quarto-table-cell-role="th">language_script</th>
+<th data-quarto-table-cell-role="th">minhash_cluster_size</th>
+<th data-quarto-table-cell-role="th">top_langs</th>
+</tr>
+<tr class="even">
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>We’d obviously want to expand this list to include more domains but you can see how we can still use the same techniques to filter very large datasets without running out of memory.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/danielvanstrien\.xyz");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

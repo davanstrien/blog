@@ -9,8 +9,2084 @@
 <link>https://danielvanstrien.xyz/</link>
 <atom:link href="https://danielvanstrien.xyz/index.xml" rel="self" type="application/rss+xml"/>
 <description>Daniel van Strien&#39;s blog</description>
-<generator>quarto-1.5.57</generator>
-<lastBuildDate>Wed, 23 Oct 2024 00:00:00 GMT</lastBuildDate>
+<generator>quarto-1.6.39</generator>
+<lastBuildDate>Mon, 30 Dec 2024 00:00:00 GMT</lastBuildDate>
+<item>
+  <title>Filtering FineWeb2 using Polars</title>
+  <dc:creator>Daniel van Strien</dc:creator>
+  <link>https://danielvanstrien.xyz/posts/2024/12/23/fineweb-filter-polars.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>Recently <a href="https://huggingface.co/datasets/HuggingFaceFW/fineweb-2">FineWeb2</a> was released. FineWeb2 builds on the previous <a href="https://huggingface.co/datasets/HuggingFaceFW/fineweb">FineWeb</a> dataset to add data for many languages. Building on this work we recently launched a community effort to build educational quality filters for many languages. See this <a href="https://huggingface.co/blog/davanstrien/fineweb2-community">blog post</a> for more details.</p>
+<section id="filtering-the-fineweb2-dataset-to-improve-educational-quality-and-or-filtering-for-a-language" class="level3">
+<h3 class="anchored" data-anchor-id="filtering-the-fineweb2-dataset-to-improve-educational-quality-and-or-filtering-for-a-language">Filtering the FineWeb2 dataset to improve educational quality and or filtering for a language</h3>
+<p>One of the goals of the FineWeb-c project is to build educational quality filters for many languages. To do this the community has been annotating the data with educational quality scores. So far, the majority of the datasets for each language consist of a random sample of 1,000 examples from FineWeb2 for that lanugage. However, for some languages, the community has found that: - the language identification is not always correct - the educational quality is very low in the sample</p>
+<p>For these languages, we want to enable the community to create extra filters to either help with the language identification or to filter for educational quality. This blog post shows some ways in which you can use Polars to filter the FineWeb2 dataset to improve educational quality and or filtering for a language.</p>
+<p>First we’ll install the necessary libraries. We’ll use <code>polars</code> for the data manipulation and <code>huggingface_hub</code> to interact with the Hugging Face Hub. The <code>dask</code> library is another good option for working with large datasets.</p>
+<div id="cell-3" class="cell" data-outputid="63d40d1b-b125-4d11-e2dc-f556126a71ac" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># %pip install polars huggingface_hub tld rich tqdm --upgrade</span></span></code></pre></div>
+</div>
+<div id="cell-4" class="cell" data-execution_count="31">
+<div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> huggingface_hub <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> list_repo_files, hf_hub_download</span>
+<span id="cb2-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> polars <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> pl</span>
+<span id="cb2-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> tld <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> get_tld</span>
+<span id="cb2-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> pathlib <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> Path</span>
+<span id="cb2-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> tqdm.auto <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> tqdm</span>
+<span id="cb2-6"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> os</span></code></pre></div>
+</div>
+<div id="cell-5" class="cell" data-execution_count="32">
+<div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># increase amount of data polars shows</span></span>
+<span id="cb3-2">pl.Config.set_tbl_rows(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span>)</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="32">
+<pre><code>polars.config.Config</code></pre>
+</div>
+</div>
+<p>Many large datasets on the Hub will be organised into different configurations. These configurations are often named after the language they are in. For example, the FineWeb dataset is organised into different languages. Many large datasets will either have structured folders or the names of files can be used to filter the dataset. Let’s look at the FineWeb dataset. We can use the wonderful <code>huggingface_hub</code> library to list the files in a repository.</p>
+<div id="cell-7" class="cell" data-outputid="c890a004-c9c9-4968-8176-20456bfba91a" data-execution_count="33">
+<div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1">paths <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> list_repo_files(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"HuggingFaceFW/fineweb-2"</span>, repo_type<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"dataset"</span>)</span>
+<span id="cb5-2">paths[:<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>]</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="33">
+<pre><code>['.gitattributes',
+ 'README.md',
+ 'data/aai_Latn/test/000_00000.parquet',
+ 'data/aai_Latn/train/000_00000.parquet',
+ 'data/aai_Latn_removed/train/000_00000.parquet',
+ 'data/aak_Latn/test/000_00000.parquet',
+ 'data/aak_Latn/train/000_00000.parquet',
+ 'data/aak_Latn_removed/train/000_00000.parquet',
+ 'data/aau_Latn/test/000_00000.parquet',
+ 'data/aau_Latn/train/000_00000.parquet']</code></pre>
+</div>
+</div>
+<p>You can see we have a hidden <code>.gitattributes</code> file and a README.md + a <code>data</code> directory containing parquet files organised into different subdirectories. Since these names are very clear we create a very simple filter to get the scots language files we’re interested in. We’ll look for <code>scots</code> in the file name and make sure it ends with <code>.parquet</code> and doesn’t have <code>removed</code> in the file name since these are files that were removed in the FineWeb2 filtering process.</p>
+<div id="cell-9" class="cell" data-outputid="8d379554-5a63-49cb-8925-f331f686bc04" data-execution_count="34">
+<div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1">scots <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [</span>
+<span id="cb7-2">    f <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> f <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> paths <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"sco"</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> f <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">and</span> f.endswith(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"parquet"</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">and</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"removed"</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">not</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> f)</span>
+<span id="cb7-3">]</span>
+<span id="cb7-4">scots</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="34">
+<pre><code>['data/sco_Latn/test/000_00000.parquet',
+ 'data/sco_Latn/train/000_00000.parquet']</code></pre>
+</div>
+</div>
+</section>
+<section id="loading-the-data-in-polars" class="level2">
+<h2 class="anchored" data-anchor-id="loading-the-data-in-polars">Loading the data in Polars</h2>
+<p>We can directly load the data from the Hugging Face Hub using the <code>hf://</code> protocol. In this case we’ll just load the <code>train</code> file for the scots language. We’ll use <code>read_parquet</code> to load the data for now but we’ll see below a better way to load the data if you are working with large datasets.</p>
+<div id="cell-11" class="cell" data-execution_count="35">
+<div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1">df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pl.read_parquet(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"hf://datasets/HuggingFaceFW/fineweb-2/</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>scots[<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>]<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span></code></pre></div>
+</div>
+<p>Let’s take a look at the data. We can see we have a number of columns including the actual text but also some other metadata fields that could be useful for filtering.</p>
+<div id="cell-13" class="cell" data-outputid="9eb35e28-268e-4577-832c-6bb3be50be0a" data-execution_count="36">
+<div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1">df.head(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>)</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="36">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (5, 11)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">text</th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">dump</th>
+<th data-quarto-table-cell-role="th">url</th>
+<th data-quarto-table-cell-role="th">date</th>
+<th data-quarto-table-cell-role="th">file_path</th>
+<th data-quarto-table-cell-role="th">language</th>
+<th data-quarto-table-cell-role="th">language_score</th>
+<th data-quarto-table-cell-role="th">language_script</th>
+<th data-quarto-table-cell-role="th">minhash_cluster_size</th>
+<th data-quarto-table-cell-role="th">top_langs</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>f64</th>
+<th>str</th>
+<th>i64</th>
+<th>str</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"2010 All Ford Mustangs Car Sho…</td>
+<td>"&lt;urn:uuid:06f10aff-f1da-4d33-b…</td>
+<td>"CC-MAIN-2013-20"</td>
+<td>"http://www.allfordmustangs.com…</td>
+<td>"2013-05-23T16:34:05Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>0.764794</td>
+<td>"Latn"</td>
+<td>1258</td>
+<td>"{"sco_Latn_score": 0.764793634…</td>
+</tr>
+<tr class="even">
+<td>"Interested in France? We'll se…</td>
+<td>"&lt;urn:uuid:abc6bfe8-7af5-40b9-9…</td>
+<td>"CC-MAIN-2013-20"</td>
+<td>"http://www.tripadvisor.com/All…</td>
+<td>"2013-05-23T16:36:10Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>0.651096</td>
+<td>"Latn"</td>
+<td>12</td>
+<td>"{"sco_Latn_score": 0.651095628…</td>
+</tr>
+<tr class="odd">
+<td>"Sherlock Holmes Sherlock Holme…</td>
+<td>"&lt;urn:uuid:11ceff04-f5f5-418c-8…</td>
+<td>"CC-MAIN-2014-10"</td>
+<td>"http://sco.wikipedia.org/wiki/…</td>
+<td>"2014-03-08T05:12:30Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>1.000008</td>
+<td>"Latn"</td>
+<td>58</td>
+<td>"{"sco_Latn_score": 1.000008225…</td>
+</tr>
+<tr class="even">
+<td>"Munster History[eedit | eedit …</td>
+<td>"&lt;urn:uuid:5fd5fa85-72b1-43d3-b…</td>
+<td>"CC-MAIN-2014-15"</td>
+<td>"http://sco.wikipedia.org/wiki/…</td>
+<td>"2014-04-19T09:31:48Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>1.00001</td>
+<td>"Latn"</td>
+<td>79</td>
+<td>"{"sco_Latn_score": 1.000009536…</td>
+</tr>
+<tr class="odd">
+<td>"Snawbuirdin Frae Wikipedia Sna…</td>
+<td>"&lt;urn:uuid:72c97fcb-4820-4a52-b…</td>
+<td>"CC-MAIN-2014-15"</td>
+<td>"http://sco.wikipedia.org/wiki/…</td>
+<td>"2014-04-19T09:31:00Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>1.00001</td>
+<td>"Latn"</td>
+<td>66</td>
+<td>"{"sco_Latn_score": 1.000010013…</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>We can do some simple EDA style analysis if we want. For example, we can look at the distribution of the language scores.</p>
+<div id="cell-15" class="cell" data-execution_count="37">
+<div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1">df.select(pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_score"</span>)).describe()</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="37">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (9, 2)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">statistic</th>
+<th data-quarto-table-cell-role="th">language_score</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>f64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"count"</td>
+<td>75821.0</td>
+</tr>
+<tr class="even">
+<td>"null_count"</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"mean"</td>
+<td>0.537262</td>
+</tr>
+<tr class="even">
+<td>"std"</td>
+<td>0.214123</td>
+</tr>
+<tr class="odd">
+<td>"min"</td>
+<td>0.300002</td>
+</tr>
+<tr class="even">
+<td>"25%"</td>
+<td>0.371339</td>
+</tr>
+<tr class="odd">
+<td>"50%"</td>
+<td>0.465798</td>
+</tr>
+<tr class="even">
+<td>"75%"</td>
+<td>0.634602</td>
+</tr>
+<tr class="odd">
+<td>"max"</td>
+<td>1.00001</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>Do a groupby year of dump and language score and plot a bar chart to see if there is a trend.</p>
+<div id="cell-17" class="cell" data-execution_count="38">
+<div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1">df.with_columns(</span>
+<span id="cb12-2">    pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"dump"</span>).<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>.extract(<span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">r"(\d</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{4}</span><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">)"</span>).cast(pl.Utf8).alias(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"year"</span>)</span>
+<span id="cb12-3">).group_by(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"year"</span>).agg(pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_score"</span>).mean()).sort(</span>
+<span id="cb12-4">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"year"</span>, descending<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span></span>
+<span id="cb12-5">).plot.bar(x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"year"</span>, y<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_score"</span>)</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="38">
+
+<style>
+  #altair-viz-fe0da1ebeea8457488a525510d17e309.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #altair-viz-fe0da1ebeea8457488a525510d17e309.vega-embed details,
+  #altair-viz-fe0da1ebeea8457488a525510d17e309.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="altair-viz-fe0da1ebeea8457488a525510d17e309"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-fe0da1ebeea8457488a525510d17e309") {
+      outputDiv = document.getElementById("altair-viz-fe0da1ebeea8457488a525510d17e309");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@5?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@5.20.1?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@6?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "5")
+        .then(() => maybeLoadScript("vega-lite", "5.20.1"))
+        .then(() => maybeLoadScript("vega-embed", "6"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "data": {"name": "data-a2dac3cae28f3776a0afe23aa10e9d95"}, "mark": {"type": "bar", "tooltip": true}, "encoding": {"x": {"field": "year", "type": "nominal"}, "y": {"field": "language_score", "type": "quantitative"}}, "params": [{"name": "param_3", "select": {"type": "interval", "encodings": ["x", "y"]}, "bind": "scales"}], "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-a2dac3cae28f3776a0afe23aa10e9d95": [{"year": "2024", "language_score": 0.59630706703263}, {"year": "2023", "language_score": 0.5990225852939871}, {"year": "2022", "language_score": 0.556792496579454}, {"year": "2021", "language_score": 0.5684881852470515}, {"year": "2020", "language_score": 0.5589367822780985}, {"year": "2019", "language_score": 0.5021168049377785}, {"year": "2018", "language_score": 0.5071491739213441}, {"year": "2017", "language_score": 0.5866420439482936}, {"year": "2016", "language_score": 0.5692852422268722}, {"year": "2015", "language_score": 0.634930242881453}, {"year": "2014", "language_score": 0.7056941382838908}, {"year": "2013", "language_score": 0.6501463920454825}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+</div>
+</section>
+<section id="heuristics-for-filtering-for-higher-educational-quality-in-fineweb2" class="level2">
+<h2 class="anchored" data-anchor-id="heuristics-for-filtering-for-higher-educational-quality-in-fineweb2">Heuristics for filtering for higher educational quality in FineWeb2</h2>
+<p>Whilst the authors of FineWeb2 aimed to do general quality filtering, there are often additional heuristics that can be used to filter for higher educational quality. For example, we can use the <code>tld</code> to filter for higher quality websites. We can also use the <code>url</code> to filter for higher quality websites. Many of these heuristics will require some domain knowledge for a particular language and the web ecosystem for tha language.</p>
+<p>The top level domain (tld) is a good heuristic for filtering for higher quality websites. The top level domain is the part of the url that is after the last dot. For example, the tld of <code>https://www.wikipedia.org/</code> is <code>org</code>. This often corresponds to a country or organization. For example, <code>ac.uk</code> is the UK’s higher education domain. We can use this to filter for higher quality websites.</p>
+<p>We can do this by mapping the <code>url</code> column to the tld and then filtering for the tlds we’re interested in. Let’s add a new column with the tld and then filter for the tlds we’re interested in.</p>
+<div id="cell-20" class="cell" data-execution_count="39">
+<div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1">df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df.with_columns(</span>
+<span id="cb13-2">    pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"url"</span>).map_elements(<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">lambda</span> x: get_tld(x), return_dtype<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>pl.Utf8).alias(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"tld"</span>)</span>
+<span id="cb13-3">)</span></code></pre></div>
+</div>
+<div id="cell-21" class="cell" data-outputid="8e1242da-ca7e-4a88-ba62-f6b57080498c" data-execution_count="40">
+<div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> altair <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> alt</span>
+<span id="cb14-2"></span>
+<span id="cb14-3">df.select(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"tld"</span>).to_series().value_counts(sort<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>).sort(</span>
+<span id="cb14-4">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"count"</span>, descending<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span></span>
+<span id="cb14-5">).head(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">20</span>).plot.bar(</span>
+<span id="cb14-6">    x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>alt.X(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"tld"</span>, sort<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"-y"</span>),  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Sort x-axis based on y values in descending order</span></span>
+<span id="cb14-7">    y<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"count"</span>,</span>
+<span id="cb14-8">)</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="40">
+
+<style>
+  #altair-viz-95698fadffd0471baf22cc86326ce299.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #altair-viz-95698fadffd0471baf22cc86326ce299.vega-embed details,
+  #altair-viz-95698fadffd0471baf22cc86326ce299.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="altair-viz-95698fadffd0471baf22cc86326ce299"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-95698fadffd0471baf22cc86326ce299") {
+      outputDiv = document.getElementById("altair-viz-95698fadffd0471baf22cc86326ce299");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@5?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@5.20.1?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@6?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "5")
+        .then(() => maybeLoadScript("vega-lite", "5.20.1"))
+        .then(() => maybeLoadScript("vega-embed", "6"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "data": {"name": "data-ab15e82854278db245b37c0358920c89"}, "mark": {"type": "bar", "tooltip": true}, "encoding": {"x": {"field": "tld", "sort": "-y", "type": "nominal"}, "y": {"field": "count", "type": "quantitative"}}, "params": [{"name": "param_4", "select": {"type": "interval", "encodings": ["x", "y"]}, "bind": "scales"}], "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-ab15e82854278db245b37c0358920c89": [{"tld": "com", "count": 25240}, {"tld": "info", "count": 15820}, {"tld": "org", "count": 8806}, {"tld": "us", "count": 4655}, {"tld": "me", "count": 4114}, {"tld": "net", "count": 3416}, {"tld": "co", "count": 2258}, {"tld": "ru", "count": 2110}, {"tld": "nl", "count": 1247}, {"tld": "site", "count": 832}, {"tld": "club", "count": 807}, {"tld": "co.uk", "count": 659}, {"tld": "blogspot.com", "count": 561}, {"tld": "de", "count": 362}, {"tld": "eu", "count": 275}, {"tld": "org.uk", "count": 267}, {"tld": "ac.uk", "count": 255}, {"tld": "mobi", "count": 183}, {"tld": "online", "count": 182}, {"tld": "fr", "count": 141}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+</div>
+<p>We may already have some knowledge or intuitions about the tlds that are more likely to be higher quality. For example <code>.us</code> is relatively high, this is likely partially due this domain being more present in the Web generally. We may also see some personal blogs using this domain. Let’s take a look at a few examples.</p>
+<div id="cell-23" class="cell" data-execution_count="41">
+<div class="sourceCode cell-code" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1">df.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">filter</span>(pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"tld"</span>).<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>.contains(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"us"</span>)).sort(</span>
+<span id="cb15-2">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_score"</span>, descending<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span></span>
+<span id="cb15-3">).select(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"url"</span>).to_series().to_list()[:<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">30</span>]</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="41">
+<pre><code>['https://coremc.us/forno-microonde-incasso.html',
+ 'https://www.awesomedownloadfilestoday.us/1141-haircut-places-near-my-location.html',
+ 'https://www.awesomedownloadfilestoday.us/1376-haircut-near-my-location.html',
+ 'https://www.awesomedownloadfilestoday.us/1857-short-haircuts-for-fine-straight-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/2081-twa-styles-4c-hair.html',
+ 'http://winserver.us/mid-century-modern-front-door-colors/mid-century-modern-front-door-colors-mid-century-modern-front-doors-door-colors-handles-mi-mid-century-modern-front-door-colours/',
+ 'https://www.awesomedownloadfilestoday.us/3450-hair-styles-for-thick-short-hair.html',
+ 'https://notwttodaytes.us/casa-mezcal-mexican-grill-cantina.html',
+ 'https://www.awesomedownloadfilestoday.us/1857-short-haircuts-for-fine-straight-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/1737-short-haircuts-for-curly-thick-hair.html',
+ 'http://uggbootsclearanceoutlet.us/jaguar-xj-sport-2003-2003-jaguar-xj-car-for-sale-in.html',
+ 'https://www.awesomedownloadfilestoday.us/5489-hair-colour-and-styles-for-short-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/6213-short-haircuts-for-thick-hair-pictures.html',
+ 'https://www.awesomedownloadfilestoday.us/4993-short-haircuts-for-thick-curly-frizzy-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/1773-short-hair-styles-for-thick-wavy-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/6129-short-haircuts-for-very-fine-thin-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/1808-haircuts-for-straight-thin-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/4478-best-short-haircuts-for-thick-coarse-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/9513-short-haircuts-for-thin-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/3414-short-sassy-haircuts-for-thin-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/4630-very-short-haircuts-for-thin-hair.html',
+ 'https://joesstuff.us/search.php?mfr=141',
+ 'https://www.awesomedownloadfilestoday.us/3738-short-hair-styles-for-thick-curly-hair.html',
+ 'https://layartancep.us/twa-hairstyles.html',
+ 'https://www.awesomedownloadfilestoday.us/1101-best-haircuts-for-fine-thin-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/4963-short-haircut-for-fine-thin-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/4963-short-haircut-for-fine-thin-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/5010-haircuts-for-coarse-wavy-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/5201-best-short-haircuts-for-fine-thin-hair.html',
+ 'https://www.awesomedownloadfilestoday.us/1911-haircut-for-round-face-and-thin-hair.html']</code></pre>
+</div>
+</div>
+<p>These don’t look super promising! Some domains where we might expect higher quality text for scots are the <code>.sco</code> domain which is a domain for websites relating to Scotland.</p>
+<div id="cell-25" class="cell" data-outputid="9c11eb91-821e-4551-8a2e-ac376323ec90" data-execution_count="42">
+<div class="sourceCode cell-code" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1">df.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">filter</span>(pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"tld"</span>).<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>.contains(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"sco"</span>)).sort(</span>
+<span id="cb17-2">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_score"</span>, descending<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span></span>
+<span id="cb17-3">).select(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"url"</span>).to_series().to_list()[:<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">30</span>]</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="42">
+<pre><code>['https://stormplay.scot/sco/aboot.html',
+ 'https://www.makforrit.scot/2020/08/29/anent-the-scots-wikipedia-an-sundays-editathon/',
+ 'https://www.makforrit.scot/2018/12/23/daein-it-yersel/',
+ 'https://www.makforrit.scot/2019/09/22/uisin-oor-vyce-hou-we-can-gar-political-action-on-scots-inevitable/',
+ 'https://www.makforrit.scot/2018/02/03/naewey-tae-bide/',
+ 'https://www.makforrit.scot/',
+ 'https://www.makforrit.scot/2018/01/27/than-an-nou-poverty-makkin-dae-an-leukin-out-for-ilk-ither/',
+ 'https://www.makforrit.scot/',
+ 'https://salvo.scot/the-scottis-constitutional-covin/',
+ 'https://amylord.scot/gd/hello-welcome/',
+ 'https://www.makforrit.scot/category/scotland/',
+ 'https://projects.handsupfortrad.scot/scotslanguageawards/gies-a-scots-phrase-day-2021/',
+ 'https://scoblog.stormplay.scot/t3ngist-is-gaunae-need-tae-be-delayed.html',
+ 'https://www.makforrit.scot/2019/10/29/halloween/',
+ 'https://www.makforrit.scot/category/history/',
+ 'https://www.makforrit.scot/2018/11/19/three-days-in-october/',
+ 'http://mindyerlanguage.scot/teachin',
+ 'http://mindyerlanguage.scot/category/video',
+ 'https://scoblog.stormplay.scot/rossies-3d-an-t3ngist-are-gaunae-be-delayed.html',
+ 'https://www.gov.scot/publications/consultation-scots-government-commitments-tae-gaelic-scots-scots-langages-bill/pages/2/',
+ 'https://projects.handsupfortrad.scot/scotslanguageawards/nominations-open-for-scots-language-awards-2020/',
+ 'https://scoblog.stormplay.scot/were-gaunae-mak-big-chynges-tae-wir-main-wabsteid-an-a-cynge-o-hou-we-dae-things.html',
+ 'https://newsnet.scot/archive/mono-or-stereo/',
+ 'https://scoblog.stormplay.scot/happy-birthday-gamerstorm.html',
+ 'http://mindyerlanguage.scot/aboot',
+ 'https://www.makforrit.scot/category/opinion/',
+ 'https://projects.handsupfortrad.scot/scotslanguageawards/gies-a-scots-phrase-day-2022/',
+ 'https://newsnet.scot/archive/scots-railweys-scots-leids-an-scots-cairtes/',
+ 'https://www.makforrit.scot/author/jamie/',
+ 'https://stormplay.scot/games/pinkeye/sco/scotland.html']</code></pre>
+</div>
+</div>
+<p>Even inside these URLs we can see some scots language so this is promising.</p>
+<p>One of the issues with some of the Scots data in FineWeb2 is that it is in the wrong language. One way we can try and get a sense of where better language data might be in FineWeb2 is to look at the tlds that have the highest language scores. We can do this by grouping by tld and then taking the mean of the language scores. We can then filter for the tlds that have more than 50 row to make sure we’re considering the tlds that have a good amount of data.</p>
+<div id="cell-27" class="cell" data-outputid="c417173b-1650-4a47-c685-da43499bd878" data-execution_count="43">
+<div class="sourceCode cell-code" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1">(</span>
+<span id="cb19-2">    df.group_by(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"tld"</span>)</span>
+<span id="cb19-3">    .agg(</span>
+<span id="cb19-4">        [</span>
+<span id="cb19-5">            pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_score"</span>).count().alias(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"count"</span>),</span>
+<span id="cb19-6">            pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_score"</span>).mean().alias(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_score"</span>),</span>
+<span id="cb19-7">        ]</span>
+<span id="cb19-8">    )</span>
+<span id="cb19-9">    .<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">filter</span>(pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"count"</span>) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">50</span>)  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Replace n with your desired minimum count</span></span>
+<span id="cb19-10">    .sort(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_score"</span>, descending<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="cb19-11">)</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="43">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (41, 3)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">tld</th>
+<th data-quarto-table-cell-role="th">count</th>
+<th data-quarto-table-cell-role="th">language_score</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>u32</th>
+<th>f64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"scot"</td>
+<td>102</td>
+<td>0.998978</td>
+</tr>
+<tr class="even">
+<td>"ac.uk"</td>
+<td>255</td>
+<td>0.95732</td>
+</tr>
+<tr class="odd">
+<td>"org.uk"</td>
+<td>267</td>
+<td>0.926128</td>
+</tr>
+<tr class="even">
+<td>"org"</td>
+<td>8806</td>
+<td>0.814764</td>
+</tr>
+<tr class="odd">
+<td>"co.uk"</td>
+<td>659</td>
+<td>0.770529</td>
+</tr>
+<tr class="even">
+<td>"blogspot.com"</td>
+<td>561</td>
+<td>0.65765</td>
+</tr>
+<tr class="odd">
+<td>"top"</td>
+<td>85</td>
+<td>0.581157</td>
+</tr>
+<tr class="even">
+<td>"eu"</td>
+<td>275</td>
+<td>0.558302</td>
+</tr>
+<tr class="odd">
+<td>"de"</td>
+<td>362</td>
+<td>0.544635</td>
+</tr>
+<tr class="even">
+<td>"club"</td>
+<td>807</td>
+<td>0.543638</td>
+</tr>
+<tr class="odd">
+<td>"co"</td>
+<td>2258</td>
+<td>0.530558</td>
+</tr>
+<tr class="even">
+<td>"nl"</td>
+<td>1247</td>
+<td>0.52335</td>
+</tr>
+<tr class="odd">
+<td>"ca"</td>
+<td>75</td>
+<td>0.521135</td>
+</tr>
+<tr class="even">
+<td>"com.co"</td>
+<td>54</td>
+<td>0.520628</td>
+</tr>
+<tr class="odd">
+<td>"ie"</td>
+<td>52</td>
+<td>0.514327</td>
+</tr>
+<tr class="even">
+<td>"info"</td>
+<td>15820</td>
+<td>0.506197</td>
+</tr>
+<tr class="odd">
+<td>"com.au"</td>
+<td>88</td>
+<td>0.505842</td>
+</tr>
+<tr class="even">
+<td>"com"</td>
+<td>25240</td>
+<td>0.500029</td>
+</tr>
+<tr class="odd">
+<td>"me"</td>
+<td>4114</td>
+<td>0.490317</td>
+</tr>
+<tr class="even">
+<td>"online"</td>
+<td>182</td>
+<td>0.489941</td>
+</tr>
+<tr class="odd">
+<td>"mobi"</td>
+<td>183</td>
+<td>0.484193</td>
+</tr>
+<tr class="even">
+<td>"pl"</td>
+<td>78</td>
+<td>0.475017</td>
+</tr>
+<tr class="odd">
+<td>"net"</td>
+<td>3416</td>
+<td>0.473797</td>
+</tr>
+<tr class="even">
+<td>"es"</td>
+<td>56</td>
+<td>0.466831</td>
+</tr>
+<tr class="odd">
+<td>"tk"</td>
+<td>53</td>
+<td>0.461307</td>
+</tr>
+<tr class="even">
+<td>"fr"</td>
+<td>141</td>
+<td>0.461128</td>
+</tr>
+<tr class="odd">
+<td>"it"</td>
+<td>79</td>
+<td>0.460331</td>
+</tr>
+<tr class="even">
+<td>"site"</td>
+<td>832</td>
+<td>0.456072</td>
+</tr>
+<tr class="odd">
+<td>"xyz"</td>
+<td>122</td>
+<td>0.450356</td>
+</tr>
+<tr class="even">
+<td>"co.za"</td>
+<td>66</td>
+<td>0.450212</td>
+</tr>
+<tr class="odd">
+<td>"store"</td>
+<td>119</td>
+<td>0.443785</td>
+</tr>
+<tr class="even">
+<td>"in"</td>
+<td>135</td>
+<td>0.439045</td>
+</tr>
+<tr class="odd">
+<td>"co.ke"</td>
+<td>135</td>
+<td>0.433248</td>
+</tr>
+<tr class="even">
+<td>"us"</td>
+<td>4655</td>
+<td>0.43162</td>
+</tr>
+<tr class="odd">
+<td>"pro"</td>
+<td>131</td>
+<td>0.431553</td>
+</tr>
+<tr class="even">
+<td>"pages.dev"</td>
+<td>92</td>
+<td>0.422582</td>
+</tr>
+<tr class="odd">
+<td>"ru"</td>
+<td>2110</td>
+<td>0.416347</td>
+</tr>
+<tr class="even">
+<td>"live"</td>
+<td>64</td>
+<td>0.404111</td>
+</tr>
+<tr class="odd">
+<td>"edu"</td>
+<td>102</td>
+<td>0.386884</td>
+</tr>
+<tr class="even">
+<td>"website"</td>
+<td>54</td>
+<td>0.371444</td>
+</tr>
+<tr class="odd">
+<td>"cn"</td>
+<td>97</td>
+<td>0.366857</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>We can see some other potentially promising tlds. For example, <code>ac.uk</code> is the UK’s higher education domain. We can take a look at the urls that have this tld.</p>
+<div id="cell-29" class="cell" data-outputid="4a0d6c47-e4a1-4eac-fc36-a1fff3379437" data-execution_count="44">
+<div class="sourceCode cell-code" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1">df.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">filter</span>(pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"tld"</span>).<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>.contains(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ac.uk"</span>)).sort(</span>
+<span id="cb20-2">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_score"</span>, descending<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span></span>
+<span id="cb20-3">).select(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"url"</span>).to_series().to_list()[:<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">30</span>]</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="44">
+<pre><code>['https://www.scottishcorpus.ac.uk/document/?documentid=1699',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1759',
+ 'https://www.abdn.ac.uk/elphinstone/kist/search/display.php?sblk65.dat',
+ 'https://www.abdn.ac.uk/elphinstone/kist/display/folk-history/357/',
+ 'https://scotslanguagepolicy.ac.uk/warkshoaps/',
+ 'https://scotslanguagepolicy.ac.uk/survey-final-weekend/',
+ 'http://www.abdn.ac.uk/elphinstone/kist/search/display.php?fhrg01.dat',
+ 'https://www.abdn.ac.uk/elphinstone/kist/display/761/',
+ 'https://scotslanguagepolicy.glasgow.ac.uk/hae-yer-say/',
+ 'http://www.abdn.ac.uk/elphinstone/kist/search/display.php?lwee66.dat',
+ 'https://scotslanguagepolicy.ac.uk/jist-fir-burns-nicht/',
+ 'https://scotslanguagepolicy.ac.uk/aboot/',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=122',
+ 'http://www.abdn.ac.uk/elphinstone/kist/search/display.php?bgre04.dat',
+ 'http://www.abdn.ac.uk/elphinstone/kist/search/display.php?arob01.dat',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1713&amp;highlight=athort',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1695&amp;highlight=projeck',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1709&amp;highlight=projeck',
+ 'https://www.abdn.ac.uk/elphinstone/kist/display/work/938/',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1714',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1739',
+ 'https://www.abdn.ac.uk/elphinstone/kist/display/work/341/',
+ 'http://www.abdn.ac.uk/elphinstone/kist/search/display.php?acru01.dat',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1697&amp;highlight=aroon',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1742&amp;highlight=projeck',
+ 'https://www.abdn.ac.uk/elphinstone/kist/search/display.php?kmac01.dat',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1704&amp;highlight=projeck',
+ 'https://scottishcorpus.ac.uk/document/?documentid=1710',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1725&amp;highlight=direck',
+ 'https://www.scottishcorpus.ac.uk/document/?documentid=1715&amp;highlight=projeck']</code></pre>
+</div>
+</div>
+<p>In this case using some EDA and domain knowledge we can filter for the tlds which are likely to be:</p>
+<ul>
+<li>in the scots language</li>
+<li>higher quality educational websites</li>
+</ul>
+<p>We can reduce the FineWeb2 dataset to only include the rows that have these tlds.</p>
+<div id="cell-31" class="cell" data-execution_count="45">
+<div class="sourceCode cell-code" id="cb22" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1">good_tlds <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"sco"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ac.uk"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"org.uk"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"org"</span>]</span></code></pre></div>
+</div>
+<div id="cell-32" class="cell" data-execution_count="46">
+<div class="sourceCode cell-code" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1">df.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">filter</span>(pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"tld"</span>).is_in(good_tlds)).sort(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_score"</span>, descending<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>).head(</span>
+<span id="cb23-2">    <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span></span>
+<span id="cb23-3">)</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="46">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (5, 12)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">text</th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">dump</th>
+<th data-quarto-table-cell-role="th">url</th>
+<th data-quarto-table-cell-role="th">date</th>
+<th data-quarto-table-cell-role="th">file_path</th>
+<th data-quarto-table-cell-role="th">language</th>
+<th data-quarto-table-cell-role="th">language_score</th>
+<th data-quarto-table-cell-role="th">language_script</th>
+<th data-quarto-table-cell-role="th">minhash_cluster_size</th>
+<th data-quarto-table-cell-role="th">top_langs</th>
+<th data-quarto-table-cell-role="th">tld</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>f64</th>
+<th>str</th>
+<th>i64</th>
+<th>str</th>
+<th>str</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"Snawbuirdin Frae Wikipedia Sna…</td>
+<td>"&lt;urn:uuid:72c97fcb-4820-4a52-b…</td>
+<td>"CC-MAIN-2014-15"</td>
+<td>"http://sco.wikipedia.org/wiki/…</td>
+<td>"2014-04-19T09:31:00Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>1.00001</td>
+<td>"Latn"</td>
+<td>66</td>
+<td>"{"sco_Latn_score": 1.000010013…</td>
+<td>"org"</td>
+</tr>
+<tr class="even">
+<td>"Banner o the Sahrawi Arab Demo…</td>
+<td>"&lt;urn:uuid:67052692-6020-4870-9…</td>
+<td>"CC-MAIN-2014-15"</td>
+<td>"http://sco.wikipedia.org/wiki/…</td>
+<td>"2014-04-24T06:38:13Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>1.00001</td>
+<td>"Latn"</td>
+<td>27</td>
+<td>"{"sco_Latn_score": 1.000010013…</td>
+<td>"org"</td>
+</tr>
+<tr class="odd">
+<td>"Potosí is a ceety an the caipi…</td>
+<td>"&lt;urn:uuid:e49b07bb-d7c9-4905-b…</td>
+<td>"CC-MAIN-2014-15"</td>
+<td>"http://sco.wikipedia.org/wiki/…</td>
+<td>"2014-04-21T15:05:27Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>1.00001</td>
+<td>"Latn"</td>
+<td>34</td>
+<td>"{"sco_Latn_score": 1.000010013…</td>
+<td>"org"</td>
+</tr>
+<tr class="even">
+<td>"Port Moresby Port Moresby (Ing…</td>
+<td>"&lt;urn:uuid:bb6b995d-b3e8-4dcd-9…</td>
+<td>"CC-MAIN-2014-35"</td>
+<td>"http://sco.wikipedia.org/wiki/…</td>
+<td>"2014-08-30T16:16:49Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>1.00001</td>
+<td>"Latn"</td>
+<td>80</td>
+<td>"{"sco_Latn_score": 1.000010013…</td>
+<td>"org"</td>
+</tr>
+<tr class="odd">
+<td>"Seville Seville is a ceety in …</td>
+<td>"&lt;urn:uuid:cdcca31a-693e-463b-a…</td>
+<td>"CC-MAIN-2014-42"</td>
+<td>"http://sco.wikipedia.org/wiki/…</td>
+<td>"2014-10-22T21:45:17Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"sco"</td>
+<td>1.00001</td>
+<td>"Latn"</td>
+<td>31</td>
+<td>"{"sco_Latn_score": 1.000010013…</td>
+<td>"org"</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="cell-33" class="cell" data-execution_count="47">
+<div class="sourceCode cell-code" id="cb24" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1">filtered_df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">filter</span>(pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"tld"</span>).is_in(good_tlds)).sort(</span>
+<span id="cb24-2">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_score"</span>, descending<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span></span>
+<span id="cb24-3">)</span></code></pre></div>
+</div>
+<p>We can now save the filtered data to a new file. We’ll save the ids of the rows that are in the filtered dataset to a file. These ids can then be used to upload additional filtered data to the Argilla dataset for the language we’re working on.</p>
+<div id="cell-35" class="cell" data-execution_count="48">
+<div class="sourceCode cell-code" id="cb25" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">with</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">open</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"good_ids"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"w"</span>) <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> f:</span>
+<span id="cb25-2">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">id</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> filtered_df.select(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"id"</span>).to_series().to_list():</span>
+<span id="cb25-3">        f.write(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">id</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ch" style="color: #20794D;
+background-color: null;
+font-style: inherit;">\n</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span></code></pre></div>
+</div>
+</section>
+<section id="filtering-other-languages" class="level2">
+<h2 class="anchored" data-anchor-id="filtering-other-languages">Filtering other languages</h2>
+<p>We can also use the same techniques to filter other languages. Some languages have a lot of data and so we can use the <code>scan_parquet</code> function to create a <code>LazyFrame</code> this will avoid loading all the data into memory. In addition, Polars will perform query optimizations on the <code>LazyFrame</code>. This will make the code we use for filtering more efficient without much work on our part.</p>
+<div id="cell-37" class="cell" data-execution_count="49">
+<div class="sourceCode cell-code" id="cb26" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> get_paths_for_language(language: <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>):</span>
+<span id="cb26-2">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> [</span>
+<span id="cb26-3">        path</span>
+<span id="cb26-4">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> path <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> list_repo_files(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"HuggingFaceFW/fineweb-2"</span>, repo_type<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"dataset"</span>)</span>
+<span id="cb26-5">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> path.endswith(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"parquet"</span>)</span>
+<span id="cb26-6">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">and</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"removed"</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">not</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> path</span>
+<span id="cb26-7">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">and</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"train"</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> path</span>
+<span id="cb26-8">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">and</span> language <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> path</span>
+<span id="cb26-9">    ]</span></code></pre></div>
+</div>
+</section>
+<section id="filtering-with-a-higher-language-score" class="level2">
+<h2 class="anchored" data-anchor-id="filtering-with-a-higher-language-score">Filtering with a higher language score</h2>
+<p>Some language in fineweb2 are not identified as the correct language. Language identification is still not a “solved” problem but we may be able to use a higher confidence filter to get a set of data that is more likely to be the correct language. We can then label this data for the educational quality of the text without having to remove as many examples as being in the incorrect language.</p>
+<div id="cell-39" class="cell" data-execution_count="50">
+<div class="sourceCode cell-code" id="cb27" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1">paths <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> get_paths_for_language(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"asm"</span>)</span>
+<span id="cb27-2">paths</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="50">
+<pre><code>['data/asm_Beng/train/000_00000.parquet',
+ 'data/asm_Latn/train/000_00000.parquet']</code></pre>
+</div>
+</div>
+<p>Let’s load the data for the Assamese language using only the <code>train</code> file.</p>
+<div id="cell-41" class="cell" data-execution_count="51">
+<div class="sourceCode cell-code" id="cb29" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1">df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pl.read_parquet(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"hf://datasets/HuggingFaceFW/fineweb-2/</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>paths[<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>]<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span></code></pre></div>
+</div>
+<div id="cell-42" class="cell" data-execution_count="52">
+<div class="sourceCode cell-code" id="cb30" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1">df.shape</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="52">
+<pre><code>(1104, 11)</code></pre>
+</div>
+</div>
+<p>We can use the <code>describe</code> function to get a sense of the distribution of the language scores.</p>
+<div id="cell-44" class="cell" data-execution_count="53">
+<div class="sourceCode cell-code" id="cb32" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1">df.select(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_score"</span>).describe()</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="53">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (9, 2)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">statistic</th>
+<th data-quarto-table-cell-role="th">language_score</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>f64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"count"</td>
+<td>1104.0</td>
+</tr>
+<tr class="even">
+<td>"null_count"</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"mean"</td>
+<td>0.829071</td>
+</tr>
+<tr class="even">
+<td>"std"</td>
+<td>0.231866</td>
+</tr>
+<tr class="odd">
+<td>"min"</td>
+<td>0.303687</td>
+</tr>
+<tr class="even">
+<td>"25%"</td>
+<td>0.660899</td>
+</tr>
+<tr class="odd">
+<td>"50%"</td>
+<td>0.970777</td>
+</tr>
+<tr class="even">
+<td>"75%"</td>
+<td>0.995925</td>
+</tr>
+<tr class="odd">
+<td>"max"</td>
+<td>0.999965</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>You can see that compared to some other languages the mean language score is quite low. We might be able to get a better subset of data by filtering for a higher language score. Let’s take a look at some examples of the text that have a high language score. This can help give us a sense of what threshold might have less false positives.</p>
+<div id="cell-46" class="cell" data-execution_count="33">
+<div class="sourceCode cell-code" id="cb33" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> rich <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span> <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> rprint</span>
+<span id="cb33-2"></span>
+<span id="cb33-3">examples_to_show <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span></span>
+<span id="cb33-4"></span>
+<span id="cb33-5">rprint(</span>
+<span id="cb33-6">    df.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">filter</span>(pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_score"</span>) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.9</span>)</span>
+<span id="cb33-7">    .head(examples_to_show)</span>
+<span id="cb33-8">    .select(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"text"</span>)</span>
+<span id="cb33-9">    .to_series()</span>
+<span id="cb33-10">    .to_list()</span>
+<span id="cb33-11">)</span></code></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">[</span>
+    <span style="color: #008000; text-decoration-color: #008000">'eitu ajir pora 2 bosor agor kotha moi NIT r pora pass out hoisu just. Vaal job nopowa baabe moi keidinmaanor </span>
+<span style="color: #008000; text-decoration-color: #008000">babe temporary hisape eta national company t humai asilu. Tate moi taniya k log palu , tai tate as aadvise r hisape</span>
+<span style="color: #008000; text-decoration-color: #008000">humaise.Prothom dekhate taik kiba vaal lagi gol. Dekha t tai bor dhuniya, mihi gulopia gaal, dudu keita niomia </span>
+<span style="color: #008000; text-decoration-color: #008000">akaror, khali olop sapor. jetiya tai r logot kotha pati thaku, tetiya moi issa koi pen tu tolot palai dio, aru tai </span>
+<span style="color: #008000; text-decoration-color: #008000">jetiya pen tu uthaboloi hauli diye moi tair dudu keitar dorshon koru aru gharat jai tair kotha vabi pura haat </span>
+<span style="color: #008000; text-decoration-color: #008000">maaru. Eitu mur kiba eta routine r dore hoi goisil .\nEdin moi duporia duty t kaam koi vagor logat olop rest lobor </span>
+<span style="color: #008000; text-decoration-color: #008000">babe kahote thoka rest roomot goi bohilu, ami praye kaam koi koi boar hole rest roomot goi olop hui ahi fresh hoi </span>
+<span style="color: #008000; text-decoration-color: #008000">kamot lagi jau. Restroom mane eta medium size r room aru ekhon soki aru bisona. Hadharonote ejon rest koi thoka </span>
+<span style="color: #008000; text-decoration-color: #008000">homoyot oin manuh restroomoloi nahe. Heidinau moi tenekoi ahi restroomor bisonat bagor dilu, hui thakute ketiya </span>
+<span style="color: #008000; text-decoration-color: #008000">tuponi ahi gol gomei napalu. Hothate kiba eta gaat loga jen pai soku khul khale, dekhilu taniyai mur pantor uporote</span>
+<span style="color: #008000; text-decoration-color: #008000">tika khon sui ase, tai gomei pua nasil moi har pua buli, lahe lahe tai haat khon mur jounangor uporot muharibo </span>
+<span style="color: #008000; text-decoration-color: #008000">dhorile, tai pura habodhane moi jate haar napau tenekoi sui asil, mur bor moja lagil, vabilu aji hopun pura </span>
+<span style="color: #008000; text-decoration-color: #008000">hobo.Moi suddenly huar pora uthi bohi golu, tai sok khai uthil aru lajot ronga poi gol, tai haat khon mur baridalor</span>
+<span style="color: #008000; text-decoration-color: #008000">uporor pora putkoi atorai dile aru muk sorry sorry buli kobo dhorile. Moi kolu sorry kole ki hobo tumi mur tika aru</span>
+<span style="color: #008000; text-decoration-color: #008000">lingo duita sula dekhun moiu tumar bostu bilaak soom.Tai sage bhobai nasil enekua situation ahi jabo pare buli , </span>
+<span style="color: #008000; text-decoration-color: #008000">heye tai thor lagi mur pine saie thakil.Moi bisonat bohiye bhori duta bisonar pora nomai dilu aru dui hatere dhori </span>
+<span style="color: #008000; text-decoration-color: #008000">taik mur usorot loi ahilu, tai kole ki koribo khujisa rubul. Moi kolu moi just badla lom tumi mur ji ji suisa moiu </span>
+<span style="color: #008000; text-decoration-color: #008000">tumaar soom buli koi haat duta tair pithir pora nomai thoi dui tika r uporot tholu aru jure jure tika khon tipibo </span>
+<span style="color: #008000; text-decoration-color: #008000">dhorilu, ki mast gand asil tair mur bari dall pantor vitorot ei for forai asil.Lahe lahe moi hat dukhonere tair </span>
+<span style="color: #008000; text-decoration-color: #008000">tika r major angso tu anguli etare subo dhorilu aru anguli tu aru honmukhor fale koi diyat moi tair boos khon feel </span>
+<span style="color: #008000; text-decoration-color: #008000">koibo dhoilu . Mor tair boos khon suar bohut mon hobo dhorile aru tair salwaror pant tu tolfale tanibo dhorilu </span>
+<span style="color: #008000; text-decoration-color: #008000">kintu kokalot rosire gathi thua babe tolfale nahil. Moi eibaar tair kurta tu uporoloi uthai dilu aru tair salwaror </span>
+<span style="color: #008000; text-decoration-color: #008000">rosi dal khuli dilu ,nije nije eibaar pant tu tololoi naami ahil. moi tair boga vorikhon sai aru thakibo nuarilu , </span>
+<span style="color: #008000; text-decoration-color: #008000">bisonar pora nami tair thigh khonot pura suma khabo dhorilu, aru maje maje kamuribo dhorilu, laheke aru olop </span>
+<span style="color: #008000; text-decoration-color: #008000">uporoloi juat tair heujiya rongor panty tu dekha palu , panty r uporote moi tair boos khonot suma khabo dhorilu, </span>
+<span style="color: #008000; text-decoration-color: #008000">olop homoi teneke thokar pisot moi tair panty tu tolfale nomai dilu aru taniya r mukholoi salu , tai mur kando </span>
+<span style="color: #008000; text-decoration-color: #008000">karkhana bilakor pora moja pai ase buli gam palu. Tair booskhon gulopia boosor uporor sulikhini shave kora kintu </span>
+<span style="color: #008000; text-decoration-color: #008000">kahe kahe thoka suli khini thaki goisil. Bor moja gundho eta ahisil booskhonor pora, moi tairboos khon dui hatere </span>
+<span style="color: #008000; text-decoration-color: #008000">meli dhori boosor uporor angso tu jivare subo dhorilu, tair gaat current loga r nisinake jopiai uthil , tair val </span>
+<span style="color: #008000; text-decoration-color: #008000">loga buli gam pai moi aru jure jure boos khon supibo dhorilu, taik moi bisonar uporot uthai dilu, salwaror pant </span>
+<span style="color: #008000; text-decoration-color: #008000">korobat poi rol , aru tair kurta tu petoloike uthai akou moi tair boos khonot mukh maribo dhorilu, jivare boos khon</span>
+<span style="color: #008000; text-decoration-color: #008000">seleki seleki , right handor anguli eta tair pokoror futat humai dilu, ki masti lagisil kintu tai bohut dukh pale </span>
+<span style="color: #008000; text-decoration-color: #008000">karone moi pokoror pora anguli tu ulai dibo loga hol.\nEibaar moi mur pantu khuli bari dal ulai hatere sui sui </span>
+<span style="color: #008000; text-decoration-color: #008000">boosot humuar babe ready koibo dhorilu. Moi tair kurta tu ekebare khuli dilu, aru boga bra tu tololoi tani dilu, </span>
+<span style="color: #008000; text-decoration-color: #008000">tair dudu duta moi bhobatkoi olop horu, holeo moi dui hater pura tipibo dhorilu, aru nipple tu maje maje suhibo </span>
+<span style="color: #008000; text-decoration-color: #008000">dhorilu. Hothate mur eta B.F t dekha pose monot poile aru moi tair bukut bohi lolu aru mur 7 inchi r bari daal tair</span>
+<span style="color: #008000; text-decoration-color: #008000">dudu dutar majot rakhi dui hatere dudu keitare sepi dhorilu, dudu dutar majot ji olop thai baki rol heikonokei boos</span>
+<span style="color: #008000; text-decoration-color: #008000">morar nisinake kokal maribo dhorilu , eibar aru olop uporoloi uthi bari daal taniya r mukhor vitorot humuai dilu, </span>
+<span style="color: #008000; text-decoration-color: #008000">tai ready hua nasil jodiyo jur jobordosti humuai dilu mukhot, olop apsot tai adjust hol aru mur lund daal bor </span>
+<span style="color: #008000; text-decoration-color: #008000">moromere ice cream khuar nisinake suhibo dhorile, tai mur guti duta eta hatere sui, eta hater bari dal muthi mari </span>
+<span style="color: #008000; text-decoration-color: #008000">pura jure jure suhi asil.\nMur ulabo hua jen logat tair mukhor pora bari daal ulialu aru eibaar tair boosor kahot </span>
+<span style="color: #008000; text-decoration-color: #008000">goi boosot baari daal thoi thela marilu. kintu tair boos khon pura tight thoka babe moi bohut sesta koiu humaabo </span>
+<span style="color: #008000; text-decoration-color: #008000">nuarilu, Tetiya mur monot poril uth fota babe maie muk vaseline r tema eta disil. ajihe vaseline tur asol upojug </span>
+<span style="color: #008000; text-decoration-color: #008000">hobo buli moi poketor pora vaseline tema tu uliyai olop maan vaseline mur baari dalor agtut aru tair boosot hani </span>
+<span style="color: #008000; text-decoration-color: #008000">dilu, eibar eke thelate fir firkoi baari daal humai gol, taar pasot aru kune pai pura tika dangi dangi taik sudibo </span>
+<span style="color: #008000; text-decoration-color: #008000">dhorilu. Dui hater bike r handle dhorar dore tair dudu keita dhori taik sudilu. 45 min maan sudar pasot maalpani </span>
+<span style="color: #008000; text-decoration-color: #008000">ulai gol, boosor vitorote uliai dilu, vabilu ji hoi hobo sala imaan controll koibo nuari. Olop homoy teneke hui </span>
+<span style="color: #008000; text-decoration-color: #008000">thaki dui jone dress thik koi rest room r pora ulai duty korat lagilu.\nEtiya ami prai hodayei restroomot sex koru,</span>
+<span style="color: #008000; text-decoration-color: #008000">ami duijone rest room tur naam sex room thoisu. Taniya mur girlfriend nohol jodiyo, mur best friend hoi thakil, </span>
+<span style="color: #008000; text-decoration-color: #008000">etiya ami prayei kotha patu aru phonote bea bea kotha pati thaku.'</span>,
+    <span style="color: #008000; text-decoration-color: #008000">"Front Page\nHome\nChat\nEntertainment Page\nAssamese Music\nAssamese Lyrics\nBest viewed @ 1024x768 </span>
+<span style="color: #008000; text-decoration-color: #008000">resolution\nXoixobote Dhemalite - Lyrics of Assamese Songs\nSinger : Dr. Bhupen Hazarika\nMusic Director : Dr. </span>
+<span style="color: #008000; text-decoration-color: #008000">Bhupen Hazarika\nLyricist : Dr. Bhupen Hazarika\nXoixobote(Shoishobot) Dhemalite tumaare umola monot aase..\nBohag </span>
+<span style="color: #008000; text-decoration-color: #008000">maahor luit khonot duyu xaature monot aase\nJowbonote duyure dehaar laajuki porox monot aase\nMur abihone sip jori </span>
+<span style="color: #008000; text-decoration-color: #008000">loba buli kuwa mur monot aase..\nBohag maahor logote edin aahil bordoisila\nXei dhumuhat kaarubar xote tumi dekhu </span>
+<span style="color: #008000; text-decoration-color: #008000">gusi gola\nMonor goraaki eri tumi Dhonor goraaki bolila\nDhon Dhon buli dhonor premere swarup prakax korila\nBohu </span>
+<span style="color: #008000; text-decoration-color: #008000">din gol hothaate xidina tumak dekh monot aase..\naatoror pora dekhilu tumar swarna gohona jilikise\nTumar abihone </span>
+<span style="color: #008000; text-decoration-color: #008000">sip jori lom buli tumi bhaabisa\nBhul korisa xunjoni mur\nAleek xapun dekhisa\nJiyaai thaakim..\nJiyaai thaaki </span>
+<span style="color: #008000; text-decoration-color: #008000">ekhon xomaj gorhibor mur mon aase\nJot xunot koiu manuhor damm olop holeu besi aase!!\n*** 'X' stands for assamese </span>
+<span style="color: #008000; text-decoration-color: #008000">phonetic letter whose pronounciation is in between 'H' and 'KH'.\nYou can listen to this song in the\nAssamese </span>
+<span style="color: #008000; text-decoration-color: #008000">Songs Playlist\nDiscuss, query and comments on Assamese songs and music in this\nforum\n.\nCopyright © 2007-2008 </span>
+<span style="color: #008000; text-decoration-color: #008000">onlinesivasagar.com(Abhijit Borah)"</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'\n\n#1\n\n\nAssamese Sex Stories\nMOI ARU MAUSUMI (Assamese Sex Stories)\nHi friends aitu mur first post, akha</span>
+<span style="color: #008000; text-decoration-color: #008000">koru apunalukor val lagibo... mur nam Momi moi aji apunalukok mur nijor first sex\nexperienceor bikhoya jonabo </span>
+<span style="color: #008000; text-decoration-color: #008000">bisarisu. Moi akhon grils collegeot TDC\n2nd year scienceot porhi asu. Ghorot khub strict babe muk porhat </span>
+<span style="color: #008000; text-decoration-color: #008000">bhal\nholeo muk bahirot porhibo jabo nidile. Ghorot muk okole kotu jabo\nnidea, korbat gole maa nohole papa nohole </span>
+<span style="color: #008000; text-decoration-color: #008000">dada logot jai, kintu mur\nchildhood friend Mausumi,k amar ghorot khub trust kore babe tair logot\nkorbat gole </span>
+<span style="color: #008000; text-decoration-color: #008000">badha nidiya. Mausumi mur akai batchor kintu tai artsot\nakai collegeot porha. ami duyu khub bhal friend, ami duyu </span>
+<span style="color: #008000; text-decoration-color: #008000">hokolu kotha\nshare koru, even tair boyfriendor logot kora romanceor bikhoye hokolu\nkotha. Tair boyfriend notunke </span>
+<span style="color: #008000; text-decoration-color: #008000">Bankot join korise, tar nam Pallab.mur\nhihotor romanceor kotha huni khub bhal lage. Katiyaba bhabu muru </span>
+<span style="color: #008000; text-decoration-color: #008000">jodi\nkunuba boyfriend thakil haten moyu sage tair nisina romance koribo\nparilu haten, kintu mur ja ulai juar </span>
+<span style="color: #008000; text-decoration-color: #008000">chance nai. Mausumir kintu ghorot\nkunu restriction nai tai bindas ghuribo pare. Tai bohudin amar\nghororloi oha </span>
+<span style="color: #008000; text-decoration-color: #008000">nasil haibabe adin collegot taik ghoroloi ahibo kolu\n(actually tair romanceor kotha hunibole bor mon goisil). Tai </span>
+<span style="color: #008000; text-decoration-color: #008000">ata\nSunday ahibo buli kole. Mur montu bhal lagi gol, moi bor akhare Sunday\nloi wait koribo dhorilu..\nSunday </span>
+<span style="color: #008000; text-decoration-color: #008000">hunkale uthi moi hokolu kam hekh kori tair babe wait koribo\ndhorilu tair dari hua babe abar taik fon kori hunkale </span>
+<span style="color: #008000; text-decoration-color: #008000">matilu, tai ahi\nthoka buli kole aru thik 15 minitor pasot tai amar ghorot palehi, amar\nghorot coffee khai </span>
+<span style="color: #008000; text-decoration-color: #008000">hokolure logot kotha pati ami mur roomot humalu…\nkisu homoi kotha potar pasot moi tair boyfriendor logot hua </span>
+<span style="color: #008000; text-decoration-color: #008000">romanceor\nkotha hudhilu.. tai koi jabo dhorile… hihotor first sex lifeor kotha….\nLove huar pasot hihot priya </span>
+<span style="color: #008000; text-decoration-color: #008000">outing jai jodeo hihotor majot sex hua\nnasil… last month first weekor kotha hihote outing plan korisil.\nPallabe </span>
+<span style="color: #008000; text-decoration-color: #008000">taik collegor pora pickup kori lunchor babe resturentor\ncabinot loi gol, waiterok lunch order kori pallabe bahiror</span>
+<span style="color: #008000; text-decoration-color: #008000">pora\nnadekhakoi cabinor porda tani dile, tar pasot hi tair usorot bohi tair\nhatkhon nijor hatot loi kotha patibo </span>
+<span style="color: #008000; text-decoration-color: #008000">dhorile… Pallabe tair hatkhon\nmuhari taik koisil – tumak aji bor dhunia lagise mousumi….. tumak pai\nmoi bohut </span>
+<span style="color: #008000; text-decoration-color: #008000">lucky…. Moi tumak bohut bhal pao…. Aibuli pallabe tar akhon\nhat tair galot moromera muharibo dhorile.. mausumie </span>
+<span style="color: #008000; text-decoration-color: #008000">mathu tar kotha\nhuni tak support kori asil…. Aibar hi mousumik kobo dhorile mousumi\ntumar gal dukhon gulopia hoi </span>
+<span style="color: #008000; text-decoration-color: #008000">goise, voi lagise niki ? voi koribo\nnalage moi tumak bhal pao…. Mousumie kole … nai voi loga nai tumak\nkiyo voi </span>
+<span style="color: #008000; text-decoration-color: #008000">korim?... moiu tumak bahut val pao…. Pallabe kole… mausumi\ntumar gulopia galkhonot ata kiss korile beya paba niki?</span>
+<span style="color: #008000; text-decoration-color: #008000">Mousumia kole\nnai kintu kunuba ahibo para… pallabe kole… kunu nahe, order ahibo dari\nase…. Aibuli koi pallabe tar</span>
+<span style="color: #008000; text-decoration-color: #008000">mukhon mousumir galot logai kiss koribo\ndhorile.. mousumir tar hator touch pai aru tar moromor kiss pai\nuttejona </span>
+<span style="color: #008000; text-decoration-color: #008000">barhibo dhorile… taiu pallabok support kori tair duyukhon\nhat tar chulit khamus mari dhori tair lips kait pallabor</span>
+<span style="color: #008000; text-decoration-color: #008000">lipsor fale\naag borhai dile… pallabe chance api tair lipsot kiss kori tair lips\nduta chupibo dhorile… aidore kisu</span>
+<span style="color: #008000; text-decoration-color: #008000">homoi kiss kori thakute hothat\ncabinor doorot knock poril. Hunkale duyu easy hoi waitarok vitoroloi\nahibo kole, </span>
+<span style="color: #008000; text-decoration-color: #008000">waiter ahi lunch di gol.. waiter juar pasot aibar bipllobe\ncabinor door khon bandh kori di tair usorot bohi loi </span>
+<span style="color: #008000; text-decoration-color: #008000">taik haboti loi\npunor lipsot koribo dhrile aru aibar olop aag barhi goi akhon hatare\ntair boobs ata laheka </span>
+<span style="color: #008000; text-decoration-color: #008000">kapuror uporote laheka muharibo dhorile mousumir\nprotest korar sťance nasil.. tairu bhal lagi tak support </span>
+<span style="color: #008000; text-decoration-color: #008000">koribo\ndhorile… pallabe gom pale ja mousumie tar pora aru bisarise … aibar hi\nakhon hat tair thaisot thoi </span>
+<span style="color: #008000; text-decoration-color: #008000">mousumir laggingor uporedi laheka muharibo\ndhorile…. Mousumi uttajonat aku kobo pora nasil mathu choku kaita </span>
+<span style="color: #008000; text-decoration-color: #008000">mudi\npleasure loi asil…. Pallabe chance pai tair dangor dangor thais kaita\nmuhari muhari hat khon duyu thaisor </span>
+<span style="color: #008000; text-decoration-color: #008000">major pussy area loi nibor babe\nthais kaita fak koribo dhorile… mousumie kunu protest nokori vori\nkaita fak kori </span>
+<span style="color: #008000; text-decoration-color: #008000">dile… pallabe hubidha pai tar hatkhon tair pussy loi ni\nkapuror uporote pussy muharibo dhorile…. Pussyt hat porar </span>
+<span style="color: #008000; text-decoration-color: #008000">loge loge\nmousumir mukhera aahhh… aaahhhh… ulai gol , tai uttajonat robo pora\nnasil tai tak support kori tar </span>
+<span style="color: #008000; text-decoration-color: #008000">hatkhon khamusi dhori aru jure pussy\nhasi dile…. Pallabe tair condition buji tair kane kane kole mousumi\nplease </span>
+<span style="color: #008000; text-decoration-color: #008000">tumar legging tu khuli diyana… mousumie kole nai pallab ai\nresturent amar babe safe nohoi… pallabe kole….. aku </span>
+<span style="color: #008000; text-decoration-color: #008000">nohoi cabinor\ndorja lock ase… kunu nahe .. aibuli koi hi mousumir legging or\nelastic dalot anguli duta vorai </span>
+<span style="color: #008000; text-decoration-color: #008000">legging tu knee level loika tani nomai\ndile…. Mousumieu badha nidi tak legging tu toloi nomuat hohai kori\ndile… </span>
+<span style="color: #008000; text-decoration-color: #008000">tai ata off white color panty pindhi asil … tair panty tu dekhi\nhi robo nuari tair pantyr uporote pussy khon </span>
+<span style="color: #008000; text-decoration-color: #008000">khumusi dhori muharibo\ndhorile… aidore kori abar pallabe tar hatkhon tair pantyr vitoroloi ni\ntair pussy fakot </span>
+<span style="color: #008000; text-decoration-color: #008000">ata anguli thoi lahekoi pussyr vitoroloi vorai de\nangulitu ulua humua koribo dhorile… aidore korat mousumi robo </span>
+<span style="color: #008000; text-decoration-color: #008000">nuari\ntai pussyra pani uliai panty aru pallabor hat tiyai dile… aibar\npallabe robo nuari mausumik kole … mousumi </span>
+<span style="color: #008000; text-decoration-color: #008000">tumar pantytu khuli\ndibaniki? Mausumie kole … etiya nalage eaat ami safe nohoi… balag adin\nkorim.. pallab manti </span>
+<span style="color: #008000; text-decoration-color: #008000">hoi kole… thik ase mousumi tumak aru alop basi\nmorom koribo mon goise, please tumi olop uthi diyana tumak valke </span>
+<span style="color: #008000; text-decoration-color: #008000">morom\nkoru…. mausumia chairor pora uthi dile.. loge loge pallabe taik\nhoabti dhori kiss kori kori akhon hatare </span>
+<span style="color: #008000; text-decoration-color: #008000">tar pantor chain dal khuli\ntar erect pains tu uliai mausumir hatot dhorai dile…. Aru mausumir\nkanot kole… please </span>
+<span style="color: #008000; text-decoration-color: #008000">mausomi tumar pussyt logai diyana…. Mousumie kole\nnalage pallab please aibur nokoriba…. Pallabe kole … nohoi </span>
+<span style="color: #008000; text-decoration-color: #008000">mousumi\nnakoru nohoi tumar pantyr uporot pussyt logoi diya… Mausumie manti\nhol… tar panes tu tair pantyr uporedi </span>
+<span style="color: #008000; text-decoration-color: #008000">pussyt logai dile…. Pallabe tar\npanes tu tair pussyt gohabo dhorile…. Aidore korat mausumi uttajonat\npallabok </span>
+<span style="color: #008000; text-decoration-color: #008000">haboti dhori tak support koribo dhorile aru 2nd time pani\nulieai dele…. Aidore kisu homoi korat pallaboru spurm </span>
+<span style="color: #008000; text-decoration-color: #008000">ulai gol aru\nmousumir panty tar spurme tiay dile….. tar pasot duyu lunch kori ghuri\nahil……..\nAi story huni muru </span>
+<span style="color: #008000; text-decoration-color: #008000">excitement barhi goisil aru……..\nMausumie muk hudhile kua Momi storitu huni kanakua lagil…. Moi kolu …\nval lagil …</span>
+<span style="color: #008000; text-decoration-color: #008000">tai kole okol val lagil ne aru kiba hol …. moi kolu.. mur\nexperience nai babe moi tumar feelings pabo pora nai…. </span>
+<span style="color: #008000; text-decoration-color: #008000">mur jodi kunuba\nboyfriend thakil haten moiu tumar dore enjoy kkoribo parilu haten….\ntai kole thik ase tumar </span>
+<span style="color: #008000; text-decoration-color: #008000">boyfriend nathkileo moi tumak real sex felling\nkanekua dibo paru….. moi hudhilu kintu atiya kanakoi muk sex </span>
+<span style="color: #008000; text-decoration-color: #008000">feelings\ndiba… tai kole first tumi rumor door khon valka lock kora jate kunu\nahibo nuare… moi kolu tumi chinta </span>
+<span style="color: #008000; text-decoration-color: #008000">nokoriba door lock ase aru atiya\nrumoloi kunu nahe… tai kole thik ase tumi bisonat mur logot boha aru\nchoku kaita</span>
+<span style="color: #008000; text-decoration-color: #008000">mudi diya aru feel kora ja moi tumar boyfriend… moi\nbisonat tair usorot bohi choku kaita mudi dilu aru mind tu </span>
+<span style="color: #008000; text-decoration-color: #008000">concentrate\nkori bhabibo lolu ja mur boyfriend mur kakhot bohi ase… aibar tai muk\nlahikoi kokalot hat thoi </span>
+<span style="color: #008000; text-decoration-color: #008000">muharibo dhorile aru mur lipsot kiss koribo\ndhorile… prothombar karubar kiss pai mur ata ojan feelings </span>
+<span style="color: #008000; text-decoration-color: #008000">ahibo\ndhorile aru moyu taik lips kiss koribo dhorilu… tai kiss kori kori\ntair hatkhon lahekoi mur boobs kaita </span>
+<span style="color: #008000; text-decoration-color: #008000">muharibo dhorile…. Boobsot tair\nhat porar loge loge moi pagolor dore hobo dhorilu aru taik haboti\ndhori kiss </span>
+<span style="color: #008000; text-decoration-color: #008000">koribo dhorilu… aibar tai kurtistur vitoriloi hat vorai\nbratu uporoloi dangi mur boobs kaita muharibo dhorile… mur</span>
+<span style="color: #008000; text-decoration-color: #008000">excitement\naru barhi gol… tai boobs kaita tapi tapi mur nipple kaita muhari diat\nmoi uttajonat 1st time pussyre </span>
+<span style="color: #008000; text-decoration-color: #008000">pani uleai dilu……. aibar tai toptu\nboobsor uporoloika uthai tair mukhon boobsoloi ni nipple kaita suck\nkoribo </span>
+<span style="color: #008000; text-decoration-color: #008000">dhorile… moi uttajonat tair murot hat thoi murtu jurke chapi\ndhorilu… aibar tai muk bisonat huai di boobs kaita </span>
+<span style="color: #008000; text-decoration-color: #008000">suck kori tair\nhatkhon mur Thaisor uporot thoi kapuror uporote muharibo dhorile…\naidore kori tair hatkhon lahekoi</span>
+<span style="color: #008000; text-decoration-color: #008000">mur kapuror uporote mur pussy\nmuharibo dhorile aru angulire mur pussy fakot press dibo dhorile….\nUttajonat moi </span>
+<span style="color: #008000; text-decoration-color: #008000">dui vorire tair hatkhon chapa mari dhorilu… aibar tair\nhatkhon mur salwar pantor rosidalot gol…. Laheka tai pantor</span>
+<span style="color: #008000; text-decoration-color: #008000">rosidal\nkhuli pantu tololoi nomabo dhorile…. Moi taik pantu khulat help kori\ndilu.. pantu khuli tai mur vori </span>
+<span style="color: #008000; text-decoration-color: #008000">kaita fak kori panty tur uporote\nhatere muhari angulire pussy hole tu press kori muharibo dhorile…\nhosakoi… </span>
+<span style="color: #008000; text-decoration-color: #008000">jibonot eman hukh moi katiyau pua nasilu… aibar tai muk\nbisonar pora uthibo kole … moi bisonar pora uthat tai mur </span>
+<span style="color: #008000; text-decoration-color: #008000">toptu khuli\nbra aru panty khuli muk naked kori dile…. Mousumiru sex fellings\nhoisil.. muk naked kori tai nijor </span>
+<span style="color: #008000; text-decoration-color: #008000">t-shirt tu muror uporere khuli loi\nbra tur huk khuli bratu khuli palala tar pasot tai jeans tu khulibo\ndhorile.. </span>
+<span style="color: #008000; text-decoration-color: #008000">jeans tu khulat tai pindhi thoka light pink color panty tu\nmur chokut poril.. tair panty tu titi asil.. aibar tai </span>
+<span style="color: #008000; text-decoration-color: #008000">panty tu khuli\npalai complete naked hoi gol…… tar pasot tai muk bisonat huai di mur\nvori kaita fak kori mur </span>
+<span style="color: #008000; text-decoration-color: #008000">pussyt tair mukhon ni mur pussy suck koribo\ndhorile.. aibar uttajonat mur mukhere aahhhh… aahhhh…moaning </span>
+<span style="color: #008000; text-decoration-color: #008000">ulabo\ndhorile.. tai suck kori kori tair jivakhon mur pussy fakot vorai diat\nmur uttajona barhi gol aru 2nd time </span>
+<span style="color: #008000; text-decoration-color: #008000">pani ulai tair mukh tiaye dile…\ntai aidore kisu homoi korar pasot muk kole … momi moi aibar tumak\ncomplete </span>
+<span style="color: #008000; text-decoration-color: #008000">satisfaction dim… tumar eat candle ase niki..? moi kolu\ntableor drawerot ase tai draweror pora adal candal ani mur</span>
+<span style="color: #008000; text-decoration-color: #008000">pussyt\nlaheke logai press dibo dhorile… aru vitoriloi press koribo dhorile…\nhosai mur ane lagisil jan kunuba </span>
+<span style="color: #008000; text-decoration-color: #008000">loraya muk fuck korise… first tai\nlahekoi candledal vitoroloi ni pasot jure ulua humua koribo dhorat moi\nrobo </span>
+<span style="color: #008000; text-decoration-color: #008000">nuari 3rd time… pani uleai dilu…… already tairu uttajona barhi\ngoisil… aru tai robo nuari candle dal mur pussyr </span>
+<span style="color: #008000; text-decoration-color: #008000">pora uleai tair nijor\npussyt vorai in-out kori pani uleai dile… ami duyu bahut tired hoi\ngoisilu, ami duyu bohu </span>
+<span style="color: #008000; text-decoration-color: #008000">homoi naked hoi bisonat pori thokar pasot dress\nkori lolu…..\nAidore ji dhorone tai muk sex satisfaction dile… moi</span>
+<span style="color: #008000; text-decoration-color: #008000">jibonot pahoribo\nnuaru…..\napunalukor hohari pale pasot aru potham..\nLast edited by sourav002 : 8th June 2013 at </span>
+<span style="color: #008000; text-decoration-color: #008000">02:15 PM.\n|Thread Tools||Search this Thread|\n\n'</span>
+<span style="font-weight: bold">]</span>
+</pre>
+</div>
+</div>
+<p>If we find a better language score we can filter for this. For example, we can filter for the language score to be greater than 0.95.</p>
+<div id="cell-48" class="cell" data-execution_count="35">
+<div class="sourceCode cell-code" id="cb34" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1">df_filtered <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">filter</span>(pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_score"</span>) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.95</span>)</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="35">
+<pre><code>(697, 11)</code></pre>
+</div>
+</div>
+<div id="cell-49" class="cell" data-execution_count="36">
+<div class="sourceCode cell-code" id="cb36" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">with</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">open</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"good_ids"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"w"</span>) <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> f:</span>
+<span id="cb36-2">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">id</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> df_filtered.select(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"id"</span>).to_series().to_list():</span>
+<span id="cb36-3">        f.write(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">id</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ch" style="color: #20794D;
+background-color: null;
+font-style: inherit;">\n</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span></code></pre></div>
+</div>
+</section>
+<section id="filtering-bigger-languages" class="level2">
+<h2 class="anchored" data-anchor-id="filtering-bigger-languages">Filtering bigger languages</h2>
+<p>Some languages have a lot of data and so we can use the <code>scan_parquet</code> function to create a <code>LazyFrame</code>. Let’s see how we can do this for the Japanese language.</p>
+<div id="cell-51" class="cell" data-execution_count="54">
+<div class="sourceCode cell-code" id="cb37" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1">paths <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> get_paths_for_language(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"jpn"</span>)</span>
+<span id="cb37-2"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">len</span>(paths)</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="54">
+<pre><code>148</code></pre>
+</div>
+</div>
+<p>You can see here we have many more files. If you have a lot of memory, you could use the standard <code>read_parquet</code> function. However, if you don’t have a lot of memory, you could use the <code>scan_parquet</code> function. This will read the data in chunks and is more memory efficient. Even with this we might want to start with a subset of the data to experiment with and then work with the full dataset once we’re confident in our filtering.</p>
+<div id="cell-53" class="cell" data-execution_count="38">
+<div class="sourceCode cell-code" id="cb39" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> random</span>
+<span id="cb39-2"></span>
+<span id="cb39-3">random.seed(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>)</span>
+<span id="cb39-4"></span>
+<span id="cb39-5">sample_paths <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> random.choices(paths, k<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)</span></code></pre></div>
+</div>
+<div id="cell-54" class="cell" data-execution_count="39">
+<div class="sourceCode cell-code" id="cb40" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1">os.environ[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"HF_HUB_ENABLE_HF_TRANSFER"</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"1"</span></span>
+<span id="cb40-2"></span>
+<span id="cb40-3">Path(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"temp_data"</span>).mkdir(exist_ok<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="cb40-4"></span>
+<span id="cb40-5"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> path <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> tqdm(sample_paths):</span>
+<span id="cb40-6">    hf_hub_download(</span>
+<span id="cb40-7">        repo_id<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"HuggingFaceFW/fineweb-2"</span>,</span>
+<span id="cb40-8">        repo_type<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"dataset"</span>,</span>
+<span id="cb40-9">        filename<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>path,</span>
+<span id="cb40-10">        local_dir<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"temp_data"</span>,</span>
+<span id="cb40-11">    )</span></code></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>  0%|          | 0/2 [00:00&lt;?, ?it/s]100%|██████████| 2/2 [00:00&lt;00:00,  5.87it/s]</code></pre>
+</div>
+</div>
+<div id="cell-55" class="cell" data-execution_count="26">
+<div class="sourceCode cell-code" id="cb42" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1">df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pl.scan_parquet(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"temp_data/**/*.parquet"</span>)</span>
+<span id="cb42-2">df.head(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>).collect()</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="26">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (5, 11)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">text</th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">dump</th>
+<th data-quarto-table-cell-role="th">url</th>
+<th data-quarto-table-cell-role="th">date</th>
+<th data-quarto-table-cell-role="th">file_path</th>
+<th data-quarto-table-cell-role="th">language</th>
+<th data-quarto-table-cell-role="th">language_score</th>
+<th data-quarto-table-cell-role="th">language_script</th>
+<th data-quarto-table-cell-role="th">minhash_cluster_size</th>
+<th data-quarto-table-cell-role="th">top_langs</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>f64</th>
+<th>str</th>
+<th>i64</th>
+<th>str</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"欲しかった車を探せるサイト 独身時代は、ただ乗れればいいと思…</td>
+<td>"&lt;urn:uuid:9221bbac-4ab3-4d7b-9…</td>
+<td>"CC-MAIN-2013-20"</td>
+<td>"http://careerspaceezine.com/"</td>
+<td>"2013-05-20T01:19:20Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"jpn"</td>
+<td>1.000009</td>
+<td>"Jpan"</td>
+<td>1</td>
+<td>"{"jpn_Jpan_score": 1.000009059…</td>
+</tr>
+<tr class="even">
+<td>" ふくむすめどうわしゅう(Hukumusume fairy…</td>
+<td>"&lt;urn:uuid:d03fc65f-99bb-4095-b…</td>
+<td>"CC-MAIN-2013-20"</td>
+<td>"http://hukumusume.com/douwa/En…</td>
+<td>"2013-05-20T01:18:14Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"jpn"</td>
+<td>0.992212</td>
+<td>"Jpan"</td>
+<td>2</td>
+<td>"{"jpn_Jpan_score": 0.992212295…</td>
+</tr>
+<tr class="odd">
+<td>"家電通信をお届けします 家電は一度購入したら、何年も使い続け…</td>
+<td>"&lt;urn:uuid:89b3dae5-8a49-4d51-a…</td>
+<td>"CC-MAIN-2013-20"</td>
+<td>"http://wnclivehosting.com/inde…</td>
+<td>"2013-05-20T01:57:39Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"jpn"</td>
+<td>1.00001</td>
+<td>"Jpan"</td>
+<td>1</td>
+<td>"{"jpn_Jpan_score": 1.000010013…</td>
+</tr>
+<tr class="even">
+<td>"出版社からのコメント MovableTypeの特徴のひとつと…</td>
+<td>"&lt;urn:uuid:84019b07-0424-4d79-b…</td>
+<td>"CC-MAIN-2013-20"</td>
+<td>"http://www.amazon.co.jp/MOVABL…</td>
+<td>"2013-05-20T01:50:55Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"jpn"</td>
+<td>1.000009</td>
+<td>"Jpan"</td>
+<td>2</td>
+<td>"{"jpn_Jpan_score": 1.000008940…</td>
+</tr>
+<tr class="odd">
+<td>"FrontPage 私も結婚することで、今の保険に入ろうか考…</td>
+<td>"&lt;urn:uuid:3fc5c2a5-c3a7-409c-b…</td>
+<td>"CC-MAIN-2013-20"</td>
+<td>"http://www.christian-louboutin…</td>
+<td>"2013-05-20T01:59:19Z"</td>
+<td>"s3://commoncrawl/crawl-data/CC…</td>
+<td>"jpn"</td>
+<td>1.00001</td>
+<td>"Jpan"</td>
+<td>15</td>
+<td>"{"jpn_Jpan_score": 1.000009894…</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="cell-56" class="cell" data-execution_count="27">
+<div class="sourceCode cell-code" id="cb43" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1">df.select(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_score"</span>).describe()</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="27">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (9, 2)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">statistic</th>
+<th data-quarto-table-cell-role="th">language_score</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>f64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"count"</td>
+<td>3.3735e7</td>
+</tr>
+<tr class="even">
+<td>"null_count"</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"mean"</td>
+<td>0.999791</td>
+</tr>
+<tr class="even">
+<td>"std"</td>
+<td>0.002776</td>
+</tr>
+<tr class="odd">
+<td>"min"</td>
+<td>0.886358</td>
+</tr>
+<tr class="even">
+<td>"25%"</td>
+<td>0.999996</td>
+</tr>
+<tr class="odd">
+<td>"50%"</td>
+<td>1.000007</td>
+</tr>
+<tr class="even">
+<td>"75%"</td>
+<td>1.000009</td>
+</tr>
+<tr class="odd">
+<td>"max"</td>
+<td>1.00001</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="cell-57" class="cell" data-execution_count="28">
+<div class="sourceCode cell-code" id="cb44" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1">df.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">filter</span>(pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"url"</span>).<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>.contains(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"wikipedia"</span>)).count().collect(streaming<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="28">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (1, 11)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">text</th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">dump</th>
+<th data-quarto-table-cell-role="th">url</th>
+<th data-quarto-table-cell-role="th">date</th>
+<th data-quarto-table-cell-role="th">file_path</th>
+<th data-quarto-table-cell-role="th">language</th>
+<th data-quarto-table-cell-role="th">language_score</th>
+<th data-quarto-table-cell-role="th">language_script</th>
+<th data-quarto-table-cell-role="th">minhash_cluster_size</th>
+<th data-quarto-table-cell-role="th">top_langs</th>
+</tr>
+<tr class="even">
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>55053</td>
+<td>55053</td>
+<td>55053</td>
+<td>55053</td>
+<td>55053</td>
+<td>55053</td>
+<td>55053</td>
+<td>55053</td>
+<td>55053</td>
+<td>55053</td>
+<td>55053</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="cell-58" class="cell" data-execution_count="29">
+<div class="sourceCode cell-code" id="cb45" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1">japanese_edu_domains <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [</span>
+<span id="cb45-2">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"http://www.asagaku.com/"</span>,</span>
+<span id="cb45-3">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"www3.nhk.or.jp/news/easy/"</span>,</span>
+<span id="cb45-4">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"http://kids.yahoo.co.jp/"</span>,</span>
+<span id="cb45-5">]</span></code></pre></div>
+</div>
+<div id="cell-59" class="cell" data-execution_count="30">
+<div class="sourceCode cell-code" id="cb46" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1">df.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">filter</span>(pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"url"</span>).is_in(japanese_edu_domains)).count().collect(streaming<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="30">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (1, 11)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">text</th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">dump</th>
+<th data-quarto-table-cell-role="th">url</th>
+<th data-quarto-table-cell-role="th">date</th>
+<th data-quarto-table-cell-role="th">file_path</th>
+<th data-quarto-table-cell-role="th">language</th>
+<th data-quarto-table-cell-role="th">language_score</th>
+<th data-quarto-table-cell-role="th">language_script</th>
+<th data-quarto-table-cell-role="th">minhash_cluster_size</th>
+<th data-quarto-table-cell-role="th">top_langs</th>
+</tr>
+<tr class="even">
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+<th>u32</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>We’d obviously want to expand this list to include more domains but you can see how we can still use the same techniques to filter very large datasets without running out of memory.</p>
+
+
+</section>
+
+ ]]></description>
+  <category>polars</category>
+  <category>huggingface</category>
+  <guid>https://danielvanstrien.xyz/posts/2024/12/23/fineweb-filter-polars.html</guid>
+  <pubDate>Mon, 30 Dec 2024 00:00:00 GMT</pubDate>
+  <media:content url="https://huggingface.co/datasets/HuggingFaceFW/admin/resolve/main/fineweb-2-logo.png" medium="image" type="image/png"/>
+</item>
 <item>
   <title>Running a Local Vision Language Model with LM Studio to sort out my screenshot mess</title>
   <dc:creator>Daniel van Strien</dc:creator>
@@ -7779,7 +9855,7 @@ font-style: inherit;">"category"</span>],</span>
 <tr class="header">
 <th data-quarto-table-cell-role="th">category</th>
 </tr>
-<tr class="odd">
+<tr class="even">
 <th>str</th>
 </tr>
 </thead>
@@ -7851,7 +9927,7 @@ font-style: inherit;">'length'</span>).mean())</span>
 <th data-quarto-table-cell-role="th">category</th>
 <th data-quarto-table-cell-role="th">length</th>
 </tr>
-<tr class="odd">
+<tr class="even">
 <th>str</th>
 <th>f64</th>
 </tr>
@@ -8067,7 +10143,7 @@ font-style: inherit;">'mean_conversation_length'</span>)</span>
 <th data-quarto-table-cell-role="th">langdetect</th>
 <th data-quarto-table-cell-role="th">mean_conversation_length</th>
 </tr>
-<tr class="odd">
+<tr class="even">
 <th>str</th>
 <th>f64</th>
 </tr>
@@ -10799,7 +12875,7 @@ font-style: inherit;">"number_of_tags"</span>].describe()</span></code></pre></d
 <th data-quarto-table-cell-role="th">75%</th>
 <th data-quarto-table-cell-role="th">max</th>
 </tr>
-<tr class="odd">
+<tr class="even">
 <th data-quarto-table-cell-role="th">type</th>
 <th data-quarto-table-cell-role="th"></th>
 <th data-quarto-table-cell-role="th"></th>
@@ -10884,7 +12960,7 @@ font-style: inherit;">"number_of_tags"</span>].describe()</span></code></pre></d
 <th data-quarto-table-cell-role="th">75%</th>
 <th data-quarto-table-cell-role="th">max</th>
 </tr>
-<tr class="odd">
+<tr class="even">
 <th data-quarto-table-cell-role="th">library_name</th>
 <th data-quarto-table-cell-role="th"></th>
 <th data-quarto-table-cell-role="th"></th>
@@ -11084,7 +13160,7 @@ font-style: inherit;">"number_of_tags"</span>].describe()</span></code></pre></d
 <th data-quarto-table-cell-role="th">75%</th>
 <th data-quarto-table-cell-role="th">max</th>
 </tr>
-<tr class="odd">
+<tr class="even">
 <th data-quarto-table-cell-role="th">library_name</th>
 <th data-quarto-table-cell-role="th"></th>
 <th data-quarto-table-cell-role="th"></th>
@@ -18073,7 +20149,7 @@ font-style: inherit;">"genre.parquet"</span>)</span></code></pre></div>
 <th data-quarto-table-cell-role="th">created_at</th>
 <th data-quarto-table-cell-role="th">annotator_genre</th>
 </tr>
-<tr class="odd">
+<tr class="even">
 <th data-quarto-table-cell-role="th">npartitions=1</th>
 <th data-quarto-table-cell-role="th"></th>
 <th data-quarto-table-cell-role="th"></th>
@@ -20628,63 +22704,6 @@ Everything up-to-date
  ]]></description>
   <guid>https://danielvanstrien.xyz/posts/post-with-code/2021-12-30-hf-hub-model-storage.html</guid>
   <pubDate>Thu, 30 Dec 2021 00:00:00 GMT</pubDate>
-</item>
-<item>
-  <title>flyswot</title>
-  <link>https://danielvanstrien.xyz/posts/plain-text/flyswot/2021-12-22-flyswot.html</link>
-  <description><![CDATA[ 
-
-
-
-
-<p>My previous series of posts/notes following the full stack course ended slightly abruptly. However, I didn’t give up on the dream of trying to get more experience of ‘deploying’ machine learning in a GLAM setting! One of the things I have been focusing on recently is a project which gave me the chance to use machine learning in somewhat of a production context.</p>
-<p>This blog post will be a very short tl;dr on this project.</p>
-<section id="detecting-fake-flysheets-using-computer-vision" class="level2">
-<h2 class="anchored" data-anchor-id="detecting-fake-flysheets-using-computer-vision">Detecting fake flysheets using computer vision</h2>
-<p>The Library has ‘legacy’ digitised content of manuscripts. Due to some limitations of the legacy system on which these manuscripts were shared many of the images have incorrect metadata. The metadata for these images is partially stored in the filename for the image. In particular many images which didn’t fit into an available category were given ‘end flysheet’ labels (this basically means part of the filename contains the string <code>fse</code>). These images may actually be other things like a frontcover, a scroll image, a box etc.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://danielvanstrien.xyz/posts/plain-text/flyswot/digitised-manuscripts-screenshot.png" class="img-fluid figure-img"></p>
-<figcaption>A screenshot of the digitised manuscript platform showing metadata about the page type of the manuscript</figcaption>
-</figure>
-</div>
-<p>The library is moving to a new platform which won’t have these restrictions on possible page types. As a result there is a need/desire to find all of the images which have been given a ‘fake’ flysheet label and correct this label with the correct label.</p>
-<p>This is a task where computer vision seems like it might be helpful.</p>
-</section>
-<section id="the-desired-outcome" class="level2">
-<h2 class="anchored" data-anchor-id="the-desired-outcome">The desired outcome</h2>
-<p>The desire of this project is to be able to use a computer vision model to check a bunch of image directories and see if there are any ‘fake’ flysheets. There are some additional constraints on the project:</p>
-<ul>
-<li>$$$ this isn’t a funded project so can’t involve spending a bunch of money</li>
-<li>related to the above, the approach to annotation has to be pragmatic - no Mechanical Turk here</li>
-<li>the machine learning should fit into existing workflows (this is something we have/are spending a lot of time on)</li>
-</ul>
-<p>Since this is intended to be a tl;dr I won’t go into more detail here about all of these requirements here.</p>
-</section>
-<section id="flyswot" class="level2">
-<h2 class="anchored" data-anchor-id="flyswot">flyswot</h2>
-<p>The approach we ended up with is to deploy a model using a command line tool that we’ve called <code>flyswot</code>. This tool can be pointed at a directory and it will recursively check for images which contain the <code>fse</code> pattern in the filename. These images are then checked using a computer vision model that looks check whether an image is a ‘real’ flysheet or a ‘fake’ flysheet.</p>
-</section>
-<section id="what-i-have-learned-so-far" class="level2">
-<h2 class="anchored" data-anchor-id="what-i-have-learned-so-far">What I have learned (so far)</h2>
-<p>This project has been a great way of turning some of the theory of ‘production’ ML into practice. In particular I have learned:</p>
-<ul>
-<li>I’m super paranoid about domain drift.</li>
-<li>(some) of how to use ONNX</li>
-<li>More robust testing approaches</li>
-<li>DVC (data version control)</li>
-<li>and a bunch more things…</li>
-</ul>
-<p>Most of these things are being documented elsewhere and will be available to share at some point in 2022. However, I will try and use this blog to document small things I’ve learned along the way too. These notes are mainly for myself. There are a lot of little things I’ve picked up from doing this project that I will forget if I don’t spend a bit of time writting up.</p>
-
-
-</section>
-
- ]]></description>
-  <category>glam</category>
-  <category>flyswot</category>
-  <guid>https://danielvanstrien.xyz/posts/plain-text/flyswot/2021-12-22-flyswot.html</guid>
-  <pubDate>Wed, 22 Dec 2021 00:00:00 GMT</pubDate>
 </item>
 </channel>
 </rss>
