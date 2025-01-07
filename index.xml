@@ -9,8 +9,1082 @@
 <link>https://danielvanstrien.xyz/</link>
 <atom:link href="https://danielvanstrien.xyz/index.xml" rel="self" type="application/rss+xml"/>
 <description>Daniel van Strien&#39;s blog</description>
-<generator>quarto-1.6.39</generator>
-<lastBuildDate>Mon, 30 Dec 2024 00:00:00 GMT</lastBuildDate>
+<generator>quarto-1.6.40</generator>
+<lastBuildDate>Tue, 07 Jan 2025 00:00:00 GMT</lastBuildDate>
+<item>
+  <title>How Fine is FineWeb2?</title>
+  <dc:creator>Daniel van Strien</dc:creator>
+  <link>https://danielvanstrien.xyz/posts/2025/FineWeb-c/how-fine-is-fineweb2.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>Recently <a href="https://huggingface.co/datasets/HuggingFaceFW/fineweb-2">FineWeb2</a> was released, adding multilingual data to the original FineWeb dataset. As part of the <a href="https://huggingface.co/blog/davanstrien/fineweb2-community">FineWeb-C community initiative</a>, contributors have been annotating samples from this dataset to assess educational quality across different languages.</p>
+<p>The goal of this effort is to reproduce something similar to the original <a href="https://huggingface.co/datasets/HuggingFaceFW/fineweb-edu">FineWeb-Edu</a> dataset for all languages. You can read more about why this is important in the <a href="https://huggingface.co/blog/davanstrien/fineweb2-community">FineWeb-C blog post</a>.</p>
+<section id="analyzing-the-fineweb-c-community-annotations" class="level3">
+<h3 class="anchored" data-anchor-id="analyzing-the-fineweb-c-community-annotations">Analyzing the FineWeb-C Community Annotations</h3>
+<p>This post examines the annotation data collected so far through the FineWeb-C project. For most languages, community members have annotated random samples of approximately 1,000 examples from FineWeb2. The annotations focus on:</p>
+<ul>
+<li>Educational value assessment</li>
+<li>Language identification verification</li>
+<li>Problematic content flagging</li>
+</ul>
+<p>Let’s explore what the community annotations tell us about the quality and characteristics of content across different languages in FineWeb2.</p>
+<p>We’ll start by installing the necessary libraries.</p>
+<div id="cell-3" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%</span>pip install polars seaborn matplotlib huggingface_hub </span></code></pre></div>
+</div>
+<div id="cell-4" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> polars <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> pl</span>
+<span id="cb2-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> huggingface_hub <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> list_repo_files</span>
+<span id="cb2-3"></span>
+<span id="cb2-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># bump up the number of rows in the polars table so we can see more data</span></span>
+<span id="cb2-5">pl.Config.set_tbl_rows(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span>)</span></code></pre></div>
+</div>
+<p>We’ll use Polars to load the annotations but we could also load in Pandas, Dask, DuckDB, PySpark, or the Hugging Face Datasets library!</p>
+<p>The fineweb-c dataset has a config per language but also a general config. We’ll load the general config first which contains language columns we can filter on.</p>
+<div id="cell-6" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1">df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pl.scan_parquet(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"hf://datasets/data-is-better-together/fineweb-c/data/*.parquet"</span>)</span>
+<span id="cb3-2">df.head(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>).collect()</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="3">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (1, 8)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">text</th>
+<th data-quarto-table-cell-role="th">educational_value_labels</th>
+<th data-quarto-table-cell-role="th">annotator_ids</th>
+<th data-quarto-table-cell-role="th">problematic_content_label_present</th>
+<th data-quarto-table-cell-role="th">problematic_content_label_agreement</th>
+<th data-quarto-table-cell-role="th">language_names</th>
+<th data-quarto-table-cell-role="th">language_code</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>str</th>
+<th>list[str]</th>
+<th>list[str]</th>
+<th>bool</th>
+<th>f64</th>
+<th>str</th>
+<th>str</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"fb2031e8-83e6-4b02-bf56-eeecab…</td>
+<td>"Nous nous sommes arrêtés par h…</td>
+<td>["None"]</td>
+<td>["dc71e502-397b-4e03-b8b1-e2c704db5c93"]</td>
+<td>false</td>
+<td>1.0</td>
+<td>"fra_Latn"</td>
+<td>"fra_Latn"</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="how-many-languages-are-included-in-the-dataset-so-far" class="level3">
+<h3 class="anchored" data-anchor-id="how-many-languages-are-included-in-the-dataset-so-far">How many languages are included in the dataset so far?</h3>
+<div id="cell-8" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1">df.select(pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_code"</span>)).unique().collect().count()</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="4">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (1, 1)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">language_code</th>
+</tr>
+<tr class="even">
+<th>u32</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>15</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>We can also see how many rows there are per language.</p>
+<div id="cell-10" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1">df.group_by([<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_code"</span>]).agg(pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"id"</span>).<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">len</span>().alias(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"n_rows"</span>)).sort(</span>
+<span id="cb5-2">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"n_rows"</span>, descending<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span></span>
+<span id="cb5-3">).collect()</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="5">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (15, 2)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">language_code</th>
+<th data-quarto-table-cell-role="th">n_rows</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>u32</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"arb_Arab"</td>
+<td>2000</td>
+</tr>
+<tr class="even">
+<td>"tat_Cyrl"</td>
+<td>1681</td>
+</tr>
+<tr class="odd">
+<td>"cmn_Hani"</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td>"rus_Cyrl"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"gmh_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td>"fil_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"arz_Arab"</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td>"hin_Deva"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"fin_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td>"bar_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"dan_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td>"fra_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"ary_Arab"</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td>"fas_Arab"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"vie_Latn"</td>
+<td>1000</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>We could also directly use the datasets viewer to get this information! This can be a really useful way to explore the data very quickly without having to load it locally.</p>
+<iframe src="https://huggingface.co/datasets/data-is-better-together/fineweb-c/embed/sql-console/rroUpCS" frameborder="0" width="100%" height="560px">
+</iframe>
+</section>
+<section id="number-of-annotators" class="level2">
+<h2 class="anchored" data-anchor-id="number-of-annotators">Number of annotators</h2>
+<p>Since starting this project we’ve found some languages have had more problematic data, including languages where a lot of data was identified in the wrong language. Because of this for some languages we’ve set a higher or lower “retirement” threshold before retiring a sample. This means some languages have only a single annotator labeling each example whilst others have had multiple people annotate each example.</p>
+<p>Let’s look at the mean number of annotators per language.</p>
+<div id="cell-14" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1">df.group_by([<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_code"</span>]).agg(</span>
+<span id="cb6-2">    pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"educational_value_labels"</span>).<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">list</span>.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">len</span>().mean().alias(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"n_annotators"</span>)</span>
+<span id="cb6-3">).sort(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"n_annotators"</span>, descending<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>).collect()</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="6">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (15, 2)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">language_code</th>
+<th data-quarto-table-cell-role="th">n_annotators</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>f64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"vie_Latn"</td>
+<td>2.869</td>
+</tr>
+<tr class="even">
+<td>"dan_Latn"</td>
+<td>2.573</td>
+</tr>
+<tr class="odd">
+<td>"ary_Arab"</td>
+<td>1.019</td>
+</tr>
+<tr class="even">
+<td>"fin_Latn"</td>
+<td>1.017</td>
+</tr>
+<tr class="odd">
+<td>"fra_Latn"</td>
+<td>1.012</td>
+</tr>
+<tr class="even">
+<td>"arz_Arab"</td>
+<td>1.006</td>
+</tr>
+<tr class="odd">
+<td>"tat_Cyrl"</td>
+<td>1.003569</td>
+</tr>
+<tr class="even">
+<td>"rus_Cyrl"</td>
+<td>1.003</td>
+</tr>
+<tr class="odd">
+<td>"arb_Arab"</td>
+<td>1.003</td>
+</tr>
+<tr class="even">
+<td>"fas_Arab"</td>
+<td>1.001</td>
+</tr>
+<tr class="odd">
+<td>"cmn_Hani"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"bar_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"fil_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"hin_Deva"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"gmh_Latn"</td>
+<td>1.0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>Ideally as we progress with the project we’ll increase the overlap at least for some time to see how much annotators agree (more on this below) but we also don’t want people to spend a lot of time annotating the same sample if it’s of low quality.</p>
+<section id="look-at-the-distribution-of-labels" class="level3">
+<h3 class="anchored" data-anchor-id="look-at-the-distribution-of-labels">Look at the distribution of labels</h3>
+<p>No we’ve got a sense of how many annotators there are per language, let’s look at the distribution of labels. Since we sometimes have multiple labels for each sample we’ll simplify things a bit to just look at the first label for each sample. For some languages this will be the only label anyway. If we work with a specific language for a longer time we’ll also want to consider the agreement between annotators.</p>
+<div id="cell-17" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1">df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df.with_columns(</span>
+<span id="cb7-2">    pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"educational_value_labels"</span>).<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">list</span>.first().alias(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"label"</span>)</span>
+<span id="cb7-3">).collect()</span>
+<span id="cb7-4">df.head(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="7">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (1, 9)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">text</th>
+<th data-quarto-table-cell-role="th">educational_value_labels</th>
+<th data-quarto-table-cell-role="th">annotator_ids</th>
+<th data-quarto-table-cell-role="th">problematic_content_label_present</th>
+<th data-quarto-table-cell-role="th">problematic_content_label_agreement</th>
+<th data-quarto-table-cell-role="th">language_names</th>
+<th data-quarto-table-cell-role="th">language_code</th>
+<th data-quarto-table-cell-role="th">label</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>str</th>
+<th>list[str]</th>
+<th>list[str]</th>
+<th>bool</th>
+<th>f64</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"fb2031e8-83e6-4b02-bf56-eeecab…</td>
+<td>"Nous nous sommes arrêtés par h…</td>
+<td>["None"]</td>
+<td>["dc71e502-397b-4e03-b8b1-e2c704db5c93"]</td>
+<td>false</td>
+<td>1.0</td>
+<td>"fra_Latn"</td>
+<td>"fra_Latn"</td>
+<td>"None"</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="cell-18" class="cell" data-input="false" data-execution_count="8">
+<details class="code-fold">
+<summary>Click to show/hide code</summary>
+<div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1">label_counts <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (</span>
+<span id="cb8-2">    df.group_by([<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_code"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"label"</span>])</span>
+<span id="cb8-3">    .<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">len</span>()</span>
+<span id="cb8-4">    .pivot(</span>
+<span id="cb8-5">        values<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"len"</span>,</span>
+<span id="cb8-6">        index<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_code"</span>,</span>
+<span id="cb8-7">        on<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"label"</span>,</span>
+<span id="cb8-8">        aggregate_function<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"sum"</span>,</span>
+<span id="cb8-9">    )</span>
+<span id="cb8-10">    .fill_null(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>)</span>
+<span id="cb8-11">)</span>
+<span id="cb8-12"></span>
+<span id="cb8-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Calculate row totals</span></span>
+<span id="cb8-14">row_totals <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> label_counts.select(pl.exclude(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_code"</span>)).sum_horizontal()</span>
+<span id="cb8-15"></span>
+<span id="cb8-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Calculate percentages</span></span>
+<span id="cb8-17">label_percentages <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (</span>
+<span id="cb8-18">    label_counts.with_columns(</span>
+<span id="cb8-19">        pl.col(col) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> row_totals <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span></span>
+<span id="cb8-20">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> col <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> label_counts.columns</span>
+<span id="cb8-21">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> col <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">!=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_code"</span></span>
+<span id="cb8-22">    )</span>
+<span id="cb8-23">    .select([<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_code"</span>, pl.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">all</span>().exclude(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_code"</span>).<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">round</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)])</span>
+<span id="cb8-24">    .sort(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_code"</span>)</span>
+<span id="cb8-25">)</span>
+<span id="cb8-26"></span>
+<span id="cb8-27">label_percentages</span></code></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="8">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (15, 8)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">language_code</th>
+<th data-quarto-table-cell-role="th">Excellent</th>
+<th data-quarto-table-cell-role="th">❗ Problematic Content ❗</th>
+<th data-quarto-table-cell-role="th">❗ Wrong language ❗</th>
+<th data-quarto-table-cell-role="th">Good</th>
+<th data-quarto-table-cell-role="th">None</th>
+<th data-quarto-table-cell-role="th">Basic</th>
+<th data-quarto-table-cell-role="th">Minimal</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>f64</th>
+<th>f64</th>
+<th>f64</th>
+<th>f64</th>
+<th>f64</th>
+<th>f64</th>
+<th>f64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"arb_Arab"</td>
+<td>0.35</td>
+<td>62.55</td>
+<td>0.0</td>
+<td>1.25</td>
+<td>25.55</td>
+<td>2.45</td>
+<td>7.85</td>
+</tr>
+<tr class="even">
+<td>"ary_Arab"</td>
+<td>1.0</td>
+<td>94.6</td>
+<td>0.0</td>
+<td>1.4</td>
+<td>1.1</td>
+<td>0.7</td>
+<td>1.2</td>
+</tr>
+<tr class="odd">
+<td>"arz_Arab"</td>
+<td>2.0</td>
+<td>73.5</td>
+<td>0.0</td>
+<td>4.0</td>
+<td>12.7</td>
+<td>4.1</td>
+<td>3.7</td>
+</tr>
+<tr class="even">
+<td>"bar_Latn"</td>
+<td>0.0</td>
+<td>77.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>16.5</td>
+<td>4.1</td>
+<td>2.4</td>
+</tr>
+<tr class="odd">
+<td>"cmn_Hani"</td>
+<td>1.4</td>
+<td>2.5</td>
+<td>0.9</td>
+<td>9.7</td>
+<td>24.2</td>
+<td>25.1</td>
+<td>36.2</td>
+</tr>
+<tr class="even">
+<td>"dan_Latn"</td>
+<td>0.1</td>
+<td>14.5</td>
+<td>0.0</td>
+<td>1.2</td>
+<td>47.6</td>
+<td>8.4</td>
+<td>28.2</td>
+</tr>
+<tr class="odd">
+<td>"fas_Arab"</td>
+<td>2.3</td>
+<td>20.5</td>
+<td>0.0</td>
+<td>8.9</td>
+<td>39.6</td>
+<td>10.0</td>
+<td>18.7</td>
+</tr>
+<tr class="even">
+<td>"fil_Latn"</td>
+<td>0.8</td>
+<td>37.9</td>
+<td>1.9</td>
+<td>2.6</td>
+<td>24.1</td>
+<td>5.1</td>
+<td>27.6</td>
+</tr>
+<tr class="odd">
+<td>"fin_Latn"</td>
+<td>2.6</td>
+<td>8.5</td>
+<td>1.9</td>
+<td>18.2</td>
+<td>19.7</td>
+<td>20.6</td>
+<td>28.5</td>
+</tr>
+<tr class="even">
+<td>"fra_Latn"</td>
+<td>2.8</td>
+<td>4.8</td>
+<td>0.0</td>
+<td>5.7</td>
+<td>54.3</td>
+<td>8.6</td>
+<td>23.8</td>
+</tr>
+<tr class="odd">
+<td>"gmh_Latn"</td>
+<td>0.0</td>
+<td>98.3</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>1.0</td>
+<td>0.2</td>
+<td>0.5</td>
+</tr>
+<tr class="even">
+<td>"hin_Deva"</td>
+<td>0.3</td>
+<td>0.3</td>
+<td>0.0</td>
+<td>0.2</td>
+<td>87.1</td>
+<td>0.9</td>
+<td>11.2</td>
+</tr>
+<tr class="odd">
+<td>"rus_Cyrl"</td>
+<td>1.1</td>
+<td>7.6</td>
+<td>0.0</td>
+<td>3.0</td>
+<td>68.3</td>
+<td>6.1</td>
+<td>13.9</td>
+</tr>
+<tr class="even">
+<td>"tat_Cyrl"</td>
+<td>1.19</td>
+<td>3.69</td>
+<td>0.0</td>
+<td>3.87</td>
+<td>46.16</td>
+<td>21.3</td>
+<td>23.8</td>
+</tr>
+<tr class="odd">
+<td>"vie_Latn"</td>
+<td>1.2</td>
+<td>9.5</td>
+<td>0.0</td>
+<td>6.4</td>
+<td>35.9</td>
+<td>13.1</td>
+<td>33.9</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>This is a bit hard to read so let’s plot it as a heatmap.</p>
+<div id="cell-20" class="cell" data-input="false" data-execution_count="9">
+<details class="code-fold">
+<summary>Click to show/hide code</summary>
+<div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> seaborn <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> sns</span>
+<span id="cb9-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> matplotlib.pyplot <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> plt</span>
+<span id="cb9-3"></span>
+<span id="cb9-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Convert Polars DataFrame to pandas for seaborn</span></span>
+<span id="cb9-5">label_percentages_pd <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> label_percentages.to_pandas()</span>
+<span id="cb9-6"></span>
+<span id="cb9-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Clean up column names by replacing the problematic symbols</span></span>
+<span id="cb9-8">label_percentages_pd.columns <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [</span>
+<span id="cb9-9">    col.replace(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"❗"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"!"</span>) <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> col <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> label_percentages_pd.columns</span>
+<span id="cb9-10">]</span>
+<span id="cb9-11"></span>
+<span id="cb9-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Define the desired column order</span></span>
+<span id="cb9-13">column_order <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [</span>
+<span id="cb9-14">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"None"</span>,</span>
+<span id="cb9-15">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Basic"</span>,</span>
+<span id="cb9-16">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Minimal"</span>,</span>
+<span id="cb9-17">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Good"</span>,</span>
+<span id="cb9-18">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Excellent"</span>,</span>
+<span id="cb9-19">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"! Problematic Content !"</span>,</span>
+<span id="cb9-20">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"! Wrong language !"</span>,</span>
+<span id="cb9-21">]</span>
+<span id="cb9-22"></span>
+<span id="cb9-23"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Reorder the columns (excluding 'language_code' which will be the index)</span></span>
+<span id="cb9-24">label_percentages_pd <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> label_percentages_pd.set_index(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_code"</span>)[column_order]</span>
+<span id="cb9-25"></span>
+<span id="cb9-26">plt.figure(figsize<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">12</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">8</span>))</span>
+<span id="cb9-27"></span>
+<span id="cb9-28">sns.heatmap(</span>
+<span id="cb9-29">    label_percentages_pd,</span>
+<span id="cb9-30">    annot<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>,</span>
+<span id="cb9-31">    fmt<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">".1f"</span>,</span>
+<span id="cb9-32">    cmap<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"YlOrRd"</span>,</span>
+<span id="cb9-33">    cbar_kws<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>{<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"label"</span>: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Percentage (%)"</span>},</span>
+<span id="cb9-34">    square<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>,</span>
+<span id="cb9-35">)</span>
+<span id="cb9-36"></span>
+<span id="cb9-37">plt.xticks(rotation<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">45</span>, ha<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"right"</span>)</span>
+<span id="cb9-38">plt.yticks(rotation<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>)</span>
+<span id="cb9-39"></span>
+<span id="cb9-40">plt.title(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Distribution of Labels by Language (%)"</span>)</span>
+<span id="cb9-41">plt.tight_layout()</span>
+<span id="cb9-42">plt.show()</span></code></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://danielvanstrien.xyz/posts/2025/FineWeb-c/how-fine-is-fineweb2_files/figure-html/cell-10-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We can also look at the distribution of labels as a bar chart.</p>
+<div id="cell-22" class="cell" data-input="false" data-execution_count="10">
+<details class="code-fold">
+<summary>Click to show/hide code</summary>
+<div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> altair <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> alt</span>
+<span id="cb10-2"></span>
+<span id="cb10-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Convert the wide-format data to long format for Altair</span></span>
+<span id="cb10-4">plot_df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> label_percentages.unpivot(</span>
+<span id="cb10-5">    index<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_code"</span>],</span>
+<span id="cb10-6">    on<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>label_percentages.columns[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>:],  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># All columns except language_code</span></span>
+<span id="cb10-7">    variable_name<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"label"</span>,</span>
+<span id="cb10-8">    value_name<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"percentage"</span>,</span>
+<span id="cb10-9">)</span>
+<span id="cb10-10"></span>
+<span id="cb10-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Create the Altair chart</span></span>
+<span id="cb10-12">chart <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (</span>
+<span id="cb10-13">    alt.Chart(plot_df)</span>
+<span id="cb10-14">    .mark_bar()</span>
+<span id="cb10-15">    .encode(</span>
+<span id="cb10-16">        x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_code"</span>,</span>
+<span id="cb10-17">        y<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>alt.Y(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"percentage"</span>, stack<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"zero"</span>),</span>
+<span id="cb10-18">        color<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"label"</span>,</span>
+<span id="cb10-19">        tooltip<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"language_code"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"label"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"percentage"</span>],</span>
+<span id="cb10-20">    )</span>
+<span id="cb10-21">    .properties(width<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">600</span>, height<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">400</span>, title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Label Distribution by Language"</span>)</span>
+<span id="cb10-22">    .configure_axis(labelAngle<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">45</span>)</span>
+<span id="cb10-23">)</span>
+<span id="cb10-24"></span>
+<span id="cb10-25">chart</span></code></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="10">
+
+<style>
+  #altair-viz-45094c62d3d84d528c21516176eaf222.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #altair-viz-45094c62d3d84d528c21516176eaf222.vega-embed details,
+  #altair-viz-45094c62d3d84d528c21516176eaf222.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="altair-viz-45094c62d3d84d528c21516176eaf222"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-45094c62d3d84d528c21516176eaf222") {
+      outputDiv = document.getElementById("altair-viz-45094c62d3d84d528c21516176eaf222");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@5?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@5.20.1?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@6?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "5")
+        .then(() => maybeLoadScript("vega-lite", "5.20.1"))
+        .then(() => maybeLoadScript("vega-embed", "6"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}, "axis": {"labelAngle": 45}}, "data": {"name": "data-d50ff7433431c09f909df3d0ef28c41d"}, "mark": {"type": "bar"}, "encoding": {"color": {"field": "label", "type": "nominal"}, "tooltip": [{"field": "language_code", "type": "nominal"}, {"field": "label", "type": "nominal"}, {"field": "percentage", "type": "quantitative"}], "x": {"field": "language_code", "type": "nominal"}, "y": {"field": "percentage", "stack": "zero", "type": "quantitative"}}, "height": 400, "title": "Label Distribution by Language", "width": 600, "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-d50ff7433431c09f909df3d0ef28c41d": [{"language_code": "arb_Arab", "label": "Excellent", "percentage": 0.35}, {"language_code": "ary_Arab", "label": "Excellent", "percentage": 1.0}, {"language_code": "arz_Arab", "label": "Excellent", "percentage": 2.0}, {"language_code": "bar_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "cmn_Hani", "label": "Excellent", "percentage": 1.4}, {"language_code": "dan_Latn", "label": "Excellent", "percentage": 0.1}, {"language_code": "fas_Arab", "label": "Excellent", "percentage": 2.3}, {"language_code": "fil_Latn", "label": "Excellent", "percentage": 0.8}, {"language_code": "fin_Latn", "label": "Excellent", "percentage": 2.6}, {"language_code": "fra_Latn", "label": "Excellent", "percentage": 2.8}, {"language_code": "gmh_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "hin_Deva", "label": "Excellent", "percentage": 0.3}, {"language_code": "rus_Cyrl", "label": "Excellent", "percentage": 1.1}, {"language_code": "tat_Cyrl", "label": "Excellent", "percentage": 1.19}, {"language_code": "vie_Latn", "label": "Excellent", "percentage": 1.2}, {"language_code": "arb_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 62.55}, {"language_code": "ary_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 94.6}, {"language_code": "arz_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 73.5}, {"language_code": "bar_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 77.0}, {"language_code": "cmn_Hani", "label": "\u2757 Problematic Content \u2757", "percentage": 2.5}, {"language_code": "dan_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 14.5}, {"language_code": "fas_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 20.5}, {"language_code": "fil_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 37.9}, {"language_code": "fin_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 8.5}, {"language_code": "fra_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 4.8}, {"language_code": "gmh_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 98.3}, {"language_code": "hin_Deva", "label": "\u2757 Problematic Content \u2757", "percentage": 0.3}, {"language_code": "rus_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 7.6}, {"language_code": "tat_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 3.69}, {"language_code": "vie_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 9.5}, {"language_code": "arb_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "ary_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "arz_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "bar_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "cmn_Hani", "label": "\u2757 Wrong language \u2757", "percentage": 0.9}, {"language_code": "dan_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "fas_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "fil_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 1.9}, {"language_code": "fin_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 1.9}, {"language_code": "fra_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "gmh_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "hin_Deva", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "rus_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "tat_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "vie_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "arb_Arab", "label": "Good", "percentage": 1.25}, {"language_code": "ary_Arab", "label": "Good", "percentage": 1.4}, {"language_code": "arz_Arab", "label": "Good", "percentage": 4.0}, {"language_code": "bar_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "cmn_Hani", "label": "Good", "percentage": 9.7}, {"language_code": "dan_Latn", "label": "Good", "percentage": 1.2}, {"language_code": "fas_Arab", "label": "Good", "percentage": 8.9}, {"language_code": "fil_Latn", "label": "Good", "percentage": 2.6}, {"language_code": "fin_Latn", "label": "Good", "percentage": 18.2}, {"language_code": "fra_Latn", "label": "Good", "percentage": 5.7}, {"language_code": "gmh_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "hin_Deva", "label": "Good", "percentage": 0.2}, {"language_code": "rus_Cyrl", "label": "Good", "percentage": 3.0}, {"language_code": "tat_Cyrl", "label": "Good", "percentage": 3.87}, {"language_code": "vie_Latn", "label": "Good", "percentage": 6.4}, {"language_code": "arb_Arab", "label": "None", "percentage": 25.55}, {"language_code": "ary_Arab", "label": "None", "percentage": 1.1}, {"language_code": "arz_Arab", "label": "None", "percentage": 12.7}, {"language_code": "bar_Latn", "label": "None", "percentage": 16.5}, {"language_code": "cmn_Hani", "label": "None", "percentage": 24.2}, {"language_code": "dan_Latn", "label": "None", "percentage": 47.6}, {"language_code": "fas_Arab", "label": "None", "percentage": 39.6}, {"language_code": "fil_Latn", "label": "None", "percentage": 24.1}, {"language_code": "fin_Latn", "label": "None", "percentage": 19.7}, {"language_code": "fra_Latn", "label": "None", "percentage": 54.3}, {"language_code": "gmh_Latn", "label": "None", "percentage": 1.0}, {"language_code": "hin_Deva", "label": "None", "percentage": 87.1}, {"language_code": "rus_Cyrl", "label": "None", "percentage": 68.3}, {"language_code": "tat_Cyrl", "label": "None", "percentage": 46.16}, {"language_code": "vie_Latn", "label": "None", "percentage": 35.9}, {"language_code": "arb_Arab", "label": "Basic", "percentage": 2.45}, {"language_code": "ary_Arab", "label": "Basic", "percentage": 0.7}, {"language_code": "arz_Arab", "label": "Basic", "percentage": 4.1}, {"language_code": "bar_Latn", "label": "Basic", "percentage": 4.1}, {"language_code": "cmn_Hani", "label": "Basic", "percentage": 25.1}, {"language_code": "dan_Latn", "label": "Basic", "percentage": 8.4}, {"language_code": "fas_Arab", "label": "Basic", "percentage": 10.0}, {"language_code": "fil_Latn", "label": "Basic", "percentage": 5.1}, {"language_code": "fin_Latn", "label": "Basic", "percentage": 20.6}, {"language_code": "fra_Latn", "label": "Basic", "percentage": 8.6}, {"language_code": "gmh_Latn", "label": "Basic", "percentage": 0.2}, {"language_code": "hin_Deva", "label": "Basic", "percentage": 0.9}, {"language_code": "rus_Cyrl", "label": "Basic", "percentage": 6.1}, {"language_code": "tat_Cyrl", "label": "Basic", "percentage": 21.3}, {"language_code": "vie_Latn", "label": "Basic", "percentage": 13.1}, {"language_code": "arb_Arab", "label": "Minimal", "percentage": 7.85}, {"language_code": "ary_Arab", "label": "Minimal", "percentage": 1.2}, {"language_code": "arz_Arab", "label": "Minimal", "percentage": 3.7}, {"language_code": "bar_Latn", "label": "Minimal", "percentage": 2.4}, {"language_code": "cmn_Hani", "label": "Minimal", "percentage": 36.2}, {"language_code": "dan_Latn", "label": "Minimal", "percentage": 28.2}, {"language_code": "fas_Arab", "label": "Minimal", "percentage": 18.7}, {"language_code": "fil_Latn", "label": "Minimal", "percentage": 27.6}, {"language_code": "fin_Latn", "label": "Minimal", "percentage": 28.5}, {"language_code": "fra_Latn", "label": "Minimal", "percentage": 23.8}, {"language_code": "gmh_Latn", "label": "Minimal", "percentage": 0.5}, {"language_code": "hin_Deva", "label": "Minimal", "percentage": 11.2}, {"language_code": "rus_Cyrl", "label": "Minimal", "percentage": 13.9}, {"language_code": "tat_Cyrl", "label": "Minimal", "percentage": 23.8}, {"language_code": "vie_Latn", "label": "Minimal", "percentage": 33.9}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+</div>
+</section>
+</section>
+<section id="refining-fineweb2-for-more-languages-aka-next-steps" class="level2">
+<h2 class="anchored" data-anchor-id="refining-fineweb2-for-more-languages-aka-next-steps">Refining FineWeb2 for more languages aka next steps</h2>
+<p>We can see that the distribution of labels varies a fair amount between languages. Some are mostly problematic labels whilst others have a much better distribution of labels. This can also inform what is the best next step for a languages as part of the FineWeb-C project.</p>
+<section id="better-starting-data-for-annotators-aka-more-filtering-of-problematic-data" class="level3">
+<h3 class="anchored" data-anchor-id="better-starting-data-for-annotators-aka-more-filtering-of-problematic-data">Better starting data for annotators aka more filtering of problematic data</h3>
+<p>FineWeb2 already has a lot of filters to try and identify high quality data, however this is challenging to do across many many languages. This is why the community is so important.</p>
+<ul>
+<li>If a language has a lot of problematic or None labels it makes sense to focus on getting higher quality data filtered for that language.</li>
+<li>In a previous <a href="https://danielvanstrien.xyz/posts/2024/12/23/fineweb-filter-polars.html">blog post</a> I showed some approaches to how this can be done for a single language. The best approach will depend on the language but developing better heuristics for more languages can be very impactful. <strong>This is another area where the community can help!</strong></li>
+<li>Some languages have a lot of data that has been incorrectly identified as the wrong language. This is a problem for the community as it means annotators have to spend a lot of time annotating data that is not useful. For these languages <strong>if the community has better heuristics or models for identifying the wrong language we can filter out more data.</strong></li>
+</ul>
+</section>
+<section id="evaluating-agreement-between-annotators" class="level3">
+<h3 class="anchored" data-anchor-id="evaluating-agreement-between-annotators">Evaluating agreement between annotators</h3>
+<p>If a language has a good distribution of labels the next step is to try and look at the agreement between annotators. This can help us understand how much we can trust the labels and also help us understand where the labels are ambiguous.</p>
+</section>
+<section id="evaluating-llms-to-build-training-data-for-a-classifier" class="level3">
+<h3 class="anchored" data-anchor-id="evaluating-llms-to-build-training-data-for-a-classifier">Evaluating LLMs to build training data for a classifier?</h3>
+<p>For languages where we have fairly good agreement (or at least a subset of good agreement) we can already start to evaluate how well LLMs can do at identifying educational content. Remembering back to the overall goal of this effort, is to reproduce something similar to FineWeb-Edu. This is a subset of the original FineWeb dataset which has been filtered for educational content. This filtering was done by first training a classifier on the original FineWeb-Edu dataset and then using this classifier to filter the original FineWeb dataset. That classifier was training on labels generated by Llama. For some languages it might be possible to take a similar approach. We can do something like:</p>
+<ul>
+<li>Evaluate how well an LLM does in comparison to our annotators. This might require experimenting with different LLMs and prompting approaches. I’m working on a notebook to do this but <strong>this is another area where the community can help.</strong></li>
+<li>If the LLM does a good job we can then use it to create enough data to start to train a classifier.</li>
+</ul>
+</section>
+<section id="training-educational-quality-classifiers" class="level3">
+<h3 class="anchored" data-anchor-id="training-educational-quality-classifiers">Training educational quality classifiers</h3>
+<p>Some languages already have quite a lot of data with a fairly good distribution of labels. For these languages we can already see if we have sufficient data to train a classifier. It’s likely for most languages we’d need more data but starting to train a classifier can be a good next step. <strong>Again this is another area where the community can help!</strong></p>
+<p>As you may have noticed, I’ve been using the word “community” a lot in this post. This is because I think this is a really important part of the FineWeb-C project. We have a <a href="https://discord.com/channels/879548962464493619/1326130187527651348">Discord channel</a> where we can discuss the project and share ideas. If you’re interested in contributing to the project please join the channel and let’s chat!</p>
+
+
+</section>
+</section>
+
+ ]]></description>
+  <category>polars</category>
+  <category>huggingface</category>
+  <category>fineweb</category>
+  <guid>https://danielvanstrien.xyz/posts/2025/FineWeb-c/how-fine-is-fineweb2.html</guid>
+  <pubDate>Tue, 07 Jan 2025 00:00:00 GMT</pubDate>
+  <media:content url="https://huggingface.co/datasets/HuggingFaceFW/admin/resolve/main/fineweb-2-logo.png" medium="image" type="image/png"/>
+</item>
 <item>
   <title>Filtering FineWeb2 using Polars</title>
   <dc:creator>Daniel van Strien</dc:creator>
@@ -22109,601 +23183,6 @@ font-style: inherit;">in</span> prompts:</span>
  ]]></description>
   <guid>https://danielvanstrien.xyz/posts/post-with-code/2022-01-13-image_search.html</guid>
   <pubDate>Thu, 13 Jan 2022 00:00:00 GMT</pubDate>
-</item>
-<item>
-  <title>Using the 🤗 Hub for model storage</title>
-  <dc:creator>Daniel van Strien</dc:creator>
-  <link>https://danielvanstrien.xyz/posts/post-with-code/2021-12-30-hf-hub-model-storage.html</link>
-  <description><![CDATA[ 
-
-
-
-
-<section id="intro" class="level2">
-<h2 class="anchored" data-anchor-id="intro">Intro</h2>
-<p>Part of what the <a href="https://danielvanstrien.xyz/deployment/glam/%F0%9F%A4%97/2021/12/22/flyswot.html">flyswot</a> should take care of is handle machine learning models. The flyswot tool is essentially just a command-line wrapper for the machine learning model. However, these two things the command-line tool, and the model, are kept separate for a number of reasons:</p>
-<ul>
-<li>the flyswot tool might have changes separate from the model changing i.e.&nbsp;some new functionality is added or some bug fixed</li>
-<li>we might want to update the model based on new training data or a change in the labels used</li>
-</ul>
-<p>We want to be able to release a new model without having to create a new release of the flyswot tool and vice-versa. As a result of this, both of these things are versioned separately.</p>
-<p>We might want to keep our model separate because flyswot is made available as a Python Package. Since a computer vision model can be pretty large, we probably don’t want this to be included as a part of the Python package.</p>
-</section>
-<section id="how-is-this-currently-being-done" class="level2">
-<h2 class="anchored" data-anchor-id="how-is-this-currently-being-done">How is this currently being done</h2>
-<p>Currently models are stored in a separate GitHub repository separate from the repository used to store the flyswot code. flyswot has some functionality for checking against this GitHub repository to see if a more recent remote model has superseded a local model. If there is a more recent model available (and a CLI flag indicates that the latest model should be used), then flyswot downloads the new model and stores it in a new directory.</p>
-</section>
-<section id="what-is-wrong-with-this" class="level2">
-<h2 class="anchored" data-anchor-id="what-is-wrong-with-this">What is wrong with this</h2>
-<p>Whilst this approach does work okay there is quite a surprising amount of code that is needed to take care of some of this. Currently the option to pass a specific snapshot of a model doesn’t exist.</p>
-<p>On the storage side although GitHub is great for storing code there are some limitations to it for storing large files. I’ve created a GitHub action to create a release when new pull requests to update the model are made. This then creates a new release with date information in the filename. Again, this works okay, but there might be a better way…</p>
-</section>
-<section id="hub-to-the-rescue" class="level2">
-<h2 class="anchored" data-anchor-id="hub-to-the-rescue">🤗 hub to the rescue?</h2>
-<p>I have already been using the huggingface hub when using other peoples models and uploading fine-tuned transformer models. However, digging around the docs, it seemed like there are a few things in this ecosystem that could be useful for flyswot.</p>
-<section id="what-is-the-hub" class="level3">
-<h3 class="anchored" data-anchor-id="what-is-the-hub">What is the 🤗 hub?</h3>
-<p>If you haven’t come across the 🤗 hub before, it is essentially a place where models can be uploaded and explored by others. So, for example, if I want a language model trained on Arabic text, I might find it in the hub. The goal is to help avoid duplication of effort and allow other people to use or adapt existing work.</p>
-<p>This video gives a helpful overview of navigating the hub and finding models you might be interested in using.</p>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/XvSGPZFEjDY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="">
-</iframe>
-<p>Part of the aim of sharing the flyswot models on GitHub (or the 🤗 hub) is to make them available to other people to use. The 🤗 hub well supports this use case. We can easily share models (including large ones) because of the underpinning use of <a href="https://git-lfs.github.com/">git-lfs</a>. However, our interest is not only in sharing a model for others to use but also in grabbing the correct model for the flyswot CLI tool easier. Some other components might help here.</p>
-</section>
-</section>
-<section id="the-hub-vs-huggingface_hub-library" class="level2">
-<h2 class="anchored" data-anchor-id="the-hub-vs-huggingface_hub-library">The hub vs huggingface_hub library</h2>
-<p>The 🤗 hub already provides a place to store the model. You can interact with this model using the web interface only but what we want is also to download models using our CLI from the hub. We already have a way to do this with GitHub, so ideally, we want something that works better than our current approach.</p>
-<p>This is where the <a href="https://pypi.org/project/huggingface-hub/"><code>huggingface_hub</code></a> Python Library might come in. This Python library provides us with various ways of interacting with the hub. This could give us enough ways of interacting with the hub that we can delete some of the code that currently does this with GitHub (and there is nothing nicer than deleting code 😃)</p>
-<p>I’ll use the remainder of this blog to see if we can use the 🤗 hub and the <code>[</code>huggingface_hub<code>](https://pypi.org/project/huggingface-hub/)</code> library for this purpose as a replacement for the current approach.</p>
-<p>We’ll start by installing the <code>huggingface_hub</code> library</p>
-<div id="cell-4" class="cell" data-outputid="4de4f1a6-5f11-4665-a202-9d8398a3dc99" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># hide_output</span></span>
-<span id="cb1-2"><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">!</span>pip install huggingface_hub</span></code></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Requirement already satisfied: huggingface_hub in /Users/dvanstrien/miniconda3/envs/blog/lib/python3.8/site-packages (0.2.1)
-Requirement already satisfied: requests in /Users/dvanstrien/miniconda3/envs/blog/lib/python3.8/site-packages (from huggingface_hub) (2.26.0)
-Requirement already satisfied: pyyaml in /Users/dvanstrien/miniconda3/envs/blog/lib/python3.8/site-packages (from huggingface_hub) (6.0)
-Requirement already satisfied: typing-extensions&gt;=3.7.4.3 in /Users/dvanstrien/miniconda3/envs/blog/lib/python3.8/site-packages (from huggingface_hub) (4.0.1)
-Requirement already satisfied: tqdm in /Users/dvanstrien/miniconda3/envs/blog/lib/python3.8/site-packages (from huggingface_hub) (4.62.3)
-Requirement already satisfied: filelock in /Users/dvanstrien/miniconda3/envs/blog/lib/python3.8/site-packages (from huggingface_hub) (3.4.0)
-Requirement already satisfied: packaging&gt;=20.9 in /Users/dvanstrien/miniconda3/envs/blog/lib/python3.8/site-packages (from huggingface_hub) (21.3)
-Requirement already satisfied: pyparsing!=3.0.5,&gt;=2.0.2 in /Users/dvanstrien/miniconda3/envs/blog/lib/python3.8/site-packages (from packaging&gt;=20.9-&gt;huggingface_hub) (3.0.6)
-Requirement already satisfied: urllib3&lt;1.27,&gt;=1.21.1 in /Users/dvanstrien/miniconda3/envs/blog/lib/python3.8/site-packages (from requests-&gt;huggingface_hub) (1.26.7)
-Requirement already satisfied: idna&lt;4,&gt;=2.5 in /Users/dvanstrien/miniconda3/envs/blog/lib/python3.8/site-packages (from requests-&gt;huggingface_hub) (3.1)
-Requirement already satisfied: charset-normalizer~=2.0.0 in /Users/dvanstrien/miniconda3/envs/blog/lib/python3.8/site-packages (from requests-&gt;huggingface_hub) (2.0.8)
-Requirement already satisfied: certifi&gt;=2017.4.17 in /Users/dvanstrien/miniconda3/envs/blog/lib/python3.8/site-packages (from requests-&gt;huggingface_hub) (2021.10.8)</code></pre>
-</div>
-</div>
-</section>
-<section id="getting-information-about-a-model" class="level2">
-<h2 class="anchored" data-anchor-id="getting-information-about-a-model">Getting information about a model</h2>
-<p>One of the things we need to be able to do is get the latest version of the model. One way we could try and do this is by grabbing metadata about the model. This is the current approach taken by flyswot. We can import <code>model_info</code> to do this:</p>
-<div id="cell-6" class="cell" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> huggingface_hub <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> model_info</span></code></pre></div>
-</div>
-<div id="cell-7" class="cell" data-outputid="b6875e50-a15c-4cdd-9c14-7d3cd5936c78" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1">info <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> model_info(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"distilbert-base-cased"</span>)</span>
-<span id="cb4-2">info</span></code></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="12">
-<pre><code>ModelInfo: {
-    modelId: distilbert-base-cased
-    sha: 935ac13b473164bb9d578640e33d9f21144c365e
-    lastModified: 2020-12-11T21:23:53.000Z
-    tags: ['pytorch', 'tf', 'distilbert', 'en', 'dataset:bookcorpus', 'dataset:wikipedia', 'arxiv:1910.01108', 'transformers', 'license:apache-2.0', 'infinity_compatible']
-    pipeline_tag: None
-    siblings: [ModelFile(rfilename='.gitattributes'), ModelFile(rfilename='README.md'), ModelFile(rfilename='config.json'), ModelFile(rfilename='pytorch_model.bin'), ModelFile(rfilename='tf_model.h5'), ModelFile(rfilename='tokenizer.json'), ModelFile(rfilename='tokenizer_config.json'), ModelFile(rfilename='vocab.txt')]
-    config: {'model_type': 'distilbert'}
-    id: distilbert-base-cased
-    private: False
-    downloads: 3556770
-    library_name: transformers
-    mask_token: [MASK]
-    likes: 4
-    model-index: None
-    cardData: {'language': 'en', 'license': 'apache-2.0', 'datasets': ['bookcorpus', 'wikipedia']}
-}</code></pre>
-</div>
-</div>
-<div id="cell-8" class="cell" data-execution_count="13">
-<div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">type</span>(info)</span></code></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="13">
-<pre><code>huggingface_hub.hf_api.ModelInfo</code></pre>
-</div>
-</div>
-<p>You can see this gives us back a bunch of information about the model. We could for example grab the date the model was changed:</p>
-<div id="cell-10" class="cell" data-execution_count="15">
-<div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1">info.lastModified</span></code></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="15">
-<pre><code>'2020-12-11T21:23:53.000Z'</code></pre>
-</div>
-</div>
-<p>This already gives us what we need for checking if a model is updated in comparison to a local model already downloaded by the flyswot CLI. However we might be able to cut out some of this checking work.</p>
-<p>Lets see if there are other ways we can do this in the library. Since <code>huggingface_hub</code> requires git-lfs lets start by installing this.</p>
-<div id="cell-12" class="cell" data-outputid="961a93c1-5069-4289-b33d-86327078e598" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">!</span>apt install git<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span>lfs</span></code></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Reading package lists... Done
-Building dependency tree       
-Reading state information... Done
-git-lfs is already the newest version (2.3.4-1).
-0 upgraded, 0 newly installed, 0 to remove and 37 not upgraded.</code></pre>
-</div>
-</div>
-<p>We also need to make sure we have git-lfs setup</p>
-<div id="cell-14" class="cell" data-outputid="2a456be2-5ba1-45e0-c150-183affb99a67" data-execution_count="52">
-<div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">!</span>git init <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&amp;&amp;</span> git lfs install</span></code></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>hint: Using 'master' as the name for the initial branch. This default branch name
-hint: is subject to change. To configure the initial branch name to use in all
-hint: of your new repositories, which will suppress this warning, call:
-hint: 
-hint:   git config --global init.defaultBranch &lt;name&gt;
-hint: 
-hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
-hint: 'development'. The just-created branch can be renamed via this command:
-hint: 
-hint:   git branch -m &lt;name&gt;
-Initialized empty Git repository in /Users/dvanstrien/Documents/daniel/blog/_notebooks/.git/
-Updated git hooks.
-Git LFS initialized.</code></pre>
-</div>
-</div>
-<section id="downloading-files-from-the-hub" class="level3">
-<h3 class="anchored" data-anchor-id="downloading-files-from-the-hub">Downloading files from the hub</h3>
-<p>We can use <code>hf_hub_url</code> to get the url for a specific file from a repository</p>
-<div id="cell-17" class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> huggingface_hub <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> hf_hub_url</span></code></pre></div>
-</div>
-<div id="cell-18" class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1">onnx_model_url <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> hf_hub_url(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"davanstrien/flyswot-test"</span>, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"2021-09-22.onnx"</span>)</span>
-<span id="cb15-2">onnx_model_url</span></code></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="9">
-<pre><code>'https://huggingface.co/davanstrien/flyswot-test/resolve/main/2021-09-22.onnx'</code></pre>
-</div>
-</div>
-<p>We can pass this url to <code>cached_download</code>, this will download the file for us if we don’t have the latest version, we can also specify a place to download the file. This is important so we can make sure we put the file somewhere <code>flyswot</code> can find.</p>
-<div id="cell-20" class="cell" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> huggingface_hub <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> cached_download</span></code></pre></div>
-</div>
-<div id="cell-21" class="cell" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1">cached_download(onnx_model_url, cache_dir<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"."</span>)</span></code></pre></div>
-<div class="cell-output cell-output-display">
-<script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"cb383bfcbf25400daaa1ccf7b2115ae3","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
-</script>
-</div>
-<div class="cell-output cell-output-display" data-execution_count="12">
-<pre><code>'./de9d2ce054e3e410e3fc61b5c2ad55da7861d30e3b90aa018615b7d902e6e51e.1300a5792e44de2c59f4d25c4f7efd447ef91d69971a121e6b4df8b95047ad7c'</code></pre>
-</div>
-</div>
-<p>If we try and download this again it won’t download, and will instead return the path to the model</p>
-<div id="cell-23" class="cell" data-execution_count="14">
-<div class="sourceCode cell-code" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1">path <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> cached_download(onnx_model_url, cache_dir<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"."</span>)</span>
-<span id="cb20-2">path</span></code></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="14">
-<pre><code>'./de9d2ce054e3e410e3fc61b5c2ad55da7861d30e3b90aa018615b7d902e6e51e.1300a5792e44de2c59f4d25c4f7efd447ef91d69971a121e6b4df8b95047ad7c'</code></pre>
-</div>
-</div>
-</section>
-<section id="downloading-all-files-from-the-hub" class="level3">
-<h3 class="anchored" data-anchor-id="downloading-all-files-from-the-hub">Downloading all files from the hub</h3>
-<p>This is quite close to what we want our current approach requires us to get a bunch of different files in a folder. To replicate this we can instead use <code>snapshot_download</code></p>
-<div id="cell-26" class="cell" data-execution_count="17">
-<div class="sourceCode cell-code" id="cb22" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> huggingface_hub <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> snapshot_download</span></code></pre></div>
-</div>
-<p>Let’s see what this does</p>
-<div id="cell-28" class="cell" data-execution_count="18">
-<div class="sourceCode cell-code" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1">?snapshot_download</span></code></pre></div>
-<div class="cell-output cell-output-display">
-<div class="ansi-escaped-output">
-<pre><span class="ansi-red-fg">Signature:</span>
-snapshot_download<span class="ansi-blue-fg">(</span>
-    repo_id<span class="ansi-blue-fg">:</span> str<span class="ansi-blue-fg">,</span>
-    revision<span class="ansi-blue-fg">:</span> Union<span class="ansi-blue-fg">[</span>str<span class="ansi-blue-fg">,</span> NoneType<span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
-    cache_dir<span class="ansi-blue-fg">:</span> Union<span class="ansi-blue-fg">[</span>str<span class="ansi-blue-fg">,</span> pathlib<span class="ansi-blue-fg">.</span>Path<span class="ansi-blue-fg">,</span> NoneType<span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
-    library_name<span class="ansi-blue-fg">:</span> Union<span class="ansi-blue-fg">[</span>str<span class="ansi-blue-fg">,</span> NoneType<span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
-    library_version<span class="ansi-blue-fg">:</span> Union<span class="ansi-blue-fg">[</span>str<span class="ansi-blue-fg">,</span> NoneType<span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
-    user_agent<span class="ansi-blue-fg">:</span> Union<span class="ansi-blue-fg">[</span>Dict<span class="ansi-blue-fg">,</span> str<span class="ansi-blue-fg">,</span> NoneType<span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
-    proxies<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
-    etag_timeout<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">10</span><span class="ansi-blue-fg">,</span>
-    resume_download<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">False</span><span class="ansi-blue-fg">,</span>
-    use_auth_token<span class="ansi-blue-fg">:</span> Union<span class="ansi-blue-fg">[</span>bool<span class="ansi-blue-fg">,</span> str<span class="ansi-blue-fg">,</span> NoneType<span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
-    local_files_only<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">False</span><span class="ansi-blue-fg">,</span>
-<span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">-&gt;</span> str
-<span class="ansi-red-fg">Docstring:</span>
-Downloads a whole snapshot of a repo's files at the specified revision.
-This is useful when you want all files from a repo, because you don't know
-which ones you will need a priori.
-All files are nested inside a folder in order to keep their actual filename
-relative to that folder.
-An alternative would be to just clone a repo but this would require that
-the user always has git and git-lfs installed, and properly configured.
-Note: at some point maybe this format of storage should actually replace
-the flat storage structure we've used so far (initially from allennlp
-if I remember correctly).
-Return:
-    Local folder path (string) of repo snapshot
-<span class="ansi-red-fg">File:</span>      ~/miniconda3/envs/blog/lib/python3.8/site-packages/huggingface_hub/snapshot_download.py
-<span class="ansi-red-fg">Type:</span>      function
-</pre>
-</div>
-</div>
-</div>
-<p>This will do something similar to <code>cached_download</code> but will instead do it for a whole model repository. If we pass our repository it will download the directory if we don’t have the latest version of the files, if for example, the model has been updated.</p>
-<div id="cell-30" class="cell" data-outputid="1a49a2ab-cfc2-4152-ba47-1d6d3baea79b" data-execution_count="20">
-<div class="sourceCode cell-code" id="cb24" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1">model <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> snapshot_download(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"davanstrien/flyswot-test"</span>, cache_dir<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"."</span>)</span></code></pre></div>
-<div class="cell-output cell-output-display">
-<script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"1df0117a5aae4d19aad5f03405bcb4e7","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
-</script>
-</div>
-<div class="cell-output cell-output-display">
-<script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"65f1109ac93e4a35811f35c9acbccc57","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
-</script>
-</div>
-<div class="cell-output cell-output-display">
-<script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"411d2dd7b3404a93ab467f43c70ae08a","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
-</script>
-</div>
-<div class="cell-output cell-output-display">
-<script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"aad78730d8784a71a956a17ee5a245e8","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
-</script>
-</div>
-<div class="cell-output cell-output-display">
-<script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"d2d3100769774e16b3c70086b15d918d","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
-</script>
-</div>
-</div>
-<div id="cell-31" class="cell" data-execution_count="21">
-<div class="sourceCode cell-code" id="cb25" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1">model</span></code></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="21">
-<pre><code>'./davanstrien__flyswot-test.main.e54a7421f5e5eb240783452ab734288f252bb402'</code></pre>
-</div>
-</div>
-<p>If we look inside this directory we can see we have the files from the repository.</p>
-<div id="cell-33" class="cell" data-execution_count="22">
-<div class="sourceCode cell-code" id="cb27" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">!</span>ls {model}</span></code></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>2021-09-22.onnx README.md       modelcard.md    vocab.txt</code></pre>
-</div>
-</div>
-<p>If we try and download it again we just get back the directory path without having to download the files again.</p>
-<div id="cell-35" class="cell" data-execution_count="24">
-<div class="sourceCode cell-code" id="cb29" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1">model <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> snapshot_download(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"davanstrien/flyswot-test"</span>, cache_dir<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"."</span>)</span>
-<span id="cb29-2">model</span></code></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="24">
-<pre><code>'./davanstrien__flyswot-test.main.e54a7421f5e5eb240783452ab734288f252bb402'</code></pre>
-</div>
-</div>
-<p>This gives a replication of what we currently have setup for flyswot in terms of downloading models. There are a few extra things we might want though to be able to make flyswot more flexible. First though let’s look at how we can upload to the model hub.</p>
-</section>
-<section id="uploading-to-the-hub" class="level3">
-<h3 class="anchored" data-anchor-id="uploading-to-the-hub">Uploading to the hub</h3>
-<p>At the moment flyswot models are uploaded to a GitHub repository which then creates a release. It would be nice to simplify this and upload directly at the end of model training. For this we can use the <code>Repository</code> class.</p>
-<div id="cell-38" class="cell" data-execution_count="30">
-<div class="sourceCode cell-code" id="cb31" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> huggingface_hub <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> Repository</span></code></pre></div>
-</div>
-<div id="cell-39" class="cell" data-execution_count="29">
-<div class="sourceCode cell-code" id="cb32" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1">?Repository</span></code></pre></div>
-<div class="cell-output cell-output-display">
-<div class="ansi-escaped-output">
-<pre><span class="ansi-red-fg">Init signature:</span>
-Repository<span class="ansi-blue-fg">(</span>
-    local_dir<span class="ansi-blue-fg">:</span> str<span class="ansi-blue-fg">,</span>
-    clone_from<span class="ansi-blue-fg">:</span> Union<span class="ansi-blue-fg">[</span>str<span class="ansi-blue-fg">,</span> NoneType<span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
-    repo_type<span class="ansi-blue-fg">:</span> Union<span class="ansi-blue-fg">[</span>str<span class="ansi-blue-fg">,</span> NoneType<span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
-    use_auth_token<span class="ansi-blue-fg">:</span> Union<span class="ansi-blue-fg">[</span>bool<span class="ansi-blue-fg">,</span> str<span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">True</span><span class="ansi-blue-fg">,</span>
-    git_user<span class="ansi-blue-fg">:</span> Union<span class="ansi-blue-fg">[</span>str<span class="ansi-blue-fg">,</span> NoneType<span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
-    git_email<span class="ansi-blue-fg">:</span> Union<span class="ansi-blue-fg">[</span>str<span class="ansi-blue-fg">,</span> NoneType<span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
-    revision<span class="ansi-blue-fg">:</span> Union<span class="ansi-blue-fg">[</span>str<span class="ansi-blue-fg">,</span> NoneType<span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
-    private<span class="ansi-blue-fg">:</span> bool <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">False</span><span class="ansi-blue-fg">,</span>
-    skip_lfs_files<span class="ansi-blue-fg">:</span> bool <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">False</span><span class="ansi-blue-fg">,</span>
-<span class="ansi-blue-fg">)</span>
-<span class="ansi-red-fg">Docstring:</span>     
-Helper class to wrap the git and git-lfs commands.
-The aim is to facilitate interacting with huggingface.co hosted model or dataset repos,
-though not a lot here (if any) is actually specific to huggingface.co.
-<span class="ansi-red-fg">Init docstring:</span>
-Instantiate a local clone of a git repo.
-If specifying a `clone_from`:
-will clone an existing remote repository, for instance one
-that was previously created using ``HfApi().create_repo(name=repo_name)``.
-``Repository`` uses the local git credentials by default, but if required, the ``huggingface_token``
-as well as the git ``user`` and the ``email`` can be explicitly specified.
-If `clone_from` is used, and the repository is being instantiated into a non-empty directory,
-e.g. a directory with your trained model files, it will automatically merge them.
-Args:
-    local_dir (``str``):
-        path (e.g. ``'my_trained_model/'``) to the local directory, where the ``Repository`` will be initalized.
-    clone_from (``str``, `optional`):
-        repository url (e.g. ``'https://huggingface.co/philschmid/playground-tests'``).
-    repo_type (``str``, `optional`):
-        To set when creating a repo: et to "dataset" or "space" if creating a dataset or space, default is model.
-    use_auth_token (``str`` or ``bool``, `optional`, defaults to ``True``):
-        huggingface_token can be extract from ``HfApi().login(username, password)`` and is used to authenticate against the hub
-        (useful from Google Colab for instance).
-    git_user (``str``, `optional`):
-        will override the ``git config user.name`` for committing and pushing files to the hub.
-    git_email (``str``, `optional`):
-        will override the ``git config user.email`` for committing and pushing files to the hub.
-    revision (``str``, `optional`):
-        Revision to checkout after initializing the repository. If the revision doesn't exist, a
-        branch will be created with that revision name from the default branch's current HEAD.
-    private (``bool``, `optional`, defaults to ``False``):
-        whether the repository is private or not.
-    skip_lfs_files (``bool``, `optional`, defaults to ``False``):
-        whether to skip git-LFS files or not.
-<span class="ansi-red-fg">File:</span>           ~/miniconda3/envs/blog/lib/python3.8/site-packages/huggingface_hub/repository.py
-<span class="ansi-red-fg">Type:</span>           type
-<span class="ansi-red-fg">Subclasses:</span>     
-</pre>
-</div>
-</div>
-</div>
-<p>I’ll use <a href="https://huggingface.co/davanstrien/flyswot-test"><code>flyswot-test</code></a> as a way of playing around with this. To start with we can use Repository to clone the current version of the model.</p>
-<div id="cell-41" class="cell" data-outputid="f106f222-71a6-4bad-e43b-593709f43d86" data-execution_count="53">
-<div class="sourceCode cell-code" id="cb33" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1">repo <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> Repository(local_dir<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"flyswot-models"</span>, clone_from<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"davanstrien/flyswot-test"</span>)</span></code></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Cloning https://huggingface.co/davanstrien/flyswot-test into local empty directory.</code></pre>
-</div>
-</div>
-<div id="cell-42" class="cell" data-outputid="986f1396-945a-4316-b944-0583a93305bc" data-execution_count="54">
-<div class="sourceCode cell-code" id="cb35" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1">repo</span></code></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="54">
-<pre><code>&lt;huggingface_hub.repository.Repository at 0x7fb10cccbc10&gt;</code></pre>
-</div>
-</div>
-<p>We’ll need to be logged in to push changes</p>
-<div id="cell-44" class="cell" data-outputid="f70be078-3482-4e1b-cc2b-7c9adbb63c78" data-execution_count="35">
-<div class="sourceCode cell-code" id="cb37" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> huggingface_hub <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> notebook_login</span>
-<span id="cb37-2"></span>
-<span id="cb37-3">notebook_login()</span></code></pre></div>
-<div class="cell-output cell-output-display">
-<script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"71f213964f554b978189f49c55f5f74b","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
-</script>
-</div>
-</div>
-<p>To start with let’s mock making a change to some of the repo files and seeing how we can upload these changes. We can use the <code>Repository</code> class as a context manager to make changes and have them committed to our model repository. Here we update the vocab file to add a new label.</p>
-<div id="cell-46" class="cell" data-execution_count="58">
-<div class="sourceCode cell-code" id="cb38" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">with</span> Repository(</span>
-<span id="cb38-2">    local_dir<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"flyswot-models"</span>,</span>
-<span id="cb38-3">    clone_from<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"davanstrien/flyswot-test"</span>,</span>
-<span id="cb38-4">    git_user<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Daniel van Strien"</span>,</span>
-<span id="cb38-5">).commit(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"update model"</span>):</span>
-<span id="cb38-6">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">with</span> <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">open</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"vocab.txt"</span>, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"a"</span>) <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">as</span> f:</span>
-<span id="cb38-7">        f.write(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"new label"</span>)</span></code></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>/Users/dvanstrien/Documents/daniel/blog/_notebooks/flyswot-models is already a clone of https://huggingface.co/davanstrien/flyswot-test. Make sure you pull the latest changes with `repo.git_pull()`.
-Pulling changes ...
-To https://huggingface.co/davanstrien/flyswot-test
-   e54a742..18d149e  main -&gt; main
-</code></pre>
-</div>
-</div>
-<p>This could already be used at the end of our training script. Currently I have some util files that package up the model vocab, convert Pytorch to ONNX etc. This could easily be adapted to also push the updated model to the hub. There is only one thing we might still want to add.</p>
-</section>
-<section id="adding-more-metadata-creating-revision-branches" class="level3">
-<h3 class="anchored" data-anchor-id="adding-more-metadata-creating-revision-branches">Adding more metadata: creating revision branches</h3>
-<p>Currently flyswot uses filenames to capture metadata about the model version. The models are versioned using calendar versioning. This works okay but we might be able to manage this in a slightly better way. One of the nice features that <code>hf_hub</code> (the Python library) offers that <code>flyswot</code> currently doesn’t support well is being able to pass in a specific revision when using <code>snapshot_download</code>. This would then allow someone to run a specific older version of the model. This might be useful for various different scenarios. To do this we’ll create a revision branch for the date the model was created. All that we’ll do now is pass in a formatted date as the revision.</p>
-<div id="cell-49" class="cell" data-execution_count="59">
-<div class="sourceCode cell-code" id="cb40" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> datetime <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> datetime</span></code></pre></div>
-</div>
-<div id="cell-50" class="cell" data-outputid="e8d7c7eb-8ee0-42ee-c9c7-3d371571d718" data-execution_count="71">
-<div class="sourceCode cell-code" id="cb41" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1">date_now <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> datetime.now()</span>
-<span id="cb41-2">now <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> date_now.strftime(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"%Y-%m-</span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">%d</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"</span>)</span>
-<span id="cb41-3">now</span></code></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="71">
-<pre><code>'2021-12-30'</code></pre>
-</div>
-</div>
-<div id="cell-51" class="cell" data-outputid="e4a92d22-ae97-4988-e978-055cc7d6f5a5" data-execution_count="74">
-<div class="sourceCode cell-code" id="cb43" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">with</span> Repository(</span>
-<span id="cb43-2">    local_dir<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"flyswot-models"</span>,</span>
-<span id="cb43-3">    clone_from<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"davanstrien/flyswot-test"</span>,</span>
-<span id="cb43-4">    git_user<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Daniel van Strien"</span>,</span>
-<span id="cb43-5">    revision<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>now,</span>
-<span id="cb43-6">).commit(<span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">f"update model </span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span>now<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"</span>):</span>
-<span id="cb43-7">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">for</span> model <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">in</span> Path(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"."</span>).glob(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">".onnx"</span>):</span>
-<span id="cb43-8">        model.rename(<span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">f"</span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span>now<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">-model.onnx"</span>)</span></code></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>/Users/dvanstrien/Documents/daniel/blog/_notebooks/flyswot-models is already a clone of https://huggingface.co/davanstrien/flyswot-test. Make sure you pull the latest changes with `repo.git_pull()`.
-Checked out 2021-12-30 from 2021-12-30.
-Your branch is up to date with 'origin/2021-12-30'.
-
-Pulling changes ...
-Several commits (2) will be pushed upstream.
-The progress bars may be unreliable.
-Everything up-to-date
-</code></pre>
-</div>
-</div>
-<p>This creates a new revision branch for the current date. Since I also want to have the default branch be the current model we would also push the same model to the default branch. This would then mean that we end up with a bunch of different branches with model snapshots that could be passed in but for the default behavior we can easily grab the latest model by not specifying a revision.</p>
-
-
-</section>
-</section>
-
- ]]></description>
-  <guid>https://danielvanstrien.xyz/posts/post-with-code/2021-12-30-hf-hub-model-storage.html</guid>
-  <pubDate>Thu, 30 Dec 2021 00:00:00 GMT</pubDate>
 </item>
 </channel>
 </rss>
