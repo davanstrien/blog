@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 840 690">
+    <!-- Indo-European -->
+    <rect x="20" y="20" width="350" height="280" rx="10" fill="#e6f3ff" stroke="#ccc"/>
+    <text x="40" y="50" font-family="Arial" font-size="24" font-weight="bold">Indo-European</text>
+    
+    <!-- Germanic -->
+    <text x="40" y="85" font-family="Arial" font-size="18" font-weight="bold">Germanic:</text>
+    <text x="40" y="110" font-family="Arial" font-size="16">North Germanic:</text>
+    <text x="60" y="130" font-family="Arial" font-size="16">Swedish, Danish</text>
+    <text x="40" y="155" font-family="Arial" font-size="16">West Germanic:</text>
+    <text x="60" y="175" font-family="Arial" font-size="16">Middle High German, Bavarian, Latvian</text>
+    
+    <!-- Indo-Iranian -->
+    <text x="40" y="200" font-family="Arial" font-size="18" font-weight="bold">Indo-Iranian:</text>
+    <text x="40" y="225" font-family="Arial" font-size="16">Iranian: Persian</text>
+    <text x="40" y="250" font-family="Arial" font-size="16">Indo-Aryan: Hindi, Assamese</text>
+    
+    <!-- Slavic -->
+    <text x="40" y="275" font-family="Arial" font-size="18" font-weight="bold">Slavic:</text>
+    <text x="40" y="295" font-family="Arial" font-size="16">West: Slovak    East: Ukrainian, Russian</text>
+
+    <!-- Sino-Tibetan -->
+    <rect x="400" y="20" width="350" height="100" rx="10" fill="#ffe6e6" stroke="#ccc"/>
+    <text x="420" y="50" font-family="Arial" font-size="24" font-weight="bold">Sino-Tibetan</text>
+    <text x="420" y="85" font-family="Arial" font-size="18" font-weight="bold">Sinitic:</text>
+    <text x="420" y="110" font-family="Arial" font-size="16">Mandarin Chinese</text>
+
+    <!-- Austronesian -->
+    <rect x="20" y="320" width="350" height="100" rx="10" fill="#e6ffe6" stroke="#ccc"/>
+    <text x="40" y="350" font-family="Arial" font-size="24" font-weight="bold">Austronesian</text>
+    <text x="40" y="385" font-family="Arial" font-size="18" font-weight="bold">Malayo-Polynesian:</text>
+    <text x="40" y="410" font-family="Arial" font-size="16">Filipino</text>
+
+    <!-- Uralic -->
+    <rect x="400" y="320" width="350" height="100" rx="10" fill="#f3e6ff" stroke="#ccc"/>
+    <text x="420" y="350" font-family="Arial" font-size="24" font-weight="bold">Uralic</text>
+    <text x="420" y="385" font-family="Arial" font-size="18" font-weight="bold">Finnic:</text>
+    <text x="420" y="410" font-family="Arial" font-size="16">Finnish</text>
+
+    <!-- Turkic -->
+    <rect x="20" y="440" width="350" height="100" rx="10" fill="#fff5e6" stroke="#ccc"/>
+    <text x="40" y="470" font-family="Arial" font-size="24" font-weight="bold">Turkic</text>
+    <text x="40" y="505" font-family="Arial" font-size="18" font-weight="bold">Common Turkic:</text>
+    <text x="40" y="530" font-family="Arial" font-size="16">Tatar</text>
+
+    <!-- Afroasiatic -->
+    <rect x="400" y="440" width="350" height="100" rx="10" fill="#ffe6f3" stroke="#ccc"/>
+    <text x="420" y="470" font-family="Arial" font-size="24" font-weight="bold">Afroasiatic</text>
+    <text x="420" y="505" font-family="Arial" font-size="18" font-weight="bold">Semitic:</text>
+    <text x="420" y="530" font-family="Arial" font-size="16">Arabic, Egyptian Arabic, Moroccan Arabic</text>
+
+    <!-- Austro-Asiatic -->
+    <rect x="20" y="560" width="350" height="100" rx="10" fill="#e6ffff" stroke="#ccc"/>
+    <text x="40" y="590" font-family="Arial" font-size="24" font-weight="bold">Austro-Asiatic</text>
+    <text x="40" y="625" font-family="Arial" font-size="18" font-weight="bold">Vietic:</text>
+    <text x="40" y="650" font-family="Arial" font-size="16">Vietnamese</text>
+</svg>
