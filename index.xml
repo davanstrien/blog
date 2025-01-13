@@ -4281,7 +4281,7 @@ font-style: inherit;">"davanstrien/fineweb2-danish-cleaned"</span>)</span></code
   <category>data</category>
   <guid>https://danielvanstrien.xyz/posts/2025/FineWeb-c/scandinavian-content-filtering-fineweb.html</guid>
   <pubDate>Thu, 09 Jan 2025 00:00:00 GMT</pubDate>
-  <media:content url="https://huggingface.co/datasets/HuggingFaceFW/admin/resolve/main/fineweb-2-logo.png" medium="image" type="image/png"/>
+  <media:content url="https://raw.githubusercontent.com/davanstrien/blog/refs/heads/main/posts/2025/FineWeb-c/assets/illustration.jpg" medium="image" type="image/jpeg"/>
 </item>
 <item>
   <title>How Fine is FineWeb2?</title>
