@@ -169,7 +169,7 @@ font-style: inherit;">"language_code"</span>).unique().collect().to_series().to_
 <h2 class="anchored" data-anchor-id="can-we-train-a-model-to-work-with-a-subset-of-languages">Can we train a model to work with a subset of languages?</h2>
 <p>So far we have 18 languages in the dataset. Currently over a 100 languages have some level of annotation so eventually we hope the community will create a dataset for ma ne model per language.</p>
 <p>Claude gave me the following visual for languages groups in this dataset (which isn’t super accurate but gives a rough idea of the language families represented in the dataset).</p>
-<div id="fig-languages" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Color-coded grid visualization of 20 languages organized by 8 language families (Indo-European, Sino-Tibetan, Austronesian, Uralic, Turkic, Austro-Asiatic, Afroasiatic, Indo-Aryan) and their subgroups, with language codes shown in monospace font" data-fig-cap="Language families represented in the FineWeb-C dataset">
+<div id="fig-languages" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-cap="Language families represented in the FineWeb-C dataset" alt="Color-coded grid visualization of 20 languages organized by 8 language families (Indo-European, Sino-Tibetan, Austronesian, Uralic, Turkic, Austro-Asiatic, Afroasiatic, Indo-Aryan) and their subgroups, with language codes shown in monospace font">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-languages-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="https://danielvanstrien.xyz/posts/2025/FineWeb-c/assets/language-families-names.svg" class="img-fluid figure-img" data-fig-cap="Language families represented in the FineWeb-C dataset" alt="Color-coded grid visualization of 20 languages organized by 8 language families (Indo-European, Sino-Tibetan, Austronesian, Uralic, Turkic, Austro-Asiatic, Afroasiatic, Indo-Aryan) and their subgroups, with language codes shown in monospace font">
@@ -1684,112 +1684,116 @@ wandb: Paste an API key from your profile and hit enter, or press ctrl+c to quit
 <div id="cell-61" class="cell" data-outputid="7e2ca402-c9d4-4e31-a84c-9c737215824a" data-tags="[]" data-execution_count="157">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb39" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1">    train_ds,</span>
-<span id="cb39-2">    test_ds,</span>
-<span id="cb39-3">    hub_model_id,</span>
-<span id="cb39-4">    pre_trained_model_name<span class="op" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb39" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> train_model(</span>
+<span id="cb39-2">    train_ds,</span>
+<span id="cb39-3">    test_ds,</span>
+<span id="cb39-4">    hub_model_id,</span>
+<span id="cb39-5">    pre_trained_model_name<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"distilbert/distilbert-base-multilingual-cased"</span>,</span>
-<span id="cb39-5">    num_epochs<span class="op" style="color: #5E5E5E;
+<span id="cb39-6">    num_epochs<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">20</span>,</span>
-<span id="cb39-6">    batch_size<span class="op" style="color: #5E5E5E;
+<span id="cb39-7">    batch_size<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">128</span>,</span>
-<span id="cb39-7">    label2id<span class="op" style="color: #5E5E5E;
+<span id="cb39-8">    label2id<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">None</span>,</span>
-<span id="cb39-8">    id2label<span class="op" style="color: #5E5E5E;
+<span id="cb39-9">    id2label<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">None</span>,</span>
-<span id="cb39-9">):</span>
-<span id="cb39-10">    <span class="co" style="color: #5E5E5E;
+<span id="cb39-10">):</span>
+<span id="cb39-11">    <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">"""</span></span>
-<span id="cb39-11"><span class="co" style="color: #5E5E5E;
+<span id="cb39-12"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">    Train and evaluate the model with additional metrics for imbalanced classification.</span></span>
-<span id="cb39-12"></span>
-<span id="cb39-13"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">    Args:</span></span>
+<span id="cb39-13"></span>
 <span id="cb39-14"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">        train_ds: Training dataset</span></span>
+font-style: inherit;">    Args:</span></span>
 <span id="cb39-15"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">        test_ds: Test dataset</span></span>
+font-style: inherit;">        train_ds: Training dataset</span></span>
 <span id="cb39-16"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">        hub_model_id: Model ID for pushing to HuggingFace Hub</span></span>
+font-style: inherit;">        test_ds: Test dataset</span></span>
 <span id="cb39-17"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">        pre_trained_model_name: Name of pretrained model to use</span></span>
+font-style: inherit;">        hub_model_id: Model ID for pushing to HuggingFace Hub</span></span>
 <span id="cb39-18"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">        num_epochs: Number of training epochs</span></span>
+font-style: inherit;">        pre_trained_model_name: Name of pretrained model to use</span></span>
 <span id="cb39-19"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">        batch_size: Batch size for training</span></span>
+font-style: inherit;">        num_epochs: Number of training epochs</span></span>
 <span id="cb39-20"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">        label2id: Dictionary mapping labels to IDs</span></span>
+font-style: inherit;">        batch_size: Batch size for training</span></span>
 <span id="cb39-21"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">        id2label: Dictionary mapping IDs to labels</span></span>
+font-style: inherit;">        label2id: Dictionary mapping labels to IDs</span></span>
 <span id="cb39-22"><span class="co" style="color: #5E5E5E;
 background-color: null;
+font-style: inherit;">        id2label: Dictionary mapping IDs to labels</span></span>
+<span id="cb39-23"><span class="co" style="color: #5E5E5E;
+background-color: null;
 font-style: inherit;">    """</span></span>
-<span id="cb39-23">    tokenizer <span class="op" style="color: #5E5E5E;
+<span id="cb39-24">    tokenizer <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> AutoTokenizer.from_pretrained(pre_trained_model_name)</span>
-<span id="cb39-24">    model <span class="op" style="color: #5E5E5E;
+<span id="cb39-25">    model <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> AutoModelForSequenceClassification.from_pretrained(</span>
-<span id="cb39-25">        pre_trained_model_name,</span>
-<span id="cb39-26">        num_labels<span class="op" style="color: #5E5E5E;
+<span id="cb39-26">        pre_trained_model_name,</span>
+<span id="cb39-27">        num_labels<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">2</span>,  <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Binary classification</span></span>
-<span id="cb39-27">        label2id<span class="op" style="color: #5E5E5E;
+<span id="cb39-28">        label2id<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>label2id,</span>
-<span id="cb39-28">        id2label<span class="op" style="color: #5E5E5E;
+<span id="cb39-29">        id2label<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>id2label,</span>
-<span id="cb39-29">    )</span>
-<span id="cb39-30"></span>
-<span id="cb39-31">    <span class="kw" style="color: #003B4F;
+<span id="cb39-30">    )</span>
+<span id="cb39-31"></span>
+<span id="cb39-32">    <span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">def</span> tokenize_function(examples):</span>
-<span id="cb39-32">        <span class="co" style="color: #5E5E5E;
+<span id="cb39-33">        <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">"""</span></span>
-<span id="cb39-33"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">        Tokenize the text data with proper padding and truncation.</span></span>
 <span id="cb39-34"><span class="co" style="color: #5E5E5E;
 background-color: null;
+font-style: inherit;">        Tokenize the text data with proper padding and truncation.</span></span>
+<span id="cb39-35"><span class="co" style="color: #5E5E5E;
+background-color: null;
 font-style: inherit;">        """</span></span>
-<span id="cb39-35">        <span class="cf" style="color: #003B4F;
+<span id="cb39-36">        <span class="cf" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">return</span> tokenizer(</span>
-<span id="cb39-36">            examples[<span class="st" style="color: #20794D;
+<span id="cb39-37">            examples[<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"text"</span>], padding<span class="op" style="color: #5E5E5E;
 background-color: null;
@@ -1804,20 +1808,20 @@ background-color: null;
 font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">512</span></span>
-<span id="cb39-37">        )</span>
-<span id="cb39-38"></span>
-<span id="cb39-39">    split_dataset <span class="op" style="color: #5E5E5E;
+<span id="cb39-38">        )</span>
+<span id="cb39-39"></span>
+<span id="cb39-40">    split_dataset <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> DatasetDict({<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"train"</span>: train_ds, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"test"</span>: test_ds})</span>
-<span id="cb39-40"></span>
-<span id="cb39-41">    <span class="co" style="color: #5E5E5E;
+<span id="cb39-41"></span>
+<span id="cb39-42">    <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Tokenize datasets</span></span>
-<span id="cb39-42">    tokenized_train <span class="op" style="color: #5E5E5E;
+<span id="cb39-43">    tokenized_train <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> split_dataset[<span class="st" style="color: #20794D;
 background-color: null;
@@ -1828,7 +1832,7 @@ background-color: null;
 font-style: inherit;">=</span><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">True</span>)</span>
-<span id="cb39-43">    tokenized_val <span class="op" style="color: #5E5E5E;
+<span id="cb39-44">    tokenized_val <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> split_dataset[<span class="st" style="color: #20794D;
 background-color: null;
@@ -1839,8 +1843,8 @@ background-color: null;
 font-style: inherit;">=</span><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">True</span>)</span>
-<span id="cb39-44"></span>
-<span id="cb39-45">    <span class="bu" style="color: null;
+<span id="cb39-45"></span>
+<span id="cb39-46">    <span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
 background-color: null;
@@ -1851,7 +1855,7 @@ background-color: null;
 font-style: inherit;">}</span><span class="ss" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"</span>)</span>
-<span id="cb39-46">    <span class="bu" style="color: null;
+<span id="cb39-47">    <span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
 background-color: null;
@@ -1862,127 +1866,127 @@ background-color: null;
 font-style: inherit;">}</span><span class="ss" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"</span>)</span>
-<span id="cb39-47"></span>
-<span id="cb39-48">    <span class="co" style="color: #5E5E5E;
+<span id="cb39-48"></span>
+<span id="cb39-49">    <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Set up training arguments</span></span>
-<span id="cb39-49">    training_args <span class="op" style="color: #5E5E5E;
+<span id="cb39-50">    training_args <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> TrainingArguments(</span>
-<span id="cb39-50">        output_dir<span class="op" style="color: #5E5E5E;
+<span id="cb39-51">        output_dir<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"/data/results"</span>,</span>
-<span id="cb39-51">        num_train_epochs<span class="op" style="color: #5E5E5E;
+<span id="cb39-52">        num_train_epochs<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>num_epochs,</span>
-<span id="cb39-52">        per_device_train_batch_size<span class="op" style="color: #5E5E5E;
+<span id="cb39-53">        per_device_train_batch_size<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>batch_size,</span>
-<span id="cb39-53">        per_device_eval_batch_size<span class="op" style="color: #5E5E5E;
+<span id="cb39-54">        per_device_eval_batch_size<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>batch_size,</span>
-<span id="cb39-54">        learning_rate<span class="op" style="color: #5E5E5E;
+<span id="cb39-55">        learning_rate<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">2e-5</span>,</span>
-<span id="cb39-55">        weight_decay<span class="op" style="color: #5E5E5E;
+<span id="cb39-56">        weight_decay<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">0.01</span>,</span>
-<span id="cb39-56">        push_to_hub<span class="op" style="color: #5E5E5E;
+<span id="cb39-57">        push_to_hub<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">True</span>,</span>
-<span id="cb39-57">        eval_strategy<span class="op" style="color: #5E5E5E;
+<span id="cb39-58">        eval_strategy<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"steps"</span>,</span>
-<span id="cb39-58">        eval_steps<span class="op" style="color: #5E5E5E;
+<span id="cb39-59">        eval_steps<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">100</span>,</span>
-<span id="cb39-59">        logging_steps<span class="op" style="color: #5E5E5E;
+<span id="cb39-60">        logging_steps<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">100</span>,</span>
-<span id="cb39-60">        save_strategy<span class="op" style="color: #5E5E5E;
+<span id="cb39-61">        save_strategy<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"steps"</span>,</span>
-<span id="cb39-61">        load_best_model_at_end<span class="op" style="color: #5E5E5E;
+<span id="cb39-62">        load_best_model_at_end<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">True</span>,</span>
-<span id="cb39-62">        metric_for_best_model<span class="op" style="color: #5E5E5E;
+<span id="cb39-63">        metric_for_best_model<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"auc_roc"</span>,  <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Using AUC-ROC for model selection</span></span>
-<span id="cb39-63">        greater_is_better<span class="op" style="color: #5E5E5E;
+<span id="cb39-64">        greater_is_better<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">True</span>,</span>
-<span id="cb39-64">        save_total_limit<span class="op" style="color: #5E5E5E;
+<span id="cb39-65">        save_total_limit<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">20</span>,</span>
-<span id="cb39-65">        hub_model_id<span class="op" style="color: #5E5E5E;
+<span id="cb39-66">        hub_model_id<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>hub_model_id,</span>
-<span id="cb39-66">        fp16<span class="op" style="color: #5E5E5E;
+<span id="cb39-67">        fp16<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">True</span>,</span>
-<span id="cb39-67">        save_safetensors<span class="op" style="color: #5E5E5E;
+<span id="cb39-68">        save_safetensors<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">False</span>,</span>
-<span id="cb39-68">    )</span>
-<span id="cb39-69"></span>
-<span id="cb39-70">    trainer <span class="op" style="color: #5E5E5E;
+<span id="cb39-69">    )</span>
+<span id="cb39-70"></span>
+<span id="cb39-71">    trainer <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> Trainer(</span>
-<span id="cb39-71">        model<span class="op" style="color: #5E5E5E;
+<span id="cb39-72">        model<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>model,</span>
-<span id="cb39-72">        args<span class="op" style="color: #5E5E5E;
+<span id="cb39-73">        args<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>training_args,</span>
-<span id="cb39-73">        tokenizer<span class="op" style="color: #5E5E5E;
+<span id="cb39-74">        tokenizer<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>tokenizer,  <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Using tokenizer instead of processing_class</span></span>
-<span id="cb39-74">        train_dataset<span class="op" style="color: #5E5E5E;
+<span id="cb39-75">        train_dataset<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>tokenized_train,</span>
-<span id="cb39-75">        eval_dataset<span class="op" style="color: #5E5E5E;
+<span id="cb39-76">        eval_dataset<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>tokenized_val,</span>
-<span id="cb39-76">        compute_metrics<span class="op" style="color: #5E5E5E;
+<span id="cb39-77">        compute_metrics<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>compute_metrics,</span>
-<span id="cb39-77">        callbacks<span class="op" style="color: #5E5E5E;
+<span id="cb39-78">        callbacks<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>[</span>
-<span id="cb39-78">            EarlyStoppingCallback(</span>
-<span id="cb39-79">                early_stopping_patience<span class="op" style="color: #5E5E5E;
+<span id="cb39-79">            EarlyStoppingCallback(</span>
+<span id="cb39-80">                early_stopping_patience<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
 background-color: null;
@@ -1991,134 +1995,134 @@ background-color: null;
 font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">0.001</span></span>
-<span id="cb39-80">            )</span>
-<span id="cb39-81">        ],</span>
-<span id="cb39-82">    )</span>
-<span id="cb39-83"></span>
-<span id="cb39-84">    <span class="co" style="color: #5E5E5E;
+<span id="cb39-81">            )</span>
+<span id="cb39-82">        ],</span>
+<span id="cb39-83">    )</span>
+<span id="cb39-84"></span>
+<span id="cb39-85">    <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Train the model</span></span>
-<span id="cb39-85">    trainer.train()</span>
-<span id="cb39-86"></span>
-<span id="cb39-87">    <span class="co" style="color: #5E5E5E;
+<span id="cb39-86">    trainer.train()</span>
+<span id="cb39-87"></span>
+<span id="cb39-88">    <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Evaluate the model</span></span>
-<span id="cb39-88">    eval_results <span class="op" style="color: #5E5E5E;
+<span id="cb39-89">    eval_results <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> trainer.evaluate()</span>
-<span id="cb39-89"></span>
-<span id="cb39-90">    <span class="cf" style="color: #003B4F;
+<span id="cb39-90"></span>
+<span id="cb39-91">    <span class="cf" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">return</span> trainer, eval_results</span>
-<span id="cb39-91"></span>
 <span id="cb39-92"></span>
-<span id="cb39-93"><span class="kw" style="color: #003B4F;
+<span id="cb39-93"></span>
+<span id="cb39-94"><span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">def</span> main(</span>
-<span id="cb39-94">    train_ds,</span>
-<span id="cb39-95">    test_ds,</span>
-<span id="cb39-96">    hub_model_id,</span>
-<span id="cb39-97">    pre_trained_model_name<span class="op" style="color: #5E5E5E;
+<span id="cb39-95">    train_ds,</span>
+<span id="cb39-96">    test_ds,</span>
+<span id="cb39-97">    hub_model_id,</span>
+<span id="cb39-98">    pre_trained_model_name<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"distilbert/distilbert-base-multilingual-cased"</span>,</span>
-<span id="cb39-98">    num_epochs<span class="op" style="color: #5E5E5E;
+<span id="cb39-99">    num_epochs<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">20</span>,</span>
-<span id="cb39-99">    batch_size<span class="op" style="color: #5E5E5E;
+<span id="cb39-100">    batch_size<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">128</span>,</span>
-<span id="cb39-100">    label2id<span class="op" style="color: #5E5E5E;
+<span id="cb39-101">    label2id<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">None</span>,</span>
-<span id="cb39-101">    id2label<span class="op" style="color: #5E5E5E;
+<span id="cb39-102">    id2label<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">None</span>,</span>
-<span id="cb39-102">):</span>
-<span id="cb39-103">    <span class="co" style="color: #5E5E5E;
+<span id="cb39-103">):</span>
+<span id="cb39-104">    <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">"""</span></span>
-<span id="cb39-104"><span class="co" style="color: #5E5E5E;
+<span id="cb39-105"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">    Main training function that handles model training and evaluation.</span></span>
-<span id="cb39-105"></span>
-<span id="cb39-106"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">    Args:</span></span>
+<span id="cb39-106"></span>
 <span id="cb39-107"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">        train_ds: Training dataset</span></span>
+font-style: inherit;">    Args:</span></span>
 <span id="cb39-108"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">        test_ds: Test dataset</span></span>
+font-style: inherit;">        train_ds: Training dataset</span></span>
 <span id="cb39-109"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">        hub_model_id: Model ID for pushing to HuggingFace Hub</span></span>
+font-style: inherit;">        test_ds: Test dataset</span></span>
 <span id="cb39-110"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">        pre_trained_model_name: Name of pretrained model to use</span></span>
+font-style: inherit;">        hub_model_id: Model ID for pushing to HuggingFace Hub</span></span>
 <span id="cb39-111"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">        num_epochs: Number of training epochs</span></span>
+font-style: inherit;">        pre_trained_model_name: Name of pretrained model to use</span></span>
 <span id="cb39-112"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">        batch_size: Batch size for training</span></span>
+font-style: inherit;">        num_epochs: Number of training epochs</span></span>
 <span id="cb39-113"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">        label2id: Dictionary mapping labels to IDs</span></span>
+font-style: inherit;">        batch_size: Batch size for training</span></span>
 <span id="cb39-114"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">        id2label: Dictionary mapping IDs to labels</span></span>
+font-style: inherit;">        label2id: Dictionary mapping labels to IDs</span></span>
 <span id="cb39-115"><span class="co" style="color: #5E5E5E;
 background-color: null;
+font-style: inherit;">        id2label: Dictionary mapping IDs to labels</span></span>
+<span id="cb39-116"><span class="co" style="color: #5E5E5E;
+background-color: null;
 font-style: inherit;">    """</span></span>
-<span id="cb39-116">    <span class="co" style="color: #5E5E5E;
+<span id="cb39-117">    <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Train and evaluate the model</span></span>
-<span id="cb39-117">    trainer, eval_results <span class="op" style="color: #5E5E5E;
+<span id="cb39-118">    trainer, eval_results <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> train_model(</span>
-<span id="cb39-118">        train_ds<span class="op" style="color: #5E5E5E;
+<span id="cb39-119">        train_ds<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>train_ds,</span>
-<span id="cb39-119">        test_ds<span class="op" style="color: #5E5E5E;
+<span id="cb39-120">        test_ds<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>test_ds,</span>
-<span id="cb39-120">        hub_model_id<span class="op" style="color: #5E5E5E;
+<span id="cb39-121">        hub_model_id<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>hub_model_id,</span>
-<span id="cb39-121">        pre_trained_model_name<span class="op" style="color: #5E5E5E;
+<span id="cb39-122">        pre_trained_model_name<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>pre_trained_model_name,</span>
-<span id="cb39-122">        num_epochs<span class="op" style="color: #5E5E5E;
+<span id="cb39-123">        num_epochs<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>num_epochs,</span>
-<span id="cb39-123">        batch_size<span class="op" style="color: #5E5E5E;
+<span id="cb39-124">        batch_size<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>batch_size,</span>
-<span id="cb39-124">        label2id<span class="op" style="color: #5E5E5E;
+<span id="cb39-125">        label2id<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>label2id,</span>
-<span id="cb39-125">        id2label<span class="op" style="color: #5E5E5E;
+<span id="cb39-126">        id2label<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>id2label,</span>
-<span id="cb39-126">    )</span>
-<span id="cb39-127"></span>
-<span id="cb39-128">    <span class="co" style="color: #5E5E5E;
+<span id="cb39-127">    )</span>
+<span id="cb39-128"></span>
+<span id="cb39-129">    <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Print evaluation results with all metrics</span></span>
-<span id="cb39-129">    <span class="bu" style="color: null;
+<span id="cb39-130">    <span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
 background-color: null;
@@ -2127,7 +2131,7 @@ background-color: null;
 font-style: inherit;">\n</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">Evaluation Results:"</span>)</span>
-<span id="cb39-130">    <span class="bu" style="color: null;
+<span id="cb39-131">    <span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
 background-color: null;
@@ -2140,7 +2144,7 @@ background-color: null;
 font-style: inherit;">:.4f}</span><span class="ss" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"</span>)</span>
-<span id="cb39-131">    <span class="bu" style="color: null;
+<span id="cb39-132">    <span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
 background-color: null;
@@ -2153,7 +2157,7 @@ background-color: null;
 font-style: inherit;">:.4f}</span><span class="ss" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"</span>)</span>
-<span id="cb39-132">    <span class="bu" style="color: null;
+<span id="cb39-133">    <span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
 background-color: null;
@@ -2166,7 +2170,7 @@ background-color: null;
 font-style: inherit;">:.4f}</span><span class="ss" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"</span>)</span>
-<span id="cb39-133">    <span class="bu" style="color: null;
+<span id="cb39-134">    <span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
 background-color: null;
@@ -2179,10 +2183,10 @@ background-color: null;
 font-style: inherit;">:.4f}</span><span class="ss" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"</span>)</span>
-<span id="cb39-134">    <span class="bu" style="color: null;
+<span id="cb39-135">    <span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>(</span>
-<span id="cb39-135">        <span class="ss" style="color: #20794D;
+<span id="cb39-136">        <span class="ss" style="color: #20794D;
 background-color: null;
 font-style: inherit;">f"Average Precision (minority class): </span><span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -2193,8 +2197,8 @@ background-color: null;
 font-style: inherit;">:.4f}</span><span class="ss" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"</span></span>
-<span id="cb39-136">    )</span>
-<span id="cb39-137">    <span class="bu" style="color: null;
+<span id="cb39-137">    )</span>
+<span id="cb39-138">    <span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
 background-color: null;
@@ -2207,8 +2211,8 @@ background-color: null;
 font-style: inherit;">:.4f}</span><span class="ss" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"</span>)</span>
-<span id="cb39-138"></span>
-<span id="cb39-139">    <span class="cf" style="color: #003B4F;
+<span id="cb39-139"></span>
+<span id="cb39-140">    <span class="cf" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">return</span> trainer, eval_results</span></code></pre></div>
