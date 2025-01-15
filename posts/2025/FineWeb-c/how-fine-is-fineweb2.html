@@ -248,27 +248,43 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  'fin_Latn/train-00000-of-00001.parquet',
  'fra_Latn/train-00000-of-00001.parquet',
  'gmh_Latn/train-00000-of-00001.parquet',
+ 'gsw_Latn/train-00000-of-00001.parquet',
  'hin_Deva/train-00000-of-00001.parquet',
  'lvs_Latn/train-00000-of-00001.parquet',
  'rus_Cyrl/train-00000-of-00001.parquet',
  'slk_Latn/train-00000-of-00001.parquet',
+ 'spa_Latn/train-00000-of-00001.parquet',
  'swe_Latn/train-00000-of-00001.parquet',
  'tat_Cyrl/train-00000-of-00001.parquet',
  'ukr_Cyrl/train-00000-of-00001.parquet',
- 'vie_Latn/train-00000-of-00001.parquet']</code></pre>
+ 'vie_Latn/train-00000-of-00001.parquet',
+ 'yue_Hani/train-00000-of-00001.parquet',
+ 'zsm_Latn/train-00000-of-00001.parquet']</code></pre>
 </div>
 </div>
 <div id="cell-7" class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pl.scan_parquet(</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    [<span class="ss">f"hf://datasets/data-is-better-together/fineweb-c/</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> p <span class="kw">in</span> paths]</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>keep_columns <span class="op">=</span> [</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"id"</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"text"</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"educational_value_labels"</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"annotator_ids"</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"problematic_content_label_present"</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"problematic_content_label_agreement"</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"language_names"</span>,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"language_code"</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-8" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pl.scan_parquet(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    [<span class="ss">f"hf://datasets/data-is-better-together/fineweb-c/</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> p <span class="kw">in</span> paths]</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>).select(keep_columns)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="how-many-languages-are-included-in-the-dataset-so-far" class="level3">
 <h3 class="anchored" data-anchor-id="how-many-languages-are-included-in-the-dataset-so-far">How many languages are included in the dataset so far?</h3>
-<div id="cell-9" class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df.select(pl.col(<span class="st">"language_code"</span>)).unique().collect().count()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="5">
+<div id="cell-10" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df.select(pl.col(<span class="st">"language_code"</span>)).unique().collect().count()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="6">
 <div><style>
 .dataframe > thead > tr,
 .dataframe > tbody > tr {
@@ -288,7 +304,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td>20</td>
+<td>24</td>
 </tr>
 </tbody>
 </table>
@@ -296,11 +312,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>We can also see how many rows there are per language.</p>
-<div id="cell-11" class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df.group_by([<span class="st">"language_code"</span>]).agg(pl.col(<span class="st">"id"</span>).<span class="bu">len</span>().alias(<span class="st">"n_rows"</span>)).sort(</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"n_rows"</span>, descending<span class="op">=</span><span class="va">True</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>).collect()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="6">
+<div id="cell-12" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df.group_by([<span class="st">"language_code"</span>]).agg(pl.col(<span class="st">"id"</span>).<span class="bu">len</span>().alias(<span class="st">"n_rows"</span>)).sort(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"n_rows"</span>, descending<span class="op">=</span><span class="va">True</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>).collect()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="7">
 <div><style>
 .dataframe > thead > tr,
 .dataframe > tbody > tr {
@@ -308,7 +324,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   white-space: pre-wrap;
 }
 </style>
-<small>shape: (20, 2)</small>
+<small>shape: (24, 2)</small>
 <table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
 <thead>
 <tr class="header">
@@ -323,38 +339,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td>"tat_Cyrl"</td>
-<td>1865</td>
+<td>1557</td>
 </tr>
 <tr class="even">
-<td>"fil_Latn"</td>
-<td>1000</td>
-</tr>
-<tr class="odd">
-<td>"fin_Latn"</td>
-<td>1000</td>
-</tr>
-<tr class="even">
-<td>"gmh_Latn"</td>
-<td>1000</td>
-</tr>
-<tr class="odd">
-<td>"ukr_Cyrl"</td>
-<td>1000</td>
-</tr>
-<tr class="even">
-<td>"hin_Deva"</td>
-<td>1000</td>
-</tr>
-<tr class="odd">
-<td>"arb_Arab"</td>
-<td>1000</td>
-</tr>
-<tr class="even">
-<td>"arz_Arab"</td>
-<td>1000</td>
-</tr>
-<tr class="odd">
 <td>"slk_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"gsw_Latn"</td>
 <td>1000</td>
 </tr>
 <tr class="even">
@@ -362,23 +354,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>1000</td>
 </tr>
 <tr class="odd">
-<td>"fas_Arab"</td>
-<td>1000</td>
-</tr>
-<tr class="even">
-<td>"asm_Latn"</td>
-<td>1000</td>
-</tr>
-<tr class="odd">
 <td>"cmn_Hani"</td>
 <td>1000</td>
 </tr>
 <tr class="even">
-<td>"bar_Latn"</td>
+<td>"spa_Latn"</td>
 <td>1000</td>
 </tr>
 <tr class="odd">
-<td>"fra_Latn"</td>
+<td>"swe_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td>"arz_Arab"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"bar_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td>"yue_Hani"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"fil_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td>"gmh_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"fin_Latn"</td>
 <td>1000</td>
 </tr>
 <tr class="even">
@@ -386,19 +394,43 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>1000</td>
 </tr>
 <tr class="odd">
-<td>"lvs_Latn"</td>
-<td>1000</td>
-</tr>
-<tr class="even">
-<td>"swe_Latn"</td>
-<td>1000</td>
-</tr>
-<tr class="odd">
 <td>"dan_Latn"</td>
 <td>1000</td>
 </tr>
 <tr class="even">
+<td>"zsm_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"asm_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="even">
 <td>"ary_Arab"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"hin_Deva"</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td>"lvs_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"ukr_Cyrl"</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td>"arb_Arab"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"fra_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td>"fas_Arab"</td>
 <td>1000</td>
 </tr>
 </tbody>
@@ -414,11 +446,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="number-of-annotators">Number of annotators</h2>
 <p>Since starting this project we’ve found some languages have had more problematic data, including languages where a lot of data was identified in the wrong language. Because of this for some languages we’ve set a higher or lower “retirement” threshold before retiring a sample. This means some languages have only a single annotator labeling each example whilst others have had multiple people annotate each example.</p>
 <p>Let’s look at the mean number of annotators per language.</p>
-<div id="cell-15" class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df.group_by([<span class="st">"language_code"</span>]).agg(</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"educational_value_labels"</span>).<span class="bu">list</span>.<span class="bu">len</span>().mean().alias(<span class="st">"n_annotators"</span>)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>).sort(<span class="st">"n_annotators"</span>, descending<span class="op">=</span><span class="va">True</span>).collect()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="7">
+<div id="cell-16" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df.group_by([<span class="st">"language_code"</span>]).agg(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"educational_value_labels"</span>).<span class="bu">list</span>.<span class="bu">len</span>().mean().alias(<span class="st">"n_annotators"</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>).sort(<span class="st">"n_annotators"</span>, descending<span class="op">=</span><span class="va">True</span>).collect()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="8">
 <div><style>
 .dataframe > thead > tr,
 .dataframe > tbody > tr {
@@ -426,7 +458,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   white-space: pre-wrap;
 }
 </style>
-<small>shape: (20, 2)</small>
+<small>shape: (24, 2)</small>
 <table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
 <thead>
 <tr class="header">
@@ -448,20 +480,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>2.573</td>
 </tr>
 <tr class="odd">
+<td>"spa_Latn"</td>
+<td>2.126</td>
+</tr>
+<tr class="even">
 <td>"ary_Arab"</td>
 <td>1.019</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>"fin_Latn"</td>
 <td>1.017</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>"fra_Latn"</td>
 <td>1.012</td>
-</tr>
-<tr class="even">
-<td>"slk_Latn"</td>
-<td>1.006</td>
 </tr>
 <tr class="odd">
 <td>"swe_Latn"</td>
@@ -472,8 +504,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>1.006</td>
 </tr>
 <tr class="odd">
-<td>"tat_Cyrl"</td>
-<td>1.003217</td>
+<td>"slk_Latn"</td>
+<td>1.006</td>
 </tr>
 <tr class="even">
 <td>"rus_Cyrl"</td>
@@ -484,31 +516,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>1.003</td>
 </tr>
 <tr class="even">
+<td>"tat_Cyrl"</td>
+<td>1.002569</td>
+</tr>
+<tr class="odd">
 <td>"asm_Latn"</td>
 <td>1.002</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>"arb_Arab"</td>
 <td>1.002</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>"fas_Arab"</td>
 <td>1.001</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>"gmh_Latn"</td>
 <td>1.0</td>
 </tr>
+<tr class="odd">
+<td>"bar_Latn"</td>
+<td>1.0</td>
+</tr>
 <tr class="even">
-<td>"cmn_Hani"</td>
+<td>"zsm_Latn"</td>
 <td>1.0</td>
 </tr>
 <tr class="odd">
-<td>"ukr_Cyrl"</td>
+<td>"fil_Latn"</td>
 <td>1.0</td>
 </tr>
 <tr class="even">
-<td>"bar_Latn"</td>
+<td>"ukr_Cyrl"</td>
 <td>1.0</td>
 </tr>
 <tr class="odd">
@@ -516,7 +556,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>1.0</td>
 </tr>
 <tr class="even">
-<td>"fil_Latn"</td>
+<td>"yue_Hani"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"gsw_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"cmn_Hani"</td>
 <td>1.0</td>
 </tr>
 </tbody>
@@ -528,12 +576,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="look-at-the-distribution-of-labels" class="level3">
 <h3 class="anchored" data-anchor-id="look-at-the-distribution-of-labels">Look at the distribution of labels</h3>
 <p>No we’ve got a sense of how many annotators there are per language, let’s look at the distribution of labels. Since we sometimes have multiple labels for each sample we’ll simplify things a bit to just look at the first label for each sample. For some languages this will be the only label anyway. If we work with a specific language for a longer time we’ll also want to consider the agreement between annotators.</p>
-<div id="cell-18" class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.with_columns(</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"educational_value_labels"</span>).<span class="bu">list</span>.first().alias(<span class="st">"label"</span>)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>).collect()</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>df.head(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="8">
+<div id="cell-19" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.with_columns(</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"educational_value_labels"</span>).<span class="bu">list</span>.first().alias(<span class="st">"label"</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>).collect()</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>df.head(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="9">
 <div><style>
 .dataframe > thead > tr,
 .dataframe > tbody > tr {
@@ -584,38 +632,38 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-<div id="cell-19" class="cell" data-input="false" data-execution_count="9">
+<div id="cell-20" class="cell" data-input="false" data-execution_count="10">
 <details class="code-fold">
 <summary>Click to show/hide code</summary>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>label_counts <span class="op">=</span> (</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    df.group_by([<span class="st">"language_code"</span>, <span class="st">"label"</span>])</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">len</span>()</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    .pivot(</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>        values<span class="op">=</span><span class="st">"len"</span>,</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>        index<span class="op">=</span><span class="st">"language_code"</span>,</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        on<span class="op">=</span><span class="st">"label"</span>,</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        aggregate_function<span class="op">=</span><span class="st">"sum"</span>,</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    .fill_null(<span class="dv">0</span>)</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate row totals</span></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>row_totals <span class="op">=</span> label_counts.select(pl.exclude(<span class="st">"language_code"</span>)).sum_horizontal()</span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate percentages</span></span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>label_percentages <span class="op">=</span> (</span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    label_counts.with_columns(</span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>        pl.col(col) <span class="op">/</span> row_totals <span class="op">*</span> <span class="dv">100</span></span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> col <span class="kw">in</span> label_counts.columns</span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> col <span class="op">!=</span> <span class="st">"language_code"</span></span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    .select([<span class="st">"language_code"</span>, pl.<span class="bu">all</span>().exclude(<span class="st">"language_code"</span>).<span class="bu">round</span>(<span class="dv">2</span>)])</span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"language_code"</span>)</span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>label_percentages</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>label_counts <span class="op">=</span> (</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    df.group_by([<span class="st">"language_code"</span>, <span class="st">"label"</span>])</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">len</span>()</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    .pivot(</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>        values<span class="op">=</span><span class="st">"len"</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        index<span class="op">=</span><span class="st">"language_code"</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        on<span class="op">=</span><span class="st">"label"</span>,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        aggregate_function<span class="op">=</span><span class="st">"sum"</span>,</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    .fill_null(<span class="dv">0</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate row totals</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>row_totals <span class="op">=</span> label_counts.select(pl.exclude(<span class="st">"language_code"</span>)).sum_horizontal()</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate percentages</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>label_percentages <span class="op">=</span> (</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    label_counts.with_columns(</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>        pl.col(col) <span class="op">/</span> row_totals <span class="op">*</span> <span class="dv">100</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> col <span class="kw">in</span> label_counts.columns</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> col <span class="op">!=</span> <span class="st">"language_code"</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>    .select([<span class="st">"language_code"</span>, pl.<span class="bu">all</span>().exclude(<span class="st">"language_code"</span>).<span class="bu">round</span>(<span class="dv">2</span>)])</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"language_code"</span>)</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>label_percentages</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-display" data-execution_count="9">
+<div class="cell-output cell-output-display" data-execution_count="10">
 <div><style>
 .dataframe > thead > tr,
 .dataframe > tbody > tr {
@@ -623,17 +671,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   white-space: pre-wrap;
 }
 </style>
-<small>shape: (20, 8)</small>
+<small>shape: (24, 8)</small>
 <table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th">language_code</th>
-<th data-quarto-table-cell-role="th">Excellent</th>
-<th data-quarto-table-cell-role="th">Good</th>
-<th data-quarto-table-cell-role="th">None</th>
 <th data-quarto-table-cell-role="th">Minimal</th>
-<th data-quarto-table-cell-role="th">Basic</th>
+<th data-quarto-table-cell-role="th">Good</th>
 <th data-quarto-table-cell-role="th">❗ Problematic Content ❗</th>
+<th data-quarto-table-cell-role="th">None</th>
+<th data-quarto-table-cell-role="th">Excellent</th>
+<th data-quarto-table-cell-role="th">Basic</th>
 <th data-quarto-table-cell-role="th">❗ Wrong language ❗</th>
 </tr>
 <tr class="even">
@@ -650,203 +698,243 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td>"arb_Arab"</td>
-<td>0.7</td>
-<td>2.5</td>
-<td>51.0</td>
 <td>15.6</td>
-<td>4.9</td>
+<td>2.5</td>
 <td>25.3</td>
+<td>51.0</td>
+<td>0.7</td>
+<td>4.9</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
 <td>"ary_Arab"</td>
-<td>1.0</td>
-<td>1.4</td>
-<td>1.1</td>
 <td>1.2</td>
-<td>0.7</td>
+<td>1.4</td>
 <td>94.6</td>
+<td>1.1</td>
+<td>1.0</td>
+<td>0.7</td>
 <td>0.0</td>
 </tr>
 <tr class="odd">
 <td>"arz_Arab"</td>
-<td>2.0</td>
-<td>4.0</td>
-<td>12.7</td>
 <td>3.7</td>
-<td>4.1</td>
+<td>4.0</td>
 <td>73.5</td>
+<td>12.7</td>
+<td>2.0</td>
+<td>4.1</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
 <td>"asm_Latn"</td>
-<td>0.0</td>
-<td>0.0</td>
-<td>64.7</td>
 <td>5.0</td>
-<td>0.3</td>
+<td>0.0</td>
 <td>19.1</td>
+<td>64.7</td>
+<td>0.0</td>
+<td>0.3</td>
 <td>10.9</td>
 </tr>
 <tr class="odd">
 <td>"bar_Latn"</td>
-<td>0.0</td>
-<td>0.0</td>
-<td>16.5</td>
 <td>2.4</td>
-<td>4.1</td>
+<td>0.0</td>
 <td>77.0</td>
+<td>16.5</td>
+<td>0.0</td>
+<td>4.1</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
 <td>"cmn_Hani"</td>
-<td>1.4</td>
-<td>9.7</td>
-<td>24.2</td>
 <td>36.2</td>
-<td>25.1</td>
+<td>9.7</td>
 <td>2.5</td>
+<td>24.2</td>
+<td>1.4</td>
+<td>25.1</td>
 <td>0.9</td>
 </tr>
 <tr class="odd">
 <td>"dan_Latn"</td>
-<td>0.1</td>
-<td>1.2</td>
-<td>47.6</td>
 <td>28.2</td>
-<td>8.4</td>
+<td>1.2</td>
 <td>14.5</td>
+<td>47.6</td>
+<td>0.1</td>
+<td>8.4</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
 <td>"fas_Arab"</td>
-<td>2.3</td>
-<td>8.9</td>
-<td>39.6</td>
 <td>18.7</td>
-<td>10.0</td>
+<td>8.9</td>
 <td>20.5</td>
+<td>39.6</td>
+<td>2.3</td>
+<td>10.0</td>
 <td>0.0</td>
 </tr>
 <tr class="odd">
 <td>"fil_Latn"</td>
-<td>0.8</td>
-<td>2.6</td>
-<td>24.1</td>
 <td>27.6</td>
-<td>5.1</td>
+<td>2.6</td>
 <td>37.9</td>
+<td>24.1</td>
+<td>0.8</td>
+<td>5.1</td>
 <td>1.9</td>
 </tr>
 <tr class="even">
 <td>"fin_Latn"</td>
-<td>2.6</td>
-<td>18.2</td>
-<td>19.7</td>
 <td>28.5</td>
-<td>20.6</td>
+<td>18.2</td>
 <td>8.5</td>
+<td>19.7</td>
+<td>2.6</td>
+<td>20.6</td>
 <td>1.9</td>
 </tr>
 <tr class="odd">
 <td>"fra_Latn"</td>
-<td>2.8</td>
-<td>5.7</td>
-<td>54.3</td>
 <td>23.8</td>
-<td>8.6</td>
+<td>5.7</td>
 <td>4.8</td>
+<td>54.3</td>
+<td>2.8</td>
+<td>8.6</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
 <td>"gmh_Latn"</td>
-<td>0.0</td>
-<td>0.0</td>
-<td>1.0</td>
 <td>0.5</td>
-<td>0.2</td>
+<td>0.0</td>
 <td>98.3</td>
+<td>1.0</td>
 <td>0.0</td>
-</tr>
-<tr class="odd">
-<td>"hin_Deva"</td>
-<td>0.3</td>
 <td>0.2</td>
-<td>87.1</td>
-<td>11.2</td>
-<td>0.9</td>
-<td>0.3</td>
-<td>0.0</td>
-</tr>
-<tr class="even">
-<td>"lvs_Latn"</td>
-<td>0.0</td>
-<td>1.4</td>
-<td>54.7</td>
-<td>23.8</td>
-<td>11.4</td>
-<td>8.7</td>
 <td>0.0</td>
 </tr>
 <tr class="odd">
-<td>"rus_Cyrl"</td>
+<td>"gsw_Latn"</td>
+<td>2.5</td>
+<td>3.6</td>
+<td>1.3</td>
+<td>29.3</td>
 <td>1.1</td>
-<td>3.0</td>
-<td>68.3</td>
-<td>13.9</td>
-<td>6.1</td>
-<td>7.6</td>
+<td>2.2</td>
+<td>60.0</td>
+</tr>
+<tr class="even">
+<td>"hin_Deva"</td>
+<td>11.2</td>
+<td>0.2</td>
+<td>0.3</td>
+<td>87.1</td>
+<td>0.3</td>
+<td>0.9</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"lvs_Latn"</td>
+<td>23.8</td>
+<td>1.4</td>
+<td>8.7</td>
+<td>54.7</td>
+<td>0.0</td>
+<td>11.4</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
+<td>"rus_Cyrl"</td>
+<td>13.9</td>
+<td>3.0</td>
+<td>7.6</td>
+<td>68.3</td>
+<td>1.1</td>
+<td>6.1</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
 <td>"slk_Latn"</td>
-<td>1.5</td>
-<td>3.8</td>
-<td>60.4</td>
 <td>21.6</td>
-<td>8.0</td>
+<td>3.8</td>
 <td>4.7</td>
+<td>60.4</td>
+<td>1.5</td>
+<td>8.0</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td>"spa_Latn"</td>
+<td>24.5</td>
+<td>2.9</td>
+<td>3.9</td>
+<td>60.7</td>
+<td>0.7</td>
+<td>7.3</td>
 <td>0.0</td>
 </tr>
 <tr class="odd">
 <td>"swe_Latn"</td>
-<td>1.1</td>
-<td>3.3</td>
-<td>54.5</td>
 <td>24.1</td>
+<td>3.3</td>
 <td>8.5</td>
+<td>54.5</td>
+<td>1.1</td>
 <td>8.5</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
 <td>"tat_Cyrl"</td>
-<td>1.34</td>
-<td>3.7</td>
-<td>43.43</td>
-<td>22.79</td>
-<td>25.31</td>
-<td>3.43</td>
+<td>21.97</td>
+<td>3.85</td>
+<td>2.5</td>
+<td>36.61</td>
+<td>1.28</td>
+<td>33.78</td>
 <td>0.0</td>
 </tr>
 <tr class="odd">
 <td>"ukr_Cyrl"</td>
-<td>2.3</td>
-<td>7.7</td>
-<td>73.6</td>
 <td>8.6</td>
-<td>6.4</td>
+<td>7.7</td>
 <td>1.4</td>
+<td>73.6</td>
+<td>2.3</td>
+<td>6.4</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
 <td>"vie_Latn"</td>
-<td>1.2</td>
-<td>6.4</td>
-<td>35.9</td>
 <td>33.9</td>
-<td>13.1</td>
+<td>6.4</td>
 <td>9.5</td>
+<td>35.9</td>
+<td>1.2</td>
+<td>13.1</td>
 <td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"yue_Hani"</td>
+<td>13.8</td>
+<td>5.5</td>
+<td>0.9</td>
+<td>68.4</td>
+<td>1.8</td>
+<td>9.6</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td>"zsm_Latn"</td>
+<td>37.3</td>
+<td>4.5</td>
+<td>0.4</td>
+<td>44.9</td>
+<td>2.7</td>
+<td>10.1</td>
+<td>0.1</td>
 </tr>
 </tbody>
 </table>
@@ -854,110 +942,114 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>This is a bit hard to read so let’s plot it as a heatmap.</p>
-<div id="cell-21" class="cell" data-input="false" data-execution_count="10">
+<div id="cell-22" class="cell" data-input="false" data-execution_count="11">
 <details class="code-fold">
 <summary>Click to show/hide code</summary>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert Polars DataFrame to pandas for seaborn</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>label_percentages_pd <span class="op">=</span> label_percentages.to_pandas()</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Clean up column names by replacing the problematic symbols</span></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>label_percentages_pd.columns <span class="op">=</span> [</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    col.replace(<span class="st">"❗"</span>, <span class="st">"!"</span>) <span class="cf">for</span> col <span class="kw">in</span> label_percentages_pd.columns</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the desired column order</span></span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>column_order <span class="op">=</span> [</span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"! Problematic Content !"</span>,</span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"! Wrong language !"</span>,</span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"None"</span>,</span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Basic"</span>,</span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Minimal"</span>,</span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Good"</span>,</span>
-<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Excellent"</span>,</span>
-<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Reorder the columns (excluding 'language_code' which will be the index)</span></span>
-<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>label_percentages_pd <span class="op">=</span> label_percentages_pd.set_index(<span class="st">"language_code"</span>)[column_order]</span>
-<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">8</span>))</span>
-<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>sns.heatmap(</span>
-<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>    label_percentages_pd,</span>
-<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>    annot<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>    fmt<span class="op">=</span><span class="st">".1f"</span>,</span>
-<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>    cmap<span class="op">=</span><span class="st">"YlOrRd"</span>,</span>
-<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>    cbar_kws<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Percentage (%)"</span>},</span>
-<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>    square<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>plt.xticks(rotation<span class="op">=</span><span class="dv">45</span>, ha<span class="op">=</span><span class="st">"right"</span>)</span>
-<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>plt.yticks(rotation<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Distribution of Labels by Language (%)"</span>)</span>
-<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert Polars DataFrame to pandas for seaborn</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>label_percentages_pd <span class="op">=</span> label_percentages.to_pandas()</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Clean up column names by replacing the problematic symbols</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>label_percentages_pd.columns <span class="op">=</span> [</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    col.replace(<span class="st">"❗"</span>, <span class="st">"!"</span>) <span class="cf">for</span> col <span class="kw">in</span> label_percentages_pd.columns</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the desired column order</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>column_order <span class="op">=</span> [</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"! Problematic Content !"</span>,</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"! Wrong language !"</span>,</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"None"</span>,</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Basic"</span>,</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Minimal"</span>,</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Good"</span>,</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Excellent"</span>,</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Reorder the columns (excluding 'language_code' which will be the index)</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>label_percentages_pd <span class="op">=</span> label_percentages_pd.set_index(<span class="st">"language_code"</span>)[column_order]</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">15</span>, <span class="dv">10</span>))</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>sns.heatmap(</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>    label_percentages_pd,</span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>    annot<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>    fmt<span class="op">=</span><span class="st">".1f"</span>,  <span class="co"># Keep one decimal place</span></span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>    cmap<span class="op">=</span><span class="st">"YlOrRd"</span>,</span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>    cbar_kws<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Percentage (%)"</span>},</span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>    square<span class="op">=</span><span class="va">False</span>,  <span class="co"># Changed from True to allow rectangular cells</span></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>plt.xticks(rotation<span class="op">=</span><span class="dv">45</span>, ha<span class="op">=</span><span class="st">"right"</span>)</span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>plt.yticks(rotation<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Add more padding</span></span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Distribution of Labels by Language (%)"</span>, pad<span class="op">=</span><span class="dv">5</span>)</span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="how-fine-is-fineweb2_files/figure-html/cell-11-output-1.png" class="img-fluid figure-img"></p>
+<p><img src="how-fine-is-fineweb2_files/figure-html/cell-12-output-1.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>We can also look at the distribution of labels as a bar chart.</p>
-<div id="cell-23" class="cell" data-input="false" data-execution_count="11">
+<div id="cell-24" class="cell" data-input="false" data-execution_count="14">
 <details class="code-fold">
 <summary>Click to show/hide code</summary>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> altair <span class="im">as</span> alt</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the wide-format data to long format for Altair</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>plot_df <span class="op">=</span> label_percentages.unpivot(</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    index<span class="op">=</span>[<span class="st">"language_code"</span>],</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    on<span class="op">=</span>label_percentages.columns[<span class="dv">1</span>:],  <span class="co"># All columns except language_code</span></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    variable_name<span class="op">=</span><span class="st">"label"</span>,</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    value_name<span class="op">=</span><span class="st">"percentage"</span>,</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the Altair chart</span></span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>chart <span class="op">=</span> (</span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    alt.Chart(plot_df)</span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    .mark_bar()</span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    .encode(</span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>        x<span class="op">=</span><span class="st">"language_code"</span>,</span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>        y<span class="op">=</span>alt.Y(<span class="st">"percentage"</span>, stack<span class="op">=</span><span class="st">"zero"</span>),</span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>        color<span class="op">=</span><span class="st">"label"</span>,</span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>        tooltip<span class="op">=</span>[<span class="st">"language_code"</span>, <span class="st">"label"</span>, <span class="st">"percentage"</span>],</span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    .properties(width<span class="op">=</span><span class="dv">600</span>, height<span class="op">=</span><span class="dv">400</span>, title<span class="op">=</span><span class="st">"Label Distribution by Language"</span>)</span>
-<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    .configure_axis(labelAngle<span class="op">=</span><span class="dv">45</span>)</span>
-<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>chart</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> altair <span class="im">as</span> alt</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the wide-format data to long format for Altair</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>plot_df <span class="op">=</span> label_percentages.unpivot(</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    index<span class="op">=</span>[<span class="st">"language_code"</span>],</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    on<span class="op">=</span>label_percentages.columns[<span class="dv">1</span>:],  <span class="co"># All columns except language_code</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    variable_name<span class="op">=</span><span class="st">"label"</span>,</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    value_name<span class="op">=</span><span class="st">"percentage"</span>,</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the Altair chart</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>chart <span class="op">=</span> (</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    alt.Chart(plot_df)</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    .mark_bar()</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    .encode(</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>        x<span class="op">=</span><span class="st">"language_code"</span>,</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>        y<span class="op">=</span>alt.Y(<span class="st">"percentage"</span>, stack<span class="op">=</span><span class="st">"zero"</span>),</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>        color<span class="op">=</span><span class="st">"label"</span>,</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>        tooltip<span class="op">=</span>[<span class="st">"language_code"</span>, <span class="st">"label"</span>, <span class="st">"percentage"</span>],</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>    .properties(</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>        width<span class="op">=</span><span class="dv">1000</span>,</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>        height<span class="op">=</span><span class="dv">500</span>,</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>        title<span class="op">=</span><span class="st">"Label Distribution by Language"</span>,</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>    .configure_axis(labelAngle<span class="op">=</span><span class="dv">45</span>)</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>chart</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-display" data-execution_count="11">
+<div class="cell-output cell-output-display" data-execution_count="14">
 
 <style>
-  #altair-viz-a55e5c9d8ef04f3982c9e301af2d92a0.vega-embed {
+  #altair-viz-f17d91b4c7d442de8126d0e732d2321d.vega-embed {
     width: 100%;
     display: flex;
   }
 
-  #altair-viz-a55e5c9d8ef04f3982c9e301af2d92a0.vega-embed details,
-  #altair-viz-a55e5c9d8ef04f3982c9e301af2d92a0.vega-embed details summary {
+  #altair-viz-f17d91b4c7d442de8126d0e732d2321d.vega-embed details,
+  #altair-viz-f17d91b4c7d442de8126d0e732d2321d.vega-embed details summary {
     position: relative;
   }
 </style>
-<div id="altair-viz-a55e5c9d8ef04f3982c9e301af2d92a0"></div>
+<div id="altair-viz-f17d91b4c7d442de8126d0e732d2321d"></div>
 <script type="text/javascript">
   var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
   (function(spec, embedOpt){
     let outputDiv = document.currentScript.previousElementSibling;
-    if (outputDiv.id !== "altair-viz-a55e5c9d8ef04f3982c9e301af2d92a0") {
-      outputDiv = document.getElementById("altair-viz-a55e5c9d8ef04f3982c9e301af2d92a0");
+    if (outputDiv.id !== "altair-viz-f17d91b4c7d442de8126d0e732d2321d") {
+      outputDiv = document.getElementById("altair-viz-f17d91b4c7d442de8126d0e732d2321d");
     }
 
     const paths = {
@@ -1005,7 +1097,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         .catch(showError)
         .then(() => displayChart(vegaEmbed));
     }
-  })({"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}, "axis": {"labelAngle": 45}}, "data": {"name": "data-1e8118c6cb81b0077cdd59317bd4e635"}, "mark": {"type": "bar"}, "encoding": {"color": {"field": "label", "type": "nominal"}, "tooltip": [{"field": "language_code", "type": "nominal"}, {"field": "label", "type": "nominal"}, {"field": "percentage", "type": "quantitative"}], "x": {"field": "language_code", "type": "nominal"}, "y": {"field": "percentage", "stack": "zero", "type": "quantitative"}}, "height": 400, "title": "Label Distribution by Language", "width": 600, "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-1e8118c6cb81b0077cdd59317bd4e635": [{"language_code": "arb_Arab", "label": "Excellent", "percentage": 0.7}, {"language_code": "ary_Arab", "label": "Excellent", "percentage": 1.0}, {"language_code": "arz_Arab", "label": "Excellent", "percentage": 2.0}, {"language_code": "asm_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "bar_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "cmn_Hani", "label": "Excellent", "percentage": 1.4}, {"language_code": "dan_Latn", "label": "Excellent", "percentage": 0.1}, {"language_code": "fas_Arab", "label": "Excellent", "percentage": 2.3}, {"language_code": "fil_Latn", "label": "Excellent", "percentage": 0.8}, {"language_code": "fin_Latn", "label": "Excellent", "percentage": 2.6}, {"language_code": "fra_Latn", "label": "Excellent", "percentage": 2.8}, {"language_code": "gmh_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "hin_Deva", "label": "Excellent", "percentage": 0.3}, {"language_code": "lvs_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "rus_Cyrl", "label": "Excellent", "percentage": 1.1}, {"language_code": "slk_Latn", "label": "Excellent", "percentage": 1.5}, {"language_code": "swe_Latn", "label": "Excellent", "percentage": 1.1}, {"language_code": "tat_Cyrl", "label": "Excellent", "percentage": 1.34}, {"language_code": "ukr_Cyrl", "label": "Excellent", "percentage": 2.3}, {"language_code": "vie_Latn", "label": "Excellent", "percentage": 1.2}, {"language_code": "arb_Arab", "label": "Good", "percentage": 2.5}, {"language_code": "ary_Arab", "label": "Good", "percentage": 1.4}, {"language_code": "arz_Arab", "label": "Good", "percentage": 4.0}, {"language_code": "asm_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "bar_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "cmn_Hani", "label": "Good", "percentage": 9.7}, {"language_code": "dan_Latn", "label": "Good", "percentage": 1.2}, {"language_code": "fas_Arab", "label": "Good", "percentage": 8.9}, {"language_code": "fil_Latn", "label": "Good", "percentage": 2.6}, {"language_code": "fin_Latn", "label": "Good", "percentage": 18.2}, {"language_code": "fra_Latn", "label": "Good", "percentage": 5.7}, {"language_code": "gmh_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "hin_Deva", "label": "Good", "percentage": 0.2}, {"language_code": "lvs_Latn", "label": "Good", "percentage": 1.4}, {"language_code": "rus_Cyrl", "label": "Good", "percentage": 3.0}, {"language_code": "slk_Latn", "label": "Good", "percentage": 3.8}, {"language_code": "swe_Latn", "label": "Good", "percentage": 3.3}, {"language_code": "tat_Cyrl", "label": "Good", "percentage": 3.7}, {"language_code": "ukr_Cyrl", "label": "Good", "percentage": 7.7}, {"language_code": "vie_Latn", "label": "Good", "percentage": 6.4}, {"language_code": "arb_Arab", "label": "None", "percentage": 51.0}, {"language_code": "ary_Arab", "label": "None", "percentage": 1.1}, {"language_code": "arz_Arab", "label": "None", "percentage": 12.7}, {"language_code": "asm_Latn", "label": "None", "percentage": 64.7}, {"language_code": "bar_Latn", "label": "None", "percentage": 16.5}, {"language_code": "cmn_Hani", "label": "None", "percentage": 24.2}, {"language_code": "dan_Latn", "label": "None", "percentage": 47.6}, {"language_code": "fas_Arab", "label": "None", "percentage": 39.6}, {"language_code": "fil_Latn", "label": "None", "percentage": 24.1}, {"language_code": "fin_Latn", "label": "None", "percentage": 19.7}, {"language_code": "fra_Latn", "label": "None", "percentage": 54.3}, {"language_code": "gmh_Latn", "label": "None", "percentage": 1.0}, {"language_code": "hin_Deva", "label": "None", "percentage": 87.1}, {"language_code": "lvs_Latn", "label": "None", "percentage": 54.7}, {"language_code": "rus_Cyrl", "label": "None", "percentage": 68.3}, {"language_code": "slk_Latn", "label": "None", "percentage": 60.4}, {"language_code": "swe_Latn", "label": "None", "percentage": 54.5}, {"language_code": "tat_Cyrl", "label": "None", "percentage": 43.43}, {"language_code": "ukr_Cyrl", "label": "None", "percentage": 73.6}, {"language_code": "vie_Latn", "label": "None", "percentage": 35.9}, {"language_code": "arb_Arab", "label": "Minimal", "percentage": 15.6}, {"language_code": "ary_Arab", "label": "Minimal", "percentage": 1.2}, {"language_code": "arz_Arab", "label": "Minimal", "percentage": 3.7}, {"language_code": "asm_Latn", "label": "Minimal", "percentage": 5.0}, {"language_code": "bar_Latn", "label": "Minimal", "percentage": 2.4}, {"language_code": "cmn_Hani", "label": "Minimal", "percentage": 36.2}, {"language_code": "dan_Latn", "label": "Minimal", "percentage": 28.2}, {"language_code": "fas_Arab", "label": "Minimal", "percentage": 18.7}, {"language_code": "fil_Latn", "label": "Minimal", "percentage": 27.6}, {"language_code": "fin_Latn", "label": "Minimal", "percentage": 28.5}, {"language_code": "fra_Latn", "label": "Minimal", "percentage": 23.8}, {"language_code": "gmh_Latn", "label": "Minimal", "percentage": 0.5}, {"language_code": "hin_Deva", "label": "Minimal", "percentage": 11.2}, {"language_code": "lvs_Latn", "label": "Minimal", "percentage": 23.8}, {"language_code": "rus_Cyrl", "label": "Minimal", "percentage": 13.9}, {"language_code": "slk_Latn", "label": "Minimal", "percentage": 21.6}, {"language_code": "swe_Latn", "label": "Minimal", "percentage": 24.1}, {"language_code": "tat_Cyrl", "label": "Minimal", "percentage": 22.79}, {"language_code": "ukr_Cyrl", "label": "Minimal", "percentage": 8.6}, {"language_code": "vie_Latn", "label": "Minimal", "percentage": 33.9}, {"language_code": "arb_Arab", "label": "Basic", "percentage": 4.9}, {"language_code": "ary_Arab", "label": "Basic", "percentage": 0.7}, {"language_code": "arz_Arab", "label": "Basic", "percentage": 4.1}, {"language_code": "asm_Latn", "label": "Basic", "percentage": 0.3}, {"language_code": "bar_Latn", "label": "Basic", "percentage": 4.1}, {"language_code": "cmn_Hani", "label": "Basic", "percentage": 25.1}, {"language_code": "dan_Latn", "label": "Basic", "percentage": 8.4}, {"language_code": "fas_Arab", "label": "Basic", "percentage": 10.0}, {"language_code": "fil_Latn", "label": "Basic", "percentage": 5.1}, {"language_code": "fin_Latn", "label": "Basic", "percentage": 20.6}, {"language_code": "fra_Latn", "label": "Basic", "percentage": 8.6}, {"language_code": "gmh_Latn", "label": "Basic", "percentage": 0.2}, {"language_code": "hin_Deva", "label": "Basic", "percentage": 0.9}, {"language_code": "lvs_Latn", "label": "Basic", "percentage": 11.4}, {"language_code": "rus_Cyrl", "label": "Basic", "percentage": 6.1}, {"language_code": "slk_Latn", "label": "Basic", "percentage": 8.0}, {"language_code": "swe_Latn", "label": "Basic", "percentage": 8.5}, {"language_code": "tat_Cyrl", "label": "Basic", "percentage": 25.31}, {"language_code": "ukr_Cyrl", "label": "Basic", "percentage": 6.4}, {"language_code": "vie_Latn", "label": "Basic", "percentage": 13.1}, {"language_code": "arb_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 25.3}, {"language_code": "ary_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 94.6}, {"language_code": "arz_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 73.5}, {"language_code": "asm_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 19.1}, {"language_code": "bar_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 77.0}, {"language_code": "cmn_Hani", "label": "\u2757 Problematic Content \u2757", "percentage": 2.5}, {"language_code": "dan_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 14.5}, {"language_code": "fas_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 20.5}, {"language_code": "fil_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 37.9}, {"language_code": "fin_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 8.5}, {"language_code": "fra_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 4.8}, {"language_code": "gmh_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 98.3}, {"language_code": "hin_Deva", "label": "\u2757 Problematic Content \u2757", "percentage": 0.3}, {"language_code": "lvs_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 8.7}, {"language_code": "rus_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 7.6}, {"language_code": "slk_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 4.7}, {"language_code": "swe_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 8.5}, {"language_code": "tat_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 3.43}, {"language_code": "ukr_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 1.4}, {"language_code": "vie_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 9.5}, {"language_code": "arb_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "ary_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "arz_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "asm_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 10.9}, {"language_code": "bar_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "cmn_Hani", "label": "\u2757 Wrong language \u2757", "percentage": 0.9}, {"language_code": "dan_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "fas_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "fil_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 1.9}, {"language_code": "fin_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 1.9}, {"language_code": "fra_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "gmh_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "hin_Deva", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "lvs_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "rus_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "slk_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "swe_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "tat_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "ukr_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "vie_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}]}}, {"mode": "vega-lite"});
+  })({"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}, "axis": {"labelAngle": 45}}, "data": {"name": "data-eae5114a20725dbdcfd779beae275515"}, "mark": {"type": "bar"}, "encoding": {"color": {"field": "label", "type": "nominal"}, "tooltip": [{"field": "language_code", "type": "nominal"}, {"field": "label", "type": "nominal"}, {"field": "percentage", "type": "quantitative"}], "x": {"field": "language_code", "type": "nominal"}, "y": {"field": "percentage", "stack": "zero", "type": "quantitative"}}, "height": 500, "title": "Label Distribution by Language", "width": 1000, "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-eae5114a20725dbdcfd779beae275515": [{"language_code": "arb_Arab", "label": "Minimal", "percentage": 15.6}, {"language_code": "ary_Arab", "label": "Minimal", "percentage": 1.2}, {"language_code": "arz_Arab", "label": "Minimal", "percentage": 3.7}, {"language_code": "asm_Latn", "label": "Minimal", "percentage": 5.0}, {"language_code": "bar_Latn", "label": "Minimal", "percentage": 2.4}, {"language_code": "cmn_Hani", "label": "Minimal", "percentage": 36.2}, {"language_code": "dan_Latn", "label": "Minimal", "percentage": 28.2}, {"language_code": "fas_Arab", "label": "Minimal", "percentage": 18.7}, {"language_code": "fil_Latn", "label": "Minimal", "percentage": 27.6}, {"language_code": "fin_Latn", "label": "Minimal", "percentage": 28.5}, {"language_code": "fra_Latn", "label": "Minimal", "percentage": 23.8}, {"language_code": "gmh_Latn", "label": "Minimal", "percentage": 0.5}, {"language_code": "gsw_Latn", "label": "Minimal", "percentage": 2.5}, {"language_code": "hin_Deva", "label": "Minimal", "percentage": 11.2}, {"language_code": "lvs_Latn", "label": "Minimal", "percentage": 23.8}, {"language_code": "rus_Cyrl", "label": "Minimal", "percentage": 13.9}, {"language_code": "slk_Latn", "label": "Minimal", "percentage": 21.6}, {"language_code": "spa_Latn", "label": "Minimal", "percentage": 24.5}, {"language_code": "swe_Latn", "label": "Minimal", "percentage": 24.1}, {"language_code": "tat_Cyrl", "label": "Minimal", "percentage": 21.97}, {"language_code": "ukr_Cyrl", "label": "Minimal", "percentage": 8.6}, {"language_code": "vie_Latn", "label": "Minimal", "percentage": 33.9}, {"language_code": "yue_Hani", "label": "Minimal", "percentage": 13.8}, {"language_code": "zsm_Latn", "label": "Minimal", "percentage": 37.3}, {"language_code": "arb_Arab", "label": "Good", "percentage": 2.5}, {"language_code": "ary_Arab", "label": "Good", "percentage": 1.4}, {"language_code": "arz_Arab", "label": "Good", "percentage": 4.0}, {"language_code": "asm_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "bar_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "cmn_Hani", "label": "Good", "percentage": 9.7}, {"language_code": "dan_Latn", "label": "Good", "percentage": 1.2}, {"language_code": "fas_Arab", "label": "Good", "percentage": 8.9}, {"language_code": "fil_Latn", "label": "Good", "percentage": 2.6}, {"language_code": "fin_Latn", "label": "Good", "percentage": 18.2}, {"language_code": "fra_Latn", "label": "Good", "percentage": 5.7}, {"language_code": "gmh_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "gsw_Latn", "label": "Good", "percentage": 3.6}, {"language_code": "hin_Deva", "label": "Good", "percentage": 0.2}, {"language_code": "lvs_Latn", "label": "Good", "percentage": 1.4}, {"language_code": "rus_Cyrl", "label": "Good", "percentage": 3.0}, {"language_code": "slk_Latn", "label": "Good", "percentage": 3.8}, {"language_code": "spa_Latn", "label": "Good", "percentage": 2.9}, {"language_code": "swe_Latn", "label": "Good", "percentage": 3.3}, {"language_code": "tat_Cyrl", "label": "Good", "percentage": 3.85}, {"language_code": "ukr_Cyrl", "label": "Good", "percentage": 7.7}, {"language_code": "vie_Latn", "label": "Good", "percentage": 6.4}, {"language_code": "yue_Hani", "label": "Good", "percentage": 5.5}, {"language_code": "zsm_Latn", "label": "Good", "percentage": 4.5}, {"language_code": "arb_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 25.3}, {"language_code": "ary_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 94.6}, {"language_code": "arz_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 73.5}, {"language_code": "asm_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 19.1}, {"language_code": "bar_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 77.0}, {"language_code": "cmn_Hani", "label": "\u2757 Problematic Content \u2757", "percentage": 2.5}, {"language_code": "dan_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 14.5}, {"language_code": "fas_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 20.5}, {"language_code": "fil_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 37.9}, {"language_code": "fin_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 8.5}, {"language_code": "fra_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 4.8}, {"language_code": "gmh_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 98.3}, {"language_code": "gsw_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 1.3}, {"language_code": "hin_Deva", "label": "\u2757 Problematic Content \u2757", "percentage": 0.3}, {"language_code": "lvs_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 8.7}, {"language_code": "rus_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 7.6}, {"language_code": "slk_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 4.7}, {"language_code": "spa_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 3.9}, {"language_code": "swe_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 8.5}, {"language_code": "tat_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 2.5}, {"language_code": "ukr_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 1.4}, {"language_code": "vie_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 9.5}, {"language_code": "yue_Hani", "label": "\u2757 Problematic Content \u2757", "percentage": 0.9}, {"language_code": "zsm_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 0.4}, {"language_code": "arb_Arab", "label": "None", "percentage": 51.0}, {"language_code": "ary_Arab", "label": "None", "percentage": 1.1}, {"language_code": "arz_Arab", "label": "None", "percentage": 12.7}, {"language_code": "asm_Latn", "label": "None", "percentage": 64.7}, {"language_code": "bar_Latn", "label": "None", "percentage": 16.5}, {"language_code": "cmn_Hani", "label": "None", "percentage": 24.2}, {"language_code": "dan_Latn", "label": "None", "percentage": 47.6}, {"language_code": "fas_Arab", "label": "None", "percentage": 39.6}, {"language_code": "fil_Latn", "label": "None", "percentage": 24.1}, {"language_code": "fin_Latn", "label": "None", "percentage": 19.7}, {"language_code": "fra_Latn", "label": "None", "percentage": 54.3}, {"language_code": "gmh_Latn", "label": "None", "percentage": 1.0}, {"language_code": "gsw_Latn", "label": "None", "percentage": 29.3}, {"language_code": "hin_Deva", "label": "None", "percentage": 87.1}, {"language_code": "lvs_Latn", "label": "None", "percentage": 54.7}, {"language_code": "rus_Cyrl", "label": "None", "percentage": 68.3}, {"language_code": "slk_Latn", "label": "None", "percentage": 60.4}, {"language_code": "spa_Latn", "label": "None", "percentage": 60.7}, {"language_code": "swe_Latn", "label": "None", "percentage": 54.5}, {"language_code": "tat_Cyrl", "label": "None", "percentage": 36.61}, {"language_code": "ukr_Cyrl", "label": "None", "percentage": 73.6}, {"language_code": "vie_Latn", "label": "None", "percentage": 35.9}, {"language_code": "yue_Hani", "label": "None", "percentage": 68.4}, {"language_code": "zsm_Latn", "label": "None", "percentage": 44.9}, {"language_code": "arb_Arab", "label": "Excellent", "percentage": 0.7}, {"language_code": "ary_Arab", "label": "Excellent", "percentage": 1.0}, {"language_code": "arz_Arab", "label": "Excellent", "percentage": 2.0}, {"language_code": "asm_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "bar_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "cmn_Hani", "label": "Excellent", "percentage": 1.4}, {"language_code": "dan_Latn", "label": "Excellent", "percentage": 0.1}, {"language_code": "fas_Arab", "label": "Excellent", "percentage": 2.3}, {"language_code": "fil_Latn", "label": "Excellent", "percentage": 0.8}, {"language_code": "fin_Latn", "label": "Excellent", "percentage": 2.6}, {"language_code": "fra_Latn", "label": "Excellent", "percentage": 2.8}, {"language_code": "gmh_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "gsw_Latn", "label": "Excellent", "percentage": 1.1}, {"language_code": "hin_Deva", "label": "Excellent", "percentage": 0.3}, {"language_code": "lvs_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "rus_Cyrl", "label": "Excellent", "percentage": 1.1}, {"language_code": "slk_Latn", "label": "Excellent", "percentage": 1.5}, {"language_code": "spa_Latn", "label": "Excellent", "percentage": 0.7}, {"language_code": "swe_Latn", "label": "Excellent", "percentage": 1.1}, {"language_code": "tat_Cyrl", "label": "Excellent", "percentage": 1.28}, {"language_code": "ukr_Cyrl", "label": "Excellent", "percentage": 2.3}, {"language_code": "vie_Latn", "label": "Excellent", "percentage": 1.2}, {"language_code": "yue_Hani", "label": "Excellent", "percentage": 1.8}, {"language_code": "zsm_Latn", "label": "Excellent", "percentage": 2.7}, {"language_code": "arb_Arab", "label": "Basic", "percentage": 4.9}, {"language_code": "ary_Arab", "label": "Basic", "percentage": 0.7}, {"language_code": "arz_Arab", "label": "Basic", "percentage": 4.1}, {"language_code": "asm_Latn", "label": "Basic", "percentage": 0.3}, {"language_code": "bar_Latn", "label": "Basic", "percentage": 4.1}, {"language_code": "cmn_Hani", "label": "Basic", "percentage": 25.1}, {"language_code": "dan_Latn", "label": "Basic", "percentage": 8.4}, {"language_code": "fas_Arab", "label": "Basic", "percentage": 10.0}, {"language_code": "fil_Latn", "label": "Basic", "percentage": 5.1}, {"language_code": "fin_Latn", "label": "Basic", "percentage": 20.6}, {"language_code": "fra_Latn", "label": "Basic", "percentage": 8.6}, {"language_code": "gmh_Latn", "label": "Basic", "percentage": 0.2}, {"language_code": "gsw_Latn", "label": "Basic", "percentage": 2.2}, {"language_code": "hin_Deva", "label": "Basic", "percentage": 0.9}, {"language_code": "lvs_Latn", "label": "Basic", "percentage": 11.4}, {"language_code": "rus_Cyrl", "label": "Basic", "percentage": 6.1}, {"language_code": "slk_Latn", "label": "Basic", "percentage": 8.0}, {"language_code": "spa_Latn", "label": "Basic", "percentage": 7.3}, {"language_code": "swe_Latn", "label": "Basic", "percentage": 8.5}, {"language_code": "tat_Cyrl", "label": "Basic", "percentage": 33.78}, {"language_code": "ukr_Cyrl", "label": "Basic", "percentage": 6.4}, {"language_code": "vie_Latn", "label": "Basic", "percentage": 13.1}, {"language_code": "yue_Hani", "label": "Basic", "percentage": 9.6}, {"language_code": "zsm_Latn", "label": "Basic", "percentage": 10.1}, {"language_code": "arb_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "ary_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "arz_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "asm_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 10.9}, {"language_code": "bar_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "cmn_Hani", "label": "\u2757 Wrong language \u2757", "percentage": 0.9}, {"language_code": "dan_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "fas_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "fil_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 1.9}, {"language_code": "fin_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 1.9}, {"language_code": "fra_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "gmh_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "gsw_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 60.0}, {"language_code": "hin_Deva", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "lvs_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "rus_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "slk_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "spa_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "swe_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "tat_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "ukr_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "vie_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "yue_Hani", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "zsm_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.1}]}}, {"mode": "vega-lite"});
 </script>
 </div>
 </div>
