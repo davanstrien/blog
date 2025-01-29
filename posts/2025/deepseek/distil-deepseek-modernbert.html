@@ -1,0 +1,1965 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Daniel van Strien">
+<meta name="dcterms.date" content="2025-01-29">
+<meta name="description" content="How can we use the reasoning ability of DeepSeek to generate synthetic labels for fine tuning a ModernBERT model?">
+
+<title>Distiling DeepSeek reasoning to ModernBERT classifiers – Daniel van Strien</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../icons/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-5027bf1c1f92ac6615724d89c8213d6a.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+<script defer="" src="https://cloud.umami.is/script.js" data-website-id="85cb27d6-dbf9-43d7-97d0-be4e6724de7a"></script>
+<meta name="msvalidate.01" content="4246174F24A3CB7C9CBEAA94E1FF8E84">
+<meta name="google-site-verification" content="C7WoFOEuA4Msbvvk-kgDd_C6VGphZTp3awy_acXjZYU">
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Distiling DeepSeek reasoning to ModernBERT classifiers">
+<meta property="og:description" content="How can we use the reasoning ability of DeepSeek to generate synthetic labels for fine tuning a ModernBERT model?">
+<meta property="og:image" content="https://github.com/davanstrien/blog/raw/refs/heads/main/posts/2025/modern-bert-sythetic-labels/bert-illustration.webp">
+<meta property="og:site_name" content="Daniel van Strien">
+<meta name="twitter:title" content="Distiling DeepSeek reasoning to ModernBERT classifiers">
+<meta name="twitter:description" content="How can we use the reasoning ability of DeepSeek to generate synthetic labels for fine tuning a ModernBERT model?">
+<meta name="twitter:image" content="https://github.com/davanstrien/blog/raw/refs/heads/main/posts/2025/modern-bert-sythetic-labels/bert-illustration.webp">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Daniel van Strien</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../index.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#how-can-we-get-the-best-of-both-worlds" id="toc-how-can-we-get-the-best-of-both-worlds" class="nav-link active" data-scroll-target="#how-can-we-get-the-best-of-both-worlds">How can we get the best of both worlds?</a>
+  <ul class="collapse">
+  <li><a href="#classification-often-requires-reasoning" id="toc-classification-often-requires-reasoning" class="nav-link" data-scroll-target="#classification-often-requires-reasoning">Classification often requires reasoning</a></li>
+  <li><a href="#can-we-distil-even-smaller-models" id="toc-can-we-distil-even-smaller-models" class="nav-link" data-scroll-target="#can-we-distil-even-smaller-models">Can we distil even smaller models?</a></li>
+  </ul></li>
+  <li><a href="#the-use-case-classifying-arxiv-papers-that-introduce-a-newly-created-dataset" id="toc-the-use-case-classifying-arxiv-papers-that-introduce-a-newly-created-dataset" class="nav-link" data-scroll-target="#the-use-case-classifying-arxiv-papers-that-introduce-a-newly-created-dataset">The use case: classifying ArXiv papers that introduce a newly created dataset</a></li>
+  <li><a href="#generate-labels-not-synthetic-data" id="toc-generate-labels-not-synthetic-data" class="nav-link" data-scroll-target="#generate-labels-not-synthetic-data">Generate labels not synthetic data</a></li>
+  <li><a href="#structured-generation" id="toc-structured-generation" class="nav-link" data-scroll-target="#structured-generation">Structured generation?</a></li>
+  <li><a href="#using-lm-studio-to-develop-our-approach" id="toc-using-lm-studio-to-develop-our-approach" class="nav-link" data-scroll-target="#using-lm-studio-to-develop-our-approach">Using LM Studio to develop our approach</a></li>
+  <li><a href="#generating-labels" id="toc-generating-labels" class="nav-link" data-scroll-target="#generating-labels">Generating labels</a></li>
+  <li><a href="#room-to-think" id="toc-room-to-think" class="nav-link" data-scroll-target="#room-to-think">Room to think?</a></li>
+  <li><a href="#fine-tuning-modernbert" id="toc-fine-tuning-modernbert" class="nav-link" data-scroll-target="#fine-tuning-modernbert">Fine tuning ModernBERT</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Distiling DeepSeek reasoning to ModernBERT classifiers</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">huggingface</div>
+    <div class="quarto-category">datasets</div>
+    <div class="quarto-category">arxiv</div>
+    <div class="quarto-category">synthetic-data</div>
+    <div class="quarto-category">deepseek</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    How can we use the reasoning ability of DeepSeek to generate synthetic labels for fine tuning a ModernBERT model?
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Daniel van Strien </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 29, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div id="cell-1" class="cell" data-outputid="84e901c8-04fc-4812-affb-5b4d269fb407" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>pip install polars huggingface_hub datasets openai <span class="op">--</span>upgrade</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="how-can-we-get-the-best-of-both-worlds" class="level2">
+<h2 class="anchored" data-anchor-id="how-can-we-get-the-best-of-both-worlds">How can we get the best of both worlds?</h2>
+<p>tl;dr, how can we use LLMs to generate labels to fine-tune a ModernBERT model?</p>
+<p>It’s fair to say that <a href="https://huggingface.co/deepseek-ai/DeepSeek-R1">DeepSeek-R1</a> has made quite an impact in the last few weeks. It’s a powerful reasoning model that excels at many tasks that require reasoning. One particularly exciting aspect of the release of this model, though, is the distilled versions of the model. These models are much smaller but still retain a lot of the reasoning ability of the larger models.</p>
+<section id="classification-often-requires-reasoning" class="level3">
+<h3 class="anchored" data-anchor-id="classification-often-requires-reasoning">Classification often requires reasoning</h3>
+<p>While the interest in reasoning models often focs on use cases like mathematics and coding, there are many other use cases where reasoning can be helpful. One example is classification. Although some classification problems are very simple and mostly require “pattern matching,” there are many other problems where reasoning is needed. This is where a reasoning model could be helpful.</p>
+</section>
+<section id="can-we-distil-even-smaller-models" class="level3">
+<h3 class="anchored" data-anchor-id="can-we-distil-even-smaller-models">Can we distil even smaller models?</h3>
+<p>While the distilled models are fairly small (the smallest is 1.5B), we may still prefer to have an even smaller model for many use cases. If you can remember all the way back to December 2024, the ModernBERT release introduced a new BERT model, which is a good candidate for this kind of efficient classification use case. The main challenge is that in order to train a classifier, we need labeled data. This is where we can use a reasoning model to generate synthetic labels.</p>
+</section>
+</section>
+<section id="the-use-case-classifying-arxiv-papers-that-introduce-a-newly-created-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="the-use-case-classifying-arxiv-papers-that-introduce-a-newly-created-dataset">The use case: classifying ArXiv papers that introduce a newly created dataset</h2>
+<p>As the Machine Learning Librarian at Hugging Face, I want to keep track of new datasets being shared on ArXiv. While you can search for “dataset” or “benchmark” in the title or abstract, this returns any papers that mention datasets or benchmarks. I’m only interested in papers that introduce a newly created dataset.</p>
+<p>So the goal is to give an article to classify into whether it introduces a newly created dataset.</p>
+<p>I’ll use Polars to load the ArXiv dataset from the Hub, but you can use whichever data tool you want.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Feel free to skip this section if you are not interested in the use case and just want to see how to do the labelling part.</p>
+</div>
+</div>
+<div id="cell-5" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> snapshot_download</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">"HF_HUB_ENABLE_HF_TRANSFER"</span>] <span class="op">=</span> <span class="st">"1"</span>  <span class="co"># turn on HF_TRANSFER</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-6" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>files <span class="op">=</span> snapshot_download(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    repo_id<span class="op">=</span><span class="st">"librarian-bots/arxiv-metadata-snapshot"</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    allow_patterns<span class="op">=</span>[<span class="st">"*.parquet"</span>],</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    repo_type<span class="op">=</span><span class="st">"dataset"</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-7" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pl.scan_parquet(files)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s look at the first row. We see a bunch of metadata about the paper and then the title and abstract. These are probably the column we’ll want to use as input for our model.</p>
+<div id="cell-9" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df.head(<span class="dv">1</span>).collect()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="5">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (1, 14)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">submitter</th>
+<th data-quarto-table-cell-role="th">authors</th>
+<th data-quarto-table-cell-role="th">title</th>
+<th data-quarto-table-cell-role="th">comments</th>
+<th data-quarto-table-cell-role="th">journal-ref</th>
+<th data-quarto-table-cell-role="th">doi</th>
+<th data-quarto-table-cell-role="th">report-no</th>
+<th data-quarto-table-cell-role="th">categories</th>
+<th data-quarto-table-cell-role="th">license</th>
+<th data-quarto-table-cell-role="th">abstract</th>
+<th data-quarto-table-cell-role="th">versions</th>
+<th data-quarto-table-cell-role="th">update_date</th>
+<th data-quarto-table-cell-role="th">authors_parsed</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>list[struct[2]]</th>
+<th>datetime[ms]</th>
+<th>list[list[str]]</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"1004.3702"</td>
+<td>"Lizhi Du"</td>
+<td>"Lizhi Du"</td>
+<td>"A Polynomial time Algorithm fo…</td>
+<td>"26 pages. This time, I add a d…</td>
+<td>null</td>
+<td>null</td>
+<td>null</td>
+<td>"cs.DS"</td>
+<td>"http://arxiv.org/licenses/none…</td>
+<td>"&nbsp;&nbsp;Based on the famous Rotation…</td>
+<td>[{"v1","Mon, 12 Apr 2010 04:39:27 GMT"}, {"v10","Mon, 5 Nov 2012 01:44:46 GMT"}, … {"v9","Wed, 29 Aug 2012 06:39:31 GMT"}]</td>
+<td>2025-01-24 00:00:00</td>
+<td>[["Du", "Lizhi", ""]]</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>You will see there is a categories column. This is a string that contains a list of categories that the paper belongs to. We can grab a few examples of the categories.</p>
+<div id="cell-11" class="cell" data-outputid="a108a474-38d6-4a71-f758-d284498da8bd" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df.head(<span class="dv">10</span>).collect().select(<span class="st">"categories"</span>).to_series().to_list()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="6">
+<pre><code>['cs.DS',
+ 'math.GM',
+ 'math.CA math.AT math.DG math.DS',
+ 'cond-mat.mtrl-sci',
+ 'cond-mat.mtrl-sci',
+ 'math.GT',
+ 'math.GT',
+ 'math.GT',
+ 'math.AP',
+ 'math.AP math-ph math.MP math.SP']</code></pre>
+</div>
+</div>
+<p>For my particular use case I’m mostly interest in papers that are in the computer science category i.e contain “cs.” in the categories column.</p>
+<div id="cell-13" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.<span class="bu">filter</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"categories"</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">str</span>.split(<span class="st">" "</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">list</span>.<span class="bu">eval</span>(pl.element().<span class="bu">str</span>.starts_with(<span class="st">"cs."</span>))</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">list</span>.<span class="bu">any</span>()</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We’ll filter papers to only include those that contain the word “dataset” in the title or abstract, again you could easily change this to use other words.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>One thing to consider here is that ideally you want the distribution of data you use for training the model to be similar to the distribution of data you will use in practice. Since I will only check for ArXiV papers that contain the word “dataset” in the title or abstract, I will filter out a lot of the data before it even gets passed to the model. For your use case, consider the distribution of data you’ll be using in practice and filter the data accordingly.</p>
+</div>
+</div>
+<div id="cell-16" class="cell" data-outputid="72e83a74-efb2-4076-cbc9-b278bd7bab5f" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.<span class="bu">filter</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"title"</span>).<span class="bu">str</span>.contains(<span class="st">"dataset"</span>) <span class="op">|</span> pl.col(<span class="st">"abstract"</span>).<span class="bu">str</span>.contains(<span class="st">"dataset"</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Since we’re using the polars lazy api, we need to call <code>collect()</code> to actually get the data.</p>
+<div id="cell-18" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.collect()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="generate-labels-not-synthetic-data" class="level2">
+<h2 class="anchored" data-anchor-id="generate-labels-not-synthetic-data">Generate labels not synthetic data</h2>
+<p>There has been significant growth in the use of LLMs for synthetic data generation over the past couple of years. While we could generate synthetic data, i.e., developing both the “input” and “target” columns, if we already have some data we want to work with, it makes more sense to generate labels. One of the significant challenges with synethic data generation is that the data generated is often not representative of the data we want to use in practice. For generative tasks, this might matter slightly less. Since we’re focused on building classifiers, which we’ll often focus on quite a narrow use case or domain, the data we use to train the model must be representative of the data we want to use in practice.</p>
+<p>In this case, it might be more sensible to use a model’s reasoning ability to generate labels rather than generate synthetic data.</p>
+<p>Let’s grab a few examples from the data to use as a starting point.</p>
+<div id="cell-21" class="cell" data-outputid="969cd1ce-3e10-4119-8d78-cc7cccebcf8b" data-execution_count="168">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>examples <span class="op">=</span> df.head(<span class="dv">4</span>).select(pl.col([<span class="st">"abstract"</span>, <span class="st">"title"</span>])).to_dicts()</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>examples[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="168">
+<pre><code>{'abstract': '  This paper presents a new fuzzy k-means algorithm for the clustering of high\ndimensional data in various subspaces. Since, In the case of high dimensional\ndata, some features might be irrelevant and relevant but may have different\nsignificance in the clustering. For a better clustering, it is crucial to\nincorporate the contribution of these features in the clustering process. To\ncombine these features, in this paper, we have proposed a new fuzzy k-means\nclustering algorithm in which the objective function of the fuzzy k-means is\nmodified using two different entropy term. The first entropy term helps to\nminimize the within-cluster dispersion and maximize the negative entropy to\ndetermine clusters to contribute to the association of data points. The second\nentropy term helps to control the weight of the features because different\nfeatures have different contributing weights in the clustering process for\nobtaining the better partition of the data. The efficacy of the proposed method\nis presented in terms of various clustering measures on multiple datasets and\ncompared with various state-of-the-art methods.\n',
+ 'title': 'An Entropy-based Variable Feature Weighted Fuzzy k-Means Algorithm for\n  High Dimensional Data'}</code></pre>
+</div>
+</div>
+</section>
+<section id="structured-generation" class="level2">
+<h2 class="anchored" data-anchor-id="structured-generation">Structured generation?</h2>
+<p>We’ll start by using a structured generation approach to generate the labels. This means we’ll define a schema for the model’s output and then use that to generate the labels. I’ve written more about this in a <a href="https://danielvanstrien.xyz/posts/plain-text/synthetic-data-generation/2024-05-03-synethic-data-1.html">previous blog post</a> but the basic idea is that we define a schema for the output of the model and then use that to generate the labels. This means we don’t have to do a lot of work to parse the output of the model and can be sure we can easily train on the output.</p>
+<p>In this case, we define a Pydantic model as one that has a label and an explanation.</p>
+<div id="cell-23" class="cell" data-execution_count="169">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> enum <span class="im">import</span> Enum</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pydantic <span class="im">import</span> BaseModel, constr</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> Annotated</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> DatasetLabel(<span class="bu">str</span>, Enum):</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    NEW <span class="op">=</span> <span class="st">"new_dataset"</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    NOT_NEW <span class="op">=</span> <span class="st">"no_new_dataset"</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> IntroducesNewDataset(BaseModel):</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    explanation: constr(min_length<span class="op">=</span><span class="dv">40</span>)</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    label: DatasetLabel</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We define a function to format the data as a prompt. This function takes a dictionary with the title and abstract and formats it as a prompt for the model.</p>
+<div id="cell-25" class="cell" data-execution_count="170">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> format_text_as_prompt(data: <span class="bu">dict</span>[<span class="bu">str</span>, <span class="bu">str</span>]):</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="ss">f"""Look at the title and abstract for the following arXiv paper. Assess whether the paper is likely to introduce a newly created dataset.</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="ss">Title: </span><span class="sc">{</span>data[<span class="st">'title'</span>]<span class="sc">}</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="ss">Abstract: </span><span class="sc">{</span>data[<span class="st">'abstract'</span>]<span class="sc">}</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="ss">Your role is to decide whether the paper introduces a newly created dataset. First you should think about whether the paper is likely to introduce a newly created dataset. You should then return your reasoning and the label you've chosen. </span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="ss">You should choose out of the "new_dataset" or "no_new_dataset" labels.</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="ss">Return your reasoning and the label you've chosen as a JSON object like this:</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="ss">```json</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="ch">{{</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="ss">    "label": "new_dataset" | "no_new_dataset",</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="ss">    "explanation": "The reasoning the model used to come to its conclusion"</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="ch">}}</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="ss">```</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="ss">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-26" class="cell" data-outputid="d007252f-7f2d-46f9-d6b1-2a6f245af125" data-execution_count="171">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(format_text_as_prompt(examples[<span class="dv">0</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Look at the title and abstract for the following arXiv paper. Assess whether the paper is likely to introduce a newly created dataset.
+
+
+Title: An Entropy-based Variable Feature Weighted Fuzzy k-Means Algorithm for
+  High Dimensional Data
+Abstract:   This paper presents a new fuzzy k-means algorithm for the clustering of high
+dimensional data in various subspaces. Since, In the case of high dimensional
+data, some features might be irrelevant and relevant but may have different
+significance in the clustering. For a better clustering, it is crucial to
+incorporate the contribution of these features in the clustering process. To
+combine these features, in this paper, we have proposed a new fuzzy k-means
+clustering algorithm in which the objective function of the fuzzy k-means is
+modified using two different entropy term. The first entropy term helps to
+minimize the within-cluster dispersion and maximize the negative entropy to
+determine clusters to contribute to the association of data points. The second
+entropy term helps to control the weight of the features because different
+features have different contributing weights in the clustering process for
+obtaining the better partition of the data. The efficacy of the proposed method
+is presented in terms of various clustering measures on multiple datasets and
+compared with various state-of-the-art methods.
+
+
+Your role is to decide whether the paper introduces a newly created dataset. First you should think about whether the paper is likely to introduce a newly created dataset. You should then return your reasoning and the label you've chosen. 
+You should choose out of the "new_dataset" or "no_new_dataset" labels.
+
+Return your reasoning and the label you've chosen as a JSON object like this:
+```json
+{
+    "label": "new_dataset" | "no_new_dataset",
+    "explanation": "The reasoning the model used to come to its conclusion"
+}
+```
+</code></pre>
+</div>
+</div>
+</section>
+<section id="using-lm-studio-to-develop-our-approach" class="level2">
+<h2 class="anchored" data-anchor-id="using-lm-studio-to-develop-our-approach">Using LM Studio to develop our approach</h2>
+<p>One of the powerful features of open source is that it makes it easier to run models in different places. While developing our approach, we can use a smaller version of the model to test it and then switch to a hosted version once we’re happy with it.</p>
+<p>We’ll run the model using <a href="https://lmstudio.ai/">LM Studio</a>. LM Studio is primarily known as a UI for running local LLMs, but it also has a server mode, which we’ll use here. We can interact with the server using the CLI. To start the server, we can run the following command.</p>
+<div id="cell-28" class="cell" data-execution_count="172">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>lms server start</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Starting server...
+Success! Server is now running on port 1234</code></pre>
+</div>
+</div>
+<p>We can use <code>ls</code> to see the models that are available, we’ll filter these to only show the DeepSeek models.</p>
+<div id="cell-30" class="cell" data-execution_count="135">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>lms ls <span class="op">|</span> grep DeepSeek</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>lmstudio-community/DeepSeek-R1-Distill-Qwen-1.5B-GGUF      1.12 GB          Qwen2           
+lmstudio-community/DeepSeek-R1-Distill-Qwen-7B-GGUF        4.68 GB          Qwen2           
+lmstudio-community/DeepSeek-R1-Distill-Qwen-14B-GGUF       8.99 GB          Qwen2           
+lmstudio-community/DeepSeek-R1-Distill-Llama-8B-GGUF       4.92 GB          Llama           </code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Note that the output here is showing models I already have locally. There are many models LM studio can download from the Hugging Face Hub.</p>
+</div>
+</div>
+<p>We can load the model by running the following command. If the model is not already downloaded, LM Studio will download it. We’ll try and see how well the 7B model does.</p>
+<div id="cell-33" class="cell" data-execution_count="137">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>lms load DeepSeek<span class="op">-</span>R1<span class="op">-</span>Distill<span class="op">-</span>Qwen<span class="op">-</span><span class="dv">7</span><span class="er">B</span><span class="op">-</span>GGUF</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Loading model "lmstudio-community/DeepSeek-R1-Distill-Qwen-7B-GGUF/DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf"...
+[LMStudioClient][LLM] Start loading model lmstudio-community/DeepSeek-R1-Distill-Qwen-7B-GGUF/DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf...
+⠹ [█████████████████████▋                            ] 43.04%          sl          ] 32.15%          ] 34.82%          █████████████████▋                                ] 35.25%          Model loaded successfully in 4.20s. (4.68 GB)
+To use the model in the API/SDK, use the identifier "deepseek-r1-distill-qwen-7b".
+To set a custom identifier, use the --identifier &lt;identifier&gt; option.</code></pre>
+</div>
+</div>
+<p>Since LM Studio has an OpenAI compatible API, we can use the OpenAI Python client to interact with the server. We just need to set the base URL to the LM Studio server and set the API key to <code>lm-studio</code>.</p>
+<div id="cell-35" class="cell" data-execution_count="153">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> openai <span class="im">import</span> OpenAI</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-36" class="cell" data-execution_count="154">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>client <span class="op">=</span> OpenAI(base_url<span class="op">=</span><span class="st">"http://localhost:1234/v1"</span>, api_key<span class="op">=</span><span class="st">"lm-studio"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Once we’ve created the client we can interact with it in the usual way i.e.&nbsp;to see available models we can run the following command.</p>
+<div id="cell-38" class="cell" data-execution_count="140">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>client.models.<span class="bu">list</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="140">
+<pre><code>SyncPage[Model](data=[Model(id='deepseek-r1-distill-qwen-7b', created=None, object='model', owned_by='organization_owner')], object='list')</code></pre>
+</div>
+</div>
+</section>
+<section id="generating-labels" class="level2">
+<h2 class="anchored" data-anchor-id="generating-labels">Generating labels</h2>
+<p>We can now generate labels for our examples. We’ll use the <code>format_text_as_prompt</code> function to format the data as a prompt and then pass it to the model. Since we’re using a structured output, we need to use the <code>beta.chat.completions</code> endpoint. We pass in our Pydantic model as the <code>response_format</code> argument.</p>
+<div id="cell-40" class="cell" data-execution_count="173">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>messages <span class="op">=</span> [</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: format_text_as_prompt(examples[<span class="dv">0</span>])},</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>response <span class="op">=</span> client.beta.chat.completions.parse(</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>    model<span class="op">=</span><span class="st">"deepseek-r1-distill-qwen-7b"</span>,</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    messages<span class="op">=</span>messages,</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    temperature<span class="op">=</span><span class="fl">0.7</span>,</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>    response_format<span class="op">=</span>IntroducesNewDataset,</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can check that we can parse the output of the model into our Pydantic model.</p>
+<div id="cell-42" class="cell" data-execution_count="174">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>IntroducesNewDataset.model_validate_json(response.choices[<span class="dv">0</span>].message.content)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="174">
+<pre><code>IntroducesNewDataset(explanation="The paper discusses an entropy-based fuzzy k-means algorithm designed for high-dimensional data. While it mentions incorporating feature contributions into clustering, there's no information about introducing a new dataset.", label=&lt;DatasetLabel.NOT_NEW: 'no_new_dataset'&gt;)</code></pre>
+</div>
+</div>
+<p>We’ll wrap this in a function so we can easily use it for a lot of examples.</p>
+<div id="cell-44" class="cell" data-execution_count="175">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> predict_label(</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>    data: <span class="bu">dict</span>[<span class="bu">str</span>, <span class="bu">str</span>], model: <span class="bu">str</span> <span class="op">=</span> <span class="st">"deepseek-r1-distill-qwen-1.5b"</span>, client<span class="op">=</span>client</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> IntroducesNewDataset <span class="op">|</span> <span class="va">None</span>:</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>        prompt <span class="op">=</span> format_text_as_prompt(data)</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>        messages <span class="op">=</span> [</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>            {<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: prompt},</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>        response <span class="op">=</span> client.beta.chat.completions.parse(</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>            model<span class="op">=</span>model,</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>            messages<span class="op">=</span>messages,</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>            temperature<span class="op">=</span><span class="fl">0.7</span>,</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>            response_format<span class="op">=</span>IntroducesNewDataset,</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> IntroducesNewDataset.model_validate_json(</span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>            response.choices[<span class="dv">0</span>].message.content</span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(e)</span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Before doing a big batch of predictions, let’s run the model on a few examples so we can see how it does.</p>
+<div id="cell-46" class="cell" data-outputid="4503d632-e290-4174-ebc3-b896e7ee9d00" data-execution_count="176">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> rich <span class="im">import</span> <span class="bu">print</span> <span class="im">as</span> rich_print</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>structured_results <span class="op">=</span> []</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> example <span class="kw">in</span> examples:</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>    title <span class="op">=</span> example[<span class="st">"title"</span>]</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    abstract <span class="op">=</span> example[<span class="st">"abstract"</span>]</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>    prediction <span class="op">=</span> predict_label(example)</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>    structured_results.append(prediction)</span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>    rich_print(title)</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>    rich_print(abstract)</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>    rich_print(prediction)</span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>    rich_print(<span class="st">"---"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">An Entropy-based Variable Feature Weighted Fuzzy k-Means Algorithm for
+  High Dimensional Data
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">  This paper presents a new fuzzy k-means algorithm for the clustering of high
+dimensional data in various subspaces. Since, In the case of high dimensional
+data, some features might be irrelevant and relevant but may have different
+significance in the clustering. For a better clustering, it is crucial to
+incorporate the contribution of these features in the clustering process. To
+combine these features, in this paper, we have proposed a new fuzzy k-means
+clustering algorithm in which the objective function of the fuzzy k-means is
+modified using two different entropy term. The first entropy term helps to
+minimize the within-cluster dispersion and maximize the negative entropy to
+determine clusters to contribute to the association of data points. The second
+entropy term helps to control the weight of the features because different
+features have different contributing weights in the clustering process for
+obtaining the better partition of the data. The efficacy of the proposed method
+is presented in terms of various clustering measures on multiple datasets and
+compared with various state-of-the-art methods.
+
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #800080; text-decoration-color: #800080; font-weight: bold">IntroducesNewDataset</span><span style="font-weight: bold">(</span>
+    <span style="color: #808000; text-decoration-color: #808000">explanation</span>=<span style="color: #008000; text-decoration-color: #008000">"The paper presents an algorithm for clustering high-dimensional data, focusing on feature </span>
+<span style="color: #008000; text-decoration-color: #008000">weighting and entropy-based modifications to the fuzzy k-means method. The abstract mentions that their proposed </span>
+<span style="color: #008000; text-decoration-color: #008000">method is evaluated against various datasets using different measures. Since the title doesn't suggest a new </span>
+<span style="color: #008000; text-decoration-color: #008000">dataset but rather an improvement or variation in an existing one (fuzzy k-means), and the abstract emphasizes </span>
+<span style="color: #008000; text-decoration-color: #008000">performance evaluation across multiple datasets without indicating the introduction of a new one, it's reasonable </span>
+<span style="color: #008000; text-decoration-color: #008000">to assume that no new dataset was created in this paper."</span>,
+    <span style="color: #808000; text-decoration-color: #808000">label</span>=<span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">DatasetLabel.NOT_NEW:</span><span style="color: #000000; text-decoration-color: #000000"> </span><span style="color: #008000; text-decoration-color: #008000">'no_new_dataset'</span><span style="font-weight: bold">&gt;</span>
+<span style="font-weight: bold">)</span>
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">---
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">Identifying Influential Brokers on Social Media from Social Network
+  Structure
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">  Identifying influencers in a given social network has become an important
+research problem for various applications, including accelerating the spread of
+information in viral marketing and preventing the spread of fake news and
+rumors. The literature contains a rich body of studies on identifying
+influential source spreaders who can spread their own messages to many other
+nodes. In contrast, the identification of influential brokers who can spread
+other nodes' messages to many nodes has not been fully explored. Theoretical
+and empirical studies suggest that involvement of both influential source
+spreaders and brokers is a key to facilitating large-scale information
+diffusion cascades. Therefore, this paper explores ways to identify influential
+brokers from a given social network. By using three social media datasets, we
+investigate the characteristics of influential brokers by comparing them with
+influential source spreaders and central nodes obtained from centrality
+measures. Our results show that <span style="font-weight: bold">(</span>i<span style="font-weight: bold">)</span> most of the influential source spreaders
+are not influential brokers <span style="font-weight: bold">(</span>and vice versa<span style="font-weight: bold">)</span> and <span style="font-weight: bold">(</span>ii<span style="font-weight: bold">)</span> the overlap between
+central nodes and influential brokers is small <span style="font-weight: bold">(</span>less than <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">15</span>%<span style="font-weight: bold">)</span> in Twitter
+datasets. We also tackle the problem of identifying influential brokers from
+centrality measures and node embeddings, and we examine the effectiveness of
+social network features in the broker identification task. Our results show
+that <span style="font-weight: bold">(</span>iii<span style="font-weight: bold">)</span> although a single centrality measure cannot characterize influential
+brokers well, prediction models using node embedding features achieve F$_1$
+scores of <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.35</span>-<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">-0.68</span>, suggesting the effectiveness of social network features
+for identifying influential brokers.
+
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #800080; text-decoration-color: #800080; font-weight: bold">IntroducesNewDataset</span><span style="font-weight: bold">(</span>
+    <span style="color: #808000; text-decoration-color: #808000">explanation</span>=<span style="color: #008000; text-decoration-color: #008000">"... reason ...”，... } To determine whether the paper introduces a newly created dataset, let's </span>
+<span style="color: #008000; text-decoration-color: #008000">analyze the information provided in the title and abstract. The title is "</span>,
+    <span style="color: #808000; text-decoration-color: #808000">label</span>=<span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">DatasetLabel.NEW:</span><span style="color: #000000; text-decoration-color: #000000"> </span><span style="color: #008000; text-decoration-color: #008000">'new_dataset'</span><span style="font-weight: bold">&gt;</span>
+<span style="font-weight: bold">)</span>
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">---
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">Improving Performance of Automatic Keyword Extraction <span style="font-weight: bold">(</span>AKE<span style="font-weight: bold">)</span> Methods
+  Using PoS-Tagging and Enhanced Semantic-Awareness
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">  Automatic keyword extraction <span style="font-weight: bold">(</span>AKE<span style="font-weight: bold">)</span> has gained more importance with the
+increasing amount of digital textual data that modern computing systems
+process. It has various applications in information retrieval <span style="font-weight: bold">(</span>IR<span style="font-weight: bold">)</span> and natural
+language processing <span style="font-weight: bold">(</span>NLP<span style="font-weight: bold">)</span>, including text summarisation, topic analysis and
+document indexing. This paper proposes a simple but effective
+post-processing-based universal approach to improve the performance of any AKE
+methods, via an enhanced level of semantic-awareness supported by PoS-tagging.
+To demonstrate the performance of the proposed approach, we considered word
+types retrieved from a PoS-tagging step and two representative sources of
+semantic information - specialised terms defined in one or more
+context-dependent thesauri, and named entities in Wikipedia. The above three
+steps can be simply added to the end of any AKE methods as part of a
+post-processor, which simply re-evaluate all candidate keywords following some
+context-specific and semantic-aware criteria. For five state-of-the-art <span style="font-weight: bold">(</span>SOTA<span style="font-weight: bold">)</span>
+AKE methods, our experimental results with <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">17</span> selected datasets showed that the
+proposed approach improved their performances both consistently <span style="font-weight: bold">(</span>up to <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">100</span>% in
+terms of improved cases<span style="font-weight: bold">)</span> and significantly <span style="font-weight: bold">(</span>between <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10.2</span>% and <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">53.8</span>%, with an
+average of <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">25.8</span>%, in terms of F1-score and across all five methods<span style="font-weight: bold">)</span>, especially
+when all the three enhancement steps are used. Our results have profound
+implications considering the ease to apply our proposed approach to any AKE
+methods and to further extend it.
+
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #800080; text-decoration-color: #800080; font-weight: bold">IntroducesNewDataset</span><span style="font-weight: bold">(</span>
+    <span style="color: #808000; text-decoration-color: #808000">explanation</span>=<span style="color: #008000; text-decoration-color: #008000">"The paper focuses on improving automatic keyword extraction methods using PoS-tagging and </span>
+<span style="color: #008000; text-decoration-color: #008000">semantic-awareness. It mentions experiments with five state-of-the-art AKE methods across 17 datasets, but there's </span>
+<span style="color: #008000; text-decoration-color: #008000">no indication of introducing a new dataset."</span>,
+    <span style="color: #808000; text-decoration-color: #808000">label</span>=<span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">DatasetLabel.NOT_NEW:</span><span style="color: #000000; text-decoration-color: #000000"> </span><span style="color: #008000; text-decoration-color: #008000">'no_new_dataset'</span><span style="font-weight: bold">&gt;</span>
+<span style="font-weight: bold">)</span>
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">---
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">LOCUS: LOcalization with Channel Uncertainty and Sporadic Energy
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">  Accurate sound source localization <span style="font-weight: bold">(</span>SSL<span style="font-weight: bold">)</span> requires consistent multichannel
+data for reliable degree of arrival <span style="font-weight: bold">(</span>DoA<span style="font-weight: bold">)</span> estimation. However, intermittently
+powered batteryless systems often suffer from incomplete sensor data due to the
+stochastic nature of energy harvesting. Existing methods struggle with missing
+channels, leading to significant performance degradation. In this paper, we
+propose $\textit<span style="font-weight: bold">{</span>LOCUS<span style="font-weight: bold">}</span>$, a novel deep learning-based system designed to
+recover corrupted features for SSL in batteryless systems. $\textit<span style="font-weight: bold">{</span>LOCUS<span style="font-weight: bold">}</span>$
+addresses missing data by leveraging information entropy estimation and
+conditional interpolation, combining three modules: <span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span><span style="font-weight: bold">)</span> Information-Weighted
+Focus <span style="font-weight: bold">(</span>InFo<span style="font-weight: bold">)</span>, which identifies and quantifies corrupted data elements, <span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">2</span><span style="font-weight: bold">)</span>
+Latent Feature Synthesizer <span style="font-weight: bold">(</span>LaFS<span style="font-weight: bold">)</span>, which synthesizes missing features, and <span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">3</span><span style="font-weight: bold">)</span>
+Guided Replacement <span style="font-weight: bold">(</span>GRep<span style="font-weight: bold">)</span>, which intelligently replaces missing elements while
+preserving valid data. We demonstrate significant performance improvements
+using two datasets: DCASE and LargeSet, where $\textit<span style="font-weight: bold">{</span>LOCUS<span style="font-weight: bold">}</span>$ achieves up to
+$<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">36.91</span>\%$ lower DoA error compared to existing methods. Real-world evaluations
+across three environments with intermittent power sources show a
+$<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">25.87</span>-<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">59.46</span>\%$ improvement in performance when channels are stochastically
+missing. Additionally, we release a <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">50</span>-hour multichannel dataset to support
+further research in SSL.
+
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #800080; text-decoration-color: #800080; font-weight: bold">IntroducesNewDataset</span><span style="font-weight: bold">(</span>
+    <span style="color: #808000; text-decoration-color: #808000">explanation</span>=<span style="color: #008000; text-decoration-color: #008000">"... reason why you think it's a new dataset or not"</span>,
+    <span style="color: #808000; text-decoration-color: #808000">label</span>=<span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">DatasetLabel.NEW:</span><span style="color: #000000; text-decoration-color: #000000"> </span><span style="color: #008000; text-decoration-color: #008000">'new_dataset'</span><span style="font-weight: bold">&gt;</span>
+<span style="font-weight: bold">)</span>
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">---
+</pre>
+</div>
+</div>
+</section>
+<section id="room-to-think" class="level2">
+<h2 class="anchored" data-anchor-id="room-to-think">Room to think?</h2>
+<p>One of the features of the R1 model is that it has “reasoning”, which is delineated by <thinking> and </thinking> tags. Since our structured output doesn’t allow for this, let’s try and see how well the model does without it.</p>
+<div id="cell-48" class="cell" data-execution_count="215">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> predict_label_without_structured_output(</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    data: <span class="bu">dict</span>[<span class="bu">str</span>, <span class="bu">str</span>], model: <span class="bu">str</span> <span class="op">=</span> <span class="st">"deepseek-r1-distill-qwen-1.5b"</span>, client<span class="op">=</span>client</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">str</span>:</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    prompt <span class="op">=</span> format_text_as_prompt(data)</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>    messages <span class="op">=</span> [</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>        {<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: prompt},</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> client.chat.completions.create(</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>        model<span class="op">=</span>model,</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>        messages<span class="op">=</span>messages,</span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>        temperature<span class="op">=</span><span class="fl">0.7</span>,</span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> response.choices[<span class="dv">0</span>].message.content</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We’ll compare the results from the two approaches.</p>
+<div id="cell-50" class="cell" data-execution_count="178">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># compare the results vs structured output</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, example <span class="kw">in</span> <span class="bu">enumerate</span>(examples):</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    rich_print(example[<span class="st">"title"</span>])</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    rich_print(example[<span class="st">"abstract"</span>])</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    prediction <span class="op">=</span> predict_label_without_structured_output(example)</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Previous: </span><span class="sc">{</span>structured_results[i]<span class="sc">.</span>label<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"New: </span><span class="sc">{</span>prediction<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>    rich_print(<span class="st">"---"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">An Entropy-based Variable Feature Weighted Fuzzy k-Means Algorithm for
+  High Dimensional Data
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">  This paper presents a new fuzzy k-means algorithm for the clustering of high
+dimensional data in various subspaces. Since, In the case of high dimensional
+data, some features might be irrelevant and relevant but may have different
+significance in the clustering. For a better clustering, it is crucial to
+incorporate the contribution of these features in the clustering process. To
+combine these features, in this paper, we have proposed a new fuzzy k-means
+clustering algorithm in which the objective function of the fuzzy k-means is
+modified using two different entropy term. The first entropy term helps to
+minimize the within-cluster dispersion and maximize the negative entropy to
+determine clusters to contribute to the association of data points. The second
+entropy term helps to control the weight of the features because different
+features have different contributing weights in the clustering process for
+obtaining the better partition of the data. The efficacy of the proposed method
+is presented in terms of various clustering measures on multiple datasets and
+compared with various state-of-the-art methods.
+
+</pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Previous: DatasetLabel.NOT_NEW
+New: &lt;think&gt;
+Okay, so I need to figure out whether the paper introduces a newly created dataset. The title and abstract are provided.
+
+The title is: "An Entropy-based Variable Feature Weighted Fuzzy k-Means Algorithm for High Dimensional Data." It mentions an algorithm related to clustering high-dimensional data using fuzzy k-means with some entropy terms and feature weighting.
+
+Looking at the abstract, it says they've proposed a new fuzzy k-means algorithm. The focus is on modifying the objective function by adding two different entropy terms: one to minimize within-cluster dispersion and another to control feature weights because features have varying contributions in clustering.
+
+The paper mentions that their method was tested against various datasets and compared with state-of-the-art methods, but there's no explicit mention of introducing a new dataset. They evaluate performance on multiple existing datasets without specifying any novel data creation here.
+
+So, the key points are: they're improving an algorithm for high-dimensional clustering but don't indicate creating a new dataset; instead, they apply it to various datasets that already exist.
+&lt;/think&gt;
+
+The paper does not introduce a newly created dataset as part of its methodology. It focuses on enhancing an existing fuzzy k-means algorithm and evaluates its performance across multiple existing datasets.
+
+```json
+{
+    "label": "no_new_dataset",
+    "explanation": "The paper discusses modifications to an existing fuzzy k-means algorithm for high-dimensional data, but it does not mention introducing a new dataset. Instead, it evaluates the proposed method on various datasets that likely already exist."
+}
+```</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">---
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">Identifying Influential Brokers on Social Media from Social Network
+  Structure
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">  Identifying influencers in a given social network has become an important
+research problem for various applications, including accelerating the spread of
+information in viral marketing and preventing the spread of fake news and
+rumors. The literature contains a rich body of studies on identifying
+influential source spreaders who can spread their own messages to many other
+nodes. In contrast, the identification of influential brokers who can spread
+other nodes' messages to many nodes has not been fully explored. Theoretical
+and empirical studies suggest that involvement of both influential source
+spreaders and brokers is a key to facilitating large-scale information
+diffusion cascades. Therefore, this paper explores ways to identify influential
+brokers from a given social network. By using three social media datasets, we
+investigate the characteristics of influential brokers by comparing them with
+influential source spreaders and central nodes obtained from centrality
+measures. Our results show that <span style="font-weight: bold">(</span>i<span style="font-weight: bold">)</span> most of the influential source spreaders
+are not influential brokers <span style="font-weight: bold">(</span>and vice versa<span style="font-weight: bold">)</span> and <span style="font-weight: bold">(</span>ii<span style="font-weight: bold">)</span> the overlap between
+central nodes and influential brokers is small <span style="font-weight: bold">(</span>less than <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">15</span>%<span style="font-weight: bold">)</span> in Twitter
+datasets. We also tackle the problem of identifying influential brokers from
+centrality measures and node embeddings, and we examine the effectiveness of
+social network features in the broker identification task. Our results show
+that <span style="font-weight: bold">(</span>iii<span style="font-weight: bold">)</span> although a single centrality measure cannot characterize influential
+brokers well, prediction models using node embedding features achieve F$_1$
+scores of <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.35</span>-<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">-0.68</span>, suggesting the effectiveness of social network features
+for identifying influential brokers.
+
+</pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Previous: DatasetLabel.NEW
+New: &lt;think&gt;
+Okay, so I need to figure out whether the paper titled "Identifying Influential Brokers on Social Media from Social Network Structure" introduces a new dataset. Let me break this down.
+
+First, looking at the title, it's about identifying influential brokers in social media using network structure. The abstract mentions they used three social media datasets to study these influencers. They compared brokers with source spreaders and central nodes based on centrality measures.
+
+The abstract also talks about tackling the problem of identifying brokers from both centrality measures and node embeddings. It evaluates the effectiveness of network features, getting some F1 scores as a result.
+
+So, I'm trying to see if they created any new dataset or used existing ones. They mention using three datasets: Twitter in their experiments. The paper doesn't seem to introduce any entirely new type of data beyond what's commonly available, like Twitter datasets. They're analyzing these existing datasets with their methods.
+
+Therefore, the paper probably uses existing social media datasets rather than creating a new one.
+&lt;/think&gt;
+
+The paper does not introduce a newly created dataset; it utilizes existing social media datasets such as Twitter for its analysis.
+
+```json
+{
+    "label": "no_new_dataset",
+    "explanation": "The paper does not introduce any new datasets. It uses three social media datasets, including Twitter, which are already available data sources."
+}
+```</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">---
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">Improving Performance of Automatic Keyword Extraction <span style="font-weight: bold">(</span>AKE<span style="font-weight: bold">)</span> Methods
+  Using PoS-Tagging and Enhanced Semantic-Awareness
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">  Automatic keyword extraction <span style="font-weight: bold">(</span>AKE<span style="font-weight: bold">)</span> has gained more importance with the
+increasing amount of digital textual data that modern computing systems
+process. It has various applications in information retrieval <span style="font-weight: bold">(</span>IR<span style="font-weight: bold">)</span> and natural
+language processing <span style="font-weight: bold">(</span>NLP<span style="font-weight: bold">)</span>, including text summarisation, topic analysis and
+document indexing. This paper proposes a simple but effective
+post-processing-based universal approach to improve the performance of any AKE
+methods, via an enhanced level of semantic-awareness supported by PoS-tagging.
+To demonstrate the performance of the proposed approach, we considered word
+types retrieved from a PoS-tagging step and two representative sources of
+semantic information - specialised terms defined in one or more
+context-dependent thesauri, and named entities in Wikipedia. The above three
+steps can be simply added to the end of any AKE methods as part of a
+post-processor, which simply re-evaluate all candidate keywords following some
+context-specific and semantic-aware criteria. For five state-of-the-art <span style="font-weight: bold">(</span>SOTA<span style="font-weight: bold">)</span>
+AKE methods, our experimental results with <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">17</span> selected datasets showed that the
+proposed approach improved their performances both consistently <span style="font-weight: bold">(</span>up to <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">100</span>% in
+terms of improved cases<span style="font-weight: bold">)</span> and significantly <span style="font-weight: bold">(</span>between <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10.2</span>% and <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">53.8</span>%, with an
+average of <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">25.8</span>%, in terms of F1-score and across all five methods<span style="font-weight: bold">)</span>, especially
+when all the three enhancement steps are used. Our results have profound
+implications considering the ease to apply our proposed approach to any AKE
+methods and to further extend it.
+
+</pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Previous: DatasetLabel.NOT_NEW
+New: &lt;think&gt;
+Okay, I'm trying to figure out whether the paper "Improving Performance of Automatic Keyword Extraction (AKE) Methods Using PoS-Tagging and Enhanced Semantic-Awareness" introduces a newly created dataset. 
+
+First, looking at the title suggests that it's about improving an existing AKE method, which implies they're working with existing datasets rather than creating new ones.
+
+The abstract mentions experiments conducted on 17 selected datasets for five SOTA AKE methods. They used these datasets to test their approach but didn't mention any new data collection or creation here. 
+
+So, there's no indication that the paper includes a newly created dataset in its methodology or results section.
+&lt;/think&gt;
+
+The paper focuses on enhancing existing AKE methods using PoS-tagging and semantic-aware criteria without introducing new datasets.
+
+```json
+{
+    "label": "no_new_dataset",
+    "explanation": "The paper does not mention any new datasets being created. It evaluates existing 17 datasets with five SOTA AKE methods."
+}
+```</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">---
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">LOCUS: LOcalization with Channel Uncertainty and Sporadic Energy
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">  Accurate sound source localization <span style="font-weight: bold">(</span>SSL<span style="font-weight: bold">)</span> requires consistent multichannel
+data for reliable degree of arrival <span style="font-weight: bold">(</span>DoA<span style="font-weight: bold">)</span> estimation. However, intermittently
+powered batteryless systems often suffer from incomplete sensor data due to the
+stochastic nature of energy harvesting. Existing methods struggle with missing
+channels, leading to significant performance degradation. In this paper, we
+propose $\textit<span style="font-weight: bold">{</span>LOCUS<span style="font-weight: bold">}</span>$, a novel deep learning-based system designed to
+recover corrupted features for SSL in batteryless systems. $\textit<span style="font-weight: bold">{</span>LOCUS<span style="font-weight: bold">}</span>$
+addresses missing data by leveraging information entropy estimation and
+conditional interpolation, combining three modules: <span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span><span style="font-weight: bold">)</span> Information-Weighted
+Focus <span style="font-weight: bold">(</span>InFo<span style="font-weight: bold">)</span>, which identifies and quantifies corrupted data elements, <span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">2</span><span style="font-weight: bold">)</span>
+Latent Feature Synthesizer <span style="font-weight: bold">(</span>LaFS<span style="font-weight: bold">)</span>, which synthesizes missing features, and <span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">3</span><span style="font-weight: bold">)</span>
+Guided Replacement <span style="font-weight: bold">(</span>GRep<span style="font-weight: bold">)</span>, which intelligently replaces missing elements while
+preserving valid data. We demonstrate significant performance improvements
+using two datasets: DCASE and LargeSet, where $\textit<span style="font-weight: bold">{</span>LOCUS<span style="font-weight: bold">}</span>$ achieves up to
+$<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">36.91</span>\%$ lower DoA error compared to existing methods. Real-world evaluations
+across three environments with intermittent power sources show a
+$<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">25.87</span>-<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">59.46</span>\%$ improvement in performance when channels are stochastically
+missing. Additionally, we release a <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">50</span>-hour multichannel dataset to support
+further research in SSL.
+
+</pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Previous: DatasetLabel.NEW
+New: &lt;think&gt;
+Alright, so I'm trying to figure out whether the paper introduces a newly created dataset. Let's look at the information given.
+
+First, the title is "LOCUS: LOcalization with Channel Uncertainty and Sporadic Energy." It mentions an acronym LOCUS, which seems to be the main focus of the paper—sound source localization using deep learning methods to handle missing data in batteryless systems.
+
+Now looking at the abstract. The authors mention that their method addresses missing channels by leveraging information entropy estimation and conditional interpolation through three modules: InFo, LaFS, and GRep. They demonstrate performance improvements on two datasets called DCASE and LargeSet, achieving up to 36.91% reduction in DoA error compared to existing methods.
+
+The abstract also includes a real-world evaluation across three environments with intermittent power sources, showing significant performance improvements when channels are stochastically missing. Additionally, the authors mention releasing a 50-hour multichannel dataset called DCASE 2023 Challenge Set v1.0.
+
+From this information, it's clear that the paper not only presents their method but also provides new datasets for evaluation—specifically the DCASE and LargeSet datasets, along with the newly released DCASE challenge set. These datasets are likely used to test and validate the performance of their proposed system, LOCUS.
+
+Therefore, since the abstract explicitly states the release of these datasets as part of their contribution and they use them in experiments, this paper does introduce a newly created dataset.
+&lt;/think&gt;
+
+The paper "LOCUS: LOcalization with Channel Uncertainty and Sporadic Energy" introduces new datasets for evaluating its proposed method. The authors mention releasing two datasets (DCASE and LargeSet) and the DCASE 2023 Challenge Set v1.0, which are used to validate their system's performance.
+
+```json
+{
+    "label": "new_dataset",
+    "explanation": "The paper explicitly mentions the release of new datasets (DCASE, LargeSet, and DCASE 2023 Challenge Set v1.0) for evaluating the proposed method and demonstrates its effectiveness using these datasets."
+}
+```</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">---
+</pre>
+</div>
+</div>
+<p>While this is for sure a vibes based asssesement it does seem like the model does better when it has room to think so we’ll proceed with this approach.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>There are ways to allow for both strucutred generation and reasoning. I’ll post more on that in the future!</p>
+</div>
+</div>
+<p>We’ll now write a function to extract the JSON from the model’s output.</p>
+<div id="cell-54" class="cell" data-execution_count="179">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> contextlib</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>JSON_PATTERN <span class="op">=</span> re.<span class="bu">compile</span>(<span class="vs">r"```json\n(.*?)```"</span>, re.DOTALL)</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>DIRECT_JSON_PATTERN <span class="op">=</span> re.<span class="bu">compile</span>(<span class="vs">r"\{[^}]*\}"</span>, re.DOTALL)</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> try_extract_json_from_text(text: <span class="bu">str</span>) <span class="op">-&gt;</span> <span class="bu">tuple</span>[<span class="bu">str</span>, <span class="bu">dict</span> <span class="op">|</span> <span class="va">None</span>]:</span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> match <span class="op">:=</span> JSON_PATTERN.search(text):</span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>        json_results <span class="op">=</span> match.group(<span class="dv">1</span>)</span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> contextlib.suppress(json.JSONDecodeError):</span>
+<span id="cb38-13"><a href="#cb38-13" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> text, json.loads(json_results)</span>
+<span id="cb38-14"><a href="#cb38-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> match <span class="op">:=</span> DIRECT_JSON_PATTERN.search(text):</span>
+<span id="cb38-15"><a href="#cb38-15" aria-hidden="true" tabindex="-1"></a>        json_text <span class="op">=</span> match.group(<span class="dv">0</span>)</span>
+<span id="cb38-16"><a href="#cb38-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> contextlib.suppress(json.JSONDecodeError):</span>
+<span id="cb38-17"><a href="#cb38-17" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> text, json.loads(json_text)</span>
+<span id="cb38-18"><a href="#cb38-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> text, <span class="va">None</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="cell-55" class="cell" data-execution_count="180">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>prediction <span class="op">=</span> predict_label_without_structured_output(examples[<span class="dv">0</span>])</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>try_extract_json_from_text(prediction)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="180">
+<pre><code>('&lt;think&gt;\nOkay, so I\'m trying to figure out whether the paper titled "An Entropy-based Variable Feature Weighted Fuzzy k-Means Algorithm for High Dimensional Data" introduces a newly created dataset. Let me go through this step by step.\n\nFirst, I look at the title. The title mentions an algorithm called fuzzy k-means that\'s been modified with entropy terms and feature weighting to handle high-dimensional data. It doesn\'t explicitly say anything about introducing new datasets, but it does focus on improving clustering in such data environments, which often involves dealing with irrelevant or less important features.\n\nNow, looking at the abstract. The paper discusses modifying the fuzzy k-means algorithm by incorporating two entropy terms: one for within-cluster dispersion and negative entropy to determine clusters, and another to control feature weights because different features have varying contributions. They compare their method\'s efficacy using various clustering measures on multiple datasets against state-of-the-art methods.\n\nHmm, so in both the title and abstract, I don\'t see any mention of a new dataset being created or introduced. The focus is more on improving an existing algorithm to better handle high-dimensional data rather than introducing entirely new data for analysis.\n\nI should also consider whether it\'s possible that the paper might use standard datasets without explicitly stating so. For example, many clustering algorithms are tested on common datasets like MNIST, CIFAR-10, etc., especially when dealing with high-dimensional data because these datasets have numerous features after preprocessing (like PCA or similar techniques). However, since the abstract doesn\'t specify which datasets they used or mention any novel datasets, it\'s more about comparing performance rather than introducing a new dataset.\n\nSo, putting this together: The paper presents an improved clustering algorithm but doesn\'t introduce a new dataset. It evaluates its performance on existing ones, hence likely "no_new_dataset."\n&lt;/think&gt;\n\nThe paper discusses an enhanced fuzzy k-means algorithm designed for high-dimensional data, focusing on improving the clustering process by incorporating entropy terms and feature weighting. While it addresses challenges in handling irrelevant or less significant features, there is no mention of introducing a new dataset. Instead, it evaluates its method against existing datasets using various metrics.\n\n```json\n{\n    "label": "no_new_dataset",\n    "explanation": "The paper does not introduce a newly created dataset; instead, it focuses on improving an algorithm to handle high-dimensional data by modifying the objective function with entropy terms and feature weighting. It evaluates its performance on existing datasets without introducing new ones."\n}\n```',
+ {'label': 'no_new_dataset',
+  'explanation': 'The paper does not introduce a newly created dataset; instead, it focuses on improving an algorithm to handle high-dimensional data by modifying the objective function with entropy terms and feature weighting. It evaluates its performance on existing datasets without introducing new ones.'})</code></pre>
+</div>
+</div>
+<p>Let’s see how well this works on all the examples we had before</p>
+<div id="cell-57" class="cell" data-execution_count="181">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> [predict_label_without_structured_output(example) <span class="cf">for</span> example <span class="kw">in</span> examples]</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>parsed_results <span class="op">=</span> [try_extract_json_from_text(result) <span class="cf">for</span> result <span class="kw">in</span> results]</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>[p <span class="cf">for</span> p <span class="kw">in</span> parsed_results <span class="cf">if</span> p[<span class="dv">1</span>] <span class="kw">is</span> <span class="va">None</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="181">
+<pre><code>[]</code></pre>
+</div>
+</div>
+<p>Although we might have a few misses where we don’t get a valid JSON object, let’s proceed with this approach since the model does much better when given room to reason.</p>
+<p>We’ll now use the hosted version of the model to generate labels for the entire dataset. For this version, we’ll use a dedicated Hugging Face inference endpoint, but if we wanted to use the full R1 model, we could use the new Inference Providers feature on the Hub. See this <a href="https://huggingface.co/blog/inference-providers">blog post</a> for more information.</p>
+<div id="cell-59" class="cell" data-execution_count="221">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> openai <span class="im">import</span> OpenAI</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dotenv <span class="im">import</span> load_dotenv</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>load_dotenv()</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>client <span class="op">=</span> OpenAI(</span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>    base_url<span class="op">=</span><span class="st">"https://tgtdz7g5h3sd1lov.us-east-1.aws.endpoints.huggingface.cloud/v1/"</span>,</span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>    api_key<span class="op">=</span>os.getenv(<span class="st">"HF_TOKEN"</span>),</span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="cell-60" class="cell" data-execution_count="222">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>rich_print(</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>    predict_label_without_structured_output(</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>        examples[<span class="dv">0</span>], model<span class="op">=</span><span class="st">"deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"</span>, client<span class="op">=</span>client</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">think</span><span style="color: #000000; text-decoration-color: #000000">&gt;</span>
+<span style="color: #000000; text-decoration-color: #000000">Alright, I'm looking at this paper to determine if it introduces a newly created dataset. The title mentions </span>
+<span style="color: #008000; text-decoration-color: #008000">"Holistic Autonomous Driving Understanding by Bird's-Eye-View Injected Multi-Modal Large Models."</span><span style="color: #000000; text-decoration-color: #000000"> The word </span>
+<span style="color: #008000; text-decoration-color: #008000">"dataset"</span><span style="color: #000000; text-decoration-color: #000000"> isn't in the title, but the abstract gives more details.</span>
+
+<span style="color: #000000; text-decoration-color: #000000">In the abstract, the authors talk about introducing NuInstruct, which they describe as a novel dataset. It has 91K </span>
+<span style="color: #000000; text-decoration-color: #000000">multi-view video-QA pairs across </span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">17</span><span style="color: #000000; text-decoration-color: #000000"> subtasks. This indicates that they've created a new collection of data </span>
+<span style="color: #000000; text-decoration-color: #000000">specifically for their research. They also mention a SQL-based method for generating instruction-response pairs </span>
+<span style="color: #000000; text-decoration-color: #000000">automatically, which suggests they developed a systematic approach to build this dataset.</span>
+
+<span style="color: #000000; text-decoration-color: #000000">Furthermore, the paper introduces a new method called BEV-InMLLM, which uses this dataset. They report experiments </span>
+<span style="color: #000000; text-decoration-color: #000000">on NuInstruct showing improvements, and they plan to release it for future research. This release plan is another </span>
+<span style="color: #000000; text-decoration-color: #000000">indicator that they've created a new dataset intended for broader use.</span>
+
+<span style="color: #000000; text-decoration-color: #000000">Putting it all together, the paper clearly states the creation of NuInstruct, its characteristics, and their </span>
+<span style="color: #000000; text-decoration-color: #000000">intention to share it. Therefore, it's introducing a new dataset.</span>
+<span style="color: #000000; text-decoration-color: #000000">&lt;</span><span style="color: #800080; text-decoration-color: #800080">/</span><span style="color: #ff00ff; text-decoration-color: #ff00ff">think</span><span style="font-weight: bold">&gt;</span>
+
+```json
+<span style="font-weight: bold">{</span>
+    <span style="color: #008000; text-decoration-color: #008000">"label"</span>: <span style="color: #008000; text-decoration-color: #008000">"new_dataset"</span>,
+    <span style="color: #008000; text-decoration-color: #008000">"explanation"</span>: <span style="color: #008000; text-decoration-color: #008000">"The paper explicitly introduces NuInstruct, a novel dataset with 91K multi-view video-QA pairs </span>
+<span style="color: #008000; text-decoration-color: #008000">across 17 subtasks. The authors describe its creation method and plan to release it for future research, clearly </span>
+<span style="color: #008000; text-decoration-color: #008000">indicating the introduction of a new dataset."</span>
+<span style="font-weight: bold">}</span>
+```
+</pre>
+</div>
+</div>
+<p>We’ll now sample 3000 examples from the dataset and use the hosted model to generate labels for them.</p>
+<div id="cell-62" class="cell" data-execution_count="223">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>sample_df <span class="op">=</span> df.sample(<span class="dv">3000</span>, seed<span class="op">=</span><span class="dv">42</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-63" class="cell" data-execution_count="224">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>examples <span class="op">=</span> sample_df.select(pl.col([<span class="st">"abstract"</span>, <span class="st">"title"</span>])).to_dicts()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We create a function to predict the labels using the hosted model. We’ll use the <code>stamina</code> library to retry the request if it fails.</p>
+<div id="cell-65" class="cell" data-execution_count="225">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> stamina</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> openai <span class="im">import</span> APIConnectionError, APIStatusError</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a><span class="at">@stamina.retry</span>(on<span class="op">=</span>(APIConnectionError, APIStatusError), attempts<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> predict_hf_endpoint(data: <span class="bu">dict</span>[<span class="bu">str</span>, <span class="bu">str</span>], model: <span class="bu">str</span> <span class="op">=</span> <span class="st">"tgi"</span>, client<span class="op">=</span>client):</span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> predict_label_without_structured_output(data, model, client)</span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> predict(data):</span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> predict_hf_endpoint(data)</span>
+<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(e)</span>
+<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Get the results from the model.</p>
+<div id="cell-67" class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.contrib.concurrent <span class="im">import</span> thread_map</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> thread_map(predict, examples, max_workers<span class="op">=</span><span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s take a look at the first result</p>
+<div id="cell-69" class="cell" data-execution_count="192">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>rich_print(results[<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">think</span><span style="color: #000000; text-decoration-color: #000000">&gt;</span>
+<span style="color: #000000; text-decoration-color: #000000">Okay, so I need to figure out if the given arXiv paper introduces a newly created dataset. Let's look at the title </span>
+<span style="color: #000000; text-decoration-color: #000000">and abstract carefully.</span>
+
+<span style="color: #000000; text-decoration-color: #000000">The title is </span><span style="color: #008000; text-decoration-color: #008000">"Holistic Autonomous Driving Understanding by Bird's-Eye-View Injected Multi-Modal Large Models."</span><span style="color: #000000; text-decoration-color: #000000"> That</span>
+<span style="color: #000000; text-decoration-color: #000000">immediately suggests it's about a dataset related to autonomous driving. The abstract mentions that the paper </span>
+<span style="color: #000000; text-decoration-color: #000000">introduces a dataset called NuInstruct, which has 91K multi-view video-QA pairs across </span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">17</span><span style="color: #000000; text-decoration-color: #000000"> subtasks. Each task </span>
+<span style="color: #000000; text-decoration-color: #000000">requires holistic information like temporal, multi-view, and spatial data, making the challenges higher.</span>
+
+<span style="color: #000000; text-decoration-color: #000000">The authors propose a method using SQL to generate instruction-response pairs automatically, inspired by human </span>
+<span style="color: #000000; text-decoration-color: #000000">driving logic. They also introduce BEV-InMLLM, an end-to-end method that enhances large language models by </span>
+<span style="color: #000000; text-decoration-color: #000000">integrating BEV features, language alignment, and tasks like multi-view, spatial awareness, and temporal semantics.</span>
+<span style="color: #000000; text-decoration-color: #000000">They note that their BEV injection module is plug-and-play for existing MLLMs.</span>
+
+<span style="color: #000000; text-decoration-color: #000000">Experiments on NuInstruct show significant improvements over existing MLLMs. The authors also mention releasing the</span>
+<span style="color: #000000; text-decoration-color: #000000">dataset for future research.</span>
+
+<span style="color: #000000; text-decoration-color: #000000">So, from the title, abstract, and details, it's clear that NuInstruct is a new dataset they created specifically </span>
+<span style="color: #000000; text-decoration-color: #000000">for their research. They describe it in detail, including the structure and methods used, so it's definitely a </span>
+<span style="color: #000000; text-decoration-color: #000000">newly created dataset aimed at advancing autonomous driving through language models.</span>
+<span style="color: #000000; text-decoration-color: #000000">&lt;</span><span style="color: #800080; text-decoration-color: #800080">/</span><span style="color: #ff00ff; text-decoration-color: #ff00ff">think</span><span style="font-weight: bold">&gt;</span>
+
+```json
+<span style="font-weight: bold">{</span>
+    <span style="color: #008000; text-decoration-color: #008000">"label"</span>: <span style="color: #008000; text-decoration-color: #008000">"new_dataset"</span>,
+    <span style="color: #008000; text-decoration-color: #008000">"explanation"</span>: <span style="color: #008000; text-decoration-color: #008000">"The paper introduces a dataset called NuInstruct with 91K multi-view video-QA pairs across 17 </span>
+<span style="color: #008000; text-decoration-color: #008000">subtasks, each requiring holistic information for robust autonomous driving tasks. The authors detail its structure</span>
+<span style="color: #008000; text-decoration-color: #008000">and methods for creation, confirming it as a newly developed dataset."</span>
+<span style="font-weight: bold">}</span>
+```
+</pre>
+</div>
+</div>
+<div id="cell-70" class="cell" data-execution_count="193">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>try_extract_json_from_text(results[<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="193">
+<pre><code>('&lt;think&gt;\nOkay, so I need to figure out if the given arXiv paper introduces a newly created dataset. Let\'s look at the title and abstract carefully.\n\nThe title is "Holistic Autonomous Driving Understanding by Bird\'s-Eye-View Injected Multi-Modal Large Models." That immediately suggests it\'s about a dataset related to autonomous driving. The abstract mentions that the paper introduces a dataset called NuInstruct, which has 91K multi-view video-QA pairs across 17 subtasks. Each task requires holistic information like temporal, multi-view, and spatial data, making the challenges higher.\n\nThe authors propose a method using SQL to generate instruction-response pairs automatically, inspired by human driving logic. They also introduce BEV-InMLLM, an end-to-end method that enhances large language models by integrating BEV features, language alignment, and tasks like multi-view, spatial awareness, and temporal semantics. They note that their BEV injection module is plug-and-play for existing MLLMs.\n\nExperiments on NuInstruct show significant improvements over existing MLLMs. The authors also mention releasing the dataset for future research.\n\nSo, from the title, abstract, and details, it\'s clear that NuInstruct is a new dataset they created specifically for their research. They describe it in detail, including the structure and methods used, so it\'s definitely a newly created dataset aimed at advancing autonomous driving through language models.\n&lt;/think&gt;\n\n```json\n{\n    "label": "new_dataset",\n    "explanation": "The paper introduces a dataset called NuInstruct with 91K multi-view video-QA pairs across 17 subtasks, each requiring holistic information for robust autonomous driving tasks. The authors detail its structure and methods for creation, confirming it as a newly developed dataset."\n}\n```',
+ {'label': 'new_dataset',
+  'explanation': 'The paper introduces a dataset called NuInstruct with 91K multi-view video-QA pairs across 17 subtasks, each requiring holistic information for robust autonomous driving tasks. The authors detail its structure and methods for creation, confirming it as a newly developed dataset.'})</code></pre>
+</div>
+</div>
+<p>We’ll do a bit of cleaning up of the results to get them in a format we can add to our existing dataframe.</p>
+<div id="cell-72" class="cell" data-execution_count="194">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>parsed_results <span class="op">=</span> [try_extract_json_from_text(result) <span class="cf">for</span> result <span class="kw">in</span> results]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="cell-73" class="cell" data-execution_count="195">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>parsed_results[:<span class="dv">3</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="195">
+<pre><code>[('&lt;think&gt;\nOkay, so I need to figure out if the given arXiv paper introduces a newly created dataset. Let\'s look at the title and abstract carefully.\n\nThe title is "Holistic Autonomous Driving Understanding by Bird\'s-Eye-View Injected Multi-Modal Large Models." That immediately suggests it\'s about a dataset related to autonomous driving. The abstract mentions that the paper introduces a dataset called NuInstruct, which has 91K multi-view video-QA pairs across 17 subtasks. Each task requires holistic information like temporal, multi-view, and spatial data, making the challenges higher.\n\nThe authors propose a method using SQL to generate instruction-response pairs automatically, inspired by human driving logic. They also introduce BEV-InMLLM, an end-to-end method that enhances large language models by integrating BEV features, language alignment, and tasks like multi-view, spatial awareness, and temporal semantics. They note that their BEV injection module is plug-and-play for existing MLLMs.\n\nExperiments on NuInstruct show significant improvements over existing MLLMs. The authors also mention releasing the dataset for future research.\n\nSo, from the title, abstract, and details, it\'s clear that NuInstruct is a new dataset they created specifically for their research. They describe it in detail, including the structure and methods used, so it\'s definitely a newly created dataset aimed at advancing autonomous driving through language models.\n&lt;/think&gt;\n\n```json\n{\n    "label": "new_dataset",\n    "explanation": "The paper introduces a dataset called NuInstruct with 91K multi-view video-QA pairs across 17 subtasks, each requiring holistic information for robust autonomous driving tasks. The authors detail its structure and methods for creation, confirming it as a newly developed dataset."\n}\n```',
+  {'label': 'new_dataset',
+   'explanation': 'The paper introduces a dataset called NuInstruct with 91K multi-view video-QA pairs across 17 subtasks, each requiring holistic information for robust autonomous driving tasks. The authors detail its structure and methods for creation, confirming it as a newly developed dataset.'}),
+ ('&lt;think&gt;\nOkay, so I need to figure out whether the paper "BRACE: The Breakdancing Competition Dataset for Dance Motion Synthesis" introduces a newly created dataset. Let me start by reading the title and abstract carefully.\n\nThe title mentions "BRACE: The Breakdancing Competition Dataset." That suggests it\'s introducing a dataset named BRACE. The abstract goes into more detail about what the dataset is. It says that generative models for audio-conditioned dance motion synthesis are trained, but these models rely on certain assumptions, like strong music-dance correlation and controlled motion data. The paper points out that existing datasets have limitations and introduces BRACE to challenge these assumptions by providing complex human poses, specifically focusing on breakdancing which includes acrobatic moves and tangled postures.\n\nThe authors mention that they used data from the Red Bull BC One competition videos. They faced challenges like estimating human keypoints due to the complexity of the dance and multiple cameras. To address this, they used a hybrid labeling pipeline combining deep estimation models and manual annotations to get high-quality keypoint sequences. The result is a dataset with over 3 hours and 30 minutes of densely annotated poses. They tested state-of-the-art methods and found their limitations with complex sequences, arguing that their dataset can advance dance motion synthesis by forcing models to reason more about body structure and movements.\n\nSo, putting this together, the paper is introducing a new dataset called BRACE. They created it by compiling dynamic dance sequences from Red Bull BC One videos, faced challenges in data annotation, and developed a hybrid approach to overcome these issues. They then used this dataset to evaluate existing methods and highlight its potential to push the boundaries of dance motion synthesis.\n\nI don\'t see any indication that this dataset isn\'t new. The abstract clearly states the creation of BRACE, describes the data sources and processing methods, and the purpose of the dataset. Therefore, it\'s clear that the authors are introducing this dataset as part of their contribution.\n&lt;/think&gt;\n\nThe paper introduces a new dataset called BRACE, which is specifically designed for dance motion synthesis. The authors detail the creation of this dataset, including the challenges faced and the methods used to compile and process the data. Therefore, the paper clearly introduces a newly created dataset.\n\n```json\n{\n    "label": "new_dataset",\n    "explanation": "The paper introduces a new dataset named BRACE, detailing its creation, challenges faced, and the purpose of providing complex dance sequences to advance motion synthesis."\n}\n```',
+  {'label': 'new_dataset',
+   'explanation': 'The paper introduces a new dataset named BRACE, detailing its creation, challenges faced, and the purpose of providing complex dance sequences to advance motion synthesis.'}),
+ ('&lt;think&gt;\nOkay, I need to determine whether the arXiv paper titled "RET-CLIP: A Retinal Image Foundation Model Pre-trained with Clinical Diagnostic Reports" introduces a newly created dataset. Let me start by reading through the title and abstract carefully to extract relevant information.\n\nThe title mentions that RET-CLIP is a model pre-trained using clinical diagnostic reports. The abstract elaborates that RET-CLIP was trained on a dataset of 193,865 patients. It highlights that the model focuses on extracting features from color fundus photographs (CFPs) and uses a tripartite optimization strategy covering the left eye, right eye, and patient level.\n\nNow, the key point is whether this dataset of 193,865 patients is newly created or if it\'s referring to an existing dataset. The abstract doesn\'t explicitly state that this dataset is new; it simply describes it as a dataset used for training. The focus is on the model\'s architecture and training strategy rather than the dataset\'s origin.\n\nTypically, when a paper mentions training a model on a dataset, they might reference an existing one unless they specify that it\'s newly collected. Since the abstract doesn\'t provide details about the dataset\'s origin, such as whether it\'s publicly available, if it\'s proprietary, or if it\'s a new collection, it\'s safer to assume that the dataset might not be newly created. However, the exact nature of the dataset isn\'t clarified, so without explicit information, it\'s hard to confirm if it\'s new.\n\nBut considering the context, the paper is about medical imaging and clinical reports, which are fields where large datasets are often publicly available or shared. The mention of 193,865 patients could imply a significant dataset, possibly derived from existing public resources. Therefore, it\'s plausible that the dataset isn\'t newly created but rather an aggregation or expansion of existing data.\n\nIn conclusion, there\'s insufficient information to confirm that a new dataset was introduced, so the label should be "no_new_dataset".\n&lt;/think&gt;\n\n```json\n{\n    "label": "no_new_dataset",\n    "explanation": "The paper describes a dataset of 193,865 patients used to train the RET-CLIP model but does not explicitly state that this dataset is newly created. It is possible that the dataset is derived from existing public resources or aggregated data in the medical field."\n}\n```',
+  {'label': 'no_new_dataset',
+   'explanation': 'The paper describes a dataset of 193,865 patients used to train the RET-CLIP model but does not explicitly state that this dataset is newly created. It is possible that the dataset is derived from existing public resources or aggregated data in the medical field.'})]</code></pre>
+</div>
+</div>
+<div id="cell-74" class="cell" data-execution_count="196">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>labels_and_explanations <span class="op">=</span> [</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>    (result[<span class="dv">1</span>].get(<span class="st">"label"</span>), result[<span class="dv">1</span>].get(<span class="st">"explanation"</span>))</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> result[<span class="dv">1</span>] <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="kw">and</span> <span class="bu">isinstance</span>(result[<span class="dv">1</span>], <span class="bu">dict</span>)</span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> (<span class="va">None</span>, <span class="va">None</span>)</span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> result <span class="kw">in</span> parsed_results</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Unzip the list of tuples into separate lists</span></span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>labels, explanations <span class="op">=</span> <span class="bu">zip</span>(<span class="op">*</span>labels_and_explanations)</span>
+<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a>lables <span class="op">=</span> <span class="bu">list</span>(labels)</span>
+<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a>explanations <span class="op">=</span> <span class="bu">list</span>(explanations)</span>
+<span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a>sample_df <span class="op">=</span> sample_df.with_columns(</span>
+<span id="cb55-13"><a href="#cb55-13" aria-hidden="true" tabindex="-1"></a>    pl.Series(lables).alias(<span class="st">"labels"</span>),</span>
+<span id="cb55-14"><a href="#cb55-14" aria-hidden="true" tabindex="-1"></a>    pl.Series(explanations).alias(<span class="st">"explanations"</span>),</span>
+<span id="cb55-15"><a href="#cb55-15" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="cell-75" class="cell" data-outputid="80b9e6b0-7449-4731-ebad-1aa37373bc3d" data-execution_count="200">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>sample_df.head(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="200">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (1, 16)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">submitter</th>
+<th data-quarto-table-cell-role="th">authors</th>
+<th data-quarto-table-cell-role="th">title</th>
+<th data-quarto-table-cell-role="th">comments</th>
+<th data-quarto-table-cell-role="th">journal-ref</th>
+<th data-quarto-table-cell-role="th">doi</th>
+<th data-quarto-table-cell-role="th">report-no</th>
+<th data-quarto-table-cell-role="th">categories</th>
+<th data-quarto-table-cell-role="th">license</th>
+<th data-quarto-table-cell-role="th">abstract</th>
+<th data-quarto-table-cell-role="th">versions</th>
+<th data-quarto-table-cell-role="th">update_date</th>
+<th data-quarto-table-cell-role="th">authors_parsed</th>
+<th data-quarto-table-cell-role="th">labels</th>
+<th data-quarto-table-cell-role="th">explanations</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>str</th>
+<th>list[struct[2]]</th>
+<th>datetime[ms]</th>
+<th>list[list[str]]</th>
+<th>str</th>
+<th>str</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"2401.00988"</td>
+<td>"Xinpeng Ding"</td>
+<td>"Xinpeng Ding and Jinahua Han a…</td>
+<td>"Holistic Autonomous Driving Un…</td>
+<td>null</td>
+<td>null</td>
+<td>null</td>
+<td>null</td>
+<td>"cs.CV"</td>
+<td>"http://arxiv.org/licenses/none…</td>
+<td>"&nbsp;&nbsp;The rise of multimodal large…</td>
+<td>[{"v1","Tue, 2 Jan 2024 01:54:22 GMT"}]</td>
+<td>2024-01-03 00:00:00</td>
+<td>[["Ding", "Xinpeng", ""], ["Han", "Jinahua", ""], … ["Li", "Xiaomeng", ""]]</td>
+<td>"new_dataset"</td>
+<td>"The paper introduces a dataset…</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>Let’s take a look at the distribution of the labels.</p>
+<div id="cell-77" class="cell" data-execution_count="201">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>sample_df.select(pl.col(<span class="st">"labels"</span>).value_counts()).unnest(<span class="st">"labels"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="201">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (3, 2)</small>
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">labels</th>
+<th data-quarto-table-cell-role="th">count</th>
+</tr>
+<tr class="even">
+<th>str</th>
+<th>u32</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"new_dataset"</td>
+<td>648</td>
+</tr>
+<tr class="even">
+<td>"no_new_dataset"</td>
+<td>2350</td>
+</tr>
+<tr class="odd">
+<td>null</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>We only get a few examples where the output doesn’t match the labels we want. We can filter these out.</p>
+<div id="cell-79" class="cell" data-execution_count="202">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>sample_df <span class="op">=</span> sample_df.<span class="bu">filter</span>(pl.col(<span class="st">"labels"</span>).is_in([<span class="st">"new_dataset"</span>, <span class="st">"no_new_dataset"</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We’ll now convert the dataframe to a Hugging Face dataset and push it to the Hub.</p>
+<div id="cell-81" class="cell" data-execution_count="203">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> Dataset, Features, Value, ClassLabel</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> Dataset.from_polars(</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>    sample_df.select([<span class="st">"id"</span>, <span class="st">"title"</span>, <span class="st">"abstract"</span>, <span class="st">"labels"</span>, <span class="st">"explanations"</span>]),</span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a>large_string_columns <span class="op">=</span> [</span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a>    k</span>
+<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k, v <span class="kw">in</span> ds.features.items()</span>
+<span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">isinstance</span>(v, Value) <span class="kw">and</span> v.dtype <span class="op">==</span> <span class="st">"large_string"</span></span>
+<span id="cb59-9"><a href="#cb59-9" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb59-10"><a href="#cb59-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> column <span class="kw">in</span> large_string_columns:</span>
+<span id="cb59-11"><a href="#cb59-11" aria-hidden="true" tabindex="-1"></a>    ds <span class="op">=</span> ds.cast_column(column, Value(<span class="st">"string"</span>))</span>
+<span id="cb59-12"><a href="#cb59-12" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> ds.cast_column(<span class="st">"labels"</span>, ClassLabel(names<span class="op">=</span>[<span class="st">"new_dataset"</span>, <span class="st">"no_new_dataset"</span>]))</span>
+<span id="cb59-13"><a href="#cb59-13" aria-hidden="true" tabindex="-1"></a>ds.push_to_hub(<span class="st">"davanstrien/arxiv-new-datasets"</span>, token<span class="op">=</span>os.getenv(<span class="st">"HF_TOKEN"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Here is the resulting dataset.</p>
+<iframe src="https://huggingface.co/datasets/davanstrien/arxiv-new-datasets/embed/viewer/default/train" frameborder="0" width="100%" height="560px">
+</iframe>
+</section>
+<section id="fine-tuning-modernbert" class="level2">
+<h2 class="anchored" data-anchor-id="fine-tuning-modernbert">Fine tuning ModernBERT</h2>
+<p>Since the focus of this blog is on the data generation part I won’t go into too much detail here but you can see the code and the final results below.</p>
+<div id="cell-85" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>pip install datasets setfit transformers accelerate <span class="op">--</span>upgrade</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>pip install flash<span class="op">-</span>attn <span class="op">--</span>no<span class="op">-</span>build<span class="op">-</span>isolation</span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> evaluate <span class="im">import</span> load</span>
+<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> (</span>
+<span id="cb60-7"><a href="#cb60-7" aria-hidden="true" tabindex="-1"></a>    AutoTokenizer,</span>
+<span id="cb60-8"><a href="#cb60-8" aria-hidden="true" tabindex="-1"></a>    AutoModelForSequenceClassification,</span>
+<span id="cb60-9"><a href="#cb60-9" aria-hidden="true" tabindex="-1"></a>    TrainingArguments,</span>
+<span id="cb60-10"><a href="#cb60-10" aria-hidden="true" tabindex="-1"></a>    Trainer,</span>
+<span id="cb60-11"><a href="#cb60-11" aria-hidden="true" tabindex="-1"></a>    DataCollatorWithPadding,</span>
+<span id="cb60-12"><a href="#cb60-12" aria-hidden="true" tabindex="-1"></a>    EarlyStoppingCallback,</span>
+<span id="cb60-13"><a href="#cb60-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb60-14"><a href="#cb60-14" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb60-15"><a href="#cb60-15" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> evaluate <span class="im">import</span> load</span>
+<span id="cb60-16"><a href="#cb60-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-17"><a href="#cb60-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Load data</span></span>
+<span id="cb60-18"><a href="#cb60-18" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> load_dataset(<span class="st">"davanstrien/arxiv-new-datasets"</span>, split<span class="op">=</span><span class="st">"train"</span>)</span>
+<span id="cb60-19"><a href="#cb60-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-20"><a href="#cb60-20" aria-hidden="true" tabindex="-1"></a><span class="co"># label info</span></span>
+<span id="cb60-21"><a href="#cb60-21" aria-hidden="true" tabindex="-1"></a>labels <span class="op">=</span> ds.features[<span class="st">"labels"</span>].names</span>
+<span id="cb60-22"><a href="#cb60-22" aria-hidden="true" tabindex="-1"></a>label2id <span class="op">=</span> {label: i <span class="cf">for</span> i, label <span class="kw">in</span> <span class="bu">enumerate</span>(labels)}</span>
+<span id="cb60-23"><a href="#cb60-23" aria-hidden="true" tabindex="-1"></a>id2label <span class="op">=</span> {i: label <span class="cf">for</span> label, i <span class="kw">in</span> label2id.items()}</span>
+<span id="cb60-24"><a href="#cb60-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-25"><a href="#cb60-25" aria-hidden="true" tabindex="-1"></a><span class="co"># prep a text column combining title and abstract</span></span>
+<span id="cb60-26"><a href="#cb60-26" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> ds.<span class="bu">map</span>(<span class="kw">lambda</span> x: {<span class="st">"text"</span>: x[<span class="st">"title"</span>] <span class="op">+</span> <span class="st">" "</span> <span class="op">+</span> x[<span class="st">"abstract"</span>]})</span>
+<span id="cb60-27"><a href="#cb60-27" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> ds.train_test_split(test_size<span class="op">=</span><span class="fl">0.2</span>, stratify_by_column<span class="op">=</span><span class="st">"labels"</span>)</span>
+<span id="cb60-28"><a href="#cb60-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-29"><a href="#cb60-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Load tokenizer</span></span>
+<span id="cb60-30"><a href="#cb60-30" aria-hidden="true" tabindex="-1"></a>tokenizer <span class="op">=</span> AutoTokenizer.from_pretrained(<span class="st">"answerdotai/ModernBERT-base"</span>)</span>
+<span id="cb60-31"><a href="#cb60-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-32"><a href="#cb60-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-33"><a href="#cb60-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Tokenize function</span></span>
+<span id="cb60-34"><a href="#cb60-34" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> tokenize_function(examples):</span>
+<span id="cb60-35"><a href="#cb60-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> tokenizer(examples[<span class="st">"text"</span>], truncation<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb60-36"><a href="#cb60-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-37"><a href="#cb60-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-38"><a href="#cb60-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Tokenize datasets</span></span>
+<span id="cb60-39"><a href="#cb60-39" aria-hidden="true" tabindex="-1"></a>tokenized_datasets <span class="op">=</span> ds.<span class="bu">map</span>(tokenize_function, batched<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb60-40"><a href="#cb60-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-41"><a href="#cb60-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Load metrics</span></span>
+<span id="cb60-42"><a href="#cb60-42" aria-hidden="true" tabindex="-1"></a>accuracy <span class="op">=</span> load(<span class="st">"accuracy"</span>)</span>
+<span id="cb60-43"><a href="#cb60-43" aria-hidden="true" tabindex="-1"></a>f1 <span class="op">=</span> load(<span class="st">"f1"</span>)</span>
+<span id="cb60-44"><a href="#cb60-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-45"><a href="#cb60-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-46"><a href="#cb60-46" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_metrics(eval_pred):</span>
+<span id="cb60-47"><a href="#cb60-47" aria-hidden="true" tabindex="-1"></a>    logits, labels <span class="op">=</span> eval_pred</span>
+<span id="cb60-48"><a href="#cb60-48" aria-hidden="true" tabindex="-1"></a>    predictions <span class="op">=</span> np.argmax(logits, axis<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb60-49"><a href="#cb60-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-50"><a href="#cb60-50" aria-hidden="true" tabindex="-1"></a>    accuracy_score <span class="op">=</span> accuracy.compute(predictions<span class="op">=</span>predictions, references<span class="op">=</span>labels)</span>
+<span id="cb60-51"><a href="#cb60-51" aria-hidden="true" tabindex="-1"></a>    f1_score <span class="op">=</span> f1.compute(</span>
+<span id="cb60-52"><a href="#cb60-52" aria-hidden="true" tabindex="-1"></a>        predictions<span class="op">=</span>predictions, references<span class="op">=</span>labels, average<span class="op">=</span><span class="st">"weighted"</span></span>
+<span id="cb60-53"><a href="#cb60-53" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb60-54"><a href="#cb60-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-55"><a href="#cb60-55" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
+<span id="cb60-56"><a href="#cb60-56" aria-hidden="true" tabindex="-1"></a>        <span class="st">"accuracy"</span>: accuracy_score[<span class="st">"accuracy"</span>],</span>
+<span id="cb60-57"><a href="#cb60-57" aria-hidden="true" tabindex="-1"></a>        <span class="st">"f1"</span>: f1_score[<span class="st">"f1"</span>],</span>
+<span id="cb60-58"><a href="#cb60-58" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb60-59"><a href="#cb60-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-60"><a href="#cb60-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-61"><a href="#cb60-61" aria-hidden="true" tabindex="-1"></a><span class="co"># Load model with increased dropout</span></span>
+<span id="cb60-62"><a href="#cb60-62" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> AutoModelForSequenceClassification.from_pretrained(</span>
+<span id="cb60-63"><a href="#cb60-63" aria-hidden="true" tabindex="-1"></a>    <span class="st">"answerdotai/ModernBERT-base"</span>,</span>
+<span id="cb60-64"><a href="#cb60-64" aria-hidden="true" tabindex="-1"></a>    num_labels<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb60-65"><a href="#cb60-65" aria-hidden="true" tabindex="-1"></a>    label2id<span class="op">=</span>label2id,</span>
+<span id="cb60-66"><a href="#cb60-66" aria-hidden="true" tabindex="-1"></a>    id2label<span class="op">=</span>id2label,</span>
+<span id="cb60-67"><a href="#cb60-67" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb60-68"><a href="#cb60-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-69"><a href="#cb60-69" aria-hidden="true" tabindex="-1"></a><span class="co"># Define improved training arguments</span></span>
+<span id="cb60-70"><a href="#cb60-70" aria-hidden="true" tabindex="-1"></a>training_args <span class="op">=</span> TrainingArguments(</span>
+<span id="cb60-71"><a href="#cb60-71" aria-hidden="true" tabindex="-1"></a>    output_dir<span class="op">=</span><span class="st">"./results"</span>,</span>
+<span id="cb60-72"><a href="#cb60-72" aria-hidden="true" tabindex="-1"></a>    learning_rate<span class="op">=</span><span class="fl">3e-5</span>,  <span class="co"># Slightly higher initial learning rate</span></span>
+<span id="cb60-73"><a href="#cb60-73" aria-hidden="true" tabindex="-1"></a>    per_device_train_batch_size<span class="op">=</span><span class="dv">8</span>,  <span class="co"># Reduced batch size</span></span>
+<span id="cb60-74"><a href="#cb60-74" aria-hidden="true" tabindex="-1"></a>    per_device_eval_batch_size<span class="op">=</span><span class="dv">64</span>,</span>
+<span id="cb60-75"><a href="#cb60-75" aria-hidden="true" tabindex="-1"></a>    num_train_epochs<span class="op">=</span><span class="dv">20</span>,  <span class="co"># Reduced epochs</span></span>
+<span id="cb60-76"><a href="#cb60-76" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Learning rate schedule</span></span>
+<span id="cb60-77"><a href="#cb60-77" aria-hidden="true" tabindex="-1"></a>    lr_scheduler_type<span class="op">=</span><span class="st">"cosine"</span>,</span>
+<span id="cb60-78"><a href="#cb60-78" aria-hidden="true" tabindex="-1"></a>    warmup_ratio<span class="op">=</span><span class="fl">0.1</span>,</span>
+<span id="cb60-79"><a href="#cb60-79" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Evaluation and saving</span></span>
+<span id="cb60-80"><a href="#cb60-80" aria-hidden="true" tabindex="-1"></a>    evaluation_strategy<span class="op">=</span><span class="st">"epoch"</span>,</span>
+<span id="cb60-81"><a href="#cb60-81" aria-hidden="true" tabindex="-1"></a>    save_strategy<span class="op">=</span><span class="st">"epoch"</span>,</span>
+<span id="cb60-82"><a href="#cb60-82" aria-hidden="true" tabindex="-1"></a>    load_best_model_at_end<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb60-83"><a href="#cb60-83" aria-hidden="true" tabindex="-1"></a>    metric_for_best_model<span class="op">=</span><span class="st">"f1"</span>,</span>
+<span id="cb60-84"><a href="#cb60-84" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Regularization</span></span>
+<span id="cb60-85"><a href="#cb60-85" aria-hidden="true" tabindex="-1"></a>    weight_decay<span class="op">=</span><span class="fl">0.01</span>,</span>
+<span id="cb60-86"><a href="#cb60-86" aria-hidden="true" tabindex="-1"></a>    max_grad_norm<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="cb60-87"><a href="#cb60-87" aria-hidden="true" tabindex="-1"></a>    label_smoothing_factor<span class="op">=</span><span class="fl">0.1</span>,</span>
+<span id="cb60-88"><a href="#cb60-88" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Logging</span></span>
+<span id="cb60-89"><a href="#cb60-89" aria-hidden="true" tabindex="-1"></a>    logging_dir<span class="op">=</span><span class="st">"./logs"</span>,</span>
+<span id="cb60-90"><a href="#cb60-90" aria-hidden="true" tabindex="-1"></a>    logging_strategy<span class="op">=</span><span class="st">"epoch"</span>,</span>
+<span id="cb60-91"><a href="#cb60-91" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb60-92"><a href="#cb60-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-93"><a href="#cb60-93" aria-hidden="true" tabindex="-1"></a><span class="co"># Create data collator</span></span>
+<span id="cb60-94"><a href="#cb60-94" aria-hidden="true" tabindex="-1"></a>data_collator <span class="op">=</span> DataCollatorWithPadding(tokenizer<span class="op">=</span>tokenizer)</span>
+<span id="cb60-95"><a href="#cb60-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-96"><a href="#cb60-96" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize Trainer with early stopping</span></span>
+<span id="cb60-97"><a href="#cb60-97" aria-hidden="true" tabindex="-1"></a>trainer <span class="op">=</span> Trainer(</span>
+<span id="cb60-98"><a href="#cb60-98" aria-hidden="true" tabindex="-1"></a>    model<span class="op">=</span>model,</span>
+<span id="cb60-99"><a href="#cb60-99" aria-hidden="true" tabindex="-1"></a>    args<span class="op">=</span>training_args,</span>
+<span id="cb60-100"><a href="#cb60-100" aria-hidden="true" tabindex="-1"></a>    train_dataset<span class="op">=</span>tokenized_datasets[<span class="st">"train"</span>],</span>
+<span id="cb60-101"><a href="#cb60-101" aria-hidden="true" tabindex="-1"></a>    eval_dataset<span class="op">=</span>tokenized_datasets[<span class="st">"test"</span>],</span>
+<span id="cb60-102"><a href="#cb60-102" aria-hidden="true" tabindex="-1"></a>    tokenizer<span class="op">=</span>tokenizer,</span>
+<span id="cb60-103"><a href="#cb60-103" aria-hidden="true" tabindex="-1"></a>    data_collator<span class="op">=</span>data_collator,</span>
+<span id="cb60-104"><a href="#cb60-104" aria-hidden="true" tabindex="-1"></a>    compute_metrics<span class="op">=</span>compute_metrics,</span>
+<span id="cb60-105"><a href="#cb60-105" aria-hidden="true" tabindex="-1"></a>    callbacks<span class="op">=</span>[</span>
+<span id="cb60-106"><a href="#cb60-106" aria-hidden="true" tabindex="-1"></a>        EarlyStoppingCallback(early_stopping_patience<span class="op">=</span><span class="dv">5</span>, early_stopping_threshold<span class="op">=</span><span class="fl">0.001</span>)</span>
+<span id="cb60-107"><a href="#cb60-107" aria-hidden="true" tabindex="-1"></a>    ],</span>
+<span id="cb60-108"><a href="#cb60-108" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb60-109"><a href="#cb60-109" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluate the model</span></span>
+<span id="cb60-110"><a href="#cb60-110" aria-hidden="true" tabindex="-1"></a>eval_results <span class="op">=</span> trainer.evaluate()</span>
+<span id="cb60-111"><a href="#cb60-111" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Final evaluation results:"</span>, eval_results)</span>
+<span id="cb60-112"><a href="#cb60-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-113"><a href="#cb60-113" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the best model</span></span>
+<span id="cb60-114"><a href="#cb60-114" aria-hidden="true" tabindex="-1"></a>trainer.save_model(<span class="st">"./best_model"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="sourceCode" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>Final evaluation results: {<span class="st">'eval_loss'</span>: <span class="fl">0.32631951570510864</span>, <span class="st">'eval_accuracy'</span>: <span class="fl">0.945</span>, <span class="st">'eval_f1'</span>: <span class="fl">0.9442747450661002</span>, <span class="st">'eval_runtime'</span>: <span class="fl">5.8106</span>, <span class="st">'eval_samples_per_second'</span>: <span class="fl">103.26</span>, <span class="st">'eval_steps_per_second'</span>: <span class="fl">1.721</span>, <span class="st">'epoch'</span>: <span class="fl">10.0</span>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="conclusion" class="level1">
+<h1>Conclusion</h1>
+<p>In this blog post, we’ve seen how we can use the reasoning abilities of models to be effective classifiers. Since lack of training data is one of the main reasons people may use an LLM over a fine tuned model, benefiting from the reasoning abilities of an LLM is a great way to get the best of both worlds.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/danielvanstrien\.xyz");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
