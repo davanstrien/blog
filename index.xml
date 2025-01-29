@@ -1247,7 +1247,7 @@ The paper "LOCUS: LOcalization with Channel Uncertainty and Sporadic Energy" int
 </pre>
 </div>
 </div>
-<p>While this is for sure a vibes based asssesement it does seem like the model does better when it has room to think so we’ll proceed with this approach.</p>
+<p>While this is definitely a vibes-based assessment, it does seem like the model does better when it has room to think, so we’ll proceed with this approach.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1258,7 +1258,7 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>There are ways to allow for both strucutred generation and reasoning. I’ll post more on that in the future!</p>
+<p>There are ways to allow for both structured generation and reasoning. I’ll post more on that in the future!</p>
 </div>
 </div>
 <p>We’ll now write a function to extract the JSON from the model’s output.</p>
@@ -1409,7 +1409,8 @@ font-style: inherit;">None</span>]</span></code></pre></div>
 <pre><code>[]</code></pre>
 </div>
 </div>
-<p>Although we might have a few misses where we don’t get a valid JSON object, let’s proceed with this approach since the model does much better when given room to reason.</p>
+<p>We can see in this example we don’t have any examples where we don’t get a valid JSON object (this is why we get back an empty list).</p>
+<p>Although we might miss a few examples where we don’t get a valid JSON object when doing the full dataset, let’s proceed with this approach since the model does much better when given room to reason.</p>
 <p>We’ll now use the hosted version of the model to generate labels for the entire dataset. For this version, we’ll use a dedicated Hugging Face inference endpoint, but if we wanted to use the full R1 model, we could use the new Inference Providers feature on the Hub. See this <a href="https://huggingface.co/blog/inference-providers">blog post</a> for more information.</p>
 <div id="cell-59" class="cell" data-execution_count="221">
 <details class="code-fold">
