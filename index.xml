@@ -27,6 +27,12 @@ font-style: inherit;">%</span>pip install polars huggingface_hub datasets openai
 background-color: null;
 font-style: inherit;">--</span>upgrade</span></code></pre></div>
 </div>
+<section id="updates" class="level2">
+<h2 class="anchored" data-anchor-id="updates">Updates</h2>
+<ul>
+<li>2025-01-30: <a href="https://huggingface.co/sayakpaul">Sayak Paul</a> has implemented this pipeline using Transformers (<a href="https://gist.github.com/sayakpaul/b5e94f5202eaf34cbaf9dac1c45f89ad">code</a>). This will be a super good option if you already have sufficient GPUs for running these models.</li>
+</ul>
+</section>
 <section id="how-can-we-get-the-best-of-both-worlds" class="level2">
 <h2 class="anchored" data-anchor-id="how-can-we-get-the-best-of-both-worlds">How can we get the best of both worlds?</h2>
 <p>tl;dr, how can we use LLMs to generate labels to fine-tune a ModernBERT model?</p>
@@ -58,7 +64,7 @@ Note
 <p>Feel free to skip this section if you are not interested in the use case and just want to see how to do the labelling part.</p>
 </div>
 </div>
-<div id="cell-5" class="cell" data-execution_count="2">
+<div id="cell-6" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> os</span>
@@ -83,7 +89,7 @@ font-style: inherit;">"1"</span>  <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># turn on HF_TRANSFER</span></span></code></pre></div>
 </div>
-<div id="cell-6" class="cell" data-execution_count="3">
+<div id="cell-7" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1">files <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> snapshot_download(</span>
@@ -104,13 +110,13 @@ background-color: null;
 font-style: inherit;">"dataset"</span>,</span>
 <span id="cb3-5">)</span></code></pre></div>
 </div>
-<div id="cell-7" class="cell" data-execution_count="4">
+<div id="cell-8" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1">df <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> pl.scan_parquet(files)</span></code></pre></div>
 </div>
 <p>Let’s look at the first row. We see a bunch of metadata about the paper and then the title and abstract. These are probably the column we’ll want to use as input for our model.</p>
-<div id="cell-9" class="cell" data-execution_count="5">
+<div id="cell-10" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1">df.head(<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">1</span>).collect()</span></code></pre></div>
@@ -181,7 +187,7 @@ font-style: inherit;">1</span>).collect()</span></code></pre></div>
 </div>
 </div>
 <p>You will see there is a categories column. This is a string that contains a list of categories that the paper belongs to. We can grab a few examples of the categories.</p>
-<div id="cell-11" class="cell" data-outputid="a108a474-38d6-4a71-f758-d284498da8bd" data-execution_count="6">
+<div id="cell-12" class="cell" data-outputid="a108a474-38d6-4a71-f758-d284498da8bd" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1">df.head(<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">10</span>).collect().select(<span class="st" style="color: #20794D;
@@ -201,7 +207,7 @@ font-style: inherit;">"categories"</span>).to_series().to_list()</span></code></
 </div>
 </div>
 <p>For my particular use case I’m mostly interest in papers that are in the computer science category i.e contain “cs.” in the categories column.</p>
-<div id="cell-13" class="cell" data-execution_count="7">
+<div id="cell-14" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1">df <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> df.<span class="bu" style="color: null;
@@ -245,7 +251,7 @@ Note
 <p>One thing to consider here is that ideally you want the distribution of data you use for training the model to be similar to the distribution of data you will use in practice. Since I will only check for ArXiV papers that contain the word “dataset” in the title or abstract, I will filter out a lot of the data before it even gets passed to the model. For your use case, consider the distribution of data you’ll be using in practice and filter the data accordingly.</p>
 </div>
 </div>
-<div id="cell-16" class="cell" data-outputid="72e83a74-efb2-4076-cbc9-b278bd7bab5f" data-execution_count="8">
+<div id="cell-17" class="cell" data-outputid="72e83a74-efb2-4076-cbc9-b278bd7bab5f" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1">df <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> df.<span class="bu" style="color: null;
@@ -269,7 +275,7 @@ font-style: inherit;">"dataset"</span>)</span>
 <span id="cb9-3">)</span></code></pre></div>
 </div>
 <p>Since we’re using the polars lazy api, we need to call <code>collect()</code> to actually get the data.</p>
-<div id="cell-18" class="cell" data-execution_count="9">
+<div id="cell-19" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1">df <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> df.collect()</span></code></pre></div>
@@ -280,7 +286,7 @@ font-style: inherit;">=</span> df.collect()</span></code></pre></div>
 <p>There has been significant growth in the use of LLMs for synthetic data generation over the past couple of years. While we could generate synthetic data, i.e., developing both the “input” and “target” columns, if we already have some data we want to work with, it makes more sense to generate labels. One of the significant challenges with synethic data generation is that the data generated is often not representative of the data we want to use in practice. For generative tasks, this might matter slightly less. Since we’re focused on building classifiers, which we’ll often focus on quite a narrow use case or domain, the data we use to train the model must be representative of the data we want to use in practice.</p>
 <p>In this case, it might be more sensible to use a model’s reasoning ability to generate labels rather than generate synthetic data.</p>
 <p>Let’s grab a few examples from the data to use as a starting point.</p>
-<div id="cell-21" class="cell" data-outputid="969cd1ce-3e10-4119-8d78-cc7cccebcf8b" data-execution_count="168">
+<div id="cell-22" class="cell" data-outputid="969cd1ce-3e10-4119-8d78-cc7cccebcf8b" data-execution_count="168">
 <div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1">examples <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> df.head(<span class="dv" style="color: #AD0000;
@@ -303,7 +309,7 @@ font-style: inherit;">0</span>]</span></code></pre></div>
 <h2 class="anchored" data-anchor-id="structured-generation">Structured generation?</h2>
 <p>We’ll start by using a structured generation approach to generate the labels. This means we’ll define a schema for the model’s output and then use that to generate the labels. I’ve written more about this in a <a href="https://danielvanstrien.xyz/posts/plain-text/synthetic-data-generation/2024-05-03-synethic-data-1.html">previous blog post</a> but the basic idea is that we define a schema for the output of the model and then use that to generate the labels. This means we don’t have to do a lot of work to parse the output of the model and can be sure we can easily train on the output.</p>
 <p>In this case, we define a Pydantic model as one that has a label and an explanation.</p>
-<div id="cell-23" class="cell" data-execution_count="169">
+<div id="cell-24" class="cell" data-execution_count="169">
 <div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> enum <span class="im" style="color: #00769E;
@@ -351,7 +357,7 @@ font-style: inherit;">40</span>)</span>
 <span id="cb13-13">    label: DatasetLabel</span></code></pre></div>
 </div>
 <p>We define a function to format the data as a prompt. This function takes a dictionary with the title and abstract and formats it as a prompt for the model.</p>
-<div id="cell-25" class="cell" data-execution_count="170">
+<div id="cell-26" class="cell" data-execution_count="170">
 <div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
@@ -421,7 +427,7 @@ font-style: inherit;">```</span></span>
 background-color: null;
 font-style: inherit;">"""</span></span></code></pre></div>
 </div>
-<div id="cell-26" class="cell" data-outputid="d007252f-7f2d-46f9-d6b1-2a6f245af125" data-execution_count="171">
+<div id="cell-27" class="cell" data-outputid="d007252f-7f2d-46f9-d6b1-2a6f245af125" data-execution_count="171">
 <div class="sourceCode cell-code" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>(format_text_as_prompt(examples[<span class="dv" style="color: #AD0000;
@@ -468,7 +474,7 @@ Return your reasoning and the label you've chosen as a JSON object like this:
 <h2 class="anchored" data-anchor-id="using-lm-studio-to-develop-our-approach">Using LM Studio to develop our approach</h2>
 <p>One of the powerful features of open source is that it makes it easier to run models in different places. While developing our approach, we can use a smaller version of the model to test it and then switch to a hosted version once we’re happy with it.</p>
 <p>We’ll run the model using <a href="https://lmstudio.ai/">LM Studio</a>. LM Studio is primarily known as a UI for running local LLMs, but it also has a server mode, which we’ll use here. We can interact with the server using the CLI. To start the server, we can run the following command.</p>
-<div id="cell-28" class="cell" data-execution_count="172">
+<div id="cell-29" class="cell" data-execution_count="172">
 <div class="sourceCode cell-code" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">!</span>lms server start</span></code></pre></div>
@@ -478,7 +484,7 @@ Success! Server is now running on port 1234</code></pre>
 </div>
 </div>
 <p>We can use <code>ls</code> to see the models that are available, we’ll filter these to only show the DeepSeek models.</p>
-<div id="cell-30" class="cell" data-execution_count="135">
+<div id="cell-31" class="cell" data-execution_count="135">
 <div class="sourceCode cell-code" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">!</span>lms ls <span class="op" style="color: #5E5E5E;
@@ -505,7 +511,7 @@ Note
 </div>
 </div>
 <p>We can load the model by running the following command. If the model is not already downloaded, LM Studio will download it. We’ll try and see how well the 7B model does.</p>
-<div id="cell-33" class="cell" data-execution_count="137">
+<div id="cell-34" class="cell" data-execution_count="137">
 <div class="sourceCode cell-code" id="cb21" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">!</span>lms load DeepSeek<span class="op" style="color: #5E5E5E;
@@ -533,14 +539,14 @@ To set a custom identifier, use the --identifier &lt;identifier&gt; option.</cod
 </div>
 </div>
 <p>Since LM Studio has an OpenAI compatible API, we can use the OpenAI Python client to interact with the server. We just need to set the base URL to the LM Studio server and set the API key to <code>lm-studio</code>.</p>
-<div id="cell-35" class="cell" data-execution_count="153">
+<div id="cell-36" class="cell" data-execution_count="153">
 <div class="sourceCode cell-code" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> openai <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> OpenAI</span></code></pre></div>
 </div>
-<div id="cell-36" class="cell" data-execution_count="154">
+<div id="cell-37" class="cell" data-execution_count="154">
 <div class="sourceCode cell-code" id="cb24" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1">client <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> OpenAI(base_url<span class="op" style="color: #5E5E5E;
@@ -554,7 +560,7 @@ background-color: null;
 font-style: inherit;">"lm-studio"</span>)</span></code></pre></div>
 </div>
 <p>Once we’ve created the client we can interact with it in the usual way i.e.&nbsp;to see available models we can run the following command.</p>
-<div id="cell-38" class="cell" data-execution_count="140">
+<div id="cell-39" class="cell" data-execution_count="140">
 <div class="sourceCode cell-code" id="cb25" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1">client.models.<span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">list</span>()</span></code></pre></div>
@@ -566,7 +572,7 @@ font-style: inherit;">list</span>()</span></code></pre></div>
 <section id="generating-labels" class="level2">
 <h2 class="anchored" data-anchor-id="generating-labels">Generating labels</h2>
 <p>We can now generate labels for our examples. We’ll use the <code>format_text_as_prompt</code> function to format the data as a prompt and then pass it to the model. Since we’re using a structured output, we need to use the <code>beta.chat.completions</code> endpoint. We pass in our Pydantic model as the <code>response_format</code> argument.</p>
-<div id="cell-40" class="cell" data-execution_count="173">
+<div id="cell-41" class="cell" data-execution_count="173">
 <div class="sourceCode cell-code" id="cb27" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1">messages <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> [</span>
@@ -604,7 +610,7 @@ font-style: inherit;">=</span>IntroducesNewDataset,</span>
 <span id="cb27-11">)</span></code></pre></div>
 </div>
 <p>We can check that we can parse the output of the model into our Pydantic model.</p>
-<div id="cell-42" class="cell" data-execution_count="174">
+<div id="cell-43" class="cell" data-execution_count="174">
 <div class="sourceCode cell-code" id="cb28" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1">IntroducesNewDataset.model_validate_json(response.choices[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">0</span>].message.content)</span></code></pre></div>
@@ -613,7 +619,7 @@ font-style: inherit;">0</span>].message.content)</span></code></pre></div>
 </div>
 </div>
 <p>We’ll wrap this in a function so we can easily use it for a lot of examples.</p>
-<div id="cell-44" class="cell" data-execution_count="175">
+<div id="cell-45" class="cell" data-execution_count="175">
 <div class="sourceCode cell-code" id="cb30" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
@@ -703,7 +709,7 @@ background-color: null;
 font-style: inherit;">None</span></span></code></pre></div>
 </div>
 <p>Before doing a big batch of predictions, let’s run the model on a few examples so we can see how it does.</p>
-<div id="cell-46" class="cell" data-outputid="4503d632-e290-4174-ebc3-b896e7ee9d00" data-execution_count="176">
+<div id="cell-47" class="cell" data-outputid="4503d632-e290-4174-ebc3-b896e7ee9d00" data-execution_count="176">
 <div class="sourceCode cell-code" id="cb31" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> rich <span class="im" style="color: #00769E;
@@ -914,7 +920,7 @@ further research in SSL.
 <section id="room-to-think" class="level2">
 <h2 class="anchored" data-anchor-id="room-to-think">Room to think?</h2>
 <p>One of the features of the R1 model is that it has “reasoning”, which is delineated by <thinking> and </thinking> tags. Since our structured output doesn’t allow for this, let’s try and see how well the model does without it.</p>
-<div id="cell-48" class="cell" data-execution_count="215">
+<div id="cell-49" class="cell" data-execution_count="215">
 <div class="sourceCode cell-code" id="cb32" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
@@ -976,7 +982,7 @@ background-color: null;
 font-style: inherit;">0</span>].message.content</span></code></pre></div>
 </div>
 <p>We’ll compare the results from the two approaches.</p>
-<div id="cell-50" class="cell" data-execution_count="178">
+<div id="cell-51" class="cell" data-execution_count="178">
 <div class="sourceCode cell-code" id="cb33" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># compare the results vs structured output</span></span>
@@ -1262,7 +1268,7 @@ Note
 </div>
 </div>
 <p>We’ll now write a function to extract the JSON from the model’s output.</p>
-<div id="cell-54" class="cell" data-execution_count="179">
+<div id="cell-55" class="cell" data-execution_count="179">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb38" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><span class="im" style="color: #00769E;
@@ -1355,7 +1361,7 @@ background-color: null;
 font-style: inherit;">None</span></span></code></pre></div>
 </details>
 </div>
-<div id="cell-55" class="cell" data-execution_count="180">
+<div id="cell-56" class="cell" data-execution_count="180">
 <div class="sourceCode cell-code" id="cb39" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1">prediction <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> predict_label_without_structured_output(examples[<span class="dv" style="color: #AD0000;
@@ -1369,7 +1375,7 @@ font-style: inherit;">0</span>])</span>
 </div>
 </div>
 <p>Let’s see how well this works on all the examples we had before</p>
-<div id="cell-57" class="cell" data-execution_count="181">
+<div id="cell-58" class="cell" data-execution_count="181">
 <div class="sourceCode cell-code" id="cb41" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1">results <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> [predict_label_without_structured_output(example) <span class="cf" style="color: #003B4F;
@@ -1412,7 +1418,7 @@ font-style: inherit;">None</span>]</span></code></pre></div>
 <p>We can see in this example we don’t have any examples where we don’t get a valid JSON object (this is why we get back an empty list).</p>
 <p>Although we might miss a few examples where we don’t get a valid JSON object when doing the full dataset, let’s proceed with this approach since the model does much better when given room to reason.</p>
 <p>We’ll now use the hosted version of the model to generate labels for the entire dataset. For this version, we’ll use a dedicated Hugging Face inference endpoint, but if we wanted to use the full R1 model, we could use the new Inference Providers feature on the Hub. See this <a href="https://huggingface.co/blog/inference-providers">blog post</a> for more information.</p>
-<div id="cell-59" class="cell" data-execution_count="221">
+<div id="cell-60" class="cell" data-execution_count="221">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb43" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><span class="im" style="color: #00769E;
@@ -1447,7 +1453,7 @@ font-style: inherit;">"HF_TOKEN"</span>),</span>
 <span id="cb43-10">)</span></code></pre></div>
 </details>
 </div>
-<div id="cell-60" class="cell" data-execution_count="222">
+<div id="cell-61" class="cell" data-execution_count="222">
 <div class="sourceCode cell-code" id="cb44" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1">rich_print(</span>
 <span id="cb44-2">    predict_label_without_structured_output(</span>
 <span id="cb44-3">        examples[<span class="dv" style="color: #AD0000;
@@ -1492,7 +1498,7 @@ font-style: inherit;">=</span>client</span>
 </div>
 </div>
 <p>We’ll now sample 3000 examples from the dataset and use the hosted model to generate labels for them.</p>
-<div id="cell-62" class="cell" data-execution_count="223">
+<div id="cell-63" class="cell" data-execution_count="223">
 <div class="sourceCode cell-code" id="cb45" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1">sample_df <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> df.sample(<span class="dv" style="color: #AD0000;
@@ -1503,7 +1509,7 @@ font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">42</span>)</span></code></pre></div>
 </div>
-<div id="cell-63" class="cell" data-execution_count="224">
+<div id="cell-64" class="cell" data-execution_count="224">
 <div class="sourceCode cell-code" id="cb46" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1">examples <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> sample_df.select(pl.col([<span class="st" style="color: #20794D;
@@ -1513,7 +1519,7 @@ background-color: null;
 font-style: inherit;">"title"</span>])).to_dicts()</span></code></pre></div>
 </div>
 <p>We create a function to predict the labels using the hosted model. We’ll use the <code>stamina</code> library to retry the request if it fails.</p>
-<div id="cell-65" class="cell" data-execution_count="225">
+<div id="cell-66" class="cell" data-execution_count="225">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb47" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><span class="im" style="color: #00769E;
@@ -1591,7 +1597,7 @@ font-style: inherit;">None</span></span></code></pre></div>
 </details>
 </div>
 <p>Get the results from the model.</p>
-<div id="cell-67" class="cell">
+<div id="cell-68" class="cell">
 <div class="sourceCode cell-code" id="cb48" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> tqdm.contrib.concurrent <span class="im" style="color: #00769E;
@@ -1607,7 +1613,7 @@ background-color: null;
 font-style: inherit;">5</span>)</span></code></pre></div>
 </div>
 <p>Let’s take a look at the first result</p>
-<div id="cell-69" class="cell" data-execution_count="192">
+<div id="cell-70" class="cell" data-execution_count="192">
 <div class="sourceCode cell-code" id="cb49" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1">rich_print(results[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">0</span>])</span></code></pre></div>
@@ -1645,7 +1651,7 @@ font-style: inherit;">0</span>])</span></code></pre></div>
 </pre>
 </div>
 </div>
-<div id="cell-70" class="cell" data-execution_count="193">
+<div id="cell-71" class="cell" data-execution_count="193">
 <div class="sourceCode cell-code" id="cb50" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1">try_extract_json_from_text(results[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">0</span>])</span></code></pre></div>
@@ -1656,7 +1662,7 @@ font-style: inherit;">0</span>])</span></code></pre></div>
 </div>
 </div>
 <p>We’ll do a bit of cleaning up of the results to get them in a format we can add to our existing dataframe.</p>
-<div id="cell-72" class="cell" data-execution_count="194">
+<div id="cell-73" class="cell" data-execution_count="194">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb52" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1">parsed_results <span class="op" style="color: #5E5E5E;
@@ -1670,7 +1676,7 @@ font-weight: bold;
 font-style: inherit;">in</span> results]</span></code></pre></div>
 </details>
 </div>
-<div id="cell-73" class="cell" data-execution_count="195">
+<div id="cell-74" class="cell" data-execution_count="195">
 <div class="sourceCode cell-code" id="cb53" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1">parsed_results[:<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">3</span>]</span></code></pre></div>
@@ -1686,7 +1692,7 @@ font-style: inherit;">3</span>]</span></code></pre></div>
    'explanation': 'The paper describes a dataset of 193,865 patients used to train the RET-CLIP model but does not explicitly state that this dataset is newly created. It is possible that the dataset is derived from existing public resources or aggregated data in the medical field.'})]</code></pre>
 </div>
 </div>
-<div id="cell-74" class="cell" data-execution_count="196">
+<div id="cell-75" class="cell" data-execution_count="196">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb55" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1">labels_and_explanations <span class="op" style="color: #5E5E5E;
@@ -1773,7 +1779,7 @@ font-style: inherit;">"explanations"</span>),</span>
 <span id="cb55-15">)</span></code></pre></div>
 </details>
 </div>
-<div id="cell-75" class="cell" data-outputid="80b9e6b0-7449-4731-ebad-1aa37373bc3d" data-execution_count="200">
+<div id="cell-76" class="cell" data-outputid="80b9e6b0-7449-4731-ebad-1aa37373bc3d" data-execution_count="200">
 <div class="sourceCode cell-code" id="cb56" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1">sample_df.head(<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">1</span>)</span></code></pre></div>
@@ -1850,7 +1856,7 @@ font-style: inherit;">1</span>)</span></code></pre></div>
 </div>
 </div>
 <p>Let’s take a look at the distribution of the labels.</p>
-<div id="cell-77" class="cell" data-execution_count="201">
+<div id="cell-78" class="cell" data-execution_count="201">
 <div class="sourceCode cell-code" id="cb57" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1">sample_df.select(pl.col(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"labels"</span>).value_counts()).unnest(<span class="st" style="color: #20794D;
@@ -1895,7 +1901,7 @@ font-style: inherit;">"labels"</span>)</span></code></pre></div>
 </div>
 </div>
 <p>We only get a few examples where the output doesn’t match the labels we want. We can filter these out.</p>
-<div id="cell-79" class="cell" data-execution_count="202">
+<div id="cell-80" class="cell" data-execution_count="202">
 <div class="sourceCode cell-code" id="cb58" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1">sample_df <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> sample_df.<span class="bu" style="color: null;
@@ -1909,7 +1915,7 @@ background-color: null;
 font-style: inherit;">"no_new_dataset"</span>]))</span></code></pre></div>
 </div>
 <p>We’ll now convert the dataframe to a Hugging Face dataset and push it to the Hub.</p>
-<div id="cell-81" class="cell" data-execution_count="203">
+<div id="cell-82" class="cell" data-execution_count="203">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb59" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><span class="im" style="color: #00769E;
@@ -1996,7 +2002,7 @@ font-style: inherit;">"HF_TOKEN"</span>))</span></code></pre></div>
 <section id="fine-tuning-modernbert" class="level2">
 <h2 class="anchored" data-anchor-id="fine-tuning-modernbert">Fine tuning ModernBERT</h2>
 <p>Since the focus of this blog is on the data generation part I won’t go into too much detail here but you can see the code and the final results below.</p>
-<div id="cell-85" class="cell">
+<div id="cell-86" class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb60" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><span class="op" style="color: #5E5E5E;
@@ -2647,7 +2653,7 @@ font-style: inherit;">"language_code"</span>).unique().collect().to_series().to_
 <h2 class="anchored" data-anchor-id="can-we-train-a-model-to-work-with-a-subset-of-languages">Can we train a model to work with a subset of languages?</h2>
 <p>So far we have 18 languages in the dataset. Currently over a 100 languages have some level of annotation so eventually we hope the community will create a dataset for ma ne model per language.</p>
 <p>Claude gave me the following visual for languages groups in this dataset (which isn’t super accurate but gives a rough idea of the language families represented in the dataset).</p>
-<div id="fig-languages" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Color-coded grid visualization of 20 languages organized by 8 language families (Indo-European, Sino-Tibetan, Austronesian, Uralic, Turkic, Austro-Asiatic, Afroasiatic, Indo-Aryan) and their subgroups, with language codes shown in monospace font" data-fig-cap="Language families represented in the FineWeb-C dataset">
+<div id="fig-languages" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-cap="Language families represented in the FineWeb-C dataset" alt="Color-coded grid visualization of 20 languages organized by 8 language families (Indo-European, Sino-Tibetan, Austronesian, Uralic, Turkic, Austro-Asiatic, Afroasiatic, Indo-Aryan) and their subgroups, with language codes shown in monospace font">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-languages-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="https://danielvanstrien.xyz/posts/2025/FineWeb-c/assets/language-families-names.svg" class="img-fluid figure-img" data-fig-cap="Language families represented in the FineWeb-C dataset" alt="Color-coded grid visualization of 20 languages organized by 8 language families (Indo-European, Sino-Tibetan, Austronesian, Uralic, Turkic, Austro-Asiatic, Afroasiatic, Indo-Aryan) and their subgroups, with language codes shown in monospace font">

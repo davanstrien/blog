@@ -28,6 +28,13 @@
     "text": "%pip install polars huggingface_hub datasets openai --upgrade"
   },
   {
+    "objectID": "posts/2025/deepseek/distil-deepseek-modernbert.html#updates",
+    "href": "posts/2025/deepseek/distil-deepseek-modernbert.html#updates",
+    "title": "Distiling DeepSeek reasoning to ModernBERT classifiers",
+    "section": "Updates",
+    "text": "Updates\n\n2025-01-30: Sayak Paul has implemented this pipeline using Transformers (code). This will be a super good option if you already have sufficient GPUs for running these models."
+  },
+  {
     "objectID": "posts/2025/deepseek/distil-deepseek-modernbert.html#how-can-we-get-the-best-of-both-worlds",
     "href": "posts/2025/deepseek/distil-deepseek-modernbert.html#how-can-we-get-the-best-of-both-worlds",
     "title": "Distiling DeepSeek reasoning to ModernBERT classifiers",
