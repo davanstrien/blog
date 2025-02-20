@@ -6,4 +6,6 @@ __pycache__/
 /.quarto/
 /_site/
 .DS_Store
-posts/post-with-code/colpali-lora/screenshot
+**/*.parquet
+**/.tfevents*
+**/*.out*
