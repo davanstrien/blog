@@ -42,15 +42,15 @@ We should answer 4</thinking>
 
 Allowing a model some extra time/tokens to "think" turns out to help it solve harder problems (at the cost of increased inference time and cost).
 
-The release of the [DeepSeek R1](https://huggingface.co/DeepSeek/DeepSeek-R1) model caused a lot of excitement which reached outside of the AI community. As a result, there has been a lot of work on reasoning models in the open source AI community. This includes, efforts at fully open repliations of R1, as well as an increasining amount of datasets being released focused on reasoning --- more on this below.
+The release of the [DeepSeek R1](https://huggingface.co/DeepSeek/DeepSeek-R1) model caused a lot of excitement that reached outside of the AI community. As a result, there has been a lot of work on reasoning models in the open-source AI community. This includes efforts at fully open replications of R1 and an increasing number of datasets being released focused on reasoning—more on this below.
 
 ## Reasoning outside of math and science?
 
-To date, the majority of the focus of reasoning models has been on maths, coding, and science. One reason for this is that it is easier in these domains to have a verifiable answer or output to compare the LLM against.
+To date, reasoning models have primarily focused on math, coding, and science. One reason is that it is easier in these domains to have a verifiable answer or output to compare the LLM against.
 
 Group Relative Policy Optimization (GRPO), introduced by the DeepSeek team in [DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models](https://arxiv.org/abs/2402.03300), is a variant of "Proximal Policy Optimization (PPO), that enhances mathematical reasoning abilities while concurrently optimizing the memory usage of PPO".
 
-When training a reasoning model using GRPO, we can use a reward function to guide the model to reward completions that are correct. For example, we could reward completions that are correct. A pseudocode example of this might look like:
+When training a reasoning model using GRPO, we can use a reward function to reward correct completions. For example, we could reward correct completions based on ground truth answers. A pseudocode example of this might look like:
 
 ```python
 def check_answer(completions, **kwargs):
@@ -58,31 +58,31 @@ def check_answer(completions, **kwargs):
     else "no reward" for completion in completions]
 ```
 
-In this case we have some ground truth answer, and we want to reward completions that match this answer. When we have a single correct answer, this is straight forward. In other cases we might need some other methods of "verification", for example for a code model we can check if code has valid syntax, complies, or passes a test.
+In this case, we have a ground-truth answer, and we want to reward completions that match this answer. When we have a single correct answer, this is straightforward. In other cases, we might need some other methods of "verification." For example, for a code model, we can check if the code has valid syntax, complies, or passes a test.
 
-However, there is nothing to prevent us from using GRPO for other tasks. For example, the [trl](https://github.com/huggingface/trl) docs for the [GRPOTrainer](https://huggingface.co/docs/trl/grpo_trainer) have an example of using a reward function to reward completions that are more concise.
+However, nothing prevents us from using GRPO for other tasks. For example, the [trl](https://github.com/huggingface/trl) docs for the [GRPOTrainer](https://huggingface.co/docs/trl/grpo_trainer) provide an example of using a reward function to reward more concise completions.
 
 ```python
 def reward_len(completions, **kwargs):
     return [-abs(20 - len(completion)) for completion in completions]
 ```
 
-One of the key findings of the Deepseek paper is that during training, the model learns to allocate more thinking time to a problem by reavaulating it's initial answer. This allows the model to self-correct it's answer. This property can obviously be useful for tasks related to maths. If the model is able to "think" through a solution in steps, it can avoid the pitfalls of a single step reasoning i.e. imediately jumping to the answer. However, it is likely that this "reasoning" step can also be useful for other tasks.
+One of the key findings of the Deepseek paper is that during training, the model learns to allocate more thinking time to a problem by reevaluating its initial answer. This allows the model to self-correct its answer. This property can be useful for tasks related to maths. If the model is able to "think" through a solution in steps, it can avoid the pitfalls of single-step reasoning, i.e. immediately jumping to the answer. However, likely, this "reasoning" step can also be helpful for other tasks.
 
-We have some nice community examples of this. For, example [Ihor Stepanov](https://huggingface.co/blog/Ihor/replicating-deepseek-r1-for-information-extraction) has replicated the DeepSeek R1 approach for information extraction, something I'll also cover in a series of posts starting with this one.
+We have some nice community examples of this. For example, [Ihor Stepanov](https://huggingface.co/blog/Ihor/replicating-deepseek-r1-for-information-extraction) has replicated the DeepSeek R1 approach for information extraction, which I'll also cover in a series of posts starting with this one.
 
 ## Distiling reasoning models for information extraction (and other tasks)
 
-The DeepSeek team also showed in another paper [DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning](https://arxiv.org/abs/2501.12948) that it is possible to distill reasoning into smaller models. They showed this works for distiling the general reasoning abilities of larger models into smaller ones but it's likely that we can also distill reasoning for specific tasks (and into even smaller models).
+The DeepSeek team also showed in another paper [DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning](https://arxiv.org/abs/2501.12948) that it is possible to distill reasoning into smaller models. They showed that this works for distilling the general reasoning abilities of larger models into smaller ones, but it's likely that we can also distil reasoning for specific tasks (and into even smaller models).
 
 The steps to do this are roughly:
 
 - Generate a dataset of reasoning traces
 - Do supervised finetuning (SFT) on this dataset
 
-Alternatively, we may directly want to use GRPO to train a model for a particular task. In this case we usually still need a SFT step to train the model to understand the task and output we are looking for (although it may be possible to skip this step if the task is simple or you are starting from an instruction tuned model that already understands the task).
+Alternatively, we may want to use GRPO directly to train a model for a particular task. In this case, we usually still need an SFT step to train the model to understand the task and output we are looking for (although it may be possible to skip this step if the task is simple or you are starting from an instruction-tuned model that already understands the task).
 
-One of the challenges of both of these approaches has been the cost of generating the reasoning traces. Potentially a new reasoning model from Qwen could help with this.
+One of the challenges of both approaches has been the cost of generating the reasoning traces. A new reasoning model from Qwen could potentially help with this.
 
 ## QwQ-32B: A reasoning model that can democratize reasoning dataset generation?
 
@@ -97,12 +97,12 @@ Whilst we already had access to models that could produce reasoning traces, QwQ-
 Models hosted on the Hugging Face Hub often have some form of model card. These are a form of documentation that describe the model, it's capabilities, and how to use it.
 The model cards on the Hub contains two parts:
 
-- Structred metadata about the model stored in a YAML section of the `README.md` file
+- Structured metadata about the model stored in a YAML section of the `README.md` file
 - A free text description of the model, which may follow a model card template but increasingly often does not
 
-We can easily extract infromation from the YAML section of the `README.md` file. For example, we can use the the ` pipeline_tag` information to filter for object detection models on the Hub (https://huggingface.co/models?pipeline_tag=object-detection&sort=trending).
+We can easily extract information from the YAML section of the `README.md` file. For example, we can use the ` pipeline_tag` information to filter for object detection models on the Hub (https://huggingface.co/models?pipeline_tag=object-detection&sort=trending).
 
-However, there is often information stored in the free text description that could also be useful to know. For example, we may want to know the number of parameters in the model or it's context length. As an example we may want to extract something that looks a bit like this:
+However, information stored in the free text description could also be useful to know. For example, we want to know the number of parameters in the model or its context length. As an example, we may want to extract something that looks a bit like this:
 
 ```python
 example_output = {
@@ -126,17 +126,17 @@ example_output = {
 }
 ```
 
-whilst it is possible to directly use a larger LLM (particularly with structured output) to extract this information, we may often benefit from a smaller lighter model for this kind of task. This becomes especially important if we want to use this model on large amounts of data (something which will often be the case when we want to extract structured data from a large number of documents).
+While it is possible to directly use a larger LLM (particularly with structured output) to extract this information, we may often benefit from a smaller, lighter model for this kind of task. This becomes especially important if we want to use this model on large amounts of data (which will often be the case when we want to extract structured data from a large number of documents).
 
 ### Generating a dataset using vLLM, Curator, and QwQ-32B
 
-[Curator](https://docs.bespokelabs.ai/) is a relatively new synethic data generation libary for generating and curating synthetic data. It can be used with both API models and via vLLM which is how I used it in this case.
+[Curator](https://docs.bespokelabs.ai/) is a relatively new synthetic data generation library for generating and curating synthetic data. It can be used with both API models and via vLLM, which is how I used it in this case.
 
 I already have a dataset of model cards [here](https://huggingface.co/datasets/librarian-bots/model_cards_with_metadata) which can be used as input to Curator. You can find the full script [here](https://huggingface.co/datasets/davanstrien/parsed-model-cards/blob/main/data_gen.py) but roughly the steps are:
 
-1. Load the model card dataset and do some basic filering i.e. remove very short and long model cards
+1. Load the model card dataset and do some basic filtering i.e. remove very short and long model cards
 2. Define a prompt that asks the model to extract the structured information from the model card
-3. Define a way in which Curator should parse the output of the model.
+3. Define how Curator should parse the output of the model.
 4. Generate a dataset using Curator
 
 Here is the resulting dataset
@@ -152,18 +152,18 @@ The dataset generation was done on a Hugging Face Jupyter Space.
 
 ## Next steps
 
-Once we have a dataset like this we can use it to train a model to extract structured information from model cards. There are various ways we could do this.
+Once we have a dataset like this, we can use it to train a model to extract structured information from model cards. There are various ways to do this.
 
-### Supervised finetuning to distill reasoning
+### Supervised finetuning to distil reasoning
 
-For example, we could use a supervised finetuning on both the reasoning traces and the structured output.
+For example, we could use supervised finetuning on both the reasoning traces and the structured output.
 
-I will cover this in a future post but as an example, here is a example of the output from a model trained on this dataset:
+I will cover this in a future post, but as an example, here is an example of the output from a model trained on this dataset:
 
 ```python
 {'base_model_mentions': [{'model_name': 'Qwen2-VL-7B-Instruct',
    'link': 'https://huggingface.co/datasets/allenai/olmOCR-mix-0225'}],
- 'model_summary': 'A fine-tuned version of Qwen2-VL-7B-Instruct designed for generating images in a specific format using the olmOCR-mix-0225 dataset.',
+ 'model_summary': 'A finetuned version of Qwen2-VL-7B-Instruct designed for generating images in a specific format using the olmOCR-mix-0225 dataset.',
  'model_details': {'name': 'olmOCR-7B-0225-preview',
   'demo_url': 'https://olmocr.allenai.org/',
   'context_length': None,
@@ -182,7 +182,7 @@ Here is a sample of some of the reasoning traces from this model
 ```python
 Okay, let's tackle this query step by step. The user provided a model card for QwQ-32B and wants specific structured information extracted. Let me go through each part of the query and the model card to ensure I don't miss anything.
 
-First, looking at the **base_model_mentions** section. The task is to list models explicitly stated as base/foundation models used for fine-tuning. The card mentions that QwQ is based on Qwen2.5, whose code is from the latest Hugging Face transformers. The link is provided as https://huggingface.co/Qwen/QwQ-32B. So that should be in the list.
+First, looking at the **base_model_mentions** section. The task is to list models explicitly stated as base/foundation models used for finetuning. The card mentions that QwQ is based on Qwen2.5, whose code is from the latest Hugging Face transformers. The link is provided as https://huggingface.co/Qwen/QwQ-32B. So that should be in the list.
 
 Next, the **model_summary** needs a single-sentence summary. The primary purpose is reasoning capacity, built on Qwen2.5, with 32B parameters. It has 32.5B parameters before post-training, and its performance on downstream tasks like math problems and hard questions. The summary should include the main function (reasoning), base model, parameters, and unique features like enhanced performance and context handling.
 
@@ -199,4 +199,4 @@ While this doesn't look terrible, it does seem quite verbose. This is potentiall
 
 ### GRPO for structured output
 
-Whilst SFT can help us distill reasoning into a model, for a specific task like structured output extraction, we may want to use GRPO to more carefully control the output using reward functions. This may also allow us to encourage the reasoning to be more concise (whilst ensuring the output is still correct according to some criteria we define). We'll cover this in a future post!
+Whilst SFT can help us distill reasoning into a model, we may want to use GRPO to control the output more carefully using reward functions for a specific task like structured output extraction. This may also allow us to encourage the reasoning to be more concise (whilst ensuring the output is still correct according to some criteria we define). We'll cover this in a future post!
