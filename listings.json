@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/2025/reasoning-models/generating-structured-data-extraction-dataset-with-qwq-and-curator.html",
       "/posts/2025/grpo/trl_log_completions_to_hf_datasets.html",
       "/posts/2025/deepseek/distil-deepseek-modernbert.html",
       "/posts/2025/FineWeb-c/scandinavian-content-filtering-fineweb.html",

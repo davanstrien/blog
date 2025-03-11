@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Daniel van Strien">
+<meta name="dcterms.date" content="2025-03-11">
+<meta name="description" content="Learn how to use QwQ-32B to generate synthetic reasoning datasets for training smaller models on structured data extraction tasks">
+
+<title>Using QwQ to generate a reasoning dataset for structured data extraction – Daniel van Strien</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../icons/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-8647a4a42273f773479d27c00df3f9ed.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script defer="" src="https://cloud.umami.is/script.js" data-website-id="85cb27d6-dbf9-43d7-97d0-be4e6724de7a"></script>
+<meta name="msvalidate.01" content="4246174F24A3CB7C9CBEAA94E1FF8E84">
+<meta name="google-site-verification" content="C7WoFOEuA4Msbvvk-kgDd_C6VGphZTp3awy_acXjZYU">
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Using QwQ to generate a reasoning dataset for structured data extraction">
+<meta property="og:description" content="Learn how to use QwQ-32B to generate synthetic reasoning datasets for training smaller models on structured data extraction tasks">
+<meta property="og:image" content="https://github.com/davanstrien/blog/raw/refs/heads/main/posts/2025/reasoning-models/curator.webp">
+<meta property="og:site_name" content="Daniel van Strien">
+<meta name="twitter:title" content="Using QwQ to generate a reasoning dataset for structured data extraction">
+<meta name="twitter:description" content="Learn how to use QwQ-32B to generate synthetic reasoning datasets for training smaller models on structured data extraction tasks">
+<meta name="twitter:image" content="https://github.com/davanstrien/blog/raw/refs/heads/main/posts/2025/reasoning-models/curator.webp">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Daniel van Strien</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../index.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#why-reasoning-models" id="toc-why-reasoning-models" class="nav-link active" data-scroll-target="#why-reasoning-models">Why reasoning models?</a>
+  <ul class="collapse">
+  <li><a href="#reasoning-outside-of-math-and-science" id="toc-reasoning-outside-of-math-and-science" class="nav-link" data-scroll-target="#reasoning-outside-of-math-and-science">Reasoning outside of math and science?</a></li>
+  <li><a href="#distiling-reasoning-models-for-information-extraction-and-other-tasks" id="toc-distiling-reasoning-models-for-information-extraction-and-other-tasks" class="nav-link" data-scroll-target="#distiling-reasoning-models-for-information-extraction-and-other-tasks">Distiling reasoning models for information extraction (and other tasks)</a></li>
+  <li><a href="#qwq-32b-a-reasoning-model-that-can-democratize-reasoning-dataset-generation" id="toc-qwq-32b-a-reasoning-model-that-can-democratize-reasoning-dataset-generation" class="nav-link" data-scroll-target="#qwq-32b-a-reasoning-model-that-can-democratize-reasoning-dataset-generation">QwQ-32B: A reasoning model that can democratize reasoning dataset generation?</a>
+  <ul class="collapse">
+  <li><a href="#generating-a-reasoning-dataset-for-model-card-data-extraction" id="toc-generating-a-reasoning-dataset-for-model-card-data-extraction" class="nav-link" data-scroll-target="#generating-a-reasoning-dataset-for-model-card-data-extraction">Generating a reasoning dataset for model card data extraction</a></li>
+  <li><a href="#generating-a-dataset-using-vllm-curator-and-qwq-32b" id="toc-generating-a-dataset-using-vllm-curator-and-qwq-32b" class="nav-link" data-scroll-target="#generating-a-dataset-using-vllm-curator-and-qwq-32b">Generating a dataset using vLLM, Curator, and QwQ-32B</a></li>
+  </ul></li>
+  <li><a href="#next-steps" id="toc-next-steps" class="nav-link" data-scroll-target="#next-steps">Next steps</a>
+  <ul class="collapse">
+  <li><a href="#supervised-finetuning-to-distill-reasoning" id="toc-supervised-finetuning-to-distill-reasoning" class="nav-link" data-scroll-target="#supervised-finetuning-to-distill-reasoning">Supervised finetuning to distill reasoning</a></li>
+  <li><a href="#grpo-for-structured-output" id="toc-grpo-for-structured-output" class="nav-link" data-scroll-target="#grpo-for-structured-output">GRPO for structured output</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Using QwQ to generate a reasoning dataset for structured data extraction</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">huggingface</div>
+    <div class="quarto-category">datasets</div>
+    <div class="quarto-category">synthetic-data</div>
+    <div class="quarto-category">qwq</div>
+    <div class="quarto-category">reasoning</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Learn how to use QwQ-32B to generate synthetic reasoning datasets for training smaller models on structured data extraction tasks
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Daniel van Strien </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 11, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="why-reasoning-models" class="level1">
+<h1>Why reasoning models?</h1>
+<p>The past year has seen a lot of excitement about reasoning models. There are lots of nuances to what a reasoning model is, and how they are trained, but in practice, reasoning models contrast mostly from “traditional” LLMs by using some extra tokens during inference to “reason”.</p>
+<p>Where a traditional LLM might answer:</p>
+<pre><code>&gt; User: what is 2+2?
+&gt; Assistant: 4</code></pre>
+<p>A reasoning model might answer:</p>
+<pre><code>&gt; User: what is 2+2?
+&gt; Assistant: &lt;thinking&gt; The user is asking for the sum of 2 and 2.
+The answer is 4 if we take this at face value but maybe...
+Let's check my answer...
+We should answer 4&lt;/thinking&gt;
+4</code></pre>
+<p>Allowing a model some extra time/tokens to “think” turns out to help it solve harder problems (at the cost of increased inference time and cost).</p>
+<p>The release of the <a href="https://huggingface.co/DeepSeek/DeepSeek-R1">DeepSeek R1</a> model caused a lot of excitement which reached outside of the AI community. As a result, there has been a lot of work on reasoning models in the open source AI community. This includes, efforts at fully open repliations of R1, as well as an increasining amount of datasets being released focused on reasoning — more on this below.</p>
+<section id="reasoning-outside-of-math-and-science" class="level2">
+<h2 class="anchored" data-anchor-id="reasoning-outside-of-math-and-science">Reasoning outside of math and science?</h2>
+<p>To date, the majority of the focus of reasoning models has been on maths, coding, and science. One reason for this is that it is easier in these domains to have a verifiable answer or output to compare the LLM against.</p>
+<p>Group Relative Policy Optimization (GRPO), introduced by the DeepSeek team in <a href="https://arxiv.org/abs/2402.03300">DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models</a>, is a variant of “Proximal Policy Optimization (PPO), that enhances mathematical reasoning abilities while concurrently optimizing the memory usage of PPO”.</p>
+<p>When training a reasoning model using GRPO, we can use a reward function to guide the model to reward completions that are correct. For example, we could reward completions that are correct. A pseudocode example of this might look like:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> check_answer(completions, <span class="op">**</span>kwargs):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [<span class="st">"some reward"</span> <span class="cf">if</span> completion <span class="op">==</span> <span class="st">"ground truth answer"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="st">"no reward"</span> <span class="cf">for</span> completion <span class="kw">in</span> completions]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>In this case we have some ground truth answer, and we want to reward completions that match this answer. When we have a single correct answer, this is straight forward. In other cases we might need some other methods of “verification”, for example for a code model we can check if code has valid syntax, complies, or passes a test.</p>
+<p>However, there is nothing to prevent us from using GRPO for other tasks. For example, the <a href="https://github.com/huggingface/trl">trl</a> docs for the <a href="https://huggingface.co/docs/trl/grpo_trainer">GRPOTrainer</a> have an example of using a reward function to reward completions that are more concise.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> reward_len(completions, <span class="op">**</span>kwargs):</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [<span class="op">-</span><span class="bu">abs</span>(<span class="dv">20</span> <span class="op">-</span> <span class="bu">len</span>(completion)) <span class="cf">for</span> completion <span class="kw">in</span> completions]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>One of the key findings of the Deepseek paper is that during training, the model learns to allocate more thinking time to a problem by reavaulating it’s initial answer. This allows the model to self-correct it’s answer. This property can obviously be useful for tasks related to maths. If the model is able to “think” through a solution in steps, it can avoid the pitfalls of a single step reasoning i.e.&nbsp;imediately jumping to the answer. However, it is likely that this “reasoning” step can also be useful for other tasks.</p>
+<p>We have some nice community examples of this. For, example <a href="https://huggingface.co/blog/Ihor/replicating-deepseek-r1-for-information-extraction">Ihor Stepanov</a> has replicated the DeepSeek R1 approach for information extraction, something I’ll also cover in a series of posts starting with this one.</p>
+</section>
+<section id="distiling-reasoning-models-for-information-extraction-and-other-tasks" class="level2">
+<h2 class="anchored" data-anchor-id="distiling-reasoning-models-for-information-extraction-and-other-tasks">Distiling reasoning models for information extraction (and other tasks)</h2>
+<p>The DeepSeek team also showed in another paper <a href="https://arxiv.org/abs/2501.12948">DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning</a> that it is possible to distill reasoning into smaller models. They showed this works for distiling the general reasoning abilities of larger models into smaller ones but it’s likely that we can also distill reasoning for specific tasks (and into even smaller models).</p>
+<p>The steps to do this are roughly:</p>
+<ul>
+<li>Generate a dataset of reasoning traces</li>
+<li>Do supervised finetuning (SFT) on this dataset</li>
+</ul>
+<p>Alternatively, we may directly want to use GRPO to train a model for a particular task. In this case we usually still need a SFT step to train the model to understand the task and output we are looking for (although it may be possible to skip this step if the task is simple or you are starting from an instruction tuned model that already understands the task).</p>
+<p>One of the challenges of both of these approaches has been the cost of generating the reasoning traces. Potentially a new reasoning model from Qwen could help with this.</p>
+</section>
+<section id="qwq-32b-a-reasoning-model-that-can-democratize-reasoning-dataset-generation" class="level2">
+<h2 class="anchored" data-anchor-id="qwq-32b-a-reasoning-model-that-can-democratize-reasoning-dataset-generation">QwQ-32B: A reasoning model that can democratize reasoning dataset generation?</h2>
+<p>Qwen recently released <a href="https://huggingface.co/QwQ-32B">QwQ-32B</a>:</p>
+<blockquote class="blockquote">
+<p>QwQ is the reasoning model of the Qwen series. Compared with conventional instruction-tuned models, QwQ, which is capable of thinking and reasoning, can achieve significantly enhanced performance in downstream tasks, especially hard problems. QwQ-32B is the medium-sized reasoning model, which is capable of achieving competitive performance against state-of-the-art reasoning models, e.g., DeepSeek-R1, o1-mini. <a href="https://huggingface.co/Qwen/QwQ-32B">source</a></p>
+</blockquote>
+<p>Whilst we already had access to models that could produce reasoning traces, QwQ-32B is much smaller than many of these models, making the cost and time involved in generating reasoning traces much more manageable. This may be especially important for more niche tasks where we will want to iterate on the dataset generation process. In the rest of this post, I’ll show how we can use QwQ-32B to generate a dataset for the task of model card data extraction.</p>
+<section id="generating-a-reasoning-dataset-for-model-card-data-extraction" class="level3">
+<h3 class="anchored" data-anchor-id="generating-a-reasoning-dataset-for-model-card-data-extraction">Generating a reasoning dataset for model card data extraction</h3>
+<p>Models hosted on the Hugging Face Hub often have some form of model card. These are a form of documentation that describe the model, it’s capabilities, and how to use it. The model cards on the Hub contains two parts:</p>
+<ul>
+<li>Structred metadata about the model stored in a YAML section of the <code>README.md</code> file</li>
+<li>A free text description of the model, which may follow a model card template but increasingly often does not</li>
+</ul>
+<p>We can easily extract infromation from the YAML section of the <code>README.md</code> file. For example, we can use the the <code>pipeline_tag</code> information to filter for object detection models on the Hub (https://huggingface.co/models?pipeline_tag=object-detection&amp;sort=trending).</p>
+<p>However, there is often information stored in the free text description that could also be useful to know. For example, we may want to know the number of parameters in the model or it’s context length. As an example we may want to extract something that looks a bit like this:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>example_output <span class="op">=</span> {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"base_model_mentions"</span>: <span class="va">None</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"model_summary"</span>: <span class="st">"An open-weight text-to-speech model with 82 million parameters that delivers quality comparable to larger models while being faster and more cost-efficient."</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"model_details"</span>: {</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">"name"</span>: <span class="st">"Kokoro"</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">"demo_url"</span>: <span class="st">"https://hf.co/spaces/hexgrad/Kokoro-TTS"</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"context_length"</span>: <span class="va">None</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"parameter_count"</span>: <span class="dv">82000000</span>,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    },</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"dataset_information"</span>: [</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        {<span class="st">"name"</span>: <span class="st">"Koniwa"</span>, <span class="st">"url"</span>: <span class="st">"https://github.com/koniwa/koniwa"</span>, <span class="st">"type"</span>: <span class="st">"GitHub"</span>}</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    ],</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"technical_specifications"</span>: {</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        <span class="st">"knowledge_cutoff"</span>: <span class="st">"2023-06"</span>,</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>        <span class="st">"inference_hardware"</span>: <span class="st">"Requires at least 4GB VRAM, runs on consumer GPUs like RTX 3060"</span>,</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>        <span class="st">"inference_libraries"</span>: [<span class="st">"Transformers"</span>],</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    },</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">"card_quality"</span>: <span class="st">"good"</span>,</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>whilst it is possible to directly use a larger LLM (particularly with structured output) to extract this information, we may often benefit from a smaller lighter model for this kind of task. This becomes especially important if we want to use this model on large amounts of data (something which will often be the case when we want to extract structured data from a large number of documents).</p>
+</section>
+<section id="generating-a-dataset-using-vllm-curator-and-qwq-32b" class="level3">
+<h3 class="anchored" data-anchor-id="generating-a-dataset-using-vllm-curator-and-qwq-32b">Generating a dataset using vLLM, Curator, and QwQ-32B</h3>
+<p><a href="https://docs.bespokelabs.ai/">Curator</a> is a relatively new synethic data generation libary for generating and curating synthetic data. It can be used with both API models and via vLLM which is how I used it in this case.</p>
+<p>I already have a dataset of model cards <a href="https://huggingface.co/datasets/librarian-bots/model_cards_with_metadata">here</a> which can be used as input to Curator. You can find the full script <a href="https://huggingface.co/datasets/davanstrien/parsed-model-cards/blob/main/data_gen.py">here</a> but roughly the steps are:</p>
+<ol type="1">
+<li>Load the model card dataset and do some basic filering i.e.&nbsp;remove very short and long model cards</li>
+<li>Define a prompt that asks the model to extract the structured information from the model card</li>
+<li>Define a way in which Curator should parse the output of the model.</li>
+<li>Generate a dataset using Curator</li>
+</ol>
+<p>Here is the resulting dataset</p>
+<iframe src="https://huggingface.co/datasets/davanstrien/parsed-model-cards/embed/viewer/default/train" frameborder="0" width="100%" height="560px">
+</iframe>
+<p>The dataset generation was done on a Hugging Face Jupyter Space.</p>
+</section>
+</section>
+<section id="next-steps" class="level2">
+<h2 class="anchored" data-anchor-id="next-steps">Next steps</h2>
+<p>Once we have a dataset like this we can use it to train a model to extract structured information from model cards. There are various ways we could do this.</p>
+<section id="supervised-finetuning-to-distill-reasoning" class="level3">
+<h3 class="anchored" data-anchor-id="supervised-finetuning-to-distill-reasoning">Supervised finetuning to distill reasoning</h3>
+<p>For example, we could use a supervised finetuning on both the reasoning traces and the structured output.</p>
+<p>I will cover this in a future post but as an example, here is a example of the output from a model trained on this dataset:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>{<span class="st">'base_model_mentions'</span>: [{<span class="st">'model_name'</span>: <span class="st">'Qwen2-VL-7B-Instruct'</span>,</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>   <span class="st">'link'</span>: <span class="st">'https://huggingface.co/datasets/allenai/olmOCR-mix-0225'</span>}],</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a> <span class="st">'model_summary'</span>: <span class="st">'A fine-tuned version of Qwen2-VL-7B-Instruct designed for generating images in a specific format using the olmOCR-mix-0225 dataset.'</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a> <span class="st">'model_details'</span>: {<span class="st">'name'</span>: <span class="st">'olmOCR-7B-0225-preview'</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">'demo_url'</span>: <span class="st">'https://olmocr.allenai.org/'</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">'context_length'</span>: <span class="va">None</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">'parameter_count'</span>: <span class="va">None</span>},</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a> <span class="st">'dataset_information'</span>: [{<span class="st">'name'</span>: <span class="st">'olmOCR-mix-0225'</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>   <span class="st">'url'</span>: <span class="st">'https://huggingface.co/datasets/allenai/olmOCR-mix-0225'</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>   <span class="st">'type'</span>: <span class="st">'Hugging Face'</span>}],</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a> <span class="st">'technical_specifications'</span>: {<span class="st">'knowledge_cutoff'</span>: <span class="va">None</span>,</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">'inference_hardware'</span>: <span class="va">None</span>,</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="st">'inference_libraries'</span>: [<span class="st">'Transformers'</span>]},</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a> <span class="st">'card_quality'</span>: <span class="st">'good'</span>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Here is a sample of some of the reasoning traces from this model</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>Okay, let<span class="st">'s tackle this query step by step. The user provided a model card for QwQ-32B and wants specific structured information extracted. Let me go through each part of the query and the model card to ensure I don'</span>t miss anything.</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>First, looking at the <span class="op">**</span>base_model_mentions<span class="op">**</span> section. The task <span class="kw">is</span> to <span class="bu">list</span> models explicitly stated <span class="im">as</span> base<span class="op">/</span>foundation models used <span class="cf">for</span> fine<span class="op">-</span>tuning. The card mentions that QwQ <span class="kw">is</span> based on Qwen2<span class="fl">.5</span>, whose code <span class="kw">is</span> <span class="im">from</span> the latest Hugging Face transformers. The link <span class="kw">is</span> provided <span class="im">as</span> https:<span class="op">//</span>huggingface.co<span class="op">/</span>Qwen<span class="op">/</span>QwQ<span class="op">-</span><span class="dv">32</span><span class="er">B</span>. So that should be <span class="kw">in</span> the <span class="bu">list</span>.</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>Next, the <span class="op">**</span>model_summary<span class="op">**</span> needs a single<span class="op">-</span>sentence summary. The primary purpose <span class="kw">is</span> reasoning capacity, built on Qwen2<span class="fl">.5</span>, <span class="cf">with</span> <span class="dv">32</span><span class="er">B</span> parameters. It has <span class="fl">32.5</span><span class="er">B</span> parameters before post<span class="op">-</span>training, <span class="kw">and</span> its performance on downstream tasks like math problems <span class="kw">and</span> hard questions. The summary should include the main function (reasoning), base model, parameters, <span class="kw">and</span> unique features like enhanced performance <span class="kw">and</span> context handling.</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>For <span class="op">**</span>model_details<span class="op">**</span>, the name <span class="kw">is</span> <span class="st">"Qwen/QwQ-32B"</span> <span class="im">as</span> per the repo name. Demo URL <span class="kw">is</span> https:<span class="op">//</span>huggingface.co<span class="op">/</span>spaces<span class="op">/</span>Qwen<span class="op">/</span>QwQ<span class="op">-</span><span class="dv">32</span><span class="er">B</span><span class="op">-</span>Demo. They mention using the transformers library, so the Python code snippet<span class="st">'s code variable is from transformers.context_length is Full 131,072, parameter count 32.5 billion (32.5B), and non-hidden parameters count 31.0B. But wait, the model has 32.5B before post-training, so parameter_count should be 32.5B. The context_length is mentioned in the requirements as Full 131,072 tokens. So for the parameters, the non-hidden part might need to be 31.0B.</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="er">**dataset_information** requires datasets used. The card mentions training stages pre-training with DeepSeek-R1 and o1-mini, but the main training used Qwen2.5's technical report. The dataset for post-training is not specified here, so maybe the datasets are already covered under the base model or other parts of the card. The training data isn't explicitly listed except mentioning post-training and the reports of those using their platforms. Since the exact training datasets aren't named here, perhaps there's no direct dataset info provided. Wait, the requirements mention enabling YaRN and using vLLM, which might involve specific datasets, but without explicit dataset names, maybe there's no direct dataset info here. So dataset_information would be null? Or do I look into the references? The card says "Dealing with their [fellow researchers'] work, they mention their own results and not those of others on the training data. " So it might not have explicit dataset names, so maybe leave it as an empty array?</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>Technical specifications: knowledge_cutoff <span class="kw">is</span> <span class="kw">not</span> explicitly stated. The training data<span class="st">'s latest date isn'</span>t mentioned, so it<span class="st">'s null. Inference hardware isn'</span>t specified <span class="cf">except</span> mentioning vLLM <span class="kw">and</span> the author<span class="st">'s mention of using vLLM'</span>s setup. The requirements say to use the transformers library, but the example code uses PyTorch, but the requirements <span class="bu">apply</span> to the model<span class="st">'s architecture. The card says "transformers&lt;4.37.0", so probably uses the current version. The inference_libraries are mentioned as "transformers" since it'</span>s part of the code snippet. So the libraries are transformers.</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="op">**</span>card_quality<span class="op">**</span> assessment. Let<span class="st">'s look at the criteria:</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>While this doesn’t look terrible, it does seem quite verbose. This is potentially where using GRPO could help.</p>
+</section>
+<section id="grpo-for-structured-output" class="level3">
+<h3 class="anchored" data-anchor-id="grpo-for-structured-output">GRPO for structured output</h3>
+<p>Whilst SFT can help us distill reasoning into a model, for a specific task like structured output extraction, we may want to use GRPO to more carefully control the output using reward functions. This may also allow us to encourage the reasoning to be more concise (whilst ensuring the output is still correct according to some criteria we define). We’ll cover this in a future post!</p>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/danielvanstrien\.xyz");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
