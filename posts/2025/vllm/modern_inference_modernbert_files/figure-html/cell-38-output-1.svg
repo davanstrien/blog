@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="659pt" height="118pt" viewBox="0.00 0.00 659.00 118.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 114)">
+<title>polars_query</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-114 655,-114 655,4 -4,4"/>
+<!-- p1 -->
+<g id="node1" class="node">
+<title>p1</title>
+<polygon fill="none" stroke="black" points="651,-110 0,-110 0,-74 651,-74 651,-110"/>
+<text text-anchor="middle" x="325.5" y="-88.3" font-family="Times,serif" font-size="14.00">FILTER BY [([(col(&quot;is_new_dataset_label&quot;)) == (String(new_dataset))]) &amp; ([(col(&quot;label_confidence&quot;)) &gt;= (0.95)])]</text>
+</g>
+<!-- p2 -->
+<g id="node2" class="node">
+<title>p2</title>
+<polygon fill="none" stroke="black" points="355,-38 296,-38 296,0 355,0 355,-38"/>
+<text text-anchor="middle" x="325.5" y="-22.8" font-family="Times,serif" font-size="14.00">TABLE</text>
+<text text-anchor="middle" x="325.5" y="-7.8" font-family="Times,serif" font-size="14.00">π */17</text>
+</g>
+<!-- p1&#45;&#45;p2 -->
+<g id="edge1" class="edge">
+<title>p1--p2</title>
+<path fill="none" stroke="black" d="M325.5,-73.81C325.5,-62.98 325.5,-49.01 325.5,-38.02"/>
+</g>
+</g>
+</svg>
