@@ -18,4 +18,10 @@ about:
       href: https://github.com/davanstrien
 ---
 
-Hi, I'm Daniel a Machine Learning Librarian at [Hugging Face](https://huggingface.co/).
+Hi, I’m Daniel van Strien, a Machine Learning Librarian at [Hugging Face](https://huggingface.co/).
+
+I started out in libraries and digital humanities, including time at the British Library on the [Living with Machines](https://livingwithmachines.ac.uk/) project. I’ve also worked in academic libraries supporting open access and open science.
+
+My work lives at the intersection of open-source technology, information management, and applied AI. Whether I’m building tools, writing tutorials, or contributing to community projects, I’m focused on making complex systems more usable, transparent, and inclusive.
+
+At Hugging Face, I focus on the foundation of machine learning: data and datasets.
