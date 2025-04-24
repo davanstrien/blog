@@ -15,7 +15,7 @@ about:
       href: https://elk.zone/sigmoid.social/@danielvanstrien
     - icon: github
       text: GitHub
-      href: https://github.com/yourusername
+      href: https://github.com/davanstrien
 ---
 
 Hi, I'm Daniel a Machine Learning Librarian at [Hugging Face](https://huggingface.co/).
