@@ -56,7 +56,7 @@ The output would be a series of datasets released as machine-readable text in si
 
 ### FineBooks: A Concrete Starting Point
 
-HuggingFace's recent [FineWeb dataset](https://huggingface.co/spaces/HuggingFaceFW/blogpost-fineweb-v1) — a carefully curated web dataset — set new standards for transparency in AI training data by documenting every design choice and demonstrating how openness advances quality dataset creation. *****a dataset of what?
+HuggingFace's recent [FineWeb dataset](https://huggingface.co/spaces/HuggingFaceFW/blogpost-fineweb-v1) — a carefully curated web dataset — set new standards for transparency in AI training data by documenting every design choice and demonstrating how openness advances quality dataset creation. This aimed to democratize the knowledge required to create a high quality web corpus for use as LLM training data.
 
 Following this model, I propose **FineBooks** as a first collaborative project. Many libraries already have OCR'd book collections with partial metadata and highly variable quality. Books offer a pragmatic starting point: improving OCR quality for historic books is more tractable than newspapers, while the benefits remain substantial. 
 
