@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.31">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Daniel van Strien">
+<meta name="dcterms.date" content="2025-06-09">
+<meta name="description" content="From data providers to AI partners: How libraries can collaborate with developers to build tools that improve collections, enhance discovery, and serve communities while contributing to responsible AI development.">
+
+<title>Who Benefits? Rethinking Library Data in the Age of AI – Daniel van Strien</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../icons/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-905433ffa22618bb005779f2b23c5ce0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script defer="" src="https://cloud.umami.is/script.js" data-website-id="85cb27d6-dbf9-43d7-97d0-be4e6724de7a"></script>
+<meta name="msvalidate.01" content="4246174F24A3CB7C9CBEAA94E1FF8E84">
+<meta name="google-site-verification" content="C7WoFOEuA4Msbvvk-kgDd_C6VGphZTp3awy_acXjZYU">
+
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Daniel van Strien</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../index.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Who Benefits? Rethinking Library Data in the Age of AI</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">AI</div>
+    <div class="quarto-category">libraries</div>
+    <div class="quarto-category">datasets</div>
+    <div class="quarto-category">GLAM</div>
+    <div class="quarto-category">community</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    From data providers to AI partners: How libraries can collaborate with developers to build tools that improve collections, enhance discovery, and serve communities while contributing to responsible AI development.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Daniel van Strien </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 9, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>As someone who works in AI but came from libraries, I see an exciting convergence happening. Right now, as AI systems are being built that will shape information access for decades, libraries have an unprecedented opportunity to assert their role as partners in this transformation; moving beyond being just data providers to becoming co-creators of the future information ecosystem.</p>
+<section id="collections-as-training-data-the-current-landscape" class="level2">
+<h2 class="anchored" data-anchor-id="collections-as-training-data-the-current-landscape">Collections as Training Data: The Current Landscape</h2>
+<p>There’s growing momentum around libraries contributing digitized collections to AI training datasets, for example Harvard’s <a href="https://institutionaldatainitiative.org/">Institutional Data Initiative</a> aims to help institutions “refine and publish their collections as data.” This follows on from existing work on <a href="https://collectionsasdata.github.io/">“collections as data”</a>. The Institutional Data Initiative presents an exciting model for how libraries can explore what new roles for libraries in relation to data and AI could look like.</p>
+<p>EleutherAI’s Common Pile has taken concrete steps—releasing an 8TB corpus of openly licensed text that includes nearly 300,000 digitized public-domain books from the Library of Congress and the Internet Archive. They’ve demonstrated that models trained on this openly licensed data (their Comma models) can perform comparably to those trained on unlicensed datasets.</p>
+<p>Common Pile represents genuine progress and thoughtful collaboration: they’ve built tools for data extraction and license identification, collaborated with Mozilla on dataset standards, and expressed interest in partnerships with libraries to improve data quality through better OCR and collaborative dataset development. This is exactly the kind of respectful partnership approach that can benefit everyone.</p>
+<p>However, not all AI development follows this model. Many large tech companies have taken a different approach, scraping library collections without attribution or partnership. The National Library of the Netherlands captured this concern well in their <a href="https://www.kb.nl/en/ai-statement">AI statement</a>, stating explicitly that they “restrict access of commercial AI to KB collections”.</p>
+<p>Even in well-intentioned collaborations, there’s often an asymmetry: libraries provide data while the tools, infrastructure, and primary benefits of AI development flow elsewhere. The real opportunity isn’t just about contributing more data: it’s about how libraries can meaningfully participate in and benefit from AI development.</p>
+</section>
+<section id="who-benefits-libraries-as-essential-partners" class="level2">
+<h2 class="anchored" data-anchor-id="who-benefits-libraries-as-essential-partners">Who Benefits? Libraries as Essential Partners</h2>
+<p>How can libraries benefit from actively participating in AI development?<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> The answer lies in recognizing that the technical infrastructure for AI isn’t separate from library needs - it can directly enhance library services and capabilities.</p>
+<section id="libraries-as-data-stewards" class="level3">
+<h3 class="anchored" data-anchor-id="libraries-as-data-stewards">Libraries as Data Stewards</h3>
+<p>Libraries have a strong track record as active data stewards and have repeatedly evolved to meet new challenges: web archiving, research data management, and open access are just recent examples. Whilst it requires libraries to actively engage with the AI community, this represents another area where libraries can play a vital role as stewards of new types of data, thinking through challenges like how to describe, preserve, and provide access to this data in a useful way for the long term.</p>
+</section>
+<section id="addressing-language-and-cultural-gaps" class="level3">
+<h3 class="anchored" data-anchor-id="addressing-language-and-cultural-gaps">Addressing Language and Cultural Gaps</h3>
+<p>Current AI systems under-serve many languages and cultural contexts that libraries uniquely preserve and protect. The <a href="https://huggingface.co/NbAiLab">National Library of Norway’s AI Lab</a> ongoing work to release datasets and models for Norwegian, the Swedish National Library’s training of a Swedish speech recognition model (<a href="https://huggingface.co/KBLab/kb-whisper-large">kb-whisper-large</a>), and Common Corpus’s use of library collections to create a multilingual LLM pre-training dataset all demonstrate the vital role libraries play in improving linguistic diversity in AI.</p>
+</section>
+</section>
+<section id="a-practical-path-forward-better-collections-through-ml-ready-datasets" class="level2">
+<h2 class="anchored" data-anchor-id="a-practical-path-forward-better-collections-through-ml-ready-datasets">A Practical Path Forward: Better Collections Through ML-Ready Datasets</h2>
+<p>Here’s my key pitch: the tools needed to create ML-ready datasets are the same tools that can transform how libraries serve their communities.</p>
+<p>To create truly useful datasets for both AI and library purposes, we need:</p>
+<ul>
+<li><p><strong>Better OCR quality assessment and improvement</strong>: Move beyond crude heuristics and internal confidence scores to systematically identify and correct OCR errors at scale. Recent developments in OCR technology could significantly improve the quality of digitized GLAM collections.</p></li>
+<li><p><strong>Enhanced transcription for archival audio and video</strong>: While tools like Whisper provide a starting point for speech recognition, the GLAM sector can co-create better training data for models that handle the nuances of historical recordings, dialects, and specialized terminology.</p></li>
+<li><p><strong>Specialized classifiers for GLAM-specific tasks</strong>: The recent resurgence of efficient AI classifiers opens new possibilities. These tools can automatically categorize collections, generate metadata, identify sensitive content, and enhance discovery—all while being affordable enough for library-scale deployment.</p></li>
+</ul>
+<p>The benefits are concrete and empowering: Libraries would gain semantic search capabilities that could transform patron discovery, automated metadata generation tools that help librarians process decades-old backlogs more efficiently, and systems to identify and correct digitization errors at scale. These tools don’t replace librarians - they amplify their expertise, allowing them to focus on the complex curatorial and community work that only humans can do. These aren’t distant possibilities - they’re practical outcomes of preparing collections for ML use.</p>
+</section>
+<section id="how-to-get-there-a-collaborative-approach" class="level2">
+<h2 class="anchored" data-anchor-id="how-to-get-there-a-collaborative-approach">How to Get There: A Collaborative Approach</h2>
+<p>One path forward: a collaborative effort where libraries work with AI developers to co-create the tools necessary to transform existing collections into materials useful for both AI training and library purposes.</p>
+<p>The output would be a series of datasets released as machine-readable text in simple, accessible formats<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. These datasets would remain under institutional control while capturing the nuances of each collection. Standardization would enable easy combination for large-scale digital humanities research, aggregation in shared library platforms, and use as training data.</p>
+<section id="finebooks-a-concrete-starting-point" class="level3">
+<h3 class="anchored" data-anchor-id="finebooks-a-concrete-starting-point">FineBooks: A Concrete Starting Point</h3>
+<p>HuggingFace’s recent <a href="https://huggingface.co/spaces/HuggingFaceFW/blogpost-fineweb-v1">FineWeb dataset</a> — a carefully curated web dataset — set new standards for transparency in AI training data by documenting every design choice and demonstrating how openness advances quality dataset creation. This aimed to democratize the knowledge required to create a high quality web corpus for use as LLM training data.</p>
+<p>Following this model, I propose <strong>FineBooks</strong> as a first collaborative project. Many libraries already have OCR’d book collections with partial metadata and highly variable quality. Books offer a pragmatic starting point: improving OCR quality for historic books is more tractable than newspapers, while the benefits remain substantial.</p>
+<p>This shared effort would: - Create a massive new resource for digital humanities researchers and historians - Develop OCR tools specifically for historic texts, building on open-source approaches like those from <a href="https://github.com/allenai/olmocr">Allen AI</a> - Establish a model where libraries drive the development process - Ensure the tools and standards created serve library collections and their users, not just external AI training needs</p>
+<p>The data is already open, existing tools can be tested, and the scope is manageable. Most importantly, it positions libraries as partners shaping the future of AI, not passive providers of raw material.</p>
+</section>
+</section>
+<section id="a-choice-for-libraries" class="level2">
+<h2 class="anchored" data-anchor-id="a-choice-for-libraries">A Choice for Libraries</h2>
+<p>Libraries have an exciting opportunity. By becoming active partners in AI development, libraries can help shape the tools that will mediate access to human knowledge while gaining powerful new capabilities to serve their communities.</p>
+<p>The convergence of library expertise and AI technology offers exciting possibilities. Libraries bring irreplaceable skills in curation, metadata, community understanding, and ethical stewardship. Combined with emerging AI tools, this expertise can unlock new ways to make collections discoverable, accessible, and useful.</p>
+<p>The invitation is open: join the conversation, shape the tools, and help build an AI ecosystem that reflects library values of open access, cultural preservation, and community service. The future of information access is being written now — and libraries have essential contributions to make.</p>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>This post focuses only on existing open data and collections. While there is legitimate discussion about whether libraries should restrict access to their collections in response to AI concerns, I believe this would be counterproductive for libraries and harmful to other users. A full argument is beyond the scope of this post.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Markdown is a sensible target format; it maintains structural information about collections while being directly usable in ML workflows, easily understood by non-developers, and compatible with existing tools. This allows us to move beyond requiring ALTO/METS XML as the only format for library OCR data while preserving essential metadata.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/danielvanstrien\.xyz");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
