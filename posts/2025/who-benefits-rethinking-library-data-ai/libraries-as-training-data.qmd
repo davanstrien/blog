@@ -3,58 +3,79 @@ title: "Who Benefits? Rethinking Library Data in the Age of AI"
 author: "Daniel van Strien"
 date: "2025-06-09"
 categories: [AI, libraries, datasets, GLAM, community]
-description: "TODO"
+description: "From data providers to AI partners: How libraries can collaborate with developers to build tools that improve collections, enhance discovery, and serve communities while contributing to responsible AI development."
 image: ""
 draft: false
 ---
 
-## Collections as training data?
+As someone who works in AI but came from libraries, I see an exciting convergence happening. Right now, as AI systems are being built that will shape information access for decades, libraries have an unprecedented opportunity to assert their role as partners in this transformation—moving beyond being just data providers to becoming co-creators of the future information ecosystem.
 
-There's growing momentum around libraries contributing digitized collections to AI training datasets. Harvard's [Institutional Data Initiative](https://institutionaldatainitiative.org/) aims to help institutions "refine and publish their collections as data." 
+## Collections as Training Data: The Current Landscape
 
-At the same time, EleutherAI's Common Pile has already taken concrete steps—releasing an 8TB corpus of openly licensed text that includes nearly 300,000 public-domain books from the Library of Congress and the Internet Archive. They've demonstrated that models trained on this openly licensed data (their Comma models) can perform comparably to those trained on unlicensed datasets.
+There's growing momentum around libraries contributing digitized collections to AI training datasets for example Harvard's [Institutional Data Initiative](https://institutionaldatainitiative.org/) aims to help institutions "refine and publish their collections as data." This follows on from existing work on ["collections as data"](https://collectionsasdata.github.io/).
 
-Common Pile represents genuine progress: they've built tools for data extraction and license identification, collaborated with Mozilla on dataset standards, and expressed interest in partnerships with libraries to improve data quality through better OCR and collaborative dataset development. Libraries are natural partners in this work, as they possess the professional expertise in data curation, quality control, and responsible stewardship required for a better AI data ecosystem to begin to develop.
+EleutherAI's Common Pile has taken concrete steps—releasing an 8TB corpus of openly licensed text that includes nearly 300,000 digitized public-domain books from the Library of Congress and the Internet Archive. They've demonstrated that models trained on this openly licensed data (their Comma models) can perform comparably to those trained on unlicensed datasets.
 
-However, there is still a persistent gap: libraries provide data, while the tools, infrastructure, and benefits of AI development flow elsewhere. Even in well-intentioned collaborations, libraries can often remain data providers rather than true partners in the development process. The real question isn't just about contributing more tokens – it's about how libraries can meaningfully participate in and benefit from AI development.
+Common Pile represents genuine progress and thoughtful collaboration: they've built tools for data extraction and license identification, collaborated with Mozilla on dataset standards, and expressed interest in partnerships with libraries to improve data quality through better OCR and collaborative dataset development. This is exactly the kind of respectful partnership approach that can benefit everyone.
 
+However, not all AI development follows this model. Many large tech companies have taken a different approach—scraping library collections without attribution or partnership. The National Library of the Netherlands captured this concern well in their [AI statement](https://www.kb.nl/en/ai-statement), who "restrict access of commercial AI to KB collections".
 
-## Who Benefits?
+Even in well-intentioned collaborations, there's often an asymmetry: libraries provide data while the tools, infrastructure, and primary benefits of AI development flow elsewhere. The real opportunity isn't just about contributing more data—it's about how libraries can meaningfully participate in and benefit from AI development.
 
-So, the question remains: how can libraries benefit from actively participating in AI development?[^scope]
+## Who Benefits? Libraries as Essential Partners
+
+How can libraries benefit from actively participating in AI development?[^scope] The answer lies in recognizing that the technical infrastructure for AI isn't separate from library needs—it can directly enhance library services and capabilities.
 
 ### Libraries as Data Stewards
 
-Libraries have a strong track record of being active data stewards, as well as taking on new roles in response to emerging social, political, and technological developments, such as web archiving, research data management, and open access, which are just a few recent examples. Whilst it requires libraries to insert themselves into the conversation forcefully, there is no reason why AI is not another area where libraries can play a central role. 
+Libraries have a strong track record as active data stewards and have repeatedly evolved to meet new challenges: web archiving, research data management, and open access are just recent examples. While it requires libraries to actively engage with the AI community, this represents another area where libraries can play a vital role.
 
-### Addressing Language Gaps
+### Addressing Language and Cultural Gaps
 
-Current AI systems under-serve many languages and cultural contexts that libraries uniquely preserve and protect. The [National Library of Norway's AI Lab](https://huggingface.co/NbAiLab) ongoing work to release datasets and models for Norwegian, the Swedish National Library's training of a Swedish Whisper model ([kb-whisper-large](https://huggingface.co/KBLab/kb-whisper-large)), and Common Corpus's use of library collections to create a multilingual LLM pre-training dataset all provide examples of the role libraries can have in improving language and cultural diversity in AI training data. 
+Current AI systems under-serve many languages and cultural contexts that libraries uniquely preserve and protect. The [National Library of Norway's AI Lab](https://huggingface.co/NbAiLab) ongoing work to release datasets and models for Norwegian, the Swedish National Library's training of a Swedish speech recognition model ([kb-whisper-large](https://huggingface.co/KBLab/kb-whisper-large)), and Common Corpus's use of library collections to create a multilingual LLM pre-training dataset all demonstrate the vital role libraries play in improving language and cultural diversity in AI.
 
-### A Modest Proposal: Better Collections Through ML-Ready Datasets
+## A Practical Path Forward: Better Collections Through ML-Ready Datasets
 
-Here's my key pitch: preparing collections to be most useful for machine learning requires developing tools that can enhance collections for everyone (and developing tools, knowledge, and capacity within institutions for doing AI work). To create truly ML-ready datasets, we need better:
+Here's my key pitch: the tools needed to create ML-ready datasets are the same tools that can transform how libraries serve their communities. 
 
-- better approaches to identifying the quality of OCR systematically at scale (without relying on internal confidence metrics from OCR engines, which are noisy) or crude heuristics that haven't been well validated. 
-- Better OCR outputs: There have been numerous developments in OCR over the last few years that have the potential to improve the quality of OCR in many GLAM collections significantly. 
-- Enhanced transcription for archival audio and video: Whisper is a good start, but there is plenty of scope for the GLAM sector to co-create better training data for a Whisper model that can handle the nuance of many audio-visual collections held by GLAM institutions. 
-- specialized classifiers for GLAM-specific tasks: last year saw a major resurgence of BERT-style "small" models that are efficient for data curation, e.g., https://huggingface.co/HuggingFaceFW/fineweb-edu-classifier and https://huggingface.co/WebOrganizer/TopicClassifier. These classifiers can be more easily created thanks to synthetic data (https://danielvanstrien.xyz/posts/2025/reasoning-models/generating-structured-data-extraction-dataset-with-qwq-and-curator.html) and these tools can be used both for curating collections at scale to release as ML data and for curating collections themselves without relying on LLMs which are expensive to scale.
-- many more things...
+To create truly useful datasets for both AI and library purposes, we need:
 
-### How to get there? 
+- **Better OCR quality assessment and improvement**: Move beyond crude heuristics and internal confidence scores to systematically identify and correct OCR errors at scale. Recent developments in OCR technology could significantly improve the quality of digitized GLAM collections.
 
-One possible approach to tackle this gap: a collaborative effort to transform existing collections into "AI-ready" datasets. As part of this collective effort, libraries collaborate with AI developers to co-create the tools necessary to transform existing collections into materials that will be truly useful for both AI training and library purposes.
+- **Enhanced transcription for archival audio and video**: While tools like Whisper provide a starting point for speech recognition, the GLAM sector can co-create better training data for models that handle the nuances of historical recordings, dialects, and specialized terminology.
 
-The suggested target output? A series of datasets related to specific library collections released as machine-readable text in simple formats[^markdown], enable better keyword search, semantic search capabilities, and discovery tools useful for both researchers and "traditional" library users. Along the way, libraries would develop ML tools designed for their specific contexts.
+- **Specialized classifiers for GLAM-specific tasks**: The recent resurgence of efficient AI classifiers opens new possibilities. These tools can automatically categorize collections, generate metadata, identify sensitive content, and enhance discovery—all while being affordable enough for library-scale deployment.
 
-These datasets can remain "owned" by the source institution and capture the nuances of each collection. By aiming towards some standardization of outputs, it also becomes possible to easily combine these into larger datasets for large-scale digital humanities and history research, for aggregation in shared library platforms, and for use as ML training data (both for generative and nongenerative models). 
+The benefits are concrete and empowering: Libraries would gain semantic search capabilities that could transform patron discovery, automated metadata generation tools that help librarians process decades-old backlogs more efficiently, and systems to identify and correct digitization errors at scale. These tools don't replace librarians—they amplify their expertise, allowing them to focus on the complex curatorial and community work that only humans can do. These aren't distant possibilities—they're practical outcomes of preparing collections for ML use.
 
-Towards a FineBooks collection? HuggingFace's recent [FineWeb dataset](https://huggingface.co/spaces/HuggingFaceFW/blogpost-fineweb-v1) aimed "to bring more clarity in machine learning and advance the open understanding of how to train good quality large language models" through careful documentation and ablation of all design choices, including in-depth investigations of deduplication and filtering strategies.
+## How to Get There: A Collaborative Approach
 
-A first step towards creating AI-ready library collections could be **FineBooks**? Many libraries already have OCR'd book datasets with partial metadata and highly variable OCR quality—some excellent, some terrible. Books offer a pragmatic starting point: improving OCR quality for historic books is more tractable than newspapers, while the benefits remain substantial. There's scope for developing new OCR tools specifically for historic books, building on existing open-source approaches like those developed by [Allen AI](https://github.com/allenai/olmocr). 
+One path forward: a collaborative effort where libraries work with AI developers to co-create the tools necessary to transform existing collections into materials useful for both AI training and library purposes.
 
-This shared effort would create a large new resource for digital humanities researchers and historians (as well as AI developers) while providing a practical starting point—the data is already open, existing tools can be tested, and the scope is manageable. Most importantly, it establishes a model where libraries drive the development process, ensuring the tools and standards we create serve our collections and their users, not just external AI training needs.
+The output would be a series of datasets released as machine-readable text in simple, accessible formats[^markdown]. These datasets would remain under institutional control while capturing the nuances of each collection. Standardization would enable easy combination for large-scale digital humanities research, aggregation in shared library platforms, and use as training data.
 
-[^scope]: This post focuses only on existing open data and collections. While there is legitimate discussion about whether libraries should restrict access to their collections in response to AI concerns, I believe this would be counterproductive for libraries and harmful to other users. I acknowledge that this brief treatment may not persuade everyone who favors abstaining from AI altogether, but a full argument is beyond the scope of this post.
+### FineBooks: A Concrete Starting Point
 
-[^markdown]: Markdown is a sensible target for many reasons that I'll go into in a later post. The tl;dr maintains some structural information about collections while allowing us to (temporarily) abandon the hard requirement for some variant of ALTO/METS XML to be the only possible format for OCR data in libraries. Markdown is a standard format in ML and can also be easily understood by non-developers. It works well with LLMs and can be directly used in many workflows and tools where XML requires a lot of pre-processing work.
+HuggingFace's recent [FineWeb dataset](https://huggingface.co/spaces/HuggingFaceFW/blogpost-fineweb-v1)—a carefully curated web dataset—set new standards for transparency in AI training data by documenting every design choice and demonstrating how openness advances quality dataset creation.
+
+Following this model, I propose **FineBooks** as a first collaborative project. Many libraries already have OCR'd book collections with partial metadata and highly variable quality. Books offer a pragmatic starting point: improving OCR quality for historic books is more tractable than newspapers, while the benefits remain substantial. 
+
+This shared effort would:
+- Create a massive new resource for digital humanities researchers and historians
+- Develop OCR tools specifically for historic texts, building on open-source approaches like those from [Allen AI](https://github.com/allenai/olmocr)
+- Establish a model where libraries drive the development process
+- Ensure the tools and standards created serve library collections and their users, not just external AI training needs
+
+The data is already open, existing tools can be tested, and the scope is manageable. Most importantly, it positions libraries as partners shaping the future of AI, not passive providers of raw material.
+
+## A Choice for Libraries
+
+Libraries have an exciting opportunity. By becoming active partners in AI development, libraries can help shape the tools that will mediate access to human knowledge while gaining powerful new capabilities to serve their communities.
+
+The convergence of library expertise and AI technology offers exciting possibilities. Libraries bring irreplaceable skills in curation, metadata, community understanding, and ethical stewardship. Combined with emerging AI tools, this expertise can unlock new ways to make collections discoverable, accessible, and useful.
+
+The invitation is open: join the conversation, shape the tools, and help build an AI ecosystem that reflects library values of open access, cultural preservation, and community service. The future of information access is being written now—and libraries have essential contributions to make.
+
+[^scope]: This post focuses only on existing open data and collections. While there is legitimate discussion about whether libraries should restrict access to their collections in response to AI concerns, I believe this would be counterproductive for libraries and harmful to other users. A full argument is beyond the scope of this post.
+
+[^markdown]: Markdown is a sensible target format—it maintains structural information about collections while being directly usable in ML workflows, easily understood by non-developers, and compatible with existing tools. This allows us to move beyond requiring ALTO/METS XML as the only format for library OCR data while preserving essential metadata.
