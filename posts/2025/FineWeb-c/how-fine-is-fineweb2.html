@@ -78,7 +78,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap-905433ffa22618bb005779f2b23c5ce0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-a98ec624fb63d9b712fc3a6f62e2b305.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -224,7 +224,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="cell-3" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>pip install polars seaborn matplotlib huggingface_hub </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-4" class="cell" data-execution_count="2">
+<div id="cell-4" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> list_repo_files</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -233,38 +233,105 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>We’ll use Polars to load the annotations but we could also load in Pandas, Dask, DuckDB, PySpark, or the Hugging Face Datasets library!</p>
 <p>The fineweb-c dataset has a config per language but also a general config. We’ll load all the parquet files for each language, which we can get using the <code>list_repo_files</code> function from the <code>huggingface_hub</code> library.</p>
-<div id="cell-6" class="cell" data-execution_count="3">
+<div id="cell-6" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>paths <span class="op">=</span> list_repo_files(<span class="st">"data-is-better-together/fineweb-c"</span>, repo_type<span class="op">=</span><span class="st">"dataset"</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>paths <span class="op">=</span> [f <span class="cf">for</span> f <span class="kw">in</span> paths <span class="cf">if</span> f.endswith(<span class="st">".parquet"</span>) <span class="kw">and</span> <span class="st">"data"</span> <span class="kw">not</span> <span class="kw">in</span> f]</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>paths</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="3">
-<pre><code>['arb_Arab/train-00000-of-00001.parquet',
+<div class="cell-output cell-output-display" data-execution_count="2">
+<pre><code>['aeb_Arab/train-00000-of-00001.parquet',
+ 'apc_Arab/train-00000-of-00001.parquet',
+ 'arb_Arab/train-00000-of-00001.parquet',
+ 'ars_Arab/train-00000-of-00001.parquet',
  'ary_Arab/train-00000-of-00001.parquet',
  'arz_Arab/train-00000-of-00001.parquet',
+ 'asm_Beng/train-00000-of-00001.parquet',
  'asm_Latn/train-00000-of-00001.parquet',
+ 'ast_Latn/train-00000-of-00001.parquet',
+ 'bak_Cyrl/train-00000-of-00001.parquet',
  'bar_Latn/train-00000-of-00001.parquet',
+ 'ben_Beng/train-00000-of-00001.parquet',
+ 'bho_Deva/train-00000-of-00001.parquet',
+ 'bre_Latn/train-00000-of-00001.parquet',
+ 'bul_Cyrl/train-00000-of-00001.parquet',
+ 'cat_Latn/train-00000-of-00001.parquet',
+ 'ces_Latn/train-00000-of-00001.parquet',
  'cmn_Hani/train-00000-of-00001.parquet',
+ 'crh_Latn/train-00000-of-00001.parquet',
  'dan_Latn/train-00000-of-00001.parquet',
+ 'deu_Latn/train-00000-of-00001.parquet',
+ 'ekk_Latn/train-00000-of-00001.parquet',
+ 'eus_Latn/train-00000-of-00001.parquet',
+ 'fao_Latn/train-00000-of-00001.parquet',
  'fas_Arab/train-00000-of-00001.parquet',
  'fil_Latn/train-00000-of-00001.parquet',
  'fin_Latn/train-00000-of-00001.parquet',
  'fra_Latn/train-00000-of-00001.parquet',
+ 'glg_Latn/train-00000-of-00001.parquet',
  'gmh_Latn/train-00000-of-00001.parquet',
+ 'goh_Latn/train-00000-of-00001.parquet',
+ 'gom_Deva/train-00000-of-00001.parquet',
  'gsw_Latn/train-00000-of-00001.parquet',
+ 'guj_Gujr/train-00000-of-00001.parquet',
  'hin_Deva/train-00000-of-00001.parquet',
+ 'hsb_Latn/train-00000-of-00001.parquet',
+ 'hun_Latn/train-00000-of-00001.parquet',
+ 'ind_Latn/train-00000-of-00001.parquet',
+ 'ita_Latn/train-00000-of-00001.parquet',
+ 'jpn_Jpan/train-00000-of-00001.parquet',
+ 'kas_Deva/train-00000-of-00001.parquet',
+ 'kin_Latn/train-00000-of-00001.parquet',
+ 'kor_Hang/train-00000-of-00001.parquet',
+ 'lat_Latn/train-00000-of-00001.parquet',
+ 'lez_Cyrl/train-00000-of-00001.parquet',
+ 'lij_Latn/train-00000-of-00001.parquet',
+ 'lit_Latn/train-00000-of-00001.parquet',
+ 'lug_Latn/train-00000-of-00001.parquet',
  'lvs_Latn/train-00000-of-00001.parquet',
+ 'mal_Mlym/train-00000-of-00001.parquet',
+ 'mar_Deva/train-00000-of-00001.parquet',
+ 'nan_Latn/train-00000-of-00001.parquet',
+ 'nds_Latn/train-00000-of-00001.parquet',
+ 'nld_Latn/train-00000-of-00001.parquet',
+ 'nob_Latn/train-00000-of-00001.parquet',
+ 'npi_Deva/train-00000-of-00001.parquet',
+ 'npi_Latn/train-00000-of-00001.parquet',
+ 'pbt_Arab/train-00000-of-00001.parquet',
+ 'pcm_Latn/train-00000-of-00001.parquet',
+ 'pdc_Latn/train-00000-of-00001.parquet',
+ 'pfl_Latn/train-00000-of-00001.parquet',
+ 'pol_Latn/train-00000-of-00001.parquet',
+ 'por_Latn/train-00000-of-00001.parquet',
+ 'quz_Latn/train-00000-of-00001.parquet',
+ 'ron_Latn/train-00000-of-00001.parquet',
  'rus_Cyrl/train-00000-of-00001.parquet',
+ 'sco_Latn/train-00000-of-00001.parquet',
+ 'sin_Sinh/train-00000-of-00001.parquet',
  'slk_Latn/train-00000-of-00001.parquet',
+ 'som_Latn/train-00000-of-00001.parquet',
  'spa_Latn/train-00000-of-00001.parquet',
+ 'srp_Cyrl/train-00000-of-00001.parquet',
+ 'srp_Latn/train-00000-of-00001.parquet',
  'swe_Latn/train-00000-of-00001.parquet',
+ 'tam_Taml/train-00000-of-00001.parquet',
  'tat_Cyrl/train-00000-of-00001.parquet',
+ 'tat_Latn/train-00000-of-00001.parquet',
+ 'tel_Telu/train-00000-of-00001.parquet',
+ 'tha_Thai/train-00000-of-00001.parquet',
+ 'tir_Ethi/train-00000-of-00001.parquet',
+ 'tok_Latn/train-00000-of-00001.parquet',
+ 'tur_Latn/train-00000-of-00001.parquet',
+ 'udm_Cyrl/train-00000-of-00001.parquet',
  'ukr_Cyrl/train-00000-of-00001.parquet',
+ 'uzn_Cyrl/train-00000-of-00001.parquet',
+ 'uzn_Latn/train-00000-of-00001.parquet',
  'vie_Latn/train-00000-of-00001.parquet',
+ 'vls_Latn/train-00000-of-00001.parquet',
+ 'yor_Latn/train-00000-of-00001.parquet',
  'yue_Hani/train-00000-of-00001.parquet',
  'zsm_Latn/train-00000-of-00001.parquet']</code></pre>
 </div>
 </div>
-<div id="cell-7" class="cell" data-execution_count="4">
+<div id="cell-7" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>keep_columns <span class="op">=</span> [</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"id"</span>,</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"text"</span>,</span>
@@ -276,17 +343,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"language_code"</span>,</span>
 <span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-8" class="cell" data-execution_count="5">
+<div id="cell-8" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pl.scan_parquet(</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    [<span class="ss">f"hf://datasets/data-is-better-together/fineweb-c/</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> p <span class="kw">in</span> paths]</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>).select(keep_columns)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>).select(keep_columns)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>df.sink_parquet(<span class="st">"fineweb-c-annotations.parquet"</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pl.scan_parquet(<span class="st">"fineweb-c-annotations.parquet"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="how-many-languages-are-included-in-the-dataset-so-far" class="level3">
 <h3 class="anchored" data-anchor-id="how-many-languages-are-included-in-the-dataset-so-far">How many languages are included in the dataset so far?</h3>
-<div id="cell-10" class="cell" data-execution_count="6">
+<div id="cell-10" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df.select(pl.col(<span class="st">"language_code"</span>)).unique().collect().count()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="6">
+<div class="cell-output cell-output-display" data-execution_count="5">
 <div><style>
 .dataframe > thead > tr,
 .dataframe > tbody > tr {
@@ -306,7 +375,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td>24</td>
+<td>91</td>
 </tr>
 </tbody>
 </table>
@@ -314,11 +383,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>We can also see how many rows there are per language.</p>
-<div id="cell-12" class="cell" data-execution_count="7">
+<div id="cell-12" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df.group_by([<span class="st">"language_code"</span>]).agg(pl.col(<span class="st">"id"</span>).<span class="bu">len</span>().alias(<span class="st">"n_rows"</span>)).sort(</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"n_rows"</span>, descending<span class="op">=</span><span class="va">True</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>).collect()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="7">
+<div class="cell-output cell-output-display" data-execution_count="6">
 <div><style>
 .dataframe > thead > tr,
 .dataframe > tbody > tr {
@@ -326,7 +395,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   white-space: pre-wrap;
 }
 </style>
-<small>shape: (24, 2)</small>
+<small>shape: (91, 2)</small>
 <table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
 <thead>
 <tr class="header">
@@ -344,51 +413,67 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>1557</td>
 </tr>
 <tr class="even">
-<td>"slk_Latn"</td>
+<td>"lij_Latn"</td>
 <td>1000</td>
 </tr>
 <tr class="odd">
-<td>"gsw_Latn"</td>
-<td>1000</td>
-</tr>
-<tr class="even">
 <td>"vie_Latn"</td>
 <td>1000</td>
 </tr>
-<tr class="odd">
-<td>"cmn_Hani"</td>
+<tr class="even">
+<td>"dan_Latn"</td>
 <td>1000</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>"spa_Latn"</td>
 <td>1000</td>
 </tr>
-<tr class="odd">
-<td>"swe_Latn"</td>
-<td>1000</td>
-</tr>
 <tr class="even">
-<td>"arz_Arab"</td>
+<td>"jpn_Jpan"</td>
 <td>1000</td>
 </tr>
 <tr class="odd">
-<td>"bar_Latn"</td>
-<td>1000</td>
-</tr>
-<tr class="even">
 <td>"yue_Hani"</td>
 <td>1000</td>
 </tr>
+<tr class="even">
+<td>"ukr_Cyrl"</td>
+<td>1000</td>
+</tr>
 <tr class="odd">
-<td>"fil_Latn"</td>
+<td>"ary_Arab"</td>
 <td>1000</td>
 </tr>
 <tr class="even">
-<td>"gmh_Latn"</td>
+<td>"asm_Latn"</td>
 <td>1000</td>
 </tr>
 <tr class="odd">
-<td>"fin_Latn"</td>
+<td>"arz_Arab"</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td>"swe_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"arb_Arab"</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td>"fas_Arab"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"vls_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td>"fra_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"ita_Latn"</td>
 <td>1000</td>
 </tr>
 <tr class="even">
@@ -396,19 +481,43 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>1000</td>
 </tr>
 <tr class="odd">
-<td>"dan_Latn"</td>
+<td>"pfl_Latn"</td>
 <td>1000</td>
 </tr>
 <tr class="even">
-<td>"zsm_Latn"</td>
+<td>"bar_Latn"</td>
 <td>1000</td>
 </tr>
 <tr class="odd">
-<td>"asm_Latn"</td>
+<td>"goh_Latn"</td>
 <td>1000</td>
 </tr>
 <tr class="even">
-<td>"ary_Arab"</td>
+<td>"fin_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"gmh_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td>"ars_Arab"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"zsm_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td>"fil_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"gsw_Latn"</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td>"tam_Taml"</td>
 <td>1000</td>
 </tr>
 <tr class="odd">
@@ -416,24 +525,252 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>1000</td>
 </tr>
 <tr class="even">
+<td>"cmn_Hani"</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td>"kin_Latn"</td>
+<td>912</td>
+</tr>
+<tr class="even">
+<td>"tir_Ethi"</td>
+<td>745</td>
+</tr>
+<tr class="odd">
+<td>"bho_Deva"</td>
+<td>643</td>
+</tr>
+<tr class="even">
+<td>"kor_Hang"</td>
+<td>639</td>
+</tr>
+<tr class="odd">
+<td>"pdc_Latn"</td>
+<td>622</td>
+</tr>
+<tr class="even">
+<td>"sco_Latn"</td>
+<td>588</td>
+</tr>
+<tr class="odd">
+<td>"aeb_Arab"</td>
+<td>529</td>
+</tr>
+<tr class="even">
+<td>"ces_Latn"</td>
+<td>459</td>
+</tr>
+<tr class="odd">
+<td>"yor_Latn"</td>
+<td>443</td>
+</tr>
+<tr class="even">
+<td>"bak_Cyrl"</td>
+<td>442</td>
+</tr>
+<tr class="odd">
+<td>"tha_Thai"</td>
+<td>411</td>
+</tr>
+<tr class="even">
+<td>"por_Latn"</td>
+<td>404</td>
+</tr>
+<tr class="odd">
+<td>"nds_Latn"</td>
+<td>389</td>
+</tr>
+<tr class="even">
+<td>"npi_Deva"</td>
+<td>387</td>
+</tr>
+<tr class="odd">
+<td>"tur_Latn"</td>
+<td>379</td>
+</tr>
+<tr class="even">
+<td>"nld_Latn"</td>
+<td>361</td>
+</tr>
+<tr class="odd">
+<td>"glg_Latn"</td>
+<td>341</td>
+</tr>
+<tr class="even">
+<td>"lit_Latn"</td>
+<td>323</td>
+</tr>
+<tr class="odd">
+<td>"ron_Latn"</td>
+<td>268</td>
+</tr>
+<tr class="even">
+<td>"apc_Arab"</td>
+<td>250</td>
+</tr>
+<tr class="odd">
+<td>"eus_Latn"</td>
+<td>246</td>
+</tr>
+<tr class="even">
+<td>"pcm_Latn"</td>
+<td>240</td>
+</tr>
+<tr class="odd">
+<td>"slk_Latn"</td>
+<td>221</td>
+</tr>
+<tr class="even">
+<td>"deu_Latn"</td>
+<td>212</td>
+</tr>
+<tr class="odd">
+<td>"sin_Sinh"</td>
+<td>211</td>
+</tr>
+<tr class="even">
+<td>"tat_Latn"</td>
+<td>208</td>
+</tr>
+<tr class="odd">
+<td>"crh_Latn"</td>
+<td>188</td>
+</tr>
+<tr class="even">
+<td>"kas_Deva"</td>
+<td>186</td>
+</tr>
+<tr class="odd">
+<td>"gom_Deva"</td>
+<td>160</td>
+</tr>
+<tr class="even">
+<td>"lat_Latn"</td>
+<td>149</td>
+</tr>
+<tr class="odd">
+<td>"ekk_Latn"</td>
+<td>141</td>
+</tr>
+<tr class="even">
+<td>"lug_Latn"</td>
+<td>132</td>
+</tr>
+<tr class="odd">
+<td>"hun_Latn"</td>
+<td>124</td>
+</tr>
+<tr class="even">
+<td>"srp_Cyrl"</td>
+<td>93</td>
+</tr>
+<tr class="odd">
+<td>"ast_Latn"</td>
+<td>80</td>
+</tr>
+<tr class="even">
 <td>"lvs_Latn"</td>
-<td>1000</td>
+<td>80</td>
 </tr>
 <tr class="odd">
-<td>"ukr_Cyrl"</td>
-<td>1000</td>
+<td>"quz_Latn"</td>
+<td>80</td>
 </tr>
 <tr class="even">
-<td>"arb_Arab"</td>
-<td>1000</td>
+<td>"tel_Telu"</td>
+<td>66</td>
 </tr>
 <tr class="odd">
-<td>"fra_Latn"</td>
-<td>1000</td>
+<td>"mar_Deva"</td>
+<td>56</td>
 </tr>
 <tr class="even">
-<td>"fas_Arab"</td>
-<td>1000</td>
+<td>"udm_Cyrl"</td>
+<td>55</td>
+</tr>
+<tr class="odd">
+<td>"lez_Cyrl"</td>
+<td>55</td>
+</tr>
+<tr class="even">
+<td>"pol_Latn"</td>
+<td>50</td>
+</tr>
+<tr class="odd">
+<td>"bre_Latn"</td>
+<td>46</td>
+</tr>
+<tr class="even">
+<td>"uzn_Latn"</td>
+<td>44</td>
+</tr>
+<tr class="odd">
+<td>"bul_Cyrl"</td>
+<td>36</td>
+</tr>
+<tr class="even">
+<td>"cat_Latn"</td>
+<td>34</td>
+</tr>
+<tr class="odd">
+<td>"ind_Latn"</td>
+<td>29</td>
+</tr>
+<tr class="even">
+<td>"hsb_Latn"</td>
+<td>27</td>
+</tr>
+<tr class="odd">
+<td>"asm_Beng"</td>
+<td>24</td>
+</tr>
+<tr class="even">
+<td>"nob_Latn"</td>
+<td>24</td>
+</tr>
+<tr class="odd">
+<td>"fao_Latn"</td>
+<td>24</td>
+</tr>
+<tr class="even">
+<td>"uzn_Cyrl"</td>
+<td>20</td>
+</tr>
+<tr class="odd">
+<td>"ben_Beng"</td>
+<td>15</td>
+</tr>
+<tr class="even">
+<td>"nan_Latn"</td>
+<td>14</td>
+</tr>
+<tr class="odd">
+<td>"npi_Latn"</td>
+<td>12</td>
+</tr>
+<tr class="even">
+<td>"tok_Latn"</td>
+<td>11</td>
+</tr>
+<tr class="odd">
+<td>"som_Latn"</td>
+<td>11</td>
+</tr>
+<tr class="even">
+<td>"srp_Latn"</td>
+<td>11</td>
+</tr>
+<tr class="odd">
+<td>"guj_Gujr"</td>
+<td>11</td>
+</tr>
+<tr class="even">
+<td>"pbt_Arab"</td>
+<td>11</td>
+</tr>
+<tr class="odd">
+<td>"mal_Mlym"</td>
+<td>10</td>
 </tr>
 </tbody>
 </table>
@@ -448,11 +785,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="number-of-annotators">Number of annotators</h2>
 <p>Since starting this project we’ve found some languages have had more problematic data, including languages where a lot of data was identified in the wrong language. Because of this for some languages we’ve set a higher or lower “retirement” threshold before retiring a sample. This means some languages have only a single annotator labeling each example whilst others have had multiple people annotate each example.</p>
 <p>Let’s look at the mean number of annotators per language.</p>
-<div id="cell-16" class="cell" data-execution_count="8">
+<div id="cell-16" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df.group_by([<span class="st">"language_code"</span>]).agg(</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"educational_value_labels"</span>).<span class="bu">list</span>.<span class="bu">len</span>().mean().alias(<span class="st">"n_annotators"</span>)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>).sort(<span class="st">"n_annotators"</span>, descending<span class="op">=</span><span class="va">True</span>).collect()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="8">
+<div class="cell-output cell-output-display" data-execution_count="7">
 <div><style>
 .dataframe > thead > tr,
 .dataframe > tbody > tr {
@@ -460,7 +797,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   white-space: pre-wrap;
 }
 </style>
-<small>shape: (24, 2)</small>
+<small>shape: (91, 2)</small>
 <table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
 <thead>
 <tr class="header">
@@ -482,39 +819,63 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>2.573</td>
 </tr>
 <tr class="odd">
+<td>"tir_Ethi"</td>
+<td>2.126174</td>
+</tr>
+<tr class="even">
 <td>"spa_Latn"</td>
 <td>2.126</td>
 </tr>
+<tr class="odd">
+<td>"deu_Latn"</td>
+<td>2.037736</td>
+</tr>
 <tr class="even">
+<td>"ita_Latn"</td>
+<td>2.006</td>
+</tr>
+<tr class="odd">
+<td>"bak_Cyrl"</td>
+<td>2.002262</td>
+</tr>
+<tr class="even">
+<td>"slk_Latn"</td>
+<td>2.0</td>
+</tr>
+<tr class="odd">
+<td>"lvs_Latn"</td>
+<td>2.0</td>
+</tr>
+<tr class="even">
+<td>"eus_Latn"</td>
+<td>1.166667</td>
+</tr>
+<tr class="odd">
 <td>"ary_Arab"</td>
 <td>1.019</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>"fin_Latn"</td>
 <td>1.017</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>"fra_Latn"</td>
 <td>1.012</td>
-</tr>
-<tr class="odd">
-<td>"swe_Latn"</td>
-<td>1.006</td>
 </tr>
 <tr class="even">
 <td>"arz_Arab"</td>
 <td>1.006</td>
 </tr>
 <tr class="odd">
-<td>"slk_Latn"</td>
+<td>"swe_Latn"</td>
 <td>1.006</td>
 </tr>
 <tr class="even">
-<td>"rus_Cyrl"</td>
-<td>1.003</td>
+<td>"nds_Latn"</td>
+<td>1.005141</td>
 </tr>
 <tr class="odd">
-<td>"lvs_Latn"</td>
+<td>"rus_Cyrl"</td>
 <td>1.003</td>
 </tr>
 <tr class="even">
@@ -522,35 +883,187 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>1.002569</td>
 </tr>
 <tr class="odd">
-<td>"asm_Latn"</td>
-<td>1.002</td>
-</tr>
-<tr class="even">
 <td>"arb_Arab"</td>
 <td>1.002</td>
 </tr>
+<tr class="even">
+<td>"asm_Latn"</td>
+<td>1.002</td>
+</tr>
 <tr class="odd">
+<td>"tam_Taml"</td>
+<td>1.002</td>
+</tr>
+<tr class="even">
 <td>"fas_Arab"</td>
 <td>1.001</td>
 </tr>
+<tr class="odd">
+<td>"nld_Latn"</td>
+<td>1.0</td>
+</tr>
 <tr class="even">
-<td>"gmh_Latn"</td>
+<td>"uzn_Latn"</td>
 <td>1.0</td>
 </tr>
 <tr class="odd">
-<td>"bar_Latn"</td>
+<td>"guj_Gujr"</td>
 <td>1.0</td>
 </tr>
 <tr class="even">
+<td>"cat_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"cmn_Hani"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"uzn_Cyrl"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"ben_Beng"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"hsb_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"bul_Cyrl"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"ces_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"tel_Telu"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"bre_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"npi_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"crh_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
 <td>"zsm_Latn"</td>
 <td>1.0</td>
 </tr>
+<tr class="even">
+<td>"tur_Latn"</td>
+<td>1.0</td>
+</tr>
 <tr class="odd">
-<td>"fil_Latn"</td>
+<td>"srp_Cyrl"</td>
 <td>1.0</td>
 </tr>
 <tr class="even">
+<td>"lat_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"yue_Hani"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"asm_Beng"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"pbt_Arab"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"bar_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"tha_Thai"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"kor_Hang"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"goh_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"sin_Sinh"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"lug_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"mar_Deva"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"mal_Mlym"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"ars_Arab"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
 <td>"ukr_Cyrl"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"vls_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"npi_Deva"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"aeb_Arab"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"kas_Deva"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"ekk_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"som_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"lit_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"srp_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"kin_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"apc_Arab"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"ron_Latn"</td>
 <td>1.0</td>
 </tr>
 <tr class="odd">
@@ -558,15 +1071,107 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>1.0</td>
 </tr>
 <tr class="even">
-<td>"yue_Hani"</td>
+<td>"pdc_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"bho_Deva"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"ind_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"lez_Cyrl"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"udm_Cyrl"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"sco_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"quz_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"pol_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"pcm_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"tat_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"jpn_Jpan"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"hun_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"pfl_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"lij_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"yor_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"fao_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"nan_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"ast_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"gmh_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"nob_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"fil_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"gom_Deva"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"glg_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>"tok_Latn"</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>"por_Latn"</td>
 <td>1.0</td>
 </tr>
 <tr class="odd">
 <td>"gsw_Latn"</td>
-<td>1.0</td>
-</tr>
-<tr class="even">
-<td>"cmn_Hani"</td>
 <td>1.0</td>
 </tr>
 </tbody>
@@ -578,12 +1183,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="look-at-the-distribution-of-labels" class="level3">
 <h3 class="anchored" data-anchor-id="look-at-the-distribution-of-labels">Look at the distribution of labels</h3>
 <p>No we’ve got a sense of how many annotators there are per language, let’s look at the distribution of labels. Since we sometimes have multiple labels for each sample we’ll simplify things a bit to just look at the first label for each sample. For some languages this will be the only label anyway. If we work with a specific language for a longer time we’ll also want to consider the agreement between annotators.</p>
-<div id="cell-19" class="cell" data-execution_count="9">
+<div id="cell-19" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.with_columns(</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"educational_value_labels"</span>).<span class="bu">list</span>.first().alias(<span class="st">"label"</span>)</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>).collect()</span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>df.head(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="9">
+<div class="cell-output cell-output-display" data-execution_count="8">
 <div><style>
 .dataframe > thead > tr,
 .dataframe > tbody > tr {
@@ -619,14 +1224,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td>"78889051-5d7e-4d33-9d3f-6414ba…</td>
-<td>"المؤتمر العالمي للغابات يجتمع …</td>
+<td>"3b69c85c-29ec-4f01-a0dd-49ed1b…</td>
+<td>"نجمة في السما ولمرورك لدينا كا…</td>
 <td>["None"]</td>
-<td>["9e779e60-6719-401a-ab47-05aafb94be65"]</td>
+<td>["73ee8b99-a3f3-484b-bccf-7874521a5bc7"]</td>
 <td>false</td>
 <td>1.0</td>
-<td>"arb_Arab"</td>
-<td>"arb_Arab"</td>
+<td>"aeb_Arab"</td>
+<td>"aeb_Arab"</td>
 <td>"None"</td>
 </tr>
 </tbody>
@@ -634,7 +1239,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-<div id="cell-20" class="cell" data-input="false" data-execution_count="10">
+<div id="cell-20" class="cell" data-input="false" data-execution_count="9">
 <details class="code-fold">
 <summary>Click to show/hide code</summary>
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>label_counts <span class="op">=</span> (</span>
@@ -665,7 +1270,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>label_percentages</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-display" data-execution_count="10">
+<div class="cell-output cell-output-display" data-execution_count="9">
 <div><style>
 .dataframe > thead > tr,
 .dataframe > tbody > tr {
@@ -673,18 +1278,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   white-space: pre-wrap;
 }
 </style>
-<small>shape: (24, 8)</small>
+<small>shape: (91, 8)</small>
 <table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th">language_code</th>
-<th data-quarto-table-cell-role="th">Minimal</th>
 <th data-quarto-table-cell-role="th">Good</th>
+<th data-quarto-table-cell-role="th">Basic</th>
 <th data-quarto-table-cell-role="th">❗ Problematic Content ❗</th>
 <th data-quarto-table-cell-role="th">None</th>
-<th data-quarto-table-cell-role="th">Excellent</th>
-<th data-quarto-table-cell-role="th">Basic</th>
+<th data-quarto-table-cell-role="th">Minimal</th>
 <th data-quarto-table-cell-role="th">❗ Wrong language ❗</th>
+<th data-quarto-table-cell-role="th">Excellent</th>
 </tr>
 <tr class="even">
 <th>str</th>
@@ -699,244 +1304,914 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td>"arb_Arab"</td>
-<td>15.6</td>
-<td>2.5</td>
-<td>25.3</td>
-<td>51.0</td>
-<td>0.7</td>
-<td>4.9</td>
+<td>"aeb_Arab"</td>
+<td>0.57</td>
+<td>4.16</td>
+<td>12.48</td>
+<td>77.69</td>
+<td>4.73</td>
 <td>0.0</td>
+<td>0.38</td>
 </tr>
 <tr class="even">
-<td>"ary_Arab"</td>
-<td>1.2</td>
-<td>1.4</td>
-<td>94.6</td>
-<td>1.1</td>
-<td>1.0</td>
-<td>0.7</td>
+<td>"apc_Arab"</td>
+<td>2.4</td>
+<td>2.4</td>
+<td>80.0</td>
+<td>12.0</td>
+<td>2.0</td>
 <td>0.0</td>
+<td>1.2</td>
 </tr>
 <tr class="odd">
+<td>"arb_Arab"</td>
+<td>2.5</td>
+<td>4.9</td>
+<td>25.3</td>
+<td>51.0</td>
+<td>15.6</td>
+<td>0.0</td>
+<td>0.7</td>
+</tr>
+<tr class="even">
+<td>"ars_Arab"</td>
+<td>0.6</td>
+<td>1.9</td>
+<td>15.5</td>
+<td>69.9</td>
+<td>10.5</td>
+<td>1.4</td>
+<td>0.2</td>
+</tr>
+<tr class="odd">
+<td>"ary_Arab"</td>
+<td>1.4</td>
+<td>0.7</td>
+<td>94.6</td>
+<td>1.1</td>
+<td>1.2</td>
+<td>0.0</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
 <td>"arz_Arab"</td>
-<td>3.7</td>
 <td>4.0</td>
+<td>4.1</td>
 <td>73.5</td>
 <td>12.7</td>
-<td>2.0</td>
-<td>4.1</td>
+<td>3.7</td>
 <td>0.0</td>
+<td>2.0</td>
+</tr>
+<tr class="odd">
+<td>"asm_Beng"</td>
+<td>12.5</td>
+<td>8.33</td>
+<td>0.0</td>
+<td>37.5</td>
+<td>12.5</td>
+<td>0.0</td>
+<td>29.17</td>
 </tr>
 <tr class="even">
 <td>"asm_Latn"</td>
-<td>5.0</td>
-<td>0.0</td>
-<td>19.1</td>
-<td>64.7</td>
 <td>0.0</td>
 <td>0.3</td>
+<td>19.1</td>
+<td>64.7</td>
+<td>5.0</td>
 <td>10.9</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"ast_Latn"</td>
+<td>12.5</td>
+<td>17.5</td>
+<td>7.5</td>
+<td>30.0</td>
+<td>28.75</td>
+<td>3.75</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td>"bak_Cyrl"</td>
+<td>1.13</td>
+<td>4.75</td>
+<td>4.3</td>
+<td>75.11</td>
+<td>14.48</td>
+<td>0.0</td>
+<td>0.23</td>
 </tr>
 <tr class="odd">
 <td>"bar_Latn"</td>
-<td>2.4</td>
-<td>0.0</td>
-<td>77.0</td>
-<td>16.5</td>
 <td>0.0</td>
 <td>4.1</td>
+<td>77.0</td>
+<td>16.5</td>
+<td>2.4</td>
+<td>0.0</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td>"ben_Beng"</td>
+<td>6.67</td>
+<td>0.0</td>
+<td>6.67</td>
+<td>60.0</td>
+<td>20.0</td>
+<td>6.67</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"bho_Deva"</td>
+<td>3.11</td>
+<td>5.29</td>
+<td>7.93</td>
+<td>69.67</td>
+<td>13.84</td>
+<td>0.0</td>
+<td>0.16</td>
+</tr>
+<tr class="even">
+<td>"bre_Latn"</td>
+<td>2.17</td>
+<td>2.17</td>
+<td>91.3</td>
+<td>2.17</td>
+<td>2.17</td>
+<td>0.0</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"bul_Cyrl"</td>
+<td>11.11</td>
+<td>19.44</td>
+<td>8.33</td>
+<td>19.44</td>
+<td>33.33</td>
+<td>0.0</td>
+<td>8.33</td>
+</tr>
+<tr class="even">
+<td>"cat_Latn"</td>
+<td>8.82</td>
+<td>17.65</td>
+<td>0.0</td>
+<td>32.35</td>
+<td>41.18</td>
+<td>0.0</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"ces_Latn"</td>
+<td>1.96</td>
+<td>7.63</td>
+<td>1.96</td>
+<td>73.64</td>
+<td>14.38</td>
+<td>0.44</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
 <td>"cmn_Hani"</td>
-<td>36.2</td>
 <td>9.7</td>
+<td>25.1</td>
 <td>2.5</td>
 <td>24.2</td>
-<td>1.4</td>
-<td>25.1</td>
+<td>36.2</td>
 <td>0.9</td>
+<td>1.4</td>
 </tr>
 <tr class="odd">
+<td>"crh_Latn"</td>
+<td>0.0</td>
+<td>0.53</td>
+<td>96.28</td>
+<td>0.53</td>
+<td>2.13</td>
+<td>0.0</td>
+<td>0.53</td>
+</tr>
+<tr class="even">
 <td>"dan_Latn"</td>
-<td>28.2</td>
 <td>1.2</td>
+<td>8.4</td>
 <td>14.5</td>
 <td>47.6</td>
-<td>0.1</td>
-<td>8.4</td>
+<td>28.2</td>
 <td>0.0</td>
+<td>0.1</td>
+</tr>
+<tr class="odd">
+<td>"deu_Latn"</td>
+<td>9.43</td>
+<td>14.62</td>
+<td>3.3</td>
+<td>45.28</td>
+<td>22.64</td>
+<td>0.0</td>
+<td>4.72</td>
 </tr>
 <tr class="even">
+<td>"ekk_Latn"</td>
+<td>2.13</td>
+<td>12.77</td>
+<td>17.02</td>
+<td>38.3</td>
+<td>29.79</td>
+<td>0.0</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"eus_Latn"</td>
+<td>6.91</td>
+<td>10.57</td>
+<td>12.6</td>
+<td>44.31</td>
+<td>24.39</td>
+<td>0.0</td>
+<td>1.22</td>
+</tr>
+<tr class="even">
+<td>"fao_Latn"</td>
+<td>0.0</td>
+<td>12.5</td>
+<td>8.33</td>
+<td>45.83</td>
+<td>29.17</td>
+<td>4.17</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
 <td>"fas_Arab"</td>
-<td>18.7</td>
 <td>8.9</td>
+<td>10.0</td>
 <td>20.5</td>
 <td>39.6</td>
-<td>2.3</td>
-<td>10.0</td>
+<td>18.7</td>
 <td>0.0</td>
-</tr>
-<tr class="odd">
-<td>"fil_Latn"</td>
-<td>27.6</td>
-<td>2.6</td>
-<td>37.9</td>
-<td>24.1</td>
-<td>0.8</td>
-<td>5.1</td>
-<td>1.9</td>
+<td>2.3</td>
 </tr>
 <tr class="even">
-<td>"fin_Latn"</td>
-<td>28.5</td>
-<td>18.2</td>
-<td>8.5</td>
-<td>19.7</td>
+<td>"fil_Latn"</td>
 <td>2.6</td>
-<td>20.6</td>
+<td>5.1</td>
+<td>37.9</td>
+<td>24.1</td>
+<td>27.6</td>
 <td>1.9</td>
+<td>0.8</td>
 </tr>
 <tr class="odd">
+<td>"fin_Latn"</td>
+<td>18.2</td>
+<td>20.6</td>
+<td>8.5</td>
+<td>19.7</td>
+<td>28.5</td>
+<td>1.9</td>
+<td>2.6</td>
+</tr>
+<tr class="even">
 <td>"fra_Latn"</td>
-<td>23.8</td>
 <td>5.7</td>
+<td>8.6</td>
 <td>4.8</td>
 <td>54.3</td>
-<td>2.8</td>
-<td>8.6</td>
+<td>23.8</td>
 <td>0.0</td>
+<td>2.8</td>
+</tr>
+<tr class="odd">
+<td>"glg_Latn"</td>
+<td>5.28</td>
+<td>10.85</td>
+<td>2.05</td>
+<td>54.84</td>
+<td>24.93</td>
+<td>0.0</td>
+<td>2.05</td>
 </tr>
 <tr class="even">
 <td>"gmh_Latn"</td>
-<td>0.5</td>
-<td>0.0</td>
-<td>98.3</td>
-<td>1.0</td>
 <td>0.0</td>
 <td>0.2</td>
+<td>98.3</td>
+<td>1.0</td>
+<td>0.5</td>
+<td>0.0</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"goh_Latn"</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>67.9</td>
+<td>8.4</td>
+<td>0.2</td>
+<td>23.4</td>
+<td>0.1</td>
+</tr>
+<tr class="even">
+<td>"gom_Deva"</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>100.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
 <td>0.0</td>
 </tr>
 <tr class="odd">
 <td>"gsw_Latn"</td>
-<td>2.5</td>
 <td>3.6</td>
+<td>2.2</td>
 <td>1.3</td>
 <td>29.3</td>
-<td>1.1</td>
-<td>2.2</td>
+<td>2.5</td>
 <td>60.0</td>
+<td>1.1</td>
 </tr>
 <tr class="even">
-<td>"hin_Deva"</td>
-<td>11.2</td>
-<td>0.2</td>
-<td>0.3</td>
-<td>87.1</td>
-<td>0.3</td>
-<td>0.9</td>
+<td>"guj_Gujr"</td>
+<td>0.0</td>
+<td>27.27</td>
+<td>9.09</td>
+<td>18.18</td>
+<td>45.45</td>
+<td>0.0</td>
 <td>0.0</td>
 </tr>
 <tr class="odd">
-<td>"lvs_Latn"</td>
-<td>23.8</td>
-<td>1.4</td>
-<td>8.7</td>
-<td>54.7</td>
+<td>"hin_Deva"</td>
+<td>0.2</td>
+<td>0.9</td>
+<td>0.3</td>
+<td>87.1</td>
+<td>11.2</td>
 <td>0.0</td>
-<td>11.4</td>
+<td>0.3</td>
+</tr>
+<tr class="even">
+<td>"hsb_Latn"</td>
+<td>25.93</td>
+<td>33.33</td>
+<td>0.0</td>
+<td>14.81</td>
+<td>18.52</td>
+<td>3.7</td>
+<td>3.7</td>
+</tr>
+<tr class="odd">
+<td>"hun_Latn"</td>
+<td>4.84</td>
+<td>6.45</td>
+<td>6.45</td>
+<td>50.81</td>
+<td>30.65</td>
+<td>0.81</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
-<td>"rus_Cyrl"</td>
+<td>"ind_Latn"</td>
+<td>6.9</td>
+<td>6.9</td>
+<td>44.83</td>
+<td>31.03</td>
+<td>10.34</td>
+<td>0.0</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"ita_Latn"</td>
+<td>8.3</td>
+<td>14.0</td>
+<td>7.2</td>
+<td>43.9</td>
+<td>25.3</td>
+<td>0.0</td>
+<td>1.3</td>
+</tr>
+<tr class="even">
+<td>"jpn_Jpan"</td>
+<td>0.7</td>
+<td>3.8</td>
+<td>4.6</td>
+<td>76.7</td>
 <td>13.9</td>
+<td>0.1</td>
+<td>0.2</td>
+</tr>
+<tr class="odd">
+<td>"kas_Deva"</td>
+<td>4.3</td>
+<td>6.99</td>
+<td>37.63</td>
+<td>40.32</td>
+<td>10.75</td>
+<td>0.0</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td>"kin_Latn"</td>
+<td>13.49</td>
+<td>20.94</td>
+<td>0.88</td>
+<td>33.88</td>
+<td>20.83</td>
+<td>0.0</td>
+<td>9.98</td>
+</tr>
+<tr class="odd">
+<td>"kor_Hang"</td>
+<td>3.13</td>
+<td>12.99</td>
+<td>9.55</td>
+<td>39.75</td>
+<td>33.8</td>
+<td>0.0</td>
+<td>0.78</td>
+</tr>
+<tr class="even">
+<td>"lat_Latn"</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>4.03</td>
+<td>95.3</td>
+<td>0.67</td>
+<td>0.0</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"lez_Cyrl"</td>
+<td>0.0</td>
+<td>14.55</td>
+<td>0.0</td>
+<td>16.36</td>
+<td>67.27</td>
+<td>1.82</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td>"lij_Latn"</td>
+<td>0.4</td>
+<td>0.5</td>
+<td>13.2</td>
+<td>5.6</td>
+<td>1.7</td>
+<td>78.4</td>
+<td>0.2</td>
+</tr>
+<tr class="odd">
+<td>"lit_Latn"</td>
+<td>13.0</td>
+<td>14.55</td>
+<td>9.6</td>
+<td>35.6</td>
+<td>23.53</td>
+<td>1.55</td>
+<td>2.17</td>
+</tr>
+<tr class="even">
+<td>"lug_Latn"</td>
+<td>1.52</td>
+<td>6.06</td>
+<td>27.27</td>
+<td>28.79</td>
+<td>32.58</td>
+<td>3.03</td>
+<td>0.76</td>
+</tr>
+<tr class="odd">
+<td>"lvs_Latn"</td>
+<td>3.75</td>
+<td>6.25</td>
+<td>15.0</td>
+<td>60.0</td>
+<td>15.0</td>
+<td>0.0</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td>"mal_Mlym"</td>
+<td>50.0</td>
+<td>0.0</td>
+<td>10.0</td>
+<td>20.0</td>
+<td>10.0</td>
+<td>10.0</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"mar_Deva"</td>
+<td>14.29</td>
+<td>39.29</td>
+<td>0.0</td>
+<td>14.29</td>
+<td>26.79</td>
+<td>0.0</td>
+<td>5.36</td>
+</tr>
+<tr class="even">
+<td>"nan_Latn"</td>
+<td>0.0</td>
+<td>14.29</td>
+<td>14.29</td>
+<td>0.0</td>
+<td>14.29</td>
+<td>50.0</td>
+<td>7.14</td>
+</tr>
+<tr class="odd">
+<td>"nds_Latn"</td>
+<td>8.48</td>
+<td>14.91</td>
+<td>40.87</td>
+<td>17.48</td>
+<td>13.88</td>
+<td>0.0</td>
+<td>4.37</td>
+</tr>
+<tr class="even">
+<td>"nld_Latn"</td>
+<td>6.37</td>
+<td>14.96</td>
+<td>3.88</td>
+<td>44.04</td>
+<td>29.09</td>
+<td>0.0</td>
+<td>1.66</td>
+</tr>
+<tr class="odd">
+<td>"nob_Latn"</td>
+<td>8.33</td>
+<td>8.33</td>
+<td>33.33</td>
+<td>25.0</td>
+<td>25.0</td>
+<td>0.0</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td>"npi_Deva"</td>
+<td>70.54</td>
+<td>10.85</td>
+<td>0.26</td>
+<td>14.47</td>
+<td>2.84</td>
+<td>0.0</td>
+<td>1.03</td>
+</tr>
+<tr class="odd">
+<td>"npi_Latn"</td>
+<td>0.0</td>
+<td>8.33</td>
+<td>8.33</td>
+<td>16.67</td>
+<td>58.33</td>
+<td>8.33</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td>"pbt_Arab"</td>
+<td>9.09</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>90.91</td>
+<td>0.0</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"pcm_Latn"</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>62.92</td>
+<td>3.33</td>
+<td>0.83</td>
+<td>32.92</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td>"pdc_Latn"</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>100.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"pfl_Latn"</td>
+<td>0.0</td>
+<td>1.1</td>
+<td>87.2</td>
+<td>8.2</td>
+<td>3.3</td>
+<td>0.2</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td>"pol_Latn"</td>
+<td>2.0</td>
+<td>8.0</td>
+<td>8.0</td>
+<td>58.0</td>
+<td>24.0</td>
+<td>0.0</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"por_Latn"</td>
+<td>5.2</td>
+<td>9.9</td>
+<td>5.94</td>
+<td>60.15</td>
+<td>16.58</td>
+<td>0.0</td>
+<td>2.23</td>
+</tr>
+<tr class="even">
+<td>"quz_Latn"</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>26.25</td>
+<td>60.0</td>
+<td>13.75</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"ron_Latn"</td>
+<td>2.99</td>
+<td>5.22</td>
+<td>5.6</td>
+<td>63.81</td>
+<td>20.9</td>
+<td>0.0</td>
+<td>1.49</td>
+</tr>
+<tr class="even">
+<td>"rus_Cyrl"</td>
 <td>3.0</td>
+<td>6.1</td>
 <td>7.6</td>
 <td>68.3</td>
+<td>13.9</td>
+<td>0.0</td>
 <td>1.1</td>
-<td>6.1</td>
+</tr>
+<tr class="odd">
+<td>"sco_Latn"</td>
+<td>1.36</td>
+<td>4.08</td>
+<td>81.63</td>
+<td>7.82</td>
+<td>5.1</td>
+<td>0.0</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td>"sin_Sinh"</td>
+<td>4.27</td>
+<td>12.32</td>
+<td>5.21</td>
+<td>16.59</td>
+<td>60.19</td>
+<td>1.42</td>
 <td>0.0</td>
 </tr>
 <tr class="odd">
 <td>"slk_Latn"</td>
-<td>21.6</td>
-<td>3.8</td>
-<td>4.7</td>
-<td>60.4</td>
-<td>1.5</td>
-<td>8.0</td>
+<td>3.17</td>
+<td>7.69</td>
+<td>4.52</td>
+<td>60.18</td>
+<td>22.17</td>
+<td>0.0</td>
+<td>2.26</td>
+</tr>
+<tr class="even">
+<td>"som_Latn"</td>
+<td>36.36</td>
+<td>45.45</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>9.09</td>
+<td>0.0</td>
+<td>9.09</td>
+</tr>
+<tr class="odd">
+<td>"spa_Latn"</td>
+<td>2.9</td>
+<td>7.3</td>
+<td>3.9</td>
+<td>60.7</td>
+<td>24.5</td>
+<td>0.0</td>
+<td>0.7</td>
+</tr>
+<tr class="even">
+<td>"srp_Cyrl"</td>
+<td>16.13</td>
+<td>23.66</td>
+<td>17.2</td>
+<td>7.53</td>
+<td>34.41</td>
+<td>0.0</td>
+<td>1.08</td>
+</tr>
+<tr class="odd">
+<td>"srp_Latn"</td>
+<td>0.0</td>
+<td>18.18</td>
+<td>0.0</td>
+<td>63.64</td>
+<td>18.18</td>
+<td>0.0</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
-<td>"spa_Latn"</td>
-<td>24.5</td>
-<td>2.9</td>
-<td>3.9</td>
-<td>60.7</td>
-<td>0.7</td>
-<td>7.3</td>
-<td>0.0</td>
-</tr>
-<tr class="odd">
 <td>"swe_Latn"</td>
-<td>24.1</td>
 <td>3.3</td>
 <td>8.5</td>
-<td>54.5</td>
-<td>1.1</td>
 <td>8.5</td>
+<td>54.5</td>
+<td>24.1</td>
 <td>0.0</td>
+<td>1.1</td>
+</tr>
+<tr class="odd">
+<td>"tam_Taml"</td>
+<td>1.6</td>
+<td>5.0</td>
+<td>5.3</td>
+<td>73.7</td>
+<td>14.3</td>
+<td>0.0</td>
+<td>0.1</td>
 </tr>
 <tr class="even">
 <td>"tat_Cyrl"</td>
-<td>21.97</td>
 <td>3.85</td>
+<td>33.78</td>
 <td>2.5</td>
 <td>36.61</td>
-<td>1.28</td>
-<td>33.78</td>
+<td>21.97</td>
 <td>0.0</td>
+<td>1.28</td>
 </tr>
 <tr class="odd">
+<td>"tat_Latn"</td>
+<td>2.4</td>
+<td>22.6</td>
+<td>6.73</td>
+<td>43.27</td>
+<td>23.56</td>
+<td>1.44</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td>"tel_Telu"</td>
+<td>22.73</td>
+<td>16.67</td>
+<td>1.52</td>
+<td>25.76</td>
+<td>27.27</td>
+<td>0.0</td>
+<td>6.06</td>
+</tr>
+<tr class="odd">
+<td>"tha_Thai"</td>
+<td>7.06</td>
+<td>10.22</td>
+<td>29.93</td>
+<td>32.6</td>
+<td>19.71</td>
+<td>0.0</td>
+<td>0.49</td>
+</tr>
+<tr class="even">
+<td>"tir_Ethi"</td>
+<td>7.92</td>
+<td>13.83</td>
+<td>17.45</td>
+<td>25.5</td>
+<td>30.74</td>
+<td>0.0</td>
+<td>4.56</td>
+</tr>
+<tr class="odd">
+<td>"tok_Latn"</td>
+<td>9.09</td>
+<td>36.36</td>
+<td>18.18</td>
+<td>9.09</td>
+<td>9.09</td>
+<td>18.18</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td>"tur_Latn"</td>
+<td>19.26</td>
+<td>20.05</td>
+<td>7.92</td>
+<td>9.76</td>
+<td>35.62</td>
+<td>0.0</td>
+<td>7.39</td>
+</tr>
+<tr class="odd">
+<td>"udm_Cyrl"</td>
+<td>1.82</td>
+<td>12.73</td>
+<td>0.0</td>
+<td>7.27</td>
+<td>76.36</td>
+<td>1.82</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
 <td>"ukr_Cyrl"</td>
-<td>8.6</td>
 <td>7.7</td>
+<td>6.4</td>
 <td>1.4</td>
 <td>73.6</td>
-<td>2.3</td>
-<td>6.4</td>
+<td>8.6</td>
 <td>0.0</td>
+<td>2.3</td>
+</tr>
+<tr class="odd">
+<td>"uzn_Cyrl"</td>
+<td>15.0</td>
+<td>30.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>45.0</td>
+<td>0.0</td>
+<td>10.0</td>
 </tr>
 <tr class="even">
-<td>"vie_Latn"</td>
-<td>33.9</td>
-<td>6.4</td>
-<td>9.5</td>
-<td>35.9</td>
-<td>1.2</td>
-<td>13.1</td>
+<td>"uzn_Latn"</td>
+<td>20.45</td>
+<td>27.27</td>
+<td>4.55</td>
+<td>4.55</td>
+<td>43.18</td>
+<td>0.0</td>
 <td>0.0</td>
 </tr>
 <tr class="odd">
-<td>"yue_Hani"</td>
-<td>13.8</td>
-<td>5.5</td>
-<td>0.9</td>
-<td>68.4</td>
-<td>1.8</td>
-<td>9.6</td>
+<td>"vie_Latn"</td>
+<td>6.4</td>
+<td>13.1</td>
+<td>9.5</td>
+<td>35.9</td>
+<td>33.9</td>
 <td>0.0</td>
+<td>1.2</td>
 </tr>
 <tr class="even">
+<td>"vls_Latn"</td>
+<td>0.2</td>
+<td>15.1</td>
+<td>79.1</td>
+<td>3.9</td>
+<td>1.7</td>
+<td>0.0</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td>"yor_Latn"</td>
+<td>5.64</td>
+<td>9.71</td>
+<td>26.41</td>
+<td>29.12</td>
+<td>24.15</td>
+<td>0.0</td>
+<td>4.97</td>
+</tr>
+<tr class="even">
+<td>"yue_Hani"</td>
+<td>5.5</td>
+<td>9.6</td>
+<td>0.9</td>
+<td>68.4</td>
+<td>13.8</td>
+<td>0.0</td>
+<td>1.8</td>
+</tr>
+<tr class="odd">
 <td>"zsm_Latn"</td>
-<td>37.3</td>
 <td>4.5</td>
+<td>10.1</td>
 <td>0.4</td>
 <td>44.9</td>
-<td>2.7</td>
-<td>10.1</td>
+<td>37.3</td>
 <td>0.1</td>
+<td>2.7</td>
 </tr>
 </tbody>
 </table>
@@ -944,7 +2219,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>This is a bit hard to read so let’s plot it as a heatmap.</p>
-<div id="cell-22" class="cell" data-input="false" data-execution_count="11">
+<div id="cell-22" class="cell" data-input="false" data-execution_count="10">
 <details class="code-fold">
 <summary>Click to show/hide code</summary>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
@@ -999,7 +2274,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>We can also look at the distribution of labels as a bar chart.</p>
-<div id="cell-24" class="cell" data-input="false" data-execution_count="14">
+<div id="cell-24" class="cell" data-input="false" data-execution_count="11">
 <details class="code-fold">
 <summary>Click to show/hide code</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> altair <span class="im">as</span> alt</span>
@@ -1032,26 +2307,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>chart</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-display" data-execution_count="14">
+<div class="cell-output cell-output-display" data-execution_count="11">
 
 <style>
-  #altair-viz-f17d91b4c7d442de8126d0e732d2321d.vega-embed {
+  #altair-viz-887c01522e12463eaf4a0e99c3f34d7b.vega-embed {
     width: 100%;
     display: flex;
   }
 
-  #altair-viz-f17d91b4c7d442de8126d0e732d2321d.vega-embed details,
-  #altair-viz-f17d91b4c7d442de8126d0e732d2321d.vega-embed details summary {
+  #altair-viz-887c01522e12463eaf4a0e99c3f34d7b.vega-embed details,
+  #altair-viz-887c01522e12463eaf4a0e99c3f34d7b.vega-embed details summary {
     position: relative;
   }
 </style>
-<div id="altair-viz-f17d91b4c7d442de8126d0e732d2321d"></div>
+<div id="altair-viz-887c01522e12463eaf4a0e99c3f34d7b"></div>
 <script type="text/javascript">
   var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
   (function(spec, embedOpt){
     let outputDiv = document.currentScript.previousElementSibling;
-    if (outputDiv.id !== "altair-viz-f17d91b4c7d442de8126d0e732d2321d") {
-      outputDiv = document.getElementById("altair-viz-f17d91b4c7d442de8126d0e732d2321d");
+    if (outputDiv.id !== "altair-viz-887c01522e12463eaf4a0e99c3f34d7b") {
+      outputDiv = document.getElementById("altair-viz-887c01522e12463eaf4a0e99c3f34d7b");
     }
 
     const paths = {
@@ -1099,7 +2374,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         .catch(showError)
         .then(() => displayChart(vegaEmbed));
     }
-  })({"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}, "axis": {"labelAngle": 45}}, "data": {"name": "data-eae5114a20725dbdcfd779beae275515"}, "mark": {"type": "bar"}, "encoding": {"color": {"field": "label", "type": "nominal"}, "tooltip": [{"field": "language_code", "type": "nominal"}, {"field": "label", "type": "nominal"}, {"field": "percentage", "type": "quantitative"}], "x": {"field": "language_code", "type": "nominal"}, "y": {"field": "percentage", "stack": "zero", "type": "quantitative"}}, "height": 500, "title": "Label Distribution by Language", "width": 1000, "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-eae5114a20725dbdcfd779beae275515": [{"language_code": "arb_Arab", "label": "Minimal", "percentage": 15.6}, {"language_code": "ary_Arab", "label": "Minimal", "percentage": 1.2}, {"language_code": "arz_Arab", "label": "Minimal", "percentage": 3.7}, {"language_code": "asm_Latn", "label": "Minimal", "percentage": 5.0}, {"language_code": "bar_Latn", "label": "Minimal", "percentage": 2.4}, {"language_code": "cmn_Hani", "label": "Minimal", "percentage": 36.2}, {"language_code": "dan_Latn", "label": "Minimal", "percentage": 28.2}, {"language_code": "fas_Arab", "label": "Minimal", "percentage": 18.7}, {"language_code": "fil_Latn", "label": "Minimal", "percentage": 27.6}, {"language_code": "fin_Latn", "label": "Minimal", "percentage": 28.5}, {"language_code": "fra_Latn", "label": "Minimal", "percentage": 23.8}, {"language_code": "gmh_Latn", "label": "Minimal", "percentage": 0.5}, {"language_code": "gsw_Latn", "label": "Minimal", "percentage": 2.5}, {"language_code": "hin_Deva", "label": "Minimal", "percentage": 11.2}, {"language_code": "lvs_Latn", "label": "Minimal", "percentage": 23.8}, {"language_code": "rus_Cyrl", "label": "Minimal", "percentage": 13.9}, {"language_code": "slk_Latn", "label": "Minimal", "percentage": 21.6}, {"language_code": "spa_Latn", "label": "Minimal", "percentage": 24.5}, {"language_code": "swe_Latn", "label": "Minimal", "percentage": 24.1}, {"language_code": "tat_Cyrl", "label": "Minimal", "percentage": 21.97}, {"language_code": "ukr_Cyrl", "label": "Minimal", "percentage": 8.6}, {"language_code": "vie_Latn", "label": "Minimal", "percentage": 33.9}, {"language_code": "yue_Hani", "label": "Minimal", "percentage": 13.8}, {"language_code": "zsm_Latn", "label": "Minimal", "percentage": 37.3}, {"language_code": "arb_Arab", "label": "Good", "percentage": 2.5}, {"language_code": "ary_Arab", "label": "Good", "percentage": 1.4}, {"language_code": "arz_Arab", "label": "Good", "percentage": 4.0}, {"language_code": "asm_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "bar_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "cmn_Hani", "label": "Good", "percentage": 9.7}, {"language_code": "dan_Latn", "label": "Good", "percentage": 1.2}, {"language_code": "fas_Arab", "label": "Good", "percentage": 8.9}, {"language_code": "fil_Latn", "label": "Good", "percentage": 2.6}, {"language_code": "fin_Latn", "label": "Good", "percentage": 18.2}, {"language_code": "fra_Latn", "label": "Good", "percentage": 5.7}, {"language_code": "gmh_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "gsw_Latn", "label": "Good", "percentage": 3.6}, {"language_code": "hin_Deva", "label": "Good", "percentage": 0.2}, {"language_code": "lvs_Latn", "label": "Good", "percentage": 1.4}, {"language_code": "rus_Cyrl", "label": "Good", "percentage": 3.0}, {"language_code": "slk_Latn", "label": "Good", "percentage": 3.8}, {"language_code": "spa_Latn", "label": "Good", "percentage": 2.9}, {"language_code": "swe_Latn", "label": "Good", "percentage": 3.3}, {"language_code": "tat_Cyrl", "label": "Good", "percentage": 3.85}, {"language_code": "ukr_Cyrl", "label": "Good", "percentage": 7.7}, {"language_code": "vie_Latn", "label": "Good", "percentage": 6.4}, {"language_code": "yue_Hani", "label": "Good", "percentage": 5.5}, {"language_code": "zsm_Latn", "label": "Good", "percentage": 4.5}, {"language_code": "arb_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 25.3}, {"language_code": "ary_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 94.6}, {"language_code": "arz_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 73.5}, {"language_code": "asm_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 19.1}, {"language_code": "bar_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 77.0}, {"language_code": "cmn_Hani", "label": "\u2757 Problematic Content \u2757", "percentage": 2.5}, {"language_code": "dan_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 14.5}, {"language_code": "fas_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 20.5}, {"language_code": "fil_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 37.9}, {"language_code": "fin_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 8.5}, {"language_code": "fra_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 4.8}, {"language_code": "gmh_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 98.3}, {"language_code": "gsw_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 1.3}, {"language_code": "hin_Deva", "label": "\u2757 Problematic Content \u2757", "percentage": 0.3}, {"language_code": "lvs_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 8.7}, {"language_code": "rus_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 7.6}, {"language_code": "slk_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 4.7}, {"language_code": "spa_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 3.9}, {"language_code": "swe_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 8.5}, {"language_code": "tat_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 2.5}, {"language_code": "ukr_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 1.4}, {"language_code": "vie_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 9.5}, {"language_code": "yue_Hani", "label": "\u2757 Problematic Content \u2757", "percentage": 0.9}, {"language_code": "zsm_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 0.4}, {"language_code": "arb_Arab", "label": "None", "percentage": 51.0}, {"language_code": "ary_Arab", "label": "None", "percentage": 1.1}, {"language_code": "arz_Arab", "label": "None", "percentage": 12.7}, {"language_code": "asm_Latn", "label": "None", "percentage": 64.7}, {"language_code": "bar_Latn", "label": "None", "percentage": 16.5}, {"language_code": "cmn_Hani", "label": "None", "percentage": 24.2}, {"language_code": "dan_Latn", "label": "None", "percentage": 47.6}, {"language_code": "fas_Arab", "label": "None", "percentage": 39.6}, {"language_code": "fil_Latn", "label": "None", "percentage": 24.1}, {"language_code": "fin_Latn", "label": "None", "percentage": 19.7}, {"language_code": "fra_Latn", "label": "None", "percentage": 54.3}, {"language_code": "gmh_Latn", "label": "None", "percentage": 1.0}, {"language_code": "gsw_Latn", "label": "None", "percentage": 29.3}, {"language_code": "hin_Deva", "label": "None", "percentage": 87.1}, {"language_code": "lvs_Latn", "label": "None", "percentage": 54.7}, {"language_code": "rus_Cyrl", "label": "None", "percentage": 68.3}, {"language_code": "slk_Latn", "label": "None", "percentage": 60.4}, {"language_code": "spa_Latn", "label": "None", "percentage": 60.7}, {"language_code": "swe_Latn", "label": "None", "percentage": 54.5}, {"language_code": "tat_Cyrl", "label": "None", "percentage": 36.61}, {"language_code": "ukr_Cyrl", "label": "None", "percentage": 73.6}, {"language_code": "vie_Latn", "label": "None", "percentage": 35.9}, {"language_code": "yue_Hani", "label": "None", "percentage": 68.4}, {"language_code": "zsm_Latn", "label": "None", "percentage": 44.9}, {"language_code": "arb_Arab", "label": "Excellent", "percentage": 0.7}, {"language_code": "ary_Arab", "label": "Excellent", "percentage": 1.0}, {"language_code": "arz_Arab", "label": "Excellent", "percentage": 2.0}, {"language_code": "asm_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "bar_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "cmn_Hani", "label": "Excellent", "percentage": 1.4}, {"language_code": "dan_Latn", "label": "Excellent", "percentage": 0.1}, {"language_code": "fas_Arab", "label": "Excellent", "percentage": 2.3}, {"language_code": "fil_Latn", "label": "Excellent", "percentage": 0.8}, {"language_code": "fin_Latn", "label": "Excellent", "percentage": 2.6}, {"language_code": "fra_Latn", "label": "Excellent", "percentage": 2.8}, {"language_code": "gmh_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "gsw_Latn", "label": "Excellent", "percentage": 1.1}, {"language_code": "hin_Deva", "label": "Excellent", "percentage": 0.3}, {"language_code": "lvs_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "rus_Cyrl", "label": "Excellent", "percentage": 1.1}, {"language_code": "slk_Latn", "label": "Excellent", "percentage": 1.5}, {"language_code": "spa_Latn", "label": "Excellent", "percentage": 0.7}, {"language_code": "swe_Latn", "label": "Excellent", "percentage": 1.1}, {"language_code": "tat_Cyrl", "label": "Excellent", "percentage": 1.28}, {"language_code": "ukr_Cyrl", "label": "Excellent", "percentage": 2.3}, {"language_code": "vie_Latn", "label": "Excellent", "percentage": 1.2}, {"language_code": "yue_Hani", "label": "Excellent", "percentage": 1.8}, {"language_code": "zsm_Latn", "label": "Excellent", "percentage": 2.7}, {"language_code": "arb_Arab", "label": "Basic", "percentage": 4.9}, {"language_code": "ary_Arab", "label": "Basic", "percentage": 0.7}, {"language_code": "arz_Arab", "label": "Basic", "percentage": 4.1}, {"language_code": "asm_Latn", "label": "Basic", "percentage": 0.3}, {"language_code": "bar_Latn", "label": "Basic", "percentage": 4.1}, {"language_code": "cmn_Hani", "label": "Basic", "percentage": 25.1}, {"language_code": "dan_Latn", "label": "Basic", "percentage": 8.4}, {"language_code": "fas_Arab", "label": "Basic", "percentage": 10.0}, {"language_code": "fil_Latn", "label": "Basic", "percentage": 5.1}, {"language_code": "fin_Latn", "label": "Basic", "percentage": 20.6}, {"language_code": "fra_Latn", "label": "Basic", "percentage": 8.6}, {"language_code": "gmh_Latn", "label": "Basic", "percentage": 0.2}, {"language_code": "gsw_Latn", "label": "Basic", "percentage": 2.2}, {"language_code": "hin_Deva", "label": "Basic", "percentage": 0.9}, {"language_code": "lvs_Latn", "label": "Basic", "percentage": 11.4}, {"language_code": "rus_Cyrl", "label": "Basic", "percentage": 6.1}, {"language_code": "slk_Latn", "label": "Basic", "percentage": 8.0}, {"language_code": "spa_Latn", "label": "Basic", "percentage": 7.3}, {"language_code": "swe_Latn", "label": "Basic", "percentage": 8.5}, {"language_code": "tat_Cyrl", "label": "Basic", "percentage": 33.78}, {"language_code": "ukr_Cyrl", "label": "Basic", "percentage": 6.4}, {"language_code": "vie_Latn", "label": "Basic", "percentage": 13.1}, {"language_code": "yue_Hani", "label": "Basic", "percentage": 9.6}, {"language_code": "zsm_Latn", "label": "Basic", "percentage": 10.1}, {"language_code": "arb_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "ary_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "arz_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "asm_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 10.9}, {"language_code": "bar_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "cmn_Hani", "label": "\u2757 Wrong language \u2757", "percentage": 0.9}, {"language_code": "dan_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "fas_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "fil_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 1.9}, {"language_code": "fin_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 1.9}, {"language_code": "fra_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "gmh_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "gsw_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 60.0}, {"language_code": "hin_Deva", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "lvs_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "rus_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "slk_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "spa_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "swe_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "tat_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "ukr_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "vie_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "yue_Hani", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "zsm_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.1}]}}, {"mode": "vega-lite"});
+  })({"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}, "axis": {"labelAngle": 45}}, "data": {"name": "data-e63297c2f36ba6efed4ac3992540c9a9"}, "mark": {"type": "bar"}, "encoding": {"color": {"field": "label", "type": "nominal"}, "tooltip": [{"field": "language_code", "type": "nominal"}, {"field": "label", "type": "nominal"}, {"field": "percentage", "type": "quantitative"}], "x": {"field": "language_code", "type": "nominal"}, "y": {"field": "percentage", "stack": "zero", "type": "quantitative"}}, "height": 500, "title": "Label Distribution by Language", "width": 1000, "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-e63297c2f36ba6efed4ac3992540c9a9": [{"language_code": "aeb_Arab", "label": "Good", "percentage": 0.57}, {"language_code": "apc_Arab", "label": "Good", "percentage": 2.4}, {"language_code": "arb_Arab", "label": "Good", "percentage": 2.5}, {"language_code": "ars_Arab", "label": "Good", "percentage": 0.6}, {"language_code": "ary_Arab", "label": "Good", "percentage": 1.4}, {"language_code": "arz_Arab", "label": "Good", "percentage": 4.0}, {"language_code": "asm_Beng", "label": "Good", "percentage": 12.5}, {"language_code": "asm_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "ast_Latn", "label": "Good", "percentage": 12.5}, {"language_code": "bak_Cyrl", "label": "Good", "percentage": 1.13}, {"language_code": "bar_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "ben_Beng", "label": "Good", "percentage": 6.67}, {"language_code": "bho_Deva", "label": "Good", "percentage": 3.11}, {"language_code": "bre_Latn", "label": "Good", "percentage": 2.17}, {"language_code": "bul_Cyrl", "label": "Good", "percentage": 11.11}, {"language_code": "cat_Latn", "label": "Good", "percentage": 8.82}, {"language_code": "ces_Latn", "label": "Good", "percentage": 1.96}, {"language_code": "cmn_Hani", "label": "Good", "percentage": 9.7}, {"language_code": "crh_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "dan_Latn", "label": "Good", "percentage": 1.2}, {"language_code": "deu_Latn", "label": "Good", "percentage": 9.43}, {"language_code": "ekk_Latn", "label": "Good", "percentage": 2.13}, {"language_code": "eus_Latn", "label": "Good", "percentage": 6.91}, {"language_code": "fao_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "fas_Arab", "label": "Good", "percentage": 8.9}, {"language_code": "fil_Latn", "label": "Good", "percentage": 2.6}, {"language_code": "fin_Latn", "label": "Good", "percentage": 18.2}, {"language_code": "fra_Latn", "label": "Good", "percentage": 5.7}, {"language_code": "glg_Latn", "label": "Good", "percentage": 5.28}, {"language_code": "gmh_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "goh_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "gom_Deva", "label": "Good", "percentage": 0.0}, {"language_code": "gsw_Latn", "label": "Good", "percentage": 3.6}, {"language_code": "guj_Gujr", "label": "Good", "percentage": 0.0}, {"language_code": "hin_Deva", "label": "Good", "percentage": 0.2}, {"language_code": "hsb_Latn", "label": "Good", "percentage": 25.93}, {"language_code": "hun_Latn", "label": "Good", "percentage": 4.84}, {"language_code": "ind_Latn", "label": "Good", "percentage": 6.9}, {"language_code": "ita_Latn", "label": "Good", "percentage": 8.3}, {"language_code": "jpn_Jpan", "label": "Good", "percentage": 0.7}, {"language_code": "kas_Deva", "label": "Good", "percentage": 4.3}, {"language_code": "kin_Latn", "label": "Good", "percentage": 13.49}, {"language_code": "kor_Hang", "label": "Good", "percentage": 3.13}, {"language_code": "lat_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "lez_Cyrl", "label": "Good", "percentage": 0.0}, {"language_code": "lij_Latn", "label": "Good", "percentage": 0.4}, {"language_code": "lit_Latn", "label": "Good", "percentage": 13.0}, {"language_code": "lug_Latn", "label": "Good", "percentage": 1.52}, {"language_code": "lvs_Latn", "label": "Good", "percentage": 3.75}, {"language_code": "mal_Mlym", "label": "Good", "percentage": 50.0}, {"language_code": "mar_Deva", "label": "Good", "percentage": 14.29}, {"language_code": "nan_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "nds_Latn", "label": "Good", "percentage": 8.48}, {"language_code": "nld_Latn", "label": "Good", "percentage": 6.37}, {"language_code": "nob_Latn", "label": "Good", "percentage": 8.33}, {"language_code": "npi_Deva", "label": "Good", "percentage": 70.54}, {"language_code": "npi_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "pbt_Arab", "label": "Good", "percentage": 9.09}, {"language_code": "pcm_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "pdc_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "pfl_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "pol_Latn", "label": "Good", "percentage": 2.0}, {"language_code": "por_Latn", "label": "Good", "percentage": 5.2}, {"language_code": "quz_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "ron_Latn", "label": "Good", "percentage": 2.99}, {"language_code": "rus_Cyrl", "label": "Good", "percentage": 3.0}, {"language_code": "sco_Latn", "label": "Good", "percentage": 1.36}, {"language_code": "sin_Sinh", "label": "Good", "percentage": 4.27}, {"language_code": "slk_Latn", "label": "Good", "percentage": 3.17}, {"language_code": "som_Latn", "label": "Good", "percentage": 36.36}, {"language_code": "spa_Latn", "label": "Good", "percentage": 2.9}, {"language_code": "srp_Cyrl", "label": "Good", "percentage": 16.13}, {"language_code": "srp_Latn", "label": "Good", "percentage": 0.0}, {"language_code": "swe_Latn", "label": "Good", "percentage": 3.3}, {"language_code": "tam_Taml", "label": "Good", "percentage": 1.6}, {"language_code": "tat_Cyrl", "label": "Good", "percentage": 3.85}, {"language_code": "tat_Latn", "label": "Good", "percentage": 2.4}, {"language_code": "tel_Telu", "label": "Good", "percentage": 22.73}, {"language_code": "tha_Thai", "label": "Good", "percentage": 7.06}, {"language_code": "tir_Ethi", "label": "Good", "percentage": 7.92}, {"language_code": "tok_Latn", "label": "Good", "percentage": 9.09}, {"language_code": "tur_Latn", "label": "Good", "percentage": 19.26}, {"language_code": "udm_Cyrl", "label": "Good", "percentage": 1.82}, {"language_code": "ukr_Cyrl", "label": "Good", "percentage": 7.7}, {"language_code": "uzn_Cyrl", "label": "Good", "percentage": 15.0}, {"language_code": "uzn_Latn", "label": "Good", "percentage": 20.45}, {"language_code": "vie_Latn", "label": "Good", "percentage": 6.4}, {"language_code": "vls_Latn", "label": "Good", "percentage": 0.2}, {"language_code": "yor_Latn", "label": "Good", "percentage": 5.64}, {"language_code": "yue_Hani", "label": "Good", "percentage": 5.5}, {"language_code": "zsm_Latn", "label": "Good", "percentage": 4.5}, {"language_code": "aeb_Arab", "label": "Basic", "percentage": 4.16}, {"language_code": "apc_Arab", "label": "Basic", "percentage": 2.4}, {"language_code": "arb_Arab", "label": "Basic", "percentage": 4.9}, {"language_code": "ars_Arab", "label": "Basic", "percentage": 1.9}, {"language_code": "ary_Arab", "label": "Basic", "percentage": 0.7}, {"language_code": "arz_Arab", "label": "Basic", "percentage": 4.1}, {"language_code": "asm_Beng", "label": "Basic", "percentage": 8.33}, {"language_code": "asm_Latn", "label": "Basic", "percentage": 0.3}, {"language_code": "ast_Latn", "label": "Basic", "percentage": 17.5}, {"language_code": "bak_Cyrl", "label": "Basic", "percentage": 4.75}, {"language_code": "bar_Latn", "label": "Basic", "percentage": 4.1}, {"language_code": "ben_Beng", "label": "Basic", "percentage": 0.0}, {"language_code": "bho_Deva", "label": "Basic", "percentage": 5.29}, {"language_code": "bre_Latn", "label": "Basic", "percentage": 2.17}, {"language_code": "bul_Cyrl", "label": "Basic", "percentage": 19.44}, {"language_code": "cat_Latn", "label": "Basic", "percentage": 17.65}, {"language_code": "ces_Latn", "label": "Basic", "percentage": 7.63}, {"language_code": "cmn_Hani", "label": "Basic", "percentage": 25.1}, {"language_code": "crh_Latn", "label": "Basic", "percentage": 0.53}, {"language_code": "dan_Latn", "label": "Basic", "percentage": 8.4}, {"language_code": "deu_Latn", "label": "Basic", "percentage": 14.62}, {"language_code": "ekk_Latn", "label": "Basic", "percentage": 12.77}, {"language_code": "eus_Latn", "label": "Basic", "percentage": 10.57}, {"language_code": "fao_Latn", "label": "Basic", "percentage": 12.5}, {"language_code": "fas_Arab", "label": "Basic", "percentage": 10.0}, {"language_code": "fil_Latn", "label": "Basic", "percentage": 5.1}, {"language_code": "fin_Latn", "label": "Basic", "percentage": 20.6}, {"language_code": "fra_Latn", "label": "Basic", "percentage": 8.6}, {"language_code": "glg_Latn", "label": "Basic", "percentage": 10.85}, {"language_code": "gmh_Latn", "label": "Basic", "percentage": 0.2}, {"language_code": "goh_Latn", "label": "Basic", "percentage": 0.0}, {"language_code": "gom_Deva", "label": "Basic", "percentage": 0.0}, {"language_code": "gsw_Latn", "label": "Basic", "percentage": 2.2}, {"language_code": "guj_Gujr", "label": "Basic", "percentage": 27.27}, {"language_code": "hin_Deva", "label": "Basic", "percentage": 0.9}, {"language_code": "hsb_Latn", "label": "Basic", "percentage": 33.33}, {"language_code": "hun_Latn", "label": "Basic", "percentage": 6.45}, {"language_code": "ind_Latn", "label": "Basic", "percentage": 6.9}, {"language_code": "ita_Latn", "label": "Basic", "percentage": 14.0}, {"language_code": "jpn_Jpan", "label": "Basic", "percentage": 3.8}, {"language_code": "kas_Deva", "label": "Basic", "percentage": 6.99}, {"language_code": "kin_Latn", "label": "Basic", "percentage": 20.94}, {"language_code": "kor_Hang", "label": "Basic", "percentage": 12.99}, {"language_code": "lat_Latn", "label": "Basic", "percentage": 0.0}, {"language_code": "lez_Cyrl", "label": "Basic", "percentage": 14.55}, {"language_code": "lij_Latn", "label": "Basic", "percentage": 0.5}, {"language_code": "lit_Latn", "label": "Basic", "percentage": 14.55}, {"language_code": "lug_Latn", "label": "Basic", "percentage": 6.06}, {"language_code": "lvs_Latn", "label": "Basic", "percentage": 6.25}, {"language_code": "mal_Mlym", "label": "Basic", "percentage": 0.0}, {"language_code": "mar_Deva", "label": "Basic", "percentage": 39.29}, {"language_code": "nan_Latn", "label": "Basic", "percentage": 14.29}, {"language_code": "nds_Latn", "label": "Basic", "percentage": 14.91}, {"language_code": "nld_Latn", "label": "Basic", "percentage": 14.96}, {"language_code": "nob_Latn", "label": "Basic", "percentage": 8.33}, {"language_code": "npi_Deva", "label": "Basic", "percentage": 10.85}, {"language_code": "npi_Latn", "label": "Basic", "percentage": 8.33}, {"language_code": "pbt_Arab", "label": "Basic", "percentage": 0.0}, {"language_code": "pcm_Latn", "label": "Basic", "percentage": 0.0}, {"language_code": "pdc_Latn", "label": "Basic", "percentage": 0.0}, {"language_code": "pfl_Latn", "label": "Basic", "percentage": 1.1}, {"language_code": "pol_Latn", "label": "Basic", "percentage": 8.0}, {"language_code": "por_Latn", "label": "Basic", "percentage": 9.9}, {"language_code": "quz_Latn", "label": "Basic", "percentage": 0.0}, {"language_code": "ron_Latn", "label": "Basic", "percentage": 5.22}, {"language_code": "rus_Cyrl", "label": "Basic", "percentage": 6.1}, {"language_code": "sco_Latn", "label": "Basic", "percentage": 4.08}, {"language_code": "sin_Sinh", "label": "Basic", "percentage": 12.32}, {"language_code": "slk_Latn", "label": "Basic", "percentage": 7.69}, {"language_code": "som_Latn", "label": "Basic", "percentage": 45.45}, {"language_code": "spa_Latn", "label": "Basic", "percentage": 7.3}, {"language_code": "srp_Cyrl", "label": "Basic", "percentage": 23.66}, {"language_code": "srp_Latn", "label": "Basic", "percentage": 18.18}, {"language_code": "swe_Latn", "label": "Basic", "percentage": 8.5}, {"language_code": "tam_Taml", "label": "Basic", "percentage": 5.0}, {"language_code": "tat_Cyrl", "label": "Basic", "percentage": 33.78}, {"language_code": "tat_Latn", "label": "Basic", "percentage": 22.6}, {"language_code": "tel_Telu", "label": "Basic", "percentage": 16.67}, {"language_code": "tha_Thai", "label": "Basic", "percentage": 10.22}, {"language_code": "tir_Ethi", "label": "Basic", "percentage": 13.83}, {"language_code": "tok_Latn", "label": "Basic", "percentage": 36.36}, {"language_code": "tur_Latn", "label": "Basic", "percentage": 20.05}, {"language_code": "udm_Cyrl", "label": "Basic", "percentage": 12.73}, {"language_code": "ukr_Cyrl", "label": "Basic", "percentage": 6.4}, {"language_code": "uzn_Cyrl", "label": "Basic", "percentage": 30.0}, {"language_code": "uzn_Latn", "label": "Basic", "percentage": 27.27}, {"language_code": "vie_Latn", "label": "Basic", "percentage": 13.1}, {"language_code": "vls_Latn", "label": "Basic", "percentage": 15.1}, {"language_code": "yor_Latn", "label": "Basic", "percentage": 9.71}, {"language_code": "yue_Hani", "label": "Basic", "percentage": 9.6}, {"language_code": "zsm_Latn", "label": "Basic", "percentage": 10.1}, {"language_code": "aeb_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 12.48}, {"language_code": "apc_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 80.0}, {"language_code": "arb_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 25.3}, {"language_code": "ars_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 15.5}, {"language_code": "ary_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 94.6}, {"language_code": "arz_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 73.5}, {"language_code": "asm_Beng", "label": "\u2757 Problematic Content \u2757", "percentage": 0.0}, {"language_code": "asm_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 19.1}, {"language_code": "ast_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 7.5}, {"language_code": "bak_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 4.3}, {"language_code": "bar_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 77.0}, {"language_code": "ben_Beng", "label": "\u2757 Problematic Content \u2757", "percentage": 6.67}, {"language_code": "bho_Deva", "label": "\u2757 Problematic Content \u2757", "percentage": 7.93}, {"language_code": "bre_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 91.3}, {"language_code": "bul_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 8.33}, {"language_code": "cat_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 0.0}, {"language_code": "ces_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 1.96}, {"language_code": "cmn_Hani", "label": "\u2757 Problematic Content \u2757", "percentage": 2.5}, {"language_code": "crh_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 96.28}, {"language_code": "dan_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 14.5}, {"language_code": "deu_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 3.3}, {"language_code": "ekk_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 17.02}, {"language_code": "eus_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 12.6}, {"language_code": "fao_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 8.33}, {"language_code": "fas_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 20.5}, {"language_code": "fil_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 37.9}, {"language_code": "fin_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 8.5}, {"language_code": "fra_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 4.8}, {"language_code": "glg_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 2.05}, {"language_code": "gmh_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 98.3}, {"language_code": "goh_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 67.9}, {"language_code": "gom_Deva", "label": "\u2757 Problematic Content \u2757", "percentage": 100.0}, {"language_code": "gsw_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 1.3}, {"language_code": "guj_Gujr", "label": "\u2757 Problematic Content \u2757", "percentage": 9.09}, {"language_code": "hin_Deva", "label": "\u2757 Problematic Content \u2757", "percentage": 0.3}, {"language_code": "hsb_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 0.0}, {"language_code": "hun_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 6.45}, {"language_code": "ind_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 44.83}, {"language_code": "ita_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 7.2}, {"language_code": "jpn_Jpan", "label": "\u2757 Problematic Content \u2757", "percentage": 4.6}, {"language_code": "kas_Deva", "label": "\u2757 Problematic Content \u2757", "percentage": 37.63}, {"language_code": "kin_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 0.88}, {"language_code": "kor_Hang", "label": "\u2757 Problematic Content \u2757", "percentage": 9.55}, {"language_code": "lat_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 4.03}, {"language_code": "lez_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 0.0}, {"language_code": "lij_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 13.2}, {"language_code": "lit_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 9.6}, {"language_code": "lug_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 27.27}, {"language_code": "lvs_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 15.0}, {"language_code": "mal_Mlym", "label": "\u2757 Problematic Content \u2757", "percentage": 10.0}, {"language_code": "mar_Deva", "label": "\u2757 Problematic Content \u2757", "percentage": 0.0}, {"language_code": "nan_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 14.29}, {"language_code": "nds_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 40.87}, {"language_code": "nld_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 3.88}, {"language_code": "nob_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 33.33}, {"language_code": "npi_Deva", "label": "\u2757 Problematic Content \u2757", "percentage": 0.26}, {"language_code": "npi_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 8.33}, {"language_code": "pbt_Arab", "label": "\u2757 Problematic Content \u2757", "percentage": 0.0}, {"language_code": "pcm_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 62.92}, {"language_code": "pdc_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 100.0}, {"language_code": "pfl_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 87.2}, {"language_code": "pol_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 8.0}, {"language_code": "por_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 5.94}, {"language_code": "quz_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 0.0}, {"language_code": "ron_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 5.6}, {"language_code": "rus_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 7.6}, {"language_code": "sco_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 81.63}, {"language_code": "sin_Sinh", "label": "\u2757 Problematic Content \u2757", "percentage": 5.21}, {"language_code": "slk_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 4.52}, {"language_code": "som_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 0.0}, {"language_code": "spa_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 3.9}, {"language_code": "srp_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 17.2}, {"language_code": "srp_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 0.0}, {"language_code": "swe_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 8.5}, {"language_code": "tam_Taml", "label": "\u2757 Problematic Content \u2757", "percentage": 5.3}, {"language_code": "tat_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 2.5}, {"language_code": "tat_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 6.73}, {"language_code": "tel_Telu", "label": "\u2757 Problematic Content \u2757", "percentage": 1.52}, {"language_code": "tha_Thai", "label": "\u2757 Problematic Content \u2757", "percentage": 29.93}, {"language_code": "tir_Ethi", "label": "\u2757 Problematic Content \u2757", "percentage": 17.45}, {"language_code": "tok_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 18.18}, {"language_code": "tur_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 7.92}, {"language_code": "udm_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 0.0}, {"language_code": "ukr_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 1.4}, {"language_code": "uzn_Cyrl", "label": "\u2757 Problematic Content \u2757", "percentage": 0.0}, {"language_code": "uzn_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 4.55}, {"language_code": "vie_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 9.5}, {"language_code": "vls_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 79.1}, {"language_code": "yor_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 26.41}, {"language_code": "yue_Hani", "label": "\u2757 Problematic Content \u2757", "percentage": 0.9}, {"language_code": "zsm_Latn", "label": "\u2757 Problematic Content \u2757", "percentage": 0.4}, {"language_code": "aeb_Arab", "label": "None", "percentage": 77.69}, {"language_code": "apc_Arab", "label": "None", "percentage": 12.0}, {"language_code": "arb_Arab", "label": "None", "percentage": 51.0}, {"language_code": "ars_Arab", "label": "None", "percentage": 69.9}, {"language_code": "ary_Arab", "label": "None", "percentage": 1.1}, {"language_code": "arz_Arab", "label": "None", "percentage": 12.7}, {"language_code": "asm_Beng", "label": "None", "percentage": 37.5}, {"language_code": "asm_Latn", "label": "None", "percentage": 64.7}, {"language_code": "ast_Latn", "label": "None", "percentage": 30.0}, {"language_code": "bak_Cyrl", "label": "None", "percentage": 75.11}, {"language_code": "bar_Latn", "label": "None", "percentage": 16.5}, {"language_code": "ben_Beng", "label": "None", "percentage": 60.0}, {"language_code": "bho_Deva", "label": "None", "percentage": 69.67}, {"language_code": "bre_Latn", "label": "None", "percentage": 2.17}, {"language_code": "bul_Cyrl", "label": "None", "percentage": 19.44}, {"language_code": "cat_Latn", "label": "None", "percentage": 32.35}, {"language_code": "ces_Latn", "label": "None", "percentage": 73.64}, {"language_code": "cmn_Hani", "label": "None", "percentage": 24.2}, {"language_code": "crh_Latn", "label": "None", "percentage": 0.53}, {"language_code": "dan_Latn", "label": "None", "percentage": 47.6}, {"language_code": "deu_Latn", "label": "None", "percentage": 45.28}, {"language_code": "ekk_Latn", "label": "None", "percentage": 38.3}, {"language_code": "eus_Latn", "label": "None", "percentage": 44.31}, {"language_code": "fao_Latn", "label": "None", "percentage": 45.83}, {"language_code": "fas_Arab", "label": "None", "percentage": 39.6}, {"language_code": "fil_Latn", "label": "None", "percentage": 24.1}, {"language_code": "fin_Latn", "label": "None", "percentage": 19.7}, {"language_code": "fra_Latn", "label": "None", "percentage": 54.3}, {"language_code": "glg_Latn", "label": "None", "percentage": 54.84}, {"language_code": "gmh_Latn", "label": "None", "percentage": 1.0}, {"language_code": "goh_Latn", "label": "None", "percentage": 8.4}, {"language_code": "gom_Deva", "label": "None", "percentage": 0.0}, {"language_code": "gsw_Latn", "label": "None", "percentage": 29.3}, {"language_code": "guj_Gujr", "label": "None", "percentage": 18.18}, {"language_code": "hin_Deva", "label": "None", "percentage": 87.1}, {"language_code": "hsb_Latn", "label": "None", "percentage": 14.81}, {"language_code": "hun_Latn", "label": "None", "percentage": 50.81}, {"language_code": "ind_Latn", "label": "None", "percentage": 31.03}, {"language_code": "ita_Latn", "label": "None", "percentage": 43.9}, {"language_code": "jpn_Jpan", "label": "None", "percentage": 76.7}, {"language_code": "kas_Deva", "label": "None", "percentage": 40.32}, {"language_code": "kin_Latn", "label": "None", "percentage": 33.88}, {"language_code": "kor_Hang", "label": "None", "percentage": 39.75}, {"language_code": "lat_Latn", "label": "None", "percentage": 95.3}, {"language_code": "lez_Cyrl", "label": "None", "percentage": 16.36}, {"language_code": "lij_Latn", "label": "None", "percentage": 5.6}, {"language_code": "lit_Latn", "label": "None", "percentage": 35.6}, {"language_code": "lug_Latn", "label": "None", "percentage": 28.79}, {"language_code": "lvs_Latn", "label": "None", "percentage": 60.0}, {"language_code": "mal_Mlym", "label": "None", "percentage": 20.0}, {"language_code": "mar_Deva", "label": "None", "percentage": 14.29}, {"language_code": "nan_Latn", "label": "None", "percentage": 0.0}, {"language_code": "nds_Latn", "label": "None", "percentage": 17.48}, {"language_code": "nld_Latn", "label": "None", "percentage": 44.04}, {"language_code": "nob_Latn", "label": "None", "percentage": 25.0}, {"language_code": "npi_Deva", "label": "None", "percentage": 14.47}, {"language_code": "npi_Latn", "label": "None", "percentage": 16.67}, {"language_code": "pbt_Arab", "label": "None", "percentage": 0.0}, {"language_code": "pcm_Latn", "label": "None", "percentage": 3.33}, {"language_code": "pdc_Latn", "label": "None", "percentage": 0.0}, {"language_code": "pfl_Latn", "label": "None", "percentage": 8.2}, {"language_code": "pol_Latn", "label": "None", "percentage": 58.0}, {"language_code": "por_Latn", "label": "None", "percentage": 60.15}, {"language_code": "quz_Latn", "label": "None", "percentage": 26.25}, {"language_code": "ron_Latn", "label": "None", "percentage": 63.81}, {"language_code": "rus_Cyrl", "label": "None", "percentage": 68.3}, {"language_code": "sco_Latn", "label": "None", "percentage": 7.82}, {"language_code": "sin_Sinh", "label": "None", "percentage": 16.59}, {"language_code": "slk_Latn", "label": "None", "percentage": 60.18}, {"language_code": "som_Latn", "label": "None", "percentage": 0.0}, {"language_code": "spa_Latn", "label": "None", "percentage": 60.7}, {"language_code": "srp_Cyrl", "label": "None", "percentage": 7.53}, {"language_code": "srp_Latn", "label": "None", "percentage": 63.64}, {"language_code": "swe_Latn", "label": "None", "percentage": 54.5}, {"language_code": "tam_Taml", "label": "None", "percentage": 73.7}, {"language_code": "tat_Cyrl", "label": "None", "percentage": 36.61}, {"language_code": "tat_Latn", "label": "None", "percentage": 43.27}, {"language_code": "tel_Telu", "label": "None", "percentage": 25.76}, {"language_code": "tha_Thai", "label": "None", "percentage": 32.6}, {"language_code": "tir_Ethi", "label": "None", "percentage": 25.5}, {"language_code": "tok_Latn", "label": "None", "percentage": 9.09}, {"language_code": "tur_Latn", "label": "None", "percentage": 9.76}, {"language_code": "udm_Cyrl", "label": "None", "percentage": 7.27}, {"language_code": "ukr_Cyrl", "label": "None", "percentage": 73.6}, {"language_code": "uzn_Cyrl", "label": "None", "percentage": 0.0}, {"language_code": "uzn_Latn", "label": "None", "percentage": 4.55}, {"language_code": "vie_Latn", "label": "None", "percentage": 35.9}, {"language_code": "vls_Latn", "label": "None", "percentage": 3.9}, {"language_code": "yor_Latn", "label": "None", "percentage": 29.12}, {"language_code": "yue_Hani", "label": "None", "percentage": 68.4}, {"language_code": "zsm_Latn", "label": "None", "percentage": 44.9}, {"language_code": "aeb_Arab", "label": "Minimal", "percentage": 4.73}, {"language_code": "apc_Arab", "label": "Minimal", "percentage": 2.0}, {"language_code": "arb_Arab", "label": "Minimal", "percentage": 15.6}, {"language_code": "ars_Arab", "label": "Minimal", "percentage": 10.5}, {"language_code": "ary_Arab", "label": "Minimal", "percentage": 1.2}, {"language_code": "arz_Arab", "label": "Minimal", "percentage": 3.7}, {"language_code": "asm_Beng", "label": "Minimal", "percentage": 12.5}, {"language_code": "asm_Latn", "label": "Minimal", "percentage": 5.0}, {"language_code": "ast_Latn", "label": "Minimal", "percentage": 28.75}, {"language_code": "bak_Cyrl", "label": "Minimal", "percentage": 14.48}, {"language_code": "bar_Latn", "label": "Minimal", "percentage": 2.4}, {"language_code": "ben_Beng", "label": "Minimal", "percentage": 20.0}, {"language_code": "bho_Deva", "label": "Minimal", "percentage": 13.84}, {"language_code": "bre_Latn", "label": "Minimal", "percentage": 2.17}, {"language_code": "bul_Cyrl", "label": "Minimal", "percentage": 33.33}, {"language_code": "cat_Latn", "label": "Minimal", "percentage": 41.18}, {"language_code": "ces_Latn", "label": "Minimal", "percentage": 14.38}, {"language_code": "cmn_Hani", "label": "Minimal", "percentage": 36.2}, {"language_code": "crh_Latn", "label": "Minimal", "percentage": 2.13}, {"language_code": "dan_Latn", "label": "Minimal", "percentage": 28.2}, {"language_code": "deu_Latn", "label": "Minimal", "percentage": 22.64}, {"language_code": "ekk_Latn", "label": "Minimal", "percentage": 29.79}, {"language_code": "eus_Latn", "label": "Minimal", "percentage": 24.39}, {"language_code": "fao_Latn", "label": "Minimal", "percentage": 29.17}, {"language_code": "fas_Arab", "label": "Minimal", "percentage": 18.7}, {"language_code": "fil_Latn", "label": "Minimal", "percentage": 27.6}, {"language_code": "fin_Latn", "label": "Minimal", "percentage": 28.5}, {"language_code": "fra_Latn", "label": "Minimal", "percentage": 23.8}, {"language_code": "glg_Latn", "label": "Minimal", "percentage": 24.93}, {"language_code": "gmh_Latn", "label": "Minimal", "percentage": 0.5}, {"language_code": "goh_Latn", "label": "Minimal", "percentage": 0.2}, {"language_code": "gom_Deva", "label": "Minimal", "percentage": 0.0}, {"language_code": "gsw_Latn", "label": "Minimal", "percentage": 2.5}, {"language_code": "guj_Gujr", "label": "Minimal", "percentage": 45.45}, {"language_code": "hin_Deva", "label": "Minimal", "percentage": 11.2}, {"language_code": "hsb_Latn", "label": "Minimal", "percentage": 18.52}, {"language_code": "hun_Latn", "label": "Minimal", "percentage": 30.65}, {"language_code": "ind_Latn", "label": "Minimal", "percentage": 10.34}, {"language_code": "ita_Latn", "label": "Minimal", "percentage": 25.3}, {"language_code": "jpn_Jpan", "label": "Minimal", "percentage": 13.9}, {"language_code": "kas_Deva", "label": "Minimal", "percentage": 10.75}, {"language_code": "kin_Latn", "label": "Minimal", "percentage": 20.83}, {"language_code": "kor_Hang", "label": "Minimal", "percentage": 33.8}, {"language_code": "lat_Latn", "label": "Minimal", "percentage": 0.67}, {"language_code": "lez_Cyrl", "label": "Minimal", "percentage": 67.27}, {"language_code": "lij_Latn", "label": "Minimal", "percentage": 1.7}, {"language_code": "lit_Latn", "label": "Minimal", "percentage": 23.53}, {"language_code": "lug_Latn", "label": "Minimal", "percentage": 32.58}, {"language_code": "lvs_Latn", "label": "Minimal", "percentage": 15.0}, {"language_code": "mal_Mlym", "label": "Minimal", "percentage": 10.0}, {"language_code": "mar_Deva", "label": "Minimal", "percentage": 26.79}, {"language_code": "nan_Latn", "label": "Minimal", "percentage": 14.29}, {"language_code": "nds_Latn", "label": "Minimal", "percentage": 13.88}, {"language_code": "nld_Latn", "label": "Minimal", "percentage": 29.09}, {"language_code": "nob_Latn", "label": "Minimal", "percentage": 25.0}, {"language_code": "npi_Deva", "label": "Minimal", "percentage": 2.84}, {"language_code": "npi_Latn", "label": "Minimal", "percentage": 58.33}, {"language_code": "pbt_Arab", "label": "Minimal", "percentage": 90.91}, {"language_code": "pcm_Latn", "label": "Minimal", "percentage": 0.83}, {"language_code": "pdc_Latn", "label": "Minimal", "percentage": 0.0}, {"language_code": "pfl_Latn", "label": "Minimal", "percentage": 3.3}, {"language_code": "pol_Latn", "label": "Minimal", "percentage": 24.0}, {"language_code": "por_Latn", "label": "Minimal", "percentage": 16.58}, {"language_code": "quz_Latn", "label": "Minimal", "percentage": 60.0}, {"language_code": "ron_Latn", "label": "Minimal", "percentage": 20.9}, {"language_code": "rus_Cyrl", "label": "Minimal", "percentage": 13.9}, {"language_code": "sco_Latn", "label": "Minimal", "percentage": 5.1}, {"language_code": "sin_Sinh", "label": "Minimal", "percentage": 60.19}, {"language_code": "slk_Latn", "label": "Minimal", "percentage": 22.17}, {"language_code": "som_Latn", "label": "Minimal", "percentage": 9.09}, {"language_code": "spa_Latn", "label": "Minimal", "percentage": 24.5}, {"language_code": "srp_Cyrl", "label": "Minimal", "percentage": 34.41}, {"language_code": "srp_Latn", "label": "Minimal", "percentage": 18.18}, {"language_code": "swe_Latn", "label": "Minimal", "percentage": 24.1}, {"language_code": "tam_Taml", "label": "Minimal", "percentage": 14.3}, {"language_code": "tat_Cyrl", "label": "Minimal", "percentage": 21.97}, {"language_code": "tat_Latn", "label": "Minimal", "percentage": 23.56}, {"language_code": "tel_Telu", "label": "Minimal", "percentage": 27.27}, {"language_code": "tha_Thai", "label": "Minimal", "percentage": 19.71}, {"language_code": "tir_Ethi", "label": "Minimal", "percentage": 30.74}, {"language_code": "tok_Latn", "label": "Minimal", "percentage": 9.09}, {"language_code": "tur_Latn", "label": "Minimal", "percentage": 35.62}, {"language_code": "udm_Cyrl", "label": "Minimal", "percentage": 76.36}, {"language_code": "ukr_Cyrl", "label": "Minimal", "percentage": 8.6}, {"language_code": "uzn_Cyrl", "label": "Minimal", "percentage": 45.0}, {"language_code": "uzn_Latn", "label": "Minimal", "percentage": 43.18}, {"language_code": "vie_Latn", "label": "Minimal", "percentage": 33.9}, {"language_code": "vls_Latn", "label": "Minimal", "percentage": 1.7}, {"language_code": "yor_Latn", "label": "Minimal", "percentage": 24.15}, {"language_code": "yue_Hani", "label": "Minimal", "percentage": 13.8}, {"language_code": "zsm_Latn", "label": "Minimal", "percentage": 37.3}, {"language_code": "aeb_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "apc_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "arb_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "ars_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 1.4}, {"language_code": "ary_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "arz_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "asm_Beng", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "asm_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 10.9}, {"language_code": "ast_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 3.75}, {"language_code": "bak_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "bar_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "ben_Beng", "label": "\u2757 Wrong language \u2757", "percentage": 6.67}, {"language_code": "bho_Deva", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "bre_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "bul_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "cat_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "ces_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.44}, {"language_code": "cmn_Hani", "label": "\u2757 Wrong language \u2757", "percentage": 0.9}, {"language_code": "crh_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "dan_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "deu_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "ekk_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "eus_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "fao_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 4.17}, {"language_code": "fas_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "fil_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 1.9}, {"language_code": "fin_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 1.9}, {"language_code": "fra_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "glg_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "gmh_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "goh_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 23.4}, {"language_code": "gom_Deva", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "gsw_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 60.0}, {"language_code": "guj_Gujr", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "hin_Deva", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "hsb_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 3.7}, {"language_code": "hun_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.81}, {"language_code": "ind_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "ita_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "jpn_Jpan", "label": "\u2757 Wrong language \u2757", "percentage": 0.1}, {"language_code": "kas_Deva", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "kin_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "kor_Hang", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "lat_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "lez_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 1.82}, {"language_code": "lij_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 78.4}, {"language_code": "lit_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 1.55}, {"language_code": "lug_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 3.03}, {"language_code": "lvs_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "mal_Mlym", "label": "\u2757 Wrong language \u2757", "percentage": 10.0}, {"language_code": "mar_Deva", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "nan_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 50.0}, {"language_code": "nds_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "nld_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "nob_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "npi_Deva", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "npi_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 8.33}, {"language_code": "pbt_Arab", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "pcm_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 32.92}, {"language_code": "pdc_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "pfl_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.2}, {"language_code": "pol_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "por_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "quz_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 13.75}, {"language_code": "ron_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "rus_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "sco_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "sin_Sinh", "label": "\u2757 Wrong language \u2757", "percentage": 1.42}, {"language_code": "slk_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "som_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "spa_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "srp_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "srp_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "swe_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "tam_Taml", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "tat_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "tat_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 1.44}, {"language_code": "tel_Telu", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "tha_Thai", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "tir_Ethi", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "tok_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 18.18}, {"language_code": "tur_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "udm_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 1.82}, {"language_code": "ukr_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "uzn_Cyrl", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "uzn_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "vie_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "vls_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "yor_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "yue_Hani", "label": "\u2757 Wrong language \u2757", "percentage": 0.0}, {"language_code": "zsm_Latn", "label": "\u2757 Wrong language \u2757", "percentage": 0.1}, {"language_code": "aeb_Arab", "label": "Excellent", "percentage": 0.38}, {"language_code": "apc_Arab", "label": "Excellent", "percentage": 1.2}, {"language_code": "arb_Arab", "label": "Excellent", "percentage": 0.7}, {"language_code": "ars_Arab", "label": "Excellent", "percentage": 0.2}, {"language_code": "ary_Arab", "label": "Excellent", "percentage": 1.0}, {"language_code": "arz_Arab", "label": "Excellent", "percentage": 2.0}, {"language_code": "asm_Beng", "label": "Excellent", "percentage": 29.17}, {"language_code": "asm_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "ast_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "bak_Cyrl", "label": "Excellent", "percentage": 0.23}, {"language_code": "bar_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "ben_Beng", "label": "Excellent", "percentage": 0.0}, {"language_code": "bho_Deva", "label": "Excellent", "percentage": 0.16}, {"language_code": "bre_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "bul_Cyrl", "label": "Excellent", "percentage": 8.33}, {"language_code": "cat_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "ces_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "cmn_Hani", "label": "Excellent", "percentage": 1.4}, {"language_code": "crh_Latn", "label": "Excellent", "percentage": 0.53}, {"language_code": "dan_Latn", "label": "Excellent", "percentage": 0.1}, {"language_code": "deu_Latn", "label": "Excellent", "percentage": 4.72}, {"language_code": "ekk_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "eus_Latn", "label": "Excellent", "percentage": 1.22}, {"language_code": "fao_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "fas_Arab", "label": "Excellent", "percentage": 2.3}, {"language_code": "fil_Latn", "label": "Excellent", "percentage": 0.8}, {"language_code": "fin_Latn", "label": "Excellent", "percentage": 2.6}, {"language_code": "fra_Latn", "label": "Excellent", "percentage": 2.8}, {"language_code": "glg_Latn", "label": "Excellent", "percentage": 2.05}, {"language_code": "gmh_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "goh_Latn", "label": "Excellent", "percentage": 0.1}, {"language_code": "gom_Deva", "label": "Excellent", "percentage": 0.0}, {"language_code": "gsw_Latn", "label": "Excellent", "percentage": 1.1}, {"language_code": "guj_Gujr", "label": "Excellent", "percentage": 0.0}, {"language_code": "hin_Deva", "label": "Excellent", "percentage": 0.3}, {"language_code": "hsb_Latn", "label": "Excellent", "percentage": 3.7}, {"language_code": "hun_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "ind_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "ita_Latn", "label": "Excellent", "percentage": 1.3}, {"language_code": "jpn_Jpan", "label": "Excellent", "percentage": 0.2}, {"language_code": "kas_Deva", "label": "Excellent", "percentage": 0.0}, {"language_code": "kin_Latn", "label": "Excellent", "percentage": 9.98}, {"language_code": "kor_Hang", "label": "Excellent", "percentage": 0.78}, {"language_code": "lat_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "lez_Cyrl", "label": "Excellent", "percentage": 0.0}, {"language_code": "lij_Latn", "label": "Excellent", "percentage": 0.2}, {"language_code": "lit_Latn", "label": "Excellent", "percentage": 2.17}, {"language_code": "lug_Latn", "label": "Excellent", "percentage": 0.76}, {"language_code": "lvs_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "mal_Mlym", "label": "Excellent", "percentage": 0.0}, {"language_code": "mar_Deva", "label": "Excellent", "percentage": 5.36}, {"language_code": "nan_Latn", "label": "Excellent", "percentage": 7.14}, {"language_code": "nds_Latn", "label": "Excellent", "percentage": 4.37}, {"language_code": "nld_Latn", "label": "Excellent", "percentage": 1.66}, {"language_code": "nob_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "npi_Deva", "label": "Excellent", "percentage": 1.03}, {"language_code": "npi_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "pbt_Arab", "label": "Excellent", "percentage": 0.0}, {"language_code": "pcm_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "pdc_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "pfl_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "pol_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "por_Latn", "label": "Excellent", "percentage": 2.23}, {"language_code": "quz_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "ron_Latn", "label": "Excellent", "percentage": 1.49}, {"language_code": "rus_Cyrl", "label": "Excellent", "percentage": 1.1}, {"language_code": "sco_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "sin_Sinh", "label": "Excellent", "percentage": 0.0}, {"language_code": "slk_Latn", "label": "Excellent", "percentage": 2.26}, {"language_code": "som_Latn", "label": "Excellent", "percentage": 9.09}, {"language_code": "spa_Latn", "label": "Excellent", "percentage": 0.7}, {"language_code": "srp_Cyrl", "label": "Excellent", "percentage": 1.08}, {"language_code": "srp_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "swe_Latn", "label": "Excellent", "percentage": 1.1}, {"language_code": "tam_Taml", "label": "Excellent", "percentage": 0.1}, {"language_code": "tat_Cyrl", "label": "Excellent", "percentage": 1.28}, {"language_code": "tat_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "tel_Telu", "label": "Excellent", "percentage": 6.06}, {"language_code": "tha_Thai", "label": "Excellent", "percentage": 0.49}, {"language_code": "tir_Ethi", "label": "Excellent", "percentage": 4.56}, {"language_code": "tok_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "tur_Latn", "label": "Excellent", "percentage": 7.39}, {"language_code": "udm_Cyrl", "label": "Excellent", "percentage": 0.0}, {"language_code": "ukr_Cyrl", "label": "Excellent", "percentage": 2.3}, {"language_code": "uzn_Cyrl", "label": "Excellent", "percentage": 10.0}, {"language_code": "uzn_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "vie_Latn", "label": "Excellent", "percentage": 1.2}, {"language_code": "vls_Latn", "label": "Excellent", "percentage": 0.0}, {"language_code": "yor_Latn", "label": "Excellent", "percentage": 4.97}, {"language_code": "yue_Hani", "label": "Excellent", "percentage": 1.8}, {"language_code": "zsm_Latn", "label": "Excellent", "percentage": 2.7}]}}, {"mode": "vega-lite"});
 </script>
 </div>
 </div>
