@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="590pt" height="210pt" viewBox="0.00 0.00 590.00 210.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 205.5)">
+<title>polars_query</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-205.5 585.5,-205.5 585.5,4 -4,4"/>
+<!-- p1 -->
+<g id="node1" class="node">
+<title>p1</title>
+<polygon fill="none" stroke="black" points="443.5,-201.5 138,-201.5 138,-165.5 443.5,-165.5 443.5,-201.5"/>
+<text xml:space="preserve" text-anchor="middle" x="290.75" y="-178.45" font-family="Times,serif" font-size="14.00">FILTER BY [(col(&quot;createdAt&quot;).dt.year()) == (2025)]</text>
+</g>
+<!-- p2 -->
+<g id="node2" class="node">
+<title>p2</title>
+<polygon fill="none" stroke="black" points="463.75,-129.5 117.75,-129.5 117.75,-93.5 463.75,-93.5 463.75,-129.5"/>
+<text xml:space="preserve" text-anchor="middle" x="290.75" y="-106.45" font-family="Times,serif" font-size="14.00">WITH COLUMNS [col(&quot;createdAt&quot;).str.strptime([&quot;raise&quot;])]</text>
+</g>
+<!-- p1&#45;&#45;p2 -->
+<g id="edge1" class="edge">
+<title>p1--p2</title>
+<path fill="none" stroke="black" d="M290.75,-165.2C290.75,-154.35 290.75,-140.42 290.75,-129.6"/>
+</g>
+<!-- p3 -->
+<g id="node3" class="node">
+<title>p3</title>
+<polygon fill="none" stroke="black" points="581.5,-57.5 0,-57.5 0,0 581.5,0 581.5,-57.5"/>
+<text xml:space="preserve" text-anchor="middle" x="290.75" y="-40.2" font-family="Times,serif" font-size="14.00">Parquet SCAN [data/data/train-00000-of-00001.parquet]</text>
+<text xml:space="preserve" text-anchor="middle" x="290.75" y="-23.7" font-family="Times,serif" font-size="14.00">π */10;</text>
+<text xml:space="preserve" text-anchor="middle" x="290.75" y="-7.2" font-family="Times,serif" font-size="14.00">σ [([([(col(&quot;downloads&quot;)) &gt; (2)]) &amp; ([(col(&quot;likes&quot;)) &gt; (1)])]) &amp; ([(col(&quot;card&quot;).str.len_chars()) &gt; (200)])]</text>
+</g>
+<!-- p2&#45;&#45;p3 -->
+<g id="edge2" class="edge">
+<title>p2--p3</title>
+<path fill="none" stroke="black" d="M290.75,-93.38C290.75,-83.1 290.75,-69.77 290.75,-57.97"/>
+</g>
+</g>
+</svg>

@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/2025/hf-jobs/vllm-batch-inference.html",
       "/posts/2025/who-benefits-rethinking-library-data-ai/libraries-as-training-data.html",
       "/posts/2025/vllm/modern_inference_modernbert.html",
       "/posts/2025/reasoning-models/generating-structured-data-extraction-dataset-with-qwq-and-curator.html",
