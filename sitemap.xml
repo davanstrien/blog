@@ -2,138 +2,138 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://danielvanstrien.xyz/pages/projects.html</loc>
-    <lastmod>2025-07-30T14:22:28.476Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.909Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/plain-text/2024-05-15-self-instruct.html</loc>
-    <lastmod>2025-07-30T14:22:28.510Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.944Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/plain-text/2023-11-27-model-card.html</loc>
-    <lastmod>2025-07-30T14:22:28.510Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.944Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/post-with-code/2021-12-30-hf-hub-model-storage.html</loc>
-    <lastmod>2025-07-30T14:22:28.529Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.963Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/post-with-code/optuna/2020-07-01-optuna.html</loc>
-    <lastmod>2025-07-30T14:22:28.670Z</lastmod>
+    <lastmod>2025-07-30T15:02:50.103Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/post-with-code/2020-10-12-labelling_vs_classification_models.html</loc>
-    <lastmod>2025-07-30T14:22:28.526Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.960Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/post-with-code/metadata-explore/2023_01_16_hub_api_explore copy.html</loc>
-    <lastmod>2025-07-30T14:22:28.666Z</lastmod>
+    <lastmod>2025-07-30T15:02:50.100Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/post-with-code/colpali-qdrant/2024-10-02_using_colpali_with_qdrant.html</loc>
-    <lastmod>2025-07-30T14:22:28.640Z</lastmod>
+    <lastmod>2025-07-30T15:02:50.074Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/post-with-code/2020-05-03-multi-model.html</loc>
-    <lastmod>2025-07-30T14:22:28.514Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.948Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/post-with-code/datasets-groupby/2023-09-18-datasets-groupby.html</loc>
-    <lastmod>2025-07-30T14:22:28.646Z</lastmod>
+    <lastmod>2025-07-30T15:02:50.081Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/post-with-code/dask/2022-06-20-dask-and-datasets.html</loc>
-    <lastmod>2025-07-30T14:22:28.645Z</lastmod>
+    <lastmod>2025-07-30T15:02:50.080Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/post-with-code/readme_auto_generate/2023-03-07-readme-template.html</loc>
-    <lastmod>2025-07-30T14:22:28.670Z</lastmod>
+    <lastmod>2025-07-30T15:02:50.104Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/2025/deepseek/distil-deepseek-modernbert.html</loc>
-    <lastmod>2025-07-30T14:22:28.488Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.921Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/2025/grpo/trl_log_completions_to_hf_datasets.html</loc>
-    <lastmod>2025-07-30T14:22:28.505Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.939Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/2025/FineWeb-c/how-fine-is-fineweb2.html</loc>
-    <lastmod>2025-07-30T14:22:28.487Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.920Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/2024/12/23/fineweb-filter-polars.html</loc>
-    <lastmod>2025-07-30T14:22:28.482Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.915Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/index.html</loc>
-    <lastmod>2025-07-30T14:22:28.476Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.909Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/about.html</loc>
-    <lastmod>2025-07-30T14:22:28.475Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.907Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/2024/11/local-vision-language-model-lm-studio.html</loc>
-    <lastmod>2025-07-30T14:22:28.481Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.914Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/2025/vllm/modern_inference_modernbert.html</loc>
-    <lastmod>2025-07-30T14:22:28.508Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.942Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/2025/FineWeb-c/scandinavian-content-filtering-fineweb.html</loc>
-    <lastmod>2025-07-30T14:22:28.488Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.921Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/2025/reasoning-models/generating-structured-data-extraction-dataset-with-qwq-and-curator.html</loc>
-    <lastmod>2025-07-30T14:22:28.506Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.940Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/2025/who-benefits-rethinking-library-data-ai/libraries-as-training-data.html</loc>
-    <lastmod>2025-07-30T14:22:28.510Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.944Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/post-with-code/label-studio-hub/2022-09-07-label-studio-annotations-hub.html</loc>
-    <lastmod>2025-07-30T14:22:28.663Z</lastmod>
+    <lastmod>2025-07-30T15:02:50.098Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/post-with-code/colpali/2024-09-23-generate_colpali_dataset.html</loc>
-    <lastmod>2025-07-30T14:22:28.644Z</lastmod>
+    <lastmod>2025-07-30T15:02:50.078Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/post-with-code/datasets-with-qdrant/2023-11-08-datasets_to_qdrant.html</loc>
-    <lastmod>2025-07-30T14:22:28.649Z</lastmod>
+    <lastmod>2025-07-30T15:02:50.083Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/post-with-code/semantic-model-search/2022-07-26-semantic-search-ml-models.html</loc>
-    <lastmod>2025-07-30T14:22:28.676Z</lastmod>
+    <lastmod>2025-07-30T15:02:50.107Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/post-with-code/2022-01-13-image_search.html</loc>
-    <lastmod>2025-07-30T14:22:28.567Z</lastmod>
+    <lastmod>2025-07-30T15:02:50.000Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/post-with-code/langfuse-tracing/Langfuse_+_HF_inference_endpoints.html</loc>
-    <lastmod>2025-07-30T14:22:28.664Z</lastmod>
+    <lastmod>2025-07-30T15:02:50.098Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/post-with-code/detr/2022-08-16-detr-object-detection.html</loc>
-    <lastmod>2025-07-30T14:22:28.657Z</lastmod>
+    <lastmod>2025-07-30T15:02:50.092Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/post-with-code/2023-06-07-hub-dataset-danguage_detection.html</loc>
-    <lastmod>2025-07-30T14:22:28.569Z</lastmod>
+    <lastmod>2025-07-30T15:02:50.002Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/plain-text/autotrain/2023-02-22-autotrain.html</loc>
-    <lastmod>2025-07-30T14:22:28.510Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.944Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/plain-text/flyswot/2021-12-22-flyswot.html</loc>
-    <lastmod>2025-07-30T14:22:28.510Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.944Z</lastmod>
   </url>
   <url>
     <loc>https://danielvanstrien.xyz/posts/plain-text/synthetic-data-generation/2024-05-03-synethic-data-1.html</loc>
-    <lastmod>2025-07-30T14:22:28.514Z</lastmod>
+    <lastmod>2025-07-30T15:02:49.948Z</lastmod>
   </url>
 </urlset>
