@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Daniel van Strien">
-<meta name="description" content="Generate responses for thousands of dataset prompts using Qwen3-30B-A3B-Instruct across 4 GPUs with automatic prompt filtering and tensor parallelism">
+<meta name="description" content="Generate responses for thousands of dataset prompts using Qwen/Qwen3-30B-A3B-Instruct-2507 across 4 GPUs with automatic prompt filtering and tensor parallelism">
 
 <title>Efficient batch inference for LLMs with vLLM + UV Scripts on HF Jobs – Daniel van Strien</title>
 <style>
@@ -181,7 +181,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <div>
   <div class="description">
-    Generate responses for thousands of dataset prompts using Qwen3-30B-A3B-Instruct across 4 GPUs with automatic prompt filtering and tensor parallelism
+    Generate responses for thousands of dataset prompts using Qwen/Qwen3-30B-A3B-Instruct-2507 across 4 GPUs with automatic prompt filtering and tensor parallelism
   </div>
 </div>
 
@@ -1369,19 +1369,19 @@ Note
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>job <span class="op">=</span> api.run_uv_job(</span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>    script<span class="op">=</span><span class="st">"https://huggingface.co/datasets/uv-scripts/vllm/raw/main/generate-responses.py"</span>,</span>
 <span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>    script_args<span class="op">=</span>[</span>
-<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"davanstrien/cards_with_prompts"</span>, <span class="co"># Dataset with prompts</span></span>
-<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">"davanstrien/test-generated-responses"</span>, <span class="co"># Where to store the generated responses</span></span>
-<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">"--model-id"</span>, <span class="co"># Model to use for inference</span></span>
-<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Qwen/Qwen3-30B-A3B-Instruct-2507"</span>, <span class="co"># Model to use for inference</span></span>
-<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"--gpu-memory-utilization"</span>, <span class="co"># GPU memory utilization</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"davanstrien/cards_with_prompts"</span>,  <span class="co"># Dataset with prompts</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">"davanstrien/test-generated-responses"</span>,  <span class="co"># Where to store the generated responses</span></span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">"--model-id"</span>,  <span class="co"># Model to use for inference</span></span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Qwen/Qwen3-30B-A3B-Instruct-2507"</span>,  <span class="co"># Model to use for inference</span></span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"--gpu-memory-utilization"</span>,  <span class="co"># GPU memory utilization</span></span>
 <span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">"0.9"</span>,</span>
-<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">"--max-tokens"</span>, <span class="co"># Maximum number of tokens</span></span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">"--max-tokens"</span>,  <span class="co"># Maximum number of tokens</span></span>
 <span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>        <span class="st">"900"</span>,</span>
-<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>        <span class="st">"--max-model-len"</span>, <span class="co"># Maximum model length</span></span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>        <span class="st">"--max-model-len"</span>,  <span class="co"># Maximum model length</span></span>
 <span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>        <span class="st">"8000"</span>,</span>
 <span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a>    ],</span>
-<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a>    flavor<span class="op">=</span><span class="st">"l4x4"</span>, <span class="co"># What hardware to use</span></span>
-<span id="cb41-16"><a href="#cb41-16" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span><span class="st">"vllm/vllm-openai:latest"</span>, <span class="co"># Docker image to use</span></span>
+<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a>    flavor<span class="op">=</span><span class="st">"l4x4"</span>,  <span class="co"># What hardware to use</span></span>
+<span id="cb41-16"><a href="#cb41-16" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span><span class="st">"vllm/vllm-openai:latest"</span>,  <span class="co"># Docker image to use</span></span>
 <span id="cb41-17"><a href="#cb41-17" aria-hidden="true" tabindex="-1"></a>    secrets<span class="op">=</span>{<span class="st">"HF_TOKEN"</span>: HF_TOKEN},  <span class="co"># Pass as secret``</span></span>
 <span id="cb41-18"><a href="#cb41-18" aria-hidden="true" tabindex="-1"></a>    env<span class="op">=</span>{<span class="st">"UV_PRERELEASE"</span>: <span class="st">"if-necessary"</span>},  <span class="co"># Pass as env var</span></span>
 <span id="cb41-19"><a href="#cb41-19" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
