@@ -12,3 +12,4 @@ __pycache__/
 **/*.log*
 .qodo
 posts/post-with-code/colpali-lora/screenshot/**/*/.png
+_freeze/posts/2025/claude-dot-md/**/*/.png
