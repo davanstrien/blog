@@ -10,3 +10,5 @@ __pycache__/
 **/.tfevents*
 **/*.out*
 **/*.log*
+.qodo
+posts/post-with-code/colpali-lora/screenshot/**/*/.png
