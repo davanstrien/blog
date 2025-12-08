@@ -1,0 +1,10 @@
+---
+title: "Slides"
+listing:
+  contents: slides/*/index.qmd
+  sort: "date desc"
+  type: default
+  categories: true
+page-layout: full
+title-block-banner: true
+---
