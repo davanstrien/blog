@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.34">
+<meta name="generator" content="quarto-1.8.26">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -61,7 +61,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../../../../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../../../../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../../../../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../../../../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -71,14 +71,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../../../icons/favicon.ico" rel="icon">
 <script src="../../../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../../../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../../site_libs/bootstrap/bootstrap-d68be38d83eca2bb035acf846ffba811.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../../../site_libs/bootstrap/bootstrap-0b37c64f34216b628666a8dac638b53b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -106,7 +107,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
 
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 <script defer="" src="https://cloud.umami.is/script.js" data-website-id="85cb27d6-dbf9-43d7-97d0-be4e6724de7a"></script>
@@ -138,10 +139,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="nav-link" href="../../../../about.html"> 
 <span class="menu-text">About</span></a>
   </li>  
-  <li class="nav-item compact">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../slides.qmd"> 
+<span class="menu-text">Slides</span></a>
+  </li>  
+  <li class="nav-item">
     <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
 </i> 
-<span class="menu-text"></span></a>
+<span class="menu-text">GitHub</span></a>
   </li>  
   <li class="nav-item compact">
     <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
@@ -215,27 +220,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>For these languages, we want to enable the community to create extra filters to either help with the language identification or to filter for educational quality. This blog post shows some ways in which you can use Polars to filter the FineWeb2 dataset to improve educational quality and or filtering for a language.</p>
 <p>First we’ll install the necessary libraries. We’ll use <code>polars</code> for the data manipulation and <code>huggingface_hub</code> to interact with the Hugging Face Hub. The <code>dask</code> library is another good option for working with large datasets.</p>
 <div id="cell-3" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="63d40d1b-b125-4d11-e2dc-f556126a71ac" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># %pip install polars huggingface_hub tld rich tqdm --upgrade</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># %pip install polars huggingface_hub tld rich tqdm --upgrade</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-4" class="cell" data-execution_count="31">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> list_repo_files, hf_hub_download</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> list_repo_files, hf_hub_download</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tld <span class="im">import</span> get_tld</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.auto <span class="im">import</span> tqdm</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-5" class="cell" data-execution_count="32">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># increase amount of data polars shows</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>pl.Config.set_tbl_rows(<span class="dv">100</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># increase amount of data polars shows</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>pl.Config.set_tbl_rows(<span class="dv">100</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="32">
 <pre><code>polars.config.Config</code></pre>
 </div>
 </div>
 <p>Many large datasets on the Hub will be organised into different configurations. These configurations are often named after the language they are in. For example, the FineWeb dataset is organised into different languages. Many large datasets will either have structured folders or the names of files can be used to filter the dataset. Let’s look at the FineWeb dataset. We can use the wonderful <code>huggingface_hub</code> library to list the files in a repository.</p>
 <div id="cell-7" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="c890a004-c9c9-4968-8176-20456bfba91a" data-execution_count="33">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>paths <span class="op">=</span> list_repo_files(<span class="st">"HuggingFaceFW/fineweb-2"</span>, repo_type<span class="op">=</span><span class="st">"dataset"</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>paths[:<span class="dv">10</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>paths <span class="op">=</span> list_repo_files(<span class="st">"HuggingFaceFW/fineweb-2"</span>, repo_type<span class="op">=</span><span class="st">"dataset"</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>paths[:<span class="dv">10</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="33">
 <pre><code>['.gitattributes',
  'README.md',
@@ -251,10 +256,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>You can see we have a hidden <code>.gitattributes</code> file and a README.md + a <code>data</code> directory containing parquet files organised into different subdirectories. Since these names are very clear we create a very simple filter to get the scots language files we’re interested in. We’ll look for <code>scots</code> in the file name and make sure it ends with <code>.parquet</code> and doesn’t have <code>removed</code> in the file name since these are files that were removed in the FineWeb2 filtering process.</p>
 <div id="cell-9" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="8d379554-5a63-49cb-8925-f331f686bc04" data-execution_count="34">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>scots <span class="op">=</span> [</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>scots <span class="op">=</span> [</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    f <span class="cf">for</span> f <span class="kw">in</span> paths <span class="cf">if</span> (<span class="st">"sco"</span> <span class="kw">in</span> f <span class="kw">and</span> f.endswith(<span class="st">"parquet"</span>) <span class="kw">and</span> <span class="st">"removed"</span> <span class="kw">not</span> <span class="kw">in</span> f)</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>scots</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>scots</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="34">
 <pre><code>['data/sco_Latn/test/000_00000.parquet',
  'data/sco_Latn/train/000_00000.parquet']</code></pre>
@@ -265,11 +270,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="loading-the-data-in-polars">Loading the data in Polars</h2>
 <p>We can directly load the data from the Hugging Face Hub using the <code>hf://</code> protocol. In this case we’ll just load the <code>train</code> file for the scots language. We’ll use <code>read_parquet</code> to load the data for now but we’ll see below a better way to load the data if you are working with large datasets.</p>
 <div id="cell-11" class="cell" data-execution_count="35">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pl.read_parquet(<span class="ss">f"hf://datasets/HuggingFaceFW/fineweb-2/</span><span class="sc">{</span>scots[<span class="op">-</span><span class="dv">1</span>]<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pl.read_parquet(<span class="ss">f"hf://datasets/HuggingFaceFW/fineweb-2/</span><span class="sc">{</span>scots[<span class="op">-</span><span class="dv">1</span>]<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s take a look at the data. We can see we have a number of columns including the actual text but also some other metadata fields that could be useful for filtering.</p>
 <div id="cell-13" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:443}}" data-outputid="9eb35e28-268e-4577-832c-6bb3be50be0a" data-execution_count="36">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df.head(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df.head(<span class="dv">5</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="36">
 <div><style>
 .dataframe > thead > tr,
@@ -279,7 +284,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }
 </style>
 <small>shape: (5, 11)</small>
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th">text</th>
@@ -295,17 +300,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <th data-quarto-table-cell-role="th">top_langs</th>
 </tr>
 <tr class="even">
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>f64</th>
-<th>str</th>
-<th>i64</th>
-<th>str</th>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>f64</td>
+<td>str</td>
+<td>i64</td>
+<td>str</td>
 </tr>
 </thead>
 <tbody>
@@ -381,7 +386,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>We can do some simple EDA style analysis if we want. For example, we can look at the distribution of the language scores.</p>
 <div id="cell-15" class="cell" data-execution_count="37">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>df.select(pl.col(<span class="st">"language_score"</span>)).describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>df.select(pl.col(<span class="st">"language_score"</span>)).describe()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="37">
 <div><style>
 .dataframe > thead > tr,
@@ -391,15 +396,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }
 </style>
 <small>shape: (9, 2)</small>
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th">statistic</th>
 <th data-quarto-table-cell-role="th">language_score</th>
 </tr>
 <tr class="even">
-<th>str</th>
-<th>f64</th>
+<td>str</td>
+<td>f64</td>
 </tr>
 </thead>
 <tbody>
@@ -446,11 +451,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>Do a groupby year of dump and language score and plot a bar chart to see if there is a trend.</p>
 <div id="cell-17" class="cell" data-execution_count="38">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>df.with_columns(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>df.with_columns(</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"dump"</span>).<span class="bu">str</span>.extract(<span class="vs">r"</span><span class="kw">(</span><span class="dv">\d</span><span class="op">{4}</span><span class="kw">)</span><span class="vs">"</span>).cast(pl.Utf8).alias(<span class="st">"year"</span>)</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>).group_by(<span class="st">"year"</span>).agg(pl.col(<span class="st">"language_score"</span>).mean()).sort(</span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"year"</span>, descending<span class="op">=</span><span class="va">True</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>).plot.bar(x<span class="op">=</span><span class="st">"year"</span>, y<span class="op">=</span><span class="st">"language_score"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>).plot.bar(x<span class="op">=</span><span class="st">"year"</span>, y<span class="op">=</span><span class="st">"language_score"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="38">
 
 <style>
@@ -529,19 +534,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The top level domain (tld) is a good heuristic for filtering for higher quality websites. The top level domain is the part of the url that is after the last dot. For example, the tld of <code>https://www.wikipedia.org/</code> is <code>org</code>. This often corresponds to a country or organization. For example, <code>ac.uk</code> is the UK’s higher education domain. We can use this to filter for higher quality websites.</p>
 <p>We can do this by mapping the <code>url</code> column to the tld and then filtering for the tlds we’re interested in. Let’s add a new column with the tld and then filter for the tlds we’re interested in.</p>
 <div id="cell-20" class="cell" data-execution_count="39">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.with_columns(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.with_columns(</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"url"</span>).map_elements(<span class="kw">lambda</span> x: get_tld(x), return_dtype<span class="op">=</span>pl.Utf8).alias(<span class="st">"tld"</span>)</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-21" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:984}}" data-outputid="8e1242da-ca7e-4a88-ba62-f6b57080498c" data-execution_count="40">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> altair <span class="im">as</span> alt</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> altair <span class="im">as</span> alt</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>df.select(<span class="st">"tld"</span>).to_series().value_counts(sort<span class="op">=</span><span class="va">True</span>).sort(</span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"count"</span>, descending<span class="op">=</span><span class="va">True</span></span>
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>).head(<span class="dv">20</span>).plot.bar(</span>
 <span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    x<span class="op">=</span>alt.X(<span class="st">"tld"</span>, sort<span class="op">=</span><span class="st">"-y"</span>),  <span class="co"># Sort x-axis based on y values in descending order</span></span>
 <span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    y<span class="op">=</span><span class="st">"count"</span>,</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="40">
 
 <style>
@@ -615,9 +620,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>We may already have some knowledge or intuitions about the tlds that are more likely to be higher quality. For example <code>.us</code> is relatively high, this is likely partially due this domain being more present in the Web generally. We may also see some personal blogs using this domain. Let’s take a look at a few examples.</p>
 <div id="cell-23" class="cell" data-execution_count="41">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>df.<span class="bu">filter</span>(pl.col(<span class="st">"tld"</span>).<span class="bu">str</span>.contains(<span class="st">"us"</span>)).sort(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>df.<span class="bu">filter</span>(pl.col(<span class="st">"tld"</span>).<span class="bu">str</span>.contains(<span class="st">"us"</span>)).sort(</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"language_score"</span>, descending<span class="op">=</span><span class="va">True</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>).select(<span class="st">"url"</span>).to_series().to_list()[:<span class="dv">30</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>).select(<span class="st">"url"</span>).to_series().to_list()[:<span class="dv">30</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="41">
 <pre><code>['https://coremc.us/forno-microonde-incasso.html',
  'https://www.awesomedownloadfilestoday.us/1141-haircut-places-near-my-location.html',
@@ -653,9 +658,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>These don’t look super promising! Some domains where we might expect higher quality text for scots are the <code>.sco</code> domain which is a domain for websites relating to Scotland.</p>
 <div id="cell-25" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="9c11eb91-821e-4551-8a2e-ac376323ec90" data-execution_count="42">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>df.<span class="bu">filter</span>(pl.col(<span class="st">"tld"</span>).<span class="bu">str</span>.contains(<span class="st">"sco"</span>)).sort(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>df.<span class="bu">filter</span>(pl.col(<span class="st">"tld"</span>).<span class="bu">str</span>.contains(<span class="st">"sco"</span>)).sort(</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"language_score"</span>, descending<span class="op">=</span><span class="va">True</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>).select(<span class="st">"url"</span>).to_series().to_list()[:<span class="dv">30</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>).select(<span class="st">"url"</span>).to_series().to_list()[:<span class="dv">30</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="42">
 <pre><code>['https://stormplay.scot/sco/aboot.html',
  'https://www.makforrit.scot/2020/08/29/anent-the-scots-wikipedia-an-sundays-editathon/',
@@ -692,7 +697,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Even inside these URLs we can see some scots language so this is promising.</p>
 <p>One of the issues with some of the Scots data in FineWeb2 is that it is in the wrong language. One way we can try and get a sense of where better language data might be in FineWeb2 is to look at the tlds that have the highest language scores. We can do this by grouping by tld and then taking the mean of the language scores. We can then filter for the tlds that have more than 50 row to make sure we’re considering the tlds that have a good amount of data.</p>
 <div id="cell-27" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:463}}" data-outputid="c417173b-1650-4a47-c685-da43499bd878" data-execution_count="43">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>(</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    df.group_by(<span class="st">"tld"</span>)</span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    .agg(</span>
 <span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>        [</span>
@@ -702,7 +707,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"count"</span>) <span class="op">&gt;</span> <span class="dv">50</span>)  <span class="co"># Replace n with your desired minimum count</span></span>
 <span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"language_score"</span>, descending<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="43">
 <div><style>
 .dataframe > thead > tr,
@@ -712,7 +717,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }
 </style>
 <small>shape: (41, 3)</small>
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th">tld</th>
@@ -720,9 +725,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <th data-quarto-table-cell-role="th">language_score</th>
 </tr>
 <tr class="even">
-<th>str</th>
-<th>u32</th>
-<th>f64</th>
+<td>str</td>
+<td>u32</td>
+<td>f64</td>
 </tr>
 </thead>
 <tbody>
@@ -938,9 +943,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>We can see some other potentially promising tlds. For example, <code>ac.uk</code> is the UK’s higher education domain. We can take a look at the urls that have this tld.</p>
 <div id="cell-29" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="4a0d6c47-e4a1-4eac-fc36-a1fff3379437" data-execution_count="44">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>df.<span class="bu">filter</span>(pl.col(<span class="st">"tld"</span>).<span class="bu">str</span>.contains(<span class="st">"ac.uk"</span>)).sort(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>df.<span class="bu">filter</span>(pl.col(<span class="st">"tld"</span>).<span class="bu">str</span>.contains(<span class="st">"ac.uk"</span>)).sort(</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"language_score"</span>, descending<span class="op">=</span><span class="va">True</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>).select(<span class="st">"url"</span>).to_series().to_list()[:<span class="dv">30</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>).select(<span class="st">"url"</span>).to_series().to_list()[:<span class="dv">30</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="44">
 <pre><code>['https://www.scottishcorpus.ac.uk/document/?documentid=1699',
  'https://www.scottishcorpus.ac.uk/document/?documentid=1759',
@@ -981,12 +986,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <p>We can reduce the FineWeb2 dataset to only include the rows that have these tlds.</p>
 <div id="cell-31" class="cell" data-execution_count="45">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>good_tlds <span class="op">=</span> [<span class="st">"sco"</span>, <span class="st">"ac.uk"</span>, <span class="st">"org.uk"</span>, <span class="st">"org"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>good_tlds <span class="op">=</span> [<span class="st">"sco"</span>, <span class="st">"ac.uk"</span>, <span class="st">"org.uk"</span>, <span class="st">"org"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-32" class="cell" data-execution_count="46">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>df.<span class="bu">filter</span>(pl.col(<span class="st">"tld"</span>).is_in(good_tlds)).sort(<span class="st">"language_score"</span>, descending<span class="op">=</span><span class="va">True</span>).head(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>df.<span class="bu">filter</span>(pl.col(<span class="st">"tld"</span>).is_in(good_tlds)).sort(<span class="st">"language_score"</span>, descending<span class="op">=</span><span class="va">True</span>).head(</span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    <span class="dv">5</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="46">
 <div><style>
 .dataframe > thead > tr,
@@ -996,7 +1001,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }
 </style>
 <small>shape: (5, 12)</small>
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th">text</th>
@@ -1013,18 +1018,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <th data-quarto-table-cell-role="th">tld</th>
 </tr>
 <tr class="even">
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>f64</th>
-<th>str</th>
-<th>i64</th>
-<th>str</th>
-<th>str</th>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>f64</td>
+<td>str</td>
+<td>i64</td>
+<td>str</td>
+<td>str</td>
 </tr>
 </thead>
 <tbody>
@@ -1104,22 +1109,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <div id="cell-33" class="cell" data-execution_count="47">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>filtered_df <span class="op">=</span> df.<span class="bu">filter</span>(pl.col(<span class="st">"tld"</span>).is_in(good_tlds)).sort(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>filtered_df <span class="op">=</span> df.<span class="bu">filter</span>(pl.col(<span class="st">"tld"</span>).is_in(good_tlds)).sort(</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"language_score"</span>, descending<span class="op">=</span><span class="va">True</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We can now save the filtered data to a new file. We’ll save the ids of the rows that are in the filtered dataset to a file. These ids can then be used to upload additional filtered data to the Argilla dataset for the language we’re working on.</p>
 <div id="cell-35" class="cell" data-execution_count="48">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"good_ids"</span>, <span class="st">"w"</span>) <span class="im">as</span> f:</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"good_ids"</span>, <span class="st">"w"</span>) <span class="im">as</span> f:</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="bu">id</span> <span class="kw">in</span> filtered_df.select(<span class="st">"id"</span>).to_series().to_list():</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>        f.write(<span class="ss">f"</span><span class="sc">{</span><span class="bu">id</span><span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>        f.write(<span class="ss">f"</span><span class="sc">{</span><span class="bu">id</span><span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="filtering-other-languages" class="level2">
 <h2 class="anchored" data-anchor-id="filtering-other-languages">Filtering other languages</h2>
 <p>We can also use the same techniques to filter other languages. Some languages have a lot of data and so we can use the <code>scan_parquet</code> function to create a <code>LazyFrame</code> this will avoid loading all the data into memory. In addition, Polars will perform query optimizations on the <code>LazyFrame</code>. This will make the code we use for filtering more efficient without much work on our part.</p>
 <div id="cell-37" class="cell" data-execution_count="49">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_paths_for_language(language: <span class="bu">str</span>):</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_paths_for_language(language: <span class="bu">str</span>):</span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [</span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>        path</span>
 <span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> path <span class="kw">in</span> list_repo_files(<span class="st">"HuggingFaceFW/fineweb-2"</span>, repo_type<span class="op">=</span><span class="st">"dataset"</span>)</span>
@@ -1127,15 +1132,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>        <span class="kw">and</span> <span class="st">"removed"</span> <span class="kw">not</span> <span class="kw">in</span> path</span>
 <span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>        <span class="kw">and</span> <span class="st">"train"</span> <span class="kw">in</span> path</span>
 <span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>        <span class="kw">and</span> language <span class="kw">in</span> path</span>
-<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    ]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="filtering-with-a-higher-language-score" class="level2">
 <h2 class="anchored" data-anchor-id="filtering-with-a-higher-language-score">Filtering with a higher language score</h2>
 <p>Some language in fineweb2 are not identified as the correct language. Language identification is still not a “solved” problem but we may be able to use a higher confidence filter to get a set of data that is more likely to be the correct language. We can then label this data for the educational quality of the text without having to remove as many examples as being in the incorrect language.</p>
 <div id="cell-39" class="cell" data-execution_count="50">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>paths <span class="op">=</span> get_paths_for_language(<span class="st">"asm"</span>)</span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>paths</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>paths <span class="op">=</span> get_paths_for_language(<span class="st">"asm"</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>paths</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="50">
 <pre><code>['data/asm_Beng/train/000_00000.parquet',
  'data/asm_Latn/train/000_00000.parquet']</code></pre>
@@ -1143,17 +1148,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>Let’s load the data for the Assamese language using only the <code>train</code> file.</p>
 <div id="cell-41" class="cell" data-execution_count="51">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pl.read_parquet(<span class="ss">f"hf://datasets/HuggingFaceFW/fineweb-2/</span><span class="sc">{</span>paths[<span class="op">-</span><span class="dv">1</span>]<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pl.read_parquet(<span class="ss">f"hf://datasets/HuggingFaceFW/fineweb-2/</span><span class="sc">{</span>paths[<span class="op">-</span><span class="dv">1</span>]<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-42" class="cell" data-execution_count="52">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>df.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>df.shape</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="52">
 <pre><code>(1104, 11)</code></pre>
 </div>
 </div>
 <p>We can use the <code>describe</code> function to get a sense of the distribution of the language scores.</p>
 <div id="cell-44" class="cell" data-execution_count="53">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>df.select(<span class="st">"language_score"</span>).describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>df.select(<span class="st">"language_score"</span>).describe()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="53">
 <div><style>
 .dataframe > thead > tr,
@@ -1163,15 +1168,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }
 </style>
 <small>shape: (9, 2)</small>
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th">statistic</th>
 <th data-quarto-table-cell-role="th">language_score</th>
 </tr>
 <tr class="even">
-<th>str</th>
-<th>f64</th>
+<td>str</td>
+<td>f64</td>
 </tr>
 </thead>
 <tbody>
@@ -1218,7 +1223,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>You can see that compared to some other languages the mean language score is quite low. We might be able to get a better subset of data by filtering for a higher language score. Let’s take a look at some examples of the text that have a high language score. This can help give us a sense of what threshold might have less false positives.</p>
 <div id="cell-46" class="cell" data-execution_count="33">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> rich <span class="im">import</span> <span class="bu">print</span> <span class="im">as</span> rprint</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> rich <span class="im">import</span> <span class="bu">print</span> <span class="im">as</span> rprint</span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>examples_to_show <span class="op">=</span> <span class="dv">3</span></span>
 <span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -1228,7 +1233,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"text"</span>)</span>
 <span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>    .to_series()</span>
 <span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>    .to_list()</span>
-<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">[</span>
     <span style="color: #008000; text-decoration-color: #008000">'eitu ajir pora 2 bosor agor kotha moi NIT r pora pass out hoisu just. Vaal job nopowa baabe moi keidinmaanor </span>
@@ -1390,37 +1395,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>If we find a better language score we can filter for this. For example, we can filter for the language score to be greater than 0.95.</p>
 <div id="cell-48" class="cell" data-execution_count="35">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>df_filtered <span class="op">=</span> df.<span class="bu">filter</span>(pl.col(<span class="st">"language_score"</span>) <span class="op">&gt;</span> <span class="fl">0.95</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>df_filtered <span class="op">=</span> df.<span class="bu">filter</span>(pl.col(<span class="st">"language_score"</span>) <span class="op">&gt;</span> <span class="fl">0.95</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="35">
 <pre><code>(697, 11)</code></pre>
 </div>
 </div>
 <div id="cell-49" class="cell" data-execution_count="36">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"good_ids"</span>, <span class="st">"w"</span>) <span class="im">as</span> f:</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"good_ids"</span>, <span class="st">"w"</span>) <span class="im">as</span> f:</span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="bu">id</span> <span class="kw">in</span> df_filtered.select(<span class="st">"id"</span>).to_series().to_list():</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>        f.write(<span class="ss">f"</span><span class="sc">{</span><span class="bu">id</span><span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>        f.write(<span class="ss">f"</span><span class="sc">{</span><span class="bu">id</span><span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="filtering-bigger-languages" class="level2">
 <h2 class="anchored" data-anchor-id="filtering-bigger-languages">Filtering bigger languages</h2>
 <p>Some languages have a lot of data and so we can use the <code>scan_parquet</code> function to create a <code>LazyFrame</code>. Let’s see how we can do this for the Japanese language.</p>
 <div id="cell-51" class="cell" data-execution_count="54">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>paths <span class="op">=</span> get_paths_for_language(<span class="st">"jpn"</span>)</span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(paths)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>paths <span class="op">=</span> get_paths_for_language(<span class="st">"jpn"</span>)</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(paths)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="54">
 <pre><code>148</code></pre>
 </div>
 </div>
 <p>You can see here we have many more files. If you have a lot of memory, you could use the standard <code>read_parquet</code> function. However, if you don’t have a lot of memory, you could use the <code>scan_parquet</code> function. This will read the data in chunks and is more memory efficient. Even with this we might want to start with a subset of the data to experiment with and then work with the full dataset once we’re confident in our filtering.</p>
 <div id="cell-53" class="cell" data-execution_count="38">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> random</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> random</span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>random.seed(<span class="dv">42</span>)</span>
 <span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>sample_paths <span class="op">=</span> random.choices(paths, k<span class="op">=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>sample_paths <span class="op">=</span> random.choices(paths, k<span class="op">=</span><span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-54" class="cell" data-execution_count="39">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">"HF_HUB_ENABLE_HF_TRANSFER"</span>] <span class="op">=</span> <span class="st">"1"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">"HF_HUB_ENABLE_HF_TRANSFER"</span>] <span class="op">=</span> <span class="st">"1"</span></span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>Path(<span class="st">"temp_data"</span>).mkdir(exist_ok<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -1430,14 +1435,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>        repo_type<span class="op">=</span><span class="st">"dataset"</span>,</span>
 <span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>        filename<span class="op">=</span>path,</span>
 <span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>        local_dir<span class="op">=</span><span class="st">"temp_data"</span>,</span>
-<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>  0%|          | 0/2 [00:00&lt;?, ?it/s]100%|██████████| 2/2 [00:00&lt;00:00,  5.87it/s]</code></pre>
 </div>
 </div>
 <div id="cell-55" class="cell" data-execution_count="26">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pl.scan_parquet(<span class="st">"temp_data/**/*.parquet"</span>)</span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>df.head(<span class="dv">5</span>).collect()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pl.scan_parquet(<span class="st">"temp_data/**/*.parquet"</span>)</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>df.head(<span class="dv">5</span>).collect()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="26">
 <div><style>
 .dataframe > thead > tr,
@@ -1447,7 +1452,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }
 </style>
 <small>shape: (5, 11)</small>
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th">text</th>
@@ -1463,17 +1468,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <th data-quarto-table-cell-role="th">top_langs</th>
 </tr>
 <tr class="even">
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>f64</th>
-<th>str</th>
-<th>i64</th>
-<th>str</th>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>f64</td>
+<td>str</td>
+<td>i64</td>
+<td>str</td>
 </tr>
 </thead>
 <tbody>
@@ -1548,7 +1553,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <div id="cell-56" class="cell" data-execution_count="27">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>df.select(<span class="st">"language_score"</span>).describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>df.select(<span class="st">"language_score"</span>).describe()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="27">
 <div><style>
 .dataframe > thead > tr,
@@ -1558,15 +1563,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }
 </style>
 <small>shape: (9, 2)</small>
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th">statistic</th>
 <th data-quarto-table-cell-role="th">language_score</th>
 </tr>
 <tr class="even">
-<th>str</th>
-<th>f64</th>
+<td>str</td>
+<td>f64</td>
 </tr>
 </thead>
 <tbody>
@@ -1612,7 +1617,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <div id="cell-57" class="cell" data-execution_count="28">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>df.<span class="bu">filter</span>(pl.col(<span class="st">"url"</span>).<span class="bu">str</span>.contains(<span class="st">"wikipedia"</span>)).count().collect(streaming<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>df.<span class="bu">filter</span>(pl.col(<span class="st">"url"</span>).<span class="bu">str</span>.contains(<span class="st">"wikipedia"</span>)).count().collect(streaming<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="28">
 <div><style>
 .dataframe > thead > tr,
@@ -1622,7 +1627,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }
 </style>
 <small>shape: (1, 11)</small>
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th">text</th>
@@ -1638,17 +1643,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <th data-quarto-table-cell-role="th">top_langs</th>
 </tr>
 <tr class="even">
-<th>u32</th>
-<th>u32</th>
-<th>u32</th>
-<th>u32</th>
-<th>u32</th>
-<th>u32</th>
-<th>u32</th>
-<th>u32</th>
-<th>u32</th>
-<th>u32</th>
-<th>u32</th>
+<td>u32</td>
+<td>u32</td>
+<td>u32</td>
+<td>u32</td>
+<td>u32</td>
+<td>u32</td>
+<td>u32</td>
+<td>u32</td>
+<td>u32</td>
+<td>u32</td>
+<td>u32</td>
 </tr>
 </thead>
 <tbody>
@@ -1671,14 +1676,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <div id="cell-58" class="cell" data-execution_count="29">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>japanese_edu_domains <span class="op">=</span> [</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>japanese_edu_domains <span class="op">=</span> [</span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"http://www.asagaku.com/"</span>,</span>
 <span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"www3.nhk.or.jp/news/easy/"</span>,</span>
 <span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"http://kids.yahoo.co.jp/"</span>,</span>
-<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-59" class="cell" data-execution_count="30">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>df.<span class="bu">filter</span>(pl.col(<span class="st">"url"</span>).is_in(japanese_edu_domains)).count().collect(streaming<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>df.<span class="bu">filter</span>(pl.col(<span class="st">"url"</span>).is_in(japanese_edu_domains)).count().collect(streaming<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="30">
 <div><style>
 .dataframe > thead > tr,
@@ -1688,7 +1693,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }
 </style>
 <small>shape: (1, 11)</small>
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th">text</th>
@@ -1704,17 +1709,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <th data-quarto-table-cell-role="th">top_langs</th>
 </tr>
 <tr class="even">
-<th>u32</th>
-<th>u32</th>
-<th>u32</th>
-<th>u32</th>
-<th>u32</th>
-<th>u32</th>
-<th>u32</th>
-<th>u32</th>
-<th>u32</th>
-<th>u32</th>
-<th>u32</th>
+<td>u32</td>
+<td>u32</td>
+<td>u32</td>
+<td>u32</td>
+<td>u32</td>
+<td>u32</td>
+<td>u32</td>
+<td>u32</td>
+<td>u32</td>
+<td>u32</td>
+<td>u32</td>
 </tr>
 </thead>
 <tbody>
@@ -1793,13 +1798,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

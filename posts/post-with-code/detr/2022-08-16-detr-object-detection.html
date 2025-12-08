@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.34">
+<meta name="generator" content="quarto-1.8.26">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -61,7 +61,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../../../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -71,14 +71,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../../icons/favicon.ico" rel="icon">
 <script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap-d68be38d83eca2bb035acf846ffba811.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-0b37c64f34216b628666a8dac638b53b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -106,10 +107,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
 
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
-<script src="https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
 <script defer="" src="https://cloud.umami.is/script.js" data-website-id="85cb27d6-dbf9-43d7-97d0-be4e6724de7a"></script>
 <meta name="msvalidate.01" content="4246174F24A3CB7C9CBEAA94E1FF8E84">
 <meta name="google-site-verification" content="C7WoFOEuA4Msbvvk-kgDd_C6VGphZTp3awy_acXjZYU">
@@ -139,10 +140,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="nav-link" href="../../../about.html"> 
 <span class="menu-text">About</span></a>
   </li>  
-  <li class="nav-item compact">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../slides.qmd"> 
+<span class="menu-text">Slides</span></a>
+  </li>  
+  <li class="nav-item">
     <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
 </i> 
-<span class="menu-text"></span></a>
+<span class="menu-text">GitHub</span></a>
   </li>  
   <li class="nav-item compact">
     <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
@@ -240,22 +245,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>At the moment, this is mainly intended to give a quick overview of the steps involved. It isn’t intended to be a proper tutorial. If I have time later, I may flesh this out (particularly if other projects I’m working on that use object detection progress further).</p>
 <p>Enough talk, let’s get started. First we install required libraries.</p>
 <div id="cell-3" class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>capture</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install datasets transformers timm wandb rich[jupyter]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>capture</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install datasets transformers timm wandb rich[jupyter]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>I’m a big fan of the <a href="https://rich.readthedocs.io/en/stable/">rich library</a> so almost always have this extension loaded.</p>
 <div id="cell-5" class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>load_ext rich</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>load_ext rich</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The next couple of lines gets us authenticated with the Hugging Face hub.</p>
 <div id="cell-7" class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>git config <span class="op">--</span><span class="kw">global</span> credential.helper store</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>git config <span class="op">--</span><span class="kw">global</span> credential.helper store</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-8" class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> notebook_login</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> notebook_login</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-9" class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>notebook_login()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>notebook_login()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Login successful
 Your token has been saved to /root/.huggingface/token</code></pre>
@@ -263,14 +268,14 @@ Your token has been saved to /root/.huggingface/token</code></pre>
 </div>
 <p>We’ll use <a href="https://wandb.ai/site">Weights and Biases</a> for tracking our model training.</p>
 <div id="cell-11" class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> wandb</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> wandb</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-12" class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>wandb.login()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>wandb.login()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-13" class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>env WANDB_PROJECT<span class="op">=</span>chapbooks</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>env WANDB_ENTITY<span class="op">=</span>davanstrien</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>env WANDB_PROJECT<span class="op">=</span>chapbooks</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>env WANDB_ENTITY<span class="op">=</span>davanstrien</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 </section>
@@ -278,18 +283,18 @@ Your token has been saved to /root/.huggingface/token</code></pre>
 <h2 class="anchored" data-anchor-id="loading-the-dataset">Loading the dataset</h2>
 <p>In this blog post will use a dataset being added to the Hugging Face datasets hub as part of the <a href="https://github.com/bigscience-workshop/lam">BigLAM</a> hackathon. This dataset has a configuration for object detection and image classification, so we’ll need to specify which one we want. Since the dataset doesn’t define train/test/valid splits for us, we’ll grab the training split. I won’t provide a full description of the dataset in this blog post since the dataset is still in the process of being documented. The tl;dr summary is that the dataset includes images of digitized books with bounding boxes for illustrations.</p>
 <div id="cell-15" class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> load_dataset(</span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"biglam/nls_chapbook_illustrations"</span>, <span class="st">"illustration-detection"</span>, split<span class="op">=</span><span class="st">"train"</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Reusing dataset nls_chapbook_illustrations (/Users/dvanstrien/.cache/huggingface/datasets/biglam___nls_chapbook_illustrations/illustration-detection/1.0.0/75f355eb0ba564ef120939a78730eb187a4d3eb682e987ed1f682a5bea5466eb)</code></pre>
 </div>
 </div>
 <p>Let’s take a look at one example from this dataset to get a sense of how the data looks</p>
 <div id="cell-17" class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>dataset[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>dataset[<span class="dv">0</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">{</span>
     <span style="color: #008000; text-decoration-color: #008000">'image_id'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">4</span>,
@@ -326,7 +331,7 @@ Your token has been saved to /root/.huggingface/token</code></pre>
 </div>
 <p>You will see we hav some metadata for the image, the image itself and the field <code>objects</code> contains the annotations themselves. Looking just at an example of the annotations:</p>
 <div id="cell-19" class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># hide_output</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># hide_output</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>{</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"category_id"</span>: <span class="dv">0</span>,</span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"image_id"</span>: <span class="st">"4"</span>,</span>
@@ -351,7 +356,7 @@ Your token has been saved to /root/.huggingface/token</code></pre>
 <span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>        ]</span>
 <span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    ],</span>
 <span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>    <span class="st">"iscrowd"</span>: <span class="va">False</span>,</span>
-<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <pre><code>{'category_id': 0,
  'image_id': '4',
@@ -375,17 +380,17 @@ Your token has been saved to /root/.huggingface/token</code></pre>
 <p>We see here, that we again have some metadata for each image. We also have a <code>category_id</code> and a <code>bbox</code>. Some of these fields should look familiar to you if you are familiar with the <a href="https://cocodataset.org/">coco</a> format. This will become relevant later, so don’t worry if these aren’t familiar to you.</p>
 <p>One issue we can run into when training object detection models is stray bounding boxes (i.e.&nbsp;ones where the bounding boxes stretch beyond the edge of the image). We can check and remove these quite easily. This is some ugly code/there is probably a better way, but this is a quick check, so I’ll forgive myself.</p>
 <div id="cell-21" class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.auto <span class="im">import</span> tqdm</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.auto <span class="im">import</span> tqdm</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-22" class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>remove_idx <span class="op">=</span> []</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>remove_idx <span class="op">=</span> []</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> idx, row <span class="kw">in</span> tqdm(<span class="bu">enumerate</span>(dataset)):</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    objects_ <span class="op">=</span> row[<span class="st">"objects"</span>]</span>
 <span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> ob <span class="kw">in</span> objects_:</span>
 <span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>        bbox <span class="op">=</span> ob[<span class="st">"bbox"</span>]</span>
 <span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>        negative <span class="op">=</span> [box <span class="cf">for</span> box <span class="kw">in</span> bbox <span class="cf">if</span> box <span class="op">&lt;</span> <span class="dv">0</span>]</span>
 <span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> negative:</span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>            remove_idx.append(idx)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>            remove_idx.append(idx)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
 {"model_id":"a3c0d2386f334d238441126da158585e","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
@@ -393,15 +398,15 @@ Your token has been saved to /root/.huggingface/token</code></pre>
 </div>
 </div>
 <div id="cell-23" class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(remove_idx)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(remove_idx)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>
 </pre>
 </div>
 </div>
 <div id="cell-24" class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>keep <span class="op">=</span> [i <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(dataset)) <span class="cf">if</span> i <span class="kw">not</span> <span class="kw">in</span> remove_idx]</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(keep)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>keep <span class="op">=</span> [i <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(dataset)) <span class="cf">if</span> i <span class="kw">not</span> <span class="kw">in</span> remove_idx]</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(keep)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">7257</span>
 </pre>
@@ -409,11 +414,11 @@ Your token has been saved to /root/.huggingface/token</code></pre>
 </div>
 <p>The above code has given us a list of indexes to keep so we use the <code>select</code> method to grab those.</p>
 <div id="cell-26" class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> dataset.select(keep)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> dataset.select(keep)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We also create a test split. If we were properly doing this we’d likely want to be a bit more thoughfull about how to do this split.</p>
 <div id="cell-28" class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> dataset.train_test_split(<span class="fl">0.1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> dataset.train_test_split(<span class="fl">0.1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="preparing-the-data" class="level2">
@@ -424,12 +429,12 @@ Your token has been saved to /root/.huggingface/token</code></pre>
 <p>If you are familiar with Hugging Face for natural language tasks, you are probably familiar with using <code>Tokenizer_for_blah_model</code> when pre-processing text. Often if you are using a pre-trained model, you will use <code>AutoTokenizer.from_pretrained</code>, passing in the ID to the model you want to fine-tune. This tokenizer then ensures that the tokenization matches the approach used for the pre-trained model.</p>
 <p>The Feature Extractor performs a similar task. Let’s look at this more closely. We’ll use a pre-trained model for this example and fine-tune it. I also include commented-out code, which shows how you could use the same process with any CNN backbone. This may be useful if you have particular requirements about what backbone to use or if you have a CNN backbone that is already fine-tuned on your domain.</p>
 <div id="cell-30" class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>model_checkpoint <span class="op">=</span> <span class="st">"facebook/detr-resnet-50"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>model_checkpoint <span class="op">=</span> <span class="st">"facebook/detr-resnet-50"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-31" class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> DetrFeatureExtractor</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> DetrFeatureExtractor</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>feature_extractor <span class="op">=</span> DetrFeatureExtractor.from_pretrained(model_checkpoint)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>feature_extractor <span class="op">=</span> DetrFeatureExtractor.from_pretrained(model_checkpoint)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
 {"model_id":"9722fcf5be06468d958a5aaef044a458","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
@@ -437,18 +442,18 @@ Your token has been saved to /root/.huggingface/token</code></pre>
 </div>
 </div>
 <p>If you wanted to use a different CNN backbone as your starting point you would instead define a config.</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># from transformers import DetrConfig</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># from transformers import DetrConfig</span></span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="co"># from transformers import DetrFeatureExtractor</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co"># feature_extractor = DetrFeatureExtractor()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co"># feature_extractor = DetrFeatureExtractor()</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="what-does-the-feature-extractor-do" class="level4">
 <h4 class="anchored" data-anchor-id="what-does-the-feature-extractor-do">What does the feature extractor do?</h4>
 <p>To check what feature extractor does we can make use of the handy <code>inspect</code> function</p>
 <div id="cell-35" class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> rich <span class="im">import</span> inspect</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> rich <span class="im">import</span> inspect</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-36" class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># collapse_show</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>inspect(feature_extractor, methods<span class="op">=</span><span class="va">True</span>, dunder<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># collapse_show</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>inspect(feature_extractor, methods<span class="op">=</span><span class="va">True</span>, dunder<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #000080; text-decoration-color: #000080">╭─ DetrFeatureExtractor </span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">{</span><span style="color: #000080; text-decoration-color: #000080">   </span><span style="color: #008000; text-decoration-color: #008000">"do_normalize"</span><span style="color: #000080; text-decoration-color: #000080">: true,   </span><span style="color: #008000; text-decoration-color: #008000">"do_resize"</span><span style="color: #000080; text-decoration-color: #000080">: true,   </span><span style="color: #008000; text-decoration-color: #008000">"feature_extractor_type"</span><span style="color: #000080; text-decoration-color: #000080">: </span><span style="color: #008000; text-decoration-color: #008000">"DetrFeatureEx</span><span style="color: #000080; text-decoration-color: #000080">─╮</span>
 <span style="color: #000080; text-decoration-color: #000080">│</span> <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="font-weight: bold">(</span>images: Union<span style="font-weight: bold">[</span>PIL.Image.Image, numpy.ndarray, <span style="color: #800080; text-decoration-color: #800080; font-weight: bold">ForwardRef</span><span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'torch.Tensor'</span><span style="font-weight: bold">)</span>, List<span style="font-weight: bold">[</span>PIL.Image.Image<span style="font-weight: bold">]</span>,           <span style="color: #000080; text-decoration-color: #000080">│</span>
@@ -660,15 +665,15 @@ Your token has been saved to /root/.huggingface/token</code></pre>
 </div>
 <p>The output of inspect can be pretty verbose, but I often find this a handy tool for quickly trying to work out a new library of API.</p>
 <p>We’ll look at the most critical parts in more detail, but I’ll point out a few things; you’ll see some attributes that will probably sound familiar.</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>image_mean <span class="op">=</span> [<span class="fl">0.485</span>, <span class="fl">0.456</span>, <span class="fl">0.406</span>]                                                              </span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>image_std <span class="op">=</span> [<span class="fl">0.229</span>, <span class="fl">0.224</span>, <span class="fl">0.225</span>]          </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>image_mean <span class="op">=</span> [<span class="fl">0.485</span>, <span class="fl">0.456</span>, <span class="fl">0.406</span>]                                                              </span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>image_std <span class="op">=</span> [<span class="fl">0.229</span>, <span class="fl">0.224</span>, <span class="fl">0.225</span>]          </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>These are the mean and standard deviation used during the model training. It’s essential when we’re doing inference or fine-tuning to replicate these, and having these all stored inside a <code>feature_extractor</code> means we don’t have to go poking around in papers to try and work out what these values should be.</p>
 <p>Another thing to point out is the <code>push_to_hub</code> method. We can store <code>feature_extractor</code>s in the hub just as we can store models and tokenizers. Having to track the appropriate pre-processing steps for an image manually is super annoying to do manually. Storing this as we do other model components is much simpler and helps avoid errors resulting from tracing these things by hand.</p>
 <p>The <code>__call__</code> method for the <code>DetrFeatureExtractor</code> is what we’ll use to prepare our images before we pass them into the model, let’s dig more closely into this.</p>
 <div id="cell-39" class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>inspect(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>inspect(</span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    feature_extractor.<span class="fu">__call__</span>,</span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #000080; text-decoration-color: #000080">╭─ </span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">bound</span><span style="color: #000000; text-decoration-color: #000000"> method DetrFeatureExtractor.__call__ of DetrFeatureExtractor </span><span style="color: #000000; text-decoration-color: #000000; font-weight: bold">{</span><span style="color: #000000; text-decoration-color: #000000">   </span><span style="color: #008000; text-decoration-color: #008000">"do_normalize"</span><span style="color: #000000; text-decoration-color: #000000">: true,   </span><span style="color: #008000; text-decoration-color: #008000">"do_resize"</span><span style="color: #000000; text-decoration-color: #000000">: t</span><span style="color: #000080; text-decoration-color: #000080">─╮</span>
 <span style="color: #000080; text-decoration-color: #000080">│</span> <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">DetrFeatureExtractor.__call__</span><span style="font-weight: bold">(</span>images: Union<span style="font-weight: bold">[</span>PIL.Image.Image, numpy.ndarray, <span style="color: #800080; text-decoration-color: #800080; font-weight: bold">ForwardRef</span><span style="font-weight: bold">(</span><span style="color: #008000; text-decoration-color: #008000">'torch.Tensor'</span><span style="font-weight: bold">)</span>,     <span style="color: #000080; text-decoration-color: #000080">│</span>
@@ -695,20 +700,20 @@ Your token has been saved to /root/.huggingface/token</code></pre>
 <p>The <code>images</code> part is not too tricky to understand. We can either pass in a single image, a NumPy array representing an image or a list of images or NumPy arrays.</p>
 <p>The <code>annotations</code> part is where Python type annotations don’t always do us many favours since we only know we’re expecting a list of dictionaries, but we can safely assume those dictionaries probably need to have a particular format. We can try and see what happens if we pass in an image and a list of a random dictionary.</p>
 <div id="cell-41" class="cell">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> io</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> io</span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> requests</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> PIL <span class="im">import</span> Image</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> PIL <span class="im">import</span> Image</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-42" class="cell">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>im <span class="op">=</span> Image.<span class="bu">open</span>(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>im <span class="op">=</span> Image.<span class="bu">open</span>(</span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    io.BytesIO(</span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>        requests.get(</span>
 <span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>            <span class="st">"https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/cute-cat-photos-1593441022.jpg?crop=1.00xw:0.749xh;0,0.154xh&amp;resize=980:*"</span></span>
 <span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>        ).content</span>
 <span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>im</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>im</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -718,7 +723,7 @@ Your token has been saved to /root/.huggingface/token</code></pre>
 </div>
 </div>
 <div id="cell-43" class="cell">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>labels <span class="op">=</span> [</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>labels <span class="op">=</span> [</span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>    {</span>
 <span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"bbox"</span>: [</span>
 <span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>            <span class="fl">0.0</span>,</span>
@@ -727,10 +732,10 @@ Your token has been saved to /root/.huggingface/token</code></pre>
 <span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>            <span class="dv">4</span>,</span>
 <span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>        ]</span>
 <span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-44" class="cell">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>feature_extractor(im, labels)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>feature_extractor(im, labels)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-error">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">---------------------------------------------------------------------------</span>
@@ -765,8 +770,8 @@ File <span class="ansi-green-fg">/usr/local/Caskroom/miniforge/base/envs/blog/li
 </div>
 <p>We can see that this raises a <code>ValueError</code>. We also get some more information here that gives us a clue where we went wrong. Specifically we can see that the annotations for a single image should be a <code>Dict</code> or <code>List[Dict]</code> if we’re using a batch of images. We also see that we should pass in this data in the <code>COCO</code> format. Since our data is already in this format we should be able to pass in an example.</p>
 <div id="cell-46" class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>image <span class="op">=</span> dataset[<span class="st">"train"</span>][<span class="dv">0</span>][<span class="st">"image"</span>]</span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>image</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>image <span class="op">=</span> dataset[<span class="st">"train"</span>][<span class="dv">0</span>][<span class="st">"image"</span>]</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>image</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -776,8 +781,8 @@ File <span class="ansi-green-fg">/usr/local/Caskroom/miniforge/base/envs/blog/li
 </div>
 </div>
 <div id="cell-47" class="cell">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>annotations <span class="op">=</span> dataset[<span class="st">"train"</span>][<span class="dv">0</span>][<span class="st">"objects"</span>]</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>annotations</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>annotations <span class="op">=</span> dataset[<span class="st">"train"</span>][<span class="dv">0</span>][<span class="st">"objects"</span>]</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>annotations</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">[</span>
     <span style="font-weight: bold">{</span>
@@ -794,7 +799,7 @@ File <span class="ansi-green-fg">/usr/local/Caskroom/miniforge/base/envs/blog/li
 </div>
 </div>
 <div id="cell-48" class="cell">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>feature_extractor(images<span class="op">=</span>image, annotations<span class="op">=</span>annotations, return_tensors<span class="op">=</span><span class="st">"pt"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>feature_extractor(images<span class="op">=</span>image, annotations<span class="op">=</span>annotations, return_tensors<span class="op">=</span><span class="st">"pt"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #800000; text-decoration-color: #800000">╭─────────────────────────────── </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">Traceback </span><span style="color: #bf7f7f; text-decoration-color: #bf7f7f; font-weight: bold">(most recent call last)</span><span style="color: #800000; text-decoration-color: #800000"> ────────────────────────────────╮</span>
 <span style="color: #800000; text-decoration-color: #800000">│</span> <span style="color: #bfbf7f; text-decoration-color: #bfbf7f">/var/folders/tj/54sfzlyj6_573fn82y996grc0000gr/T/ipykernel_47936/</span><span style="color: #808000; text-decoration-color: #808000; font-weight: bold">1569761185.py</span>:<span style="color: #0000ff; text-decoration-color: #0000ff">1</span> in <span style="color: #00ff00; text-decoration-color: #00ff00">&lt;cell line: </span> <span style="color: #800000; text-decoration-color: #800000">│</span>
@@ -829,14 +834,14 @@ list
 </div>
 <p>Oh no! It still doesn’t work. At this point, it’s we probably either want to dig into the source code to work out what we should be passing to the <code>feature_extractor</code>. The relevant function is <a href="https://github.com/huggingface/transformers/blob/d6eeb871706db0d64ab9ffd79f9545d95286b536/src/transformers/models/detr/feature_extraction_detr.py#L214"><code>def prepare_coco_detection</code></a>.</p>
 <p>We also have another <a href="https://github.com/NielsRogge/Transformers-Tutorials/blob/master/DETR/Fine_tuning_DetrForObjectDetection_on_custom_dataset_(balloon).ipynb">tutorial</a> to consult. In this tutorial we see that the annotations are stored in a dictionary <code>target</code> with the keys <code>image_id</code> and <code>annotations</code>.</p>
-<div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> {<span class="st">'image_id'</span>: image_id, <span class="st">'annotations'</span>: target}</span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>encoding <span class="op">=</span> <span class="va">self</span>.feature_extractor(images<span class="op">=</span>img, annotations<span class="op">=</span>target, return_tensors<span class="op">=</span><span class="st">"pt"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> {<span class="st">'image_id'</span>: image_id, <span class="st">'annotations'</span>: target}</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>encoding <span class="op">=</span> <span class="va">self</span>.feature_extractor(images<span class="op">=</span>img, annotations<span class="op">=</span>target, return_tensors<span class="op">=</span><span class="st">"pt"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>With a bit more wrangling let’s see if this works.</p>
 <div id="cell-50" class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> {<span class="st">"image_id"</span>: <span class="dv">4</span>, <span class="st">"annotations"</span>: annotations}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> {<span class="st">"image_id"</span>: <span class="dv">4</span>, <span class="st">"annotations"</span>: annotations}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-51" class="cell">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>feature_extractor(images<span class="op">=</span>image, annotations<span class="op">=</span>target, return_tensors<span class="op">=</span><span class="st">"pt"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>feature_extractor(images<span class="op">=</span>image, annotations<span class="op">=</span>target, return_tensors<span class="op">=</span><span class="st">"pt"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">{</span>
     <span style="color: #008000; text-decoration-color: #008000">'pixel_values'</span>: <span style="color: #800080; text-decoration-color: #800080; font-weight: bold">tensor</span><span style="font-weight: bold">([[[[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">-0.7650</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">-0.9705</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">-0.9705</span>,  <span style="color: #808000; text-decoration-color: #808000">...</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">-1.4158</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">-1.3815</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">-1.3815</span><span style="font-weight: bold">]</span>,
@@ -887,22 +892,22 @@ list
 <p>This is looking more like it! Now we have one example working we can translate this to a function that can prepare a batch into the same format.</p>
 <p>Since we get a batch at a time we might need to refactor things slightly. In this example I’ve just grabbed the relevant lists for the images, image_id and annotations. We then use a list compression to store these in the dictionary format expected by the <code>feature_extractor</code>.</p>
 <div id="cell-53" class="cell">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> transform(example_batch):</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> transform(example_batch):</span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>    images <span class="op">=</span> example_batch[<span class="st">"image"</span>]</span>
 <span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>    ids_ <span class="op">=</span> example_batch[<span class="st">"image_id"</span>]</span>
 <span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>    objects <span class="op">=</span> example_batch[<span class="st">"objects"</span>]</span>
 <span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>    targets <span class="op">=</span> [</span>
 <span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>        {<span class="st">"image_id"</span>: id_, <span class="st">"annotations"</span>: object_} <span class="cf">for</span> id_, object_ <span class="kw">in</span> <span class="bu">zip</span>(ids_, objects)</span>
 <span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>    ]</span>
-<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> feature_extractor(images<span class="op">=</span>images, annotations<span class="op">=</span>targets, return_tensors<span class="op">=</span><span class="st">"pt"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> feature_extractor(images<span class="op">=</span>images, annotations<span class="op">=</span>targets, return_tensors<span class="op">=</span><span class="st">"pt"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We could apply this to our data using <code>map</code> but it often makes more sense to applay these on the fly using the <code>with_transform</code> method.</p>
 <div id="cell-55" class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>dataset[<span class="st">"train"</span>] <span class="op">=</span> dataset[<span class="st">"train"</span>].with_transform(transform)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>dataset[<span class="st">"train"</span>] <span class="op">=</span> dataset[<span class="st">"train"</span>].with_transform(transform)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s take a look at an example</p>
 <div id="cell-57" class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>dataset[<span class="st">"train"</span>][<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>dataset[<span class="st">"train"</span>][<span class="dv">0</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">{</span>
     <span style="color: #008000; text-decoration-color: #008000">'pixel_values'</span>: <span style="color: #800080; text-decoration-color: #800080; font-weight: bold">tensor</span><span style="font-weight: bold">([[[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">-0.7650</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">-0.9705</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">-0.9705</span>,  <span style="color: #808000; text-decoration-color: #808000">...</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">-1.4158</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">-1.3815</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">-1.3815</span><span style="font-weight: bold">]</span>,
@@ -950,7 +955,7 @@ list
 </div>
 <p>The next thing we need to take care of is a collate function. ‘Data collators are objects that will form a batch by using a list of dataset elements as input. These elements are of the same type as the elements of train_dataset or eval_dataset.’ <a href="https://huggingface.co/docs/transformers/main_classes/data_collator#data-collator">source</a>.</p>
 <div id="cell-59" class="cell">
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> collate_fn(batch):</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> collate_fn(batch):</span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>    pixel_values <span class="op">=</span> [item[<span class="st">"pixel_values"</span>] <span class="cf">for</span> item <span class="kw">in</span> batch]</span>
 <span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>    encoding <span class="op">=</span> feature_extractor.pad_and_create_pixel_mask(</span>
 <span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>        pixel_values, return_tensors<span class="op">=</span><span class="st">"pt"</span></span>
@@ -960,7 +965,7 @@ list
 <span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>    batch[<span class="st">'pixel_values'</span>] <span class="op">=</span> encoding[<span class="st">'pixel_values'</span>]</span>
 <span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>    batch[<span class="st">"pixel_mask"</span>] <span class="op">=</span> encoding[<span class="st">"pixel_mask"</span>]</span>
 <span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>    batch[<span class="st">"labels"</span>] <span class="op">=</span> labels</span>
-<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> batch</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> batch</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 </section>
@@ -971,9 +976,9 @@ list
 <h3 class="anchored" data-anchor-id="avoiding-ambiguous-labels">Avoiding ambiguous labels</h3>
 <p>We’re almost at the point where we can start training the model. We just do a little bit of housekeeping to make sure our model knows what our encoded labels are. It’s super annoying when you are trying a model out on the Hugging Face Hub and you get back labels, <code>0</code> or <code>3</code> with no clue what these labels refer to. We can avoid this by telling our model what labels we have. This mapping will then be bundled with the model when we push it to the hub.</p>
 <div id="cell-62" class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>id2label <span class="op">=</span> <span class="bu">dict</span>(<span class="bu">enumerate</span>(dataset[<span class="st">"train"</span>].features[<span class="st">"objects"</span>][<span class="dv">0</span>][<span class="st">"category_id"</span>].names))</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>id2label <span class="op">=</span> <span class="bu">dict</span>(<span class="bu">enumerate</span>(dataset[<span class="st">"train"</span>].features[<span class="st">"objects"</span>][<span class="dv">0</span>][<span class="st">"category_id"</span>].names))</span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>label2id <span class="op">=</span> {v: k <span class="cf">for</span> k, v <span class="kw">in</span> id2label.items()}</span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>label2id</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>label2id</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">{</span><span style="color: #008000; text-decoration-color: #008000">'early_printed_illustration'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span><span style="font-weight: bold">}</span>
 </pre>
@@ -981,7 +986,7 @@ list
 </div>
 <p>Now we can create the <code>DetrForObjectDetection</code> model. This should all look familiar if you’ve used transformers for other tasks.</p>
 <div id="cell-64" class="cell">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> DetrForObjectDetection</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> DetrForObjectDetection</span>
 <span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> DetrForObjectDetection.from_pretrained(</span>
 <span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>    model_checkpoint,</span>
@@ -989,7 +994,7 @@ list
 <span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>    id2label<span class="op">=</span>id2label,</span>
 <span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>    label2id<span class="op">=</span>label2id,</span>
 <span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>    ignore_mismatched_sizes<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
 {"model_id":"c3775a8de4f8426eaafbb2570d43b825","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
@@ -1009,17 +1014,17 @@ You should probably TRAIN this model on a down-stream task to be able to use it 
 </div>
 </div>
 <p>If you wanted to use another backbone you could do something like:</p>
-<div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># from transformers import DetrForObjectDetection</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># from transformers import DetrForObjectDetection</span></span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="co"># config = DetrConfig(backbone='regnetz_e8',id2label=id2label, label2id=label2id)</span></span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="co"># model = DetrForObjectDetection(config)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="co"># model = DetrForObjectDetection(config)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 </section>
 <section id="training-the-detr-model" class="level2">
 <h2 class="anchored" data-anchor-id="training-the-detr-model">Training the detr model</h2>
 <p>We now specify our <code>TrainingArguments</code></p>
 <div id="cell-68" class="cell">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> TrainingArguments</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> TrainingArguments</span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>training_args <span class="op">=</span> TrainingArguments(</span>
 <span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>    output_dir<span class="op">=</span><span class="st">"detr-resnet-50_fine_tuned_nls_chapbooks"</span>,</span>
@@ -1033,11 +1038,11 @@ You should probably TRAIN this model on a down-stream task to be able to use it 
 <span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>    remove_unused_columns<span class="op">=</span><span class="va">False</span>,</span>
 <span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>    push_to_hub<span class="op">=</span><span class="va">True</span>,</span>
 <span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>    hub_model_id<span class="op">=</span><span class="st">"davanstrien/detr-resnet-50_fine_tuned_nls_chapbooks"</span>,</span>
-<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>and create our <code>Trainer</code></p>
 <div id="cell-70" class="cell">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> Trainer</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> Trainer</span>
 <span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>trainer <span class="op">=</span> Trainer(</span>
 <span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>    model<span class="op">=</span>model,</span>
@@ -1045,14 +1050,14 @@ You should probably TRAIN this model on a down-stream task to be able to use it 
 <span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>    data_collator<span class="op">=</span>collate_fn,</span>
 <span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>    train_dataset<span class="op">=</span>dataset[<span class="st">"train"</span>],</span>
 <span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>    tokenizer<span class="op">=</span>feature_extractor,</span>
-<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Cloning https://huggingface.co/davanstrien/detr-resnet-50_fine_tuned_nls_chapbooks into local empty directory.</code></pre>
 </div>
 </div>
 <div id="cell-71" class="cell">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse</span></span>
-<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>trainer.train()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>trainer.train()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>/usr/local/lib/python3.7/dist-packages/transformers/optimization.py:310: FutureWarning: This implementation of AdamW is deprecated and will be removed in a future version. Use the PyTorch implementation torch.optim.AdamW instead, or set `no_deprecation_warning=True` to disable this warning
   FutureWarning,
@@ -1090,7 +1095,7 @@ Syncing run <strong><a href="https://wandb.ai/davanstrien/chapbooks/runs/sgzdksx
       [8170/8170 5:15:38, Epoch 10/10]
     </div>
     
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th">Step</th>
@@ -1978,7 +1983,7 @@ Training completed. Do not forget to share your model on huggingface.co/models =
 </div>
 <p>Once we’ve finished training we can use <code>push_to_hub</code> to share our model on the hub.</p>
 <div id="cell-73" class="cell">
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>trainer.push_to_hub(<span class="st">"finished training"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>trainer.push_to_hub(<span class="st">"finished training"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Saving model checkpoint to detr-resnet-50_fine_tuned_nls_chapbooks
 Configuration saved in detr-resnet-50_fine_tuned_nls_chapbooks/config.json
@@ -2076,13 +2081,14 @@ To https://huggingface.co/davanstrien/detr-resnet-50_fine_tuned_nls_chapbooks
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

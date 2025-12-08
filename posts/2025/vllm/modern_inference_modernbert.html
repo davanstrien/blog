@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.34">
+<meta name="generator" content="quarto-1.8.26">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -61,7 +61,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../../../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -71,14 +71,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../../icons/favicon.ico" rel="icon">
 <script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap-d68be38d83eca2bb035acf846ffba811.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-0b37c64f34216b628666a8dac638b53b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -106,10 +107,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
 
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
-<script src="https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
 <script defer="" src="https://cloud.umami.is/script.js" data-website-id="85cb27d6-dbf9-43d7-97d0-be4e6724de7a"></script>
 <meta name="msvalidate.01" content="4246174F24A3CB7C9CBEAA94E1FF8E84">
 <meta name="google-site-verification" content="C7WoFOEuA4Msbvvk-kgDd_C6VGphZTp3awy_acXjZYU">
@@ -147,10 +148,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="nav-link" href="../../../about.html"> 
 <span class="menu-text">About</span></a>
   </li>  
-  <li class="nav-item compact">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../slides.qmd"> 
+<span class="menu-text">Slides</span></a>
+  </li>  
+  <li class="nav-item">
     <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
 </i> 
-<span class="menu-text"></span></a>
+<span class="menu-text">GitHub</span></a>
   </li>  
   <li class="nav-item compact">
     <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
@@ -287,14 +292,14 @@ Note
 <h2 class="anchored" data-anchor-id="installation">Installation</h2>
 <p>Since we are using a feature not yet in a main release, we need to install the nightly version of vLLM. Using <code>uv</code> makes this very easy. We’ll also install the <code>datasets</code> and <code>polars</code> libraries as we’ll be using them to load and process our data.</p>
 <div id="cell-3" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="697becb0-7650-4f67-a6a3-6cfc88b87c58" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>pip install uv</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>uv pip install <span class="op">-</span>U vllm datasets <span class="op">--</span>extra<span class="op">-</span>index<span class="op">-</span>url https:<span class="op">//</span>wheels.vllm.ai<span class="op">/</span>nightly</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>pip install uv</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>uv pip install <span class="op">-</span>U vllm datasets <span class="op">--</span>extra<span class="op">-</span>index<span class="op">-</span>url https:<span class="op">//</span>wheels.vllm.ai<span class="op">/</span>nightly</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Since I orginally ran this on Google Colab, I’ll also grab the HF token from the user data (we will need a token if we are working with a private dataset/model or if we want to push the results back to the Hub).</p>
 <div id="cell-5" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> google.colab <span class="im">import</span> userdata</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> google.colab <span class="im">import</span> userdata</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>hf_token <span class="op">=</span> userdata.get(<span class="st">"HF_TOKEN"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>hf_token <span class="op">=</span> userdata.get(<span class="st">"HF_TOKEN"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="the-use-case" class="level2">
@@ -306,9 +311,9 @@ Note
 <h2 class="anchored" data-anchor-id="loading-the-model">Loading the model</h2>
 <p>We’ll now load the model using vLLM. This is very similar to loading any other model in <code>vllm</code>, the only difference is that we specify <code>task="classify"</code> to tell vLLM that we are using a classifier model.</p>
 <div id="cell-8" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:443,&quot;referenced_widgets&quot;:[&quot;b7e4ee208d664a16834d1edbf62b707f&quot;,&quot;a740b8efa62b4a708108f492fc668c58&quot;,&quot;f9836f7d60f94163b3a04047860d4713&quot;,&quot;2700d68a9ea84e858cb59d14662013f6&quot;,&quot;c28eb55e5c2f4a20bcdadb3ffb8e9411&quot;,&quot;0119e4d541ff49839e50b702db07dd82&quot;,&quot;e5c97607808040458f6251ff322d49ff&quot;,&quot;610f3478b7544cb5aea97f9538f815a0&quot;,&quot;b9233e5da62a4e40b1df1e4ada00e4bc&quot;,&quot;087ce9050f8e43fc8028311122e42a0e&quot;,&quot;62fc73436044424baeb6cb907a67a46a&quot;,&quot;d1cf7f2bfca34eeb9b2480e328d4557b&quot;,&quot;97332e969a3f4a91817c4e756382e0a6&quot;,&quot;28c22c3ff2114048a199f22a3d4fecb9&quot;,&quot;a0f52c596cb745d3aad79f03fbb2cf1f&quot;,&quot;2522088acfce4425a1b7e0612c247285&quot;,&quot;58c62f12f9a94adfa2931383dc66bc6f&quot;,&quot;bf370f5818ee48f499a5894dac52a501&quot;,&quot;32d77b3b29ec4ecdbabda4f69585d15d&quot;,&quot;3516147b74464d56842dcd02503bc890&quot;,&quot;0cb320e1b8794672996a5a9dae3efaab&quot;,&quot;827a5d326433443ba616590e485971a3&quot;,&quot;6141440f381146c3935e2067ef128085&quot;,&quot;630bb5ea53c34efca3a268f43f6adbdf&quot;,&quot;e39e21299f4b40e99b1c3724a090ad18&quot;,&quot;97e5a2781804483caade67dd6a7edc1e&quot;,&quot;497d0214116849db8affb2abcf546bdf&quot;,&quot;d953bf09f9644da9a14f13b8ef3aaf34&quot;,&quot;f1f3890a6ab94fecb6a7cd83d1a36e10&quot;,&quot;61febb5e572448219815730b029177ec&quot;,&quot;74c5baab007e4e279ba0eb3303c41fd7&quot;,&quot;d1e8581db0994066b17663a40868ec12&quot;,&quot;6f349be6320246fdadf62349e031abe9&quot;,&quot;7c20161210c049298a703b62c0b161dc&quot;,&quot;3f5eeedbffce4f1395854977173dd617&quot;,&quot;cfc07c7558f343a79f38b3e2a49fec29&quot;,&quot;f917c2da5a6c40a5909ed801d1e2c173&quot;,&quot;dc7b6bdc78854ed088dffd42c4a06bdb&quot;,&quot;0459edb0a16842eb9a96ce1bd0379f23&quot;,&quot;e910cefdf0d84e48b2e7bfac965ceeea&quot;,&quot;4fccd188c1f24e398eaebd61a725b174&quot;,&quot;2552f61e747d4e40993fcd6a476adc68&quot;,&quot;0874a95d2acb4e628d465fd46de902d7&quot;,&quot;16f8478b64d8437f97dc373af2235897&quot;,&quot;a1de2f10d1ef461fbe6ee0e64f89c31b&quot;,&quot;adb8569cd3a34e3691d721db1a5cd652&quot;,&quot;6f2ccb09f98f411c9ac5ca79c4e19f42&quot;,&quot;66430a3b125e4c7c9f72134fdfdcacb7&quot;,&quot;c7a0b91faa5b4acfb71b02eeb4858a2e&quot;,&quot;ed95ca2d8efa468fb0c3be9b578ab25d&quot;,&quot;83d59de94381448786838808b3bcba31&quot;,&quot;0c4dfcad8bf646b88d5b725752a0069e&quot;,&quot;25644c84b08346d7a8812ee9f662df59&quot;,&quot;eca75cac543a4e6abd97ef3360e10ee2&quot;,&quot;599d237f858546a0ae3d5e15c4accf0d&quot;,&quot;6755e46b5c3f41268f2a8027ccce5e22&quot;,&quot;2fffc6c5ec1f4b7fa8cc82a6228639b9&quot;,&quot;04beb63b97524b0da6087ad0062f4d13&quot;,&quot;49dad05823fa433e9d51ff888995e8ac&quot;,&quot;3e24870fc1c84d9498417ed8e571c727&quot;,&quot;463a874aa383438691789d3c09472e31&quot;,&quot;c3fa3c6ee38341759f5efc6ef9c06116&quot;,&quot;537a79e8e01943b3a944b770b4ab47bb&quot;,&quot;32ad6e4259074af2bfed0ebfbab6e7d3&quot;,&quot;dfb0b219e71c4d40b77467af67fec272&quot;,&quot;9134b4f1926743a9b6875af377036512&quot;]}}" data-outputid="ced152e8-96aa-4bed-d2c6-a58c3bd9611a" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> vllm <span class="im">import</span> LLM</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> vllm <span class="im">import</span> LLM</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>llm <span class="op">=</span> LLM(model<span class="op">=</span><span class="st">"davanstrien/ModernBERT-base-is-new-arxiv-dataset"</span>, task<span class="op">=</span><span class="st">"classify"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>llm <span class="op">=</span> LLM(model<span class="op">=</span><span class="st">"davanstrien/ModernBERT-base-is-new-arxiv-dataset"</span>, task<span class="op">=</span><span class="st">"classify"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>INFO 04-24 14:16:50 [__init__.py:239] Automatically detected platform cuda.</code></pre>
 </div>
@@ -364,12 +369,12 @@ INFO 04-24 14:17:26 [model_runner.py:1156] Model loading took 0.3098 GiB and 5.2
 </div>
 <p>Let’s test the model out with a simple example.</p>
 <div id="cell-10" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:67,&quot;referenced_widgets&quot;:[&quot;5644bed69c4d4c8997e4d8fe14756b6a&quot;,&quot;89db0c9ab0334f25acd835db8cfbbba5&quot;,&quot;3c2a25454adb4da6b7b6fbf7e6494bd6&quot;,&quot;fd58cd8805ea4df1a4fce5590ddedf94&quot;,&quot;03eb3d12bf8a42b5bc34d939a4460cbd&quot;,&quot;0105ddb8897743399292ac11df33ab40&quot;,&quot;2dee020fb7a94d26b1a962ccc30590be&quot;,&quot;1de3094f5d7048f7b745d858d5dd4587&quot;,&quot;8bfcd9d4254a4003ab61f6778ab3450a&quot;,&quot;2b64aba74e3b40ff82aedab409567fd1&quot;,&quot;456db197c42e4ea0a022b299f23d77fd&quot;]}}" data-outputid="e4c5ed49-bde3-43a2-a879-3993931ec71e" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>(output,) <span class="op">=</span> llm.classify(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>(output,) <span class="op">=</span> llm.classify(</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Title: This paper introduces a new benchmark dataset shared on Zenodo"</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>probs <span class="op">=</span> output.outputs.probs</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Class Probabilities: </span><span class="sc">{</span>probs<span class="sc">!r}</span><span class="ss"> (size=</span><span class="sc">{</span><span class="bu">len</span>(probs)<span class="sc">}</span><span class="ss">)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Class Probabilities: </span><span class="sc">{</span>probs<span class="sc">!r}</span><span class="ss"> (size=</span><span class="sc">{</span><span class="bu">len</span>(probs)<span class="sc">}</span><span class="ss">)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
 {"model_id":"5644bed69c4d4c8997e4d8fe14756b6a","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
@@ -381,7 +386,7 @@ INFO 04-24 14:17:26 [model_runner.py:1156] Model loading took 0.3098 GiB and 5.2
 </div>
 <p>We can also get the top predicted class and confidence score.</p>
 <div id="cell-12" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="deb45776-71c5-4405-b4f1-8421615c7964" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>logits <span class="op">=</span> torch.tensor(output.outputs.probs)</span>
@@ -392,7 +397,7 @@ INFO 04-24 14:17:26 [model_runner.py:1156] Model loading took 0.3098 GiB and 5.2
 <span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>top_prob <span class="op">=</span> probabilities[top_idx].item()</span>
 <span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Top class index: </span><span class="sc">{</span>top_idx<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Confidence: </span><span class="sc">{</span>top_prob<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Confidence: </span><span class="sc">{</span>top_prob<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Top class index: 0
 Confidence: 0.9527</code></pre>
@@ -402,7 +407,7 @@ Confidence: 0.9527</code></pre>
 <h3 class="anchored" data-anchor-id="getting-the-labels">Getting the labels</h3>
 <p>The outputs of vLLM don’t contain the labels but we can easily grab them from the model configuration</p>
 <div id="cell-14" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="ce0b368c-da10-4d52-c154-3c9af8eaa7ac" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> httpx</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> httpx</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> hf_hub_url</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>id2label <span class="op">=</span> (</span>
@@ -414,18 +419,18 @@ Confidence: 0.9527</code></pre>
 <span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    .json()</span>
 <span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    .get(<span class="st">"id2label"</span>)</span>
 <span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>id2label</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>id2label</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="5">
 <pre><code>{'0': 'new_dataset', '1': 'no_new_dataset'}</code></pre>
 </div>
 </div>
 <div id="cell-15" class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> toolz <span class="im">import</span> keymap</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> toolz <span class="im">import</span> keymap</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>id2label <span class="op">=</span> keymap(<span class="bu">int</span>, id2label)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>id2label <span class="op">=</span> keymap(<span class="bu">int</span>, id2label)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-16" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:35}}" data-outputid="95881a37-ac8c-45f2-893e-87e2efb5a5d6" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>id2label.get(top_idx)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>id2label.get(top_idx)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="7">
 <pre><code>'new_dataset'</code></pre>
 </div>
@@ -438,9 +443,9 @@ Confidence: 0.9527</code></pre>
 <p>In this case, we’ll use an existing dataset of arxiv papers and use our classifier to label the papers as containing a new dataset or not.</p>
 <p>We’ll start by loading a smallish dataset which was used as the training set for the model.</p>
 <div id="cell-19" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:113,&quot;referenced_widgets&quot;:[&quot;e8920497f56a4875a55689783a077e50&quot;,&quot;404579f82a8d48c487113fe1d6c5ada4&quot;,&quot;bae73e7a9b9e4492ac21958a9d0b40c6&quot;,&quot;c621dd4da9324cbbbbab7677d869a646&quot;,&quot;fa1772ba99d645bd8f06a72faa8a720c&quot;,&quot;aa05ab0123924fcf90abcd9f1a300c13&quot;,&quot;4f5a6478d1f74097865b909b86778a39&quot;,&quot;43f7c16c4e2646128ed73faa7973a3ef&quot;,&quot;060ae16534894b0aa99e3902ebeaced2&quot;,&quot;7b3476cc94fa4fc08caa176e3987cff4&quot;,&quot;80c69be307264ca29feee0c390bbe3d6&quot;,&quot;0eab0f1feb5b4530a1853c463fe0a2dd&quot;,&quot;deacc3abb0e44abe9e78d80ae9f69ce1&quot;,&quot;bcfc34ae104a4c13a35f6d8e29cfa3fa&quot;,&quot;fe03e66f93de4f64a36e75371e9c314b&quot;,&quot;7cf05c784f744643a53eae37b8478ada&quot;,&quot;12dee0f8436241b886897ccb68c1e49b&quot;,&quot;02a86bb9b68c453293bc43acdb7f8b12&quot;,&quot;e3544ba5dbe8474ebb6c0bf40cdb3f54&quot;,&quot;062af6cd97c546398dd2b2676c322099&quot;,&quot;5e0c0899fda943df85a40d0be8a1b69d&quot;,&quot;2f5340b6a5614e148f19c050f3042c2c&quot;,&quot;05383e298a89413aa29e5faa37b95484&quot;,&quot;a96735f11d074ef49a4d0697acb1f423&quot;,&quot;9d0aec9161924050986965c71938383d&quot;,&quot;7722fd2656ce4805b0287fe38141121c&quot;,&quot;2bf6482585b64e96b59247ccd6f47b0f&quot;,&quot;75dd96eeebd04900865fb98ac84575f5&quot;,&quot;dbb8903e789f4e5cb477b7fbb1795bbf&quot;,&quot;a8f68b037568426b9143132d9d4cdc0a&quot;,&quot;96e88ff6661746cc83074b6dd0849326&quot;,&quot;9b62a164c6e24e4baf0c9b29dac4d9af&quot;,&quot;5b8c0fd9b8a941d0b9c3dde105f45fdc&quot;]}}" data-outputid="cbd014e3-4e32-4cc5-ae09-1bbd2dae7ca8" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> load_dataset(<span class="st">"davanstrien/arxiv-new-datasets"</span>, split<span class="op">=</span><span class="st">"train"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> load_dataset(<span class="st">"davanstrien/arxiv-new-datasets"</span>, split<span class="op">=</span><span class="st">"train"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
 {"model_id":"e8920497f56a4875a55689783a077e50","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
@@ -458,7 +463,7 @@ Confidence: 0.9527</code></pre>
 </div>
 </div>
 <div id="cell-20" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="1d2d411d-9aee-40e9-94e0-7f7fbcf86cf0" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>ds.features</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>ds.features</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="9">
 <pre><code>{'id': Value(dtype='string', id=None),
  'title': Value(dtype='string', id=None),
@@ -469,7 +474,7 @@ Confidence: 0.9527</code></pre>
 </div>
 <p>Example row</p>
 <div id="cell-22" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="193b972f-24df-48d6-e815-742b0a6623c5">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>ds[<span class="dv">6</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>ds[<span class="dv">6</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="214">
 <pre><code>{'id': '2405.00026',
  'title': 'Enhancing Credit Card Fraud Detection A Neural Network and SMOTE\n  Integrated Approach',
@@ -482,11 +487,11 @@ Confidence: 0.9527</code></pre>
 <h3 class="anchored" data-anchor-id="formatting-the-data">Formatting the data</h3>
 <p>When training this model it was given both the title and abstract of the paper. We’ll need to format the data in the same way when making predictions. This won’t be necessary for many classifier models.</p>
 <div id="cell-24" class="cell" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> format_row_for_model(row):</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="ss">f"TITLE: </span><span class="sc">{</span>row[<span class="st">'title'</span>]<span class="sc">}</span><span class="ss"> </span><span class="ch">\n\n</span><span class="ss">ABSTRACT: </span><span class="sc">{</span>row[<span class="st">'abstract'</span>]<span class="sc">}</span><span class="ss">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> format_row_for_model(row):</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="ss">f"TITLE: </span><span class="sc">{</span>row[<span class="st">'title'</span>]<span class="sc">}</span><span class="ss"> </span><span class="ch">\n\n</span><span class="ss">ABSTRACT: </span><span class="sc">{</span>row[<span class="st">'abstract'</span>]<span class="sc">}</span><span class="ss">"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-25" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:49,&quot;referenced_widgets&quot;:[&quot;bed7c0fb58394d548c4d5a9a1e02d7a2&quot;,&quot;c4e67df1761e4ffa8f109b363dfdc9c9&quot;,&quot;0a0838300c794af886834aa3238fb237&quot;,&quot;b90d448fd0c245e49358a2a6d3369de6&quot;,&quot;f36a81f77a414122a734ad8746c861cd&quot;,&quot;51f4bb1c629347b2b39163101559fd86&quot;,&quot;89d0935004d74116859905ef1bb0fc22&quot;,&quot;1706acf31be54627986de81834684990&quot;,&quot;98c974a791a842de8d4757df133eb90f&quot;,&quot;fd14940961204d79adaa504838764663&quot;,&quot;544e4b4128c94567b87a1eb2878b4da5&quot;]}}" data-outputid="c1960e51-5148-46a9-c258-60b8757811b0">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>outputs <span class="op">=</span> llm.classify(format_row_for_model(ds[<span class="dv">6</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>outputs <span class="op">=</span> llm.classify(format_row_for_model(ds[<span class="dv">6</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
 {"model_id":"bed7c0fb58394d548c4d5a9a1e02d7a2","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
@@ -499,10 +504,10 @@ Confidence: 0.9527</code></pre>
 <h2 class="anchored" data-anchor-id="full-dataset">Full dataset</h2>
 <p>Now we’ll load the full dataset and format the data for the model. This is a dataset of arxiv papers (title, abstracts and other metadata) and we’ll filter it down to only include papers that are in the computer science category.</p>
 <div id="cell-27" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:708,&quot;referenced_widgets&quot;:[&quot;a86f72570af2448da348743ef3735627&quot;,&quot;ee420949b91e43beab4647bff09299b1&quot;,&quot;618d1bd883364cfbac2b2d38c2593225&quot;,&quot;ef23bf6b084c46e09415fc95b2e82912&quot;,&quot;e90eda1c33824fd388fb14861e240814&quot;,&quot;4a92bd08b6994cb18d48d563f480b02a&quot;,&quot;2483789723a64850bd495d9cf32d0b18&quot;,&quot;df0fa2eab16445eda77c5ce1af5c34c5&quot;,&quot;8cb1ff10f2b64942844074bfc68f8010&quot;,&quot;50a8a7e2058f493987092478b72edc70&quot;,&quot;10a332ffcbcb408b815944450afd672a&quot;,&quot;df1ec48376884012b8a50da7c276e376&quot;,&quot;1583d630093c4a2a95dc58f66c996997&quot;,&quot;de3a14c2b44a462f878b9fe05457b461&quot;,&quot;ec1d0e1e9918433692264b04712054e8&quot;,&quot;c18721a91d564a23bb7dc4f2abcfd9f1&quot;,&quot;bb18a3244f7a4d6989faa59663dfbe9f&quot;,&quot;c02b9be8ffd740be81a5c5d9d98c734e&quot;,&quot;f1f6e2adc9694c8d933d481ce3e61219&quot;,&quot;325226024cec40a0ad44120b4a2cea59&quot;,&quot;6effc9f3c0a24977a23236ac7d908f50&quot;,&quot;89cbeb7c2e564efebc1b681ef2866115&quot;,&quot;679223e718944e7fb87811809555f5d4&quot;,&quot;1e7e6150b6504ce1b099fbce30d6494f&quot;,&quot;82e5dc63d56140e2ad0723975b5da653&quot;,&quot;7f3c340be30f44e69857e5a76c3ca0c9&quot;,&quot;73754e063ce1411a8c71bff69c8767ad&quot;,&quot;4c83cad0a1ef4d96b199afb9be059aba&quot;,&quot;75ad1a5a16d845b9b38c9b2e7bb92b05&quot;,&quot;241e8f2b191342ac998a21a62ceb5c67&quot;,&quot;cdf8f386aa134ad5a2008127763a0501&quot;,&quot;405a11e18fea431fa76b571a5d83cf38&quot;,&quot;5c13ea8651104b29a789b80986b0cb02&quot;,&quot;d29ee0ea8028490296e26a902e1b18f6&quot;,&quot;68a2fecfeee147d2acf84db5e3e1fa2f&quot;,&quot;332162e6935a4e13972216b6229798cb&quot;,&quot;2dcab369772848ed8c45215698c7736d&quot;,&quot;7919149a6608462b99a3cfab29f822c2&quot;,&quot;46f2a5cb377b47a9b4ea917e49ad9984&quot;,&quot;25852e8bc80948c7963fec77aec0cd6c&quot;,&quot;3bcbead6b019492f93b26906247f22ba&quot;,&quot;6a6ccec55448449f97d617b0fe064c6f&quot;,&quot;9e08f6d8e80b4ed6a4aa10cd63f41fec&quot;,&quot;e3539268329c4c6d9339bd8d4ca43cf7&quot;,&quot;7f04fcee4c16493ba306af6014d0eac4&quot;,&quot;8b262a72c24348138cca7a703553fd60&quot;,&quot;b887b727ea3e41fa92eee04301885fab&quot;,&quot;ee2a1dabe8eb4808a45e1e06ea7bcd32&quot;,&quot;d773681a89314b828533b688ce7e243b&quot;,&quot;ebb82fef543d4839b94941577a511fed&quot;,&quot;5d79d8b6202d4d6fb5b325aa77680787&quot;,&quot;7ff8d50e14a649e689203ca2a9666f15&quot;,&quot;2d0ddd7a05eb48c1bc728dc9f4b08e4e&quot;,&quot;da07861d1d8248688fa5cf72dea9e286&quot;,&quot;98df01605c9544448ed8122b075e674b&quot;,&quot;8fd133994cd54f9fa0f52711595646fe&quot;,&quot;7dd83552eff8422f98f62ba5f343d296&quot;,&quot;58e86ff4dbbc42d98ceb19761206d2bb&quot;,&quot;a26a25650ec44501b757cd8da765e78d&quot;,&quot;6353b34d12e743cdad21f4a075b17917&quot;,&quot;f962073c588d4974a7e069c1ee5c801f&quot;,&quot;f27ffbea4a97407aaa6fb4378f20ee4d&quot;,&quot;25dc2fa2b2da48ffb0664fdb57a03e0f&quot;,&quot;633a222314ed4d37939d4282141d5ea0&quot;,&quot;0c4d8c2cc5904915a1624f172bfad096&quot;,&quot;6456c6625fe943a2bab4c99b7b0767fe&quot;,&quot;b5ee930a21f644f49e5bd4b753998aaf&quot;,&quot;a6732235633647078fc71571c926c7ed&quot;,&quot;749739d6560c40e6bdea1ed43c2a6279&quot;,&quot;0109ef64cce34083b80d79908d0ad4c7&quot;,&quot;dde9162d142f432290b36d35ed0a6e5e&quot;,&quot;aaa42637a9c84edf929475bc816ee780&quot;,&quot;5df4c4099938493fb52ff3ef90b06ff0&quot;,&quot;2da2a6a5f3d64088b220dbc10b1fd6ad&quot;,&quot;569841863841404abdc838d0bce69bc9&quot;,&quot;0475f461e5474ebc8831b746ba0cd030&quot;,&quot;861b1fd696044e7390bf6d3c90d725fe&quot;,&quot;9ea3b2cede11490c9e64def9e238ed0c&quot;,&quot;532fd5c64f41450fb5c86d9119fd5c9f&quot;,&quot;3f9ff9e3c4e449d1b267687e045f8766&quot;,&quot;ca660e1879784f2aa79896e9ef65911d&quot;,&quot;0c7630a140fc46fea635638758a8bcf4&quot;,&quot;8b2403b4842b4b5ea5605cde4a678d70&quot;,&quot;09b872401dff4e43b9fb6671031a34b2&quot;,&quot;82a1825493874899a16fe315e5a7b0e9&quot;,&quot;85e16091b64b45f6843306f860ba7fca&quot;,&quot;ddbaab1f1438416f87c2845441681cd5&quot;,&quot;c178fa81f9b04449a5256f401380c4e6&quot;,&quot;bf4d0a459b074d588360727a1425f222&quot;,&quot;6f7b577fbdb549198ff21d254dd6d642&quot;,&quot;65666337a4d44eeca0fe590af116f820&quot;,&quot;83a1567e44a94b07a097d7b149b0039f&quot;,&quot;e8b8528fffcb47849448342b8d4c8dd6&quot;,&quot;4839d4c7d2224296b0fec49c317b0f59&quot;,&quot;a9d9cb2e750a4e2fb0c23657e1c71b19&quot;,&quot;2307eaae83f149b4a7afedeb49dea545&quot;,&quot;f9ecd9b4dcce4e33a5e022cd2277d197&quot;,&quot;b332cb6684ed4a7aa8e667ef0793fa3b&quot;,&quot;f5fad41bd18d40a1b4255cea367049da&quot;,&quot;7339e1cd5a0e42088ac0a956fdd3ce58&quot;,&quot;fbf01ea6bb0c4527a5a8c31376b054c5&quot;,&quot;b27365444f214ffda107f1f3fd28df2d&quot;,&quot;08aa17e584c34d42af13cb1ea05fe22c&quot;,&quot;a92a13107ae64b57bfa66c07aadcd32e&quot;,&quot;d5407bc57fb645edaaf50cdf82e4c897&quot;,&quot;eafe4a66917f4461945b50d74bba2137&quot;,&quot;ab5d9b6e67c84bd08b7fef9444a50fcc&quot;,&quot;4bbc42a8ac094d59a03841835e362573&quot;,&quot;81cb34971f6b4d9f84a555bc1ace2e7e&quot;,&quot;1ddb6c13b2214f6a94b39dd9b05568ca&quot;,&quot;ae84a880e38a4127ad7cec47f323a0f5&quot;,&quot;8a1230b599cf4ab7938e9d0afa527517&quot;,&quot;80772f6b86ba401b811fd7aca18f10ec&quot;,&quot;37bf351784fd4da796d7b91064309efd&quot;,&quot;47173ff71a1b4577a1a2a12af7d2d236&quot;,&quot;a236f7efb738415aa5b7d294f7f61f94&quot;,&quot;993ff07acb354bd7b42c0f6308af9268&quot;,&quot;3797a9430d3f42ad8f1dac40af229ef8&quot;,&quot;21b01732cf914dd4bd42bcbdfef7952d&quot;,&quot;13840057fa6449578a9b505a12520543&quot;,&quot;1e08a21932bf464280caef42050ffdfa&quot;]}}" data-outputid="4646c817-7538-4a08-fcdf-11440b41bbf7">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> load_dataset(<span class="st">"librarian-bots/arxiv-metadata-snapshot"</span>, split<span class="op">=</span><span class="st">"train"</span>)</span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>dataset[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>dataset[<span class="dv">0</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
 {"model_id":"a86f72570af2448da348743ef3735627","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
@@ -579,11 +584,11 @@ Confidence: 0.9527</code></pre>
 </div>
 </div>
 <div id="cell-28" class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> contains_cs(row):</span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">"cs"</span> <span class="kw">in</span> row[<span class="st">"categories"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> contains_cs(row):</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">"cs"</span> <span class="kw">in</span> row[<span class="st">"categories"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-29" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:49,&quot;referenced_widgets&quot;:[&quot;770510d5ea804430886d0aafffe04f40&quot;,&quot;29da487ae3f54379906da8d57cc11e24&quot;,&quot;cabea21385a64a79942735e348eee9c8&quot;,&quot;4ceafbd1fd9f4b8583033fb065276345&quot;,&quot;783e2b93ac9c427a9ddabc895f56f1b0&quot;,&quot;d3c9fce30914402daec2b194f4ed085b&quot;,&quot;f73cd00062bf4976a28a794e2ffaef40&quot;,&quot;6360bacb7dd74826bee0b2b7844ef5c2&quot;,&quot;90bea8b4c0404b1fa88d61173998eefe&quot;,&quot;7020779736044c388b27e54522202547&quot;,&quot;c65f2d1d48af4d708234550e1f2851a5&quot;]}}" data-outputid="9b623075-cb10-4f9b-97fa-17c9d7436bd0">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> dataset.<span class="bu">filter</span>(contains_cs, num_proc<span class="op">=</span><span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> dataset.<span class="bu">filter</span>(contains_cs, num_proc<span class="op">=</span><span class="dv">4</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
 {"model_id":"770510d5ea804430886d0aafffe04f40","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
@@ -597,7 +602,7 @@ Confidence: 0.9527</code></pre>
 <div id="cell-31" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:120,&quot;referenced_widgets&quot;:[&quot;549446b8f9be4eef9c6f6dac3f0ec3e6&quot;,&quot;306e0485fd8c45eeb50e1a140af61f31&quot;,&quot;6d976e8cebd3469290125d617b0b287f&quot;,&quot;28ab7206e4964a99b8ec1acba02be2ce&quot;,&quot;e6d7c794dc1d4108a1b11f5011c275e0&quot;,&quot;f10a40d1387a4ab9a15d7e5d380d0852&quot;,&quot;119851176ec045128969cd7dfe842586&quot;,&quot;07014f59b188471e89f6e4c909ba9ff9&quot;,&quot;4f4a700f7f9f4aefb69854518a0d3ab8&quot;,&quot;91344e0dea314ed4a85a1b176090413f&quot;,&quot;f503ff925fdf48288643b8f1e98ab8ef&quot;]}}" data-outputid="b30a15e0-1966-4aa5-c9f4-7cb5003634da">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> Dataset</span>
@@ -637,23 +642,23 @@ Confidence: 0.9527</code></pre>
 <span id="cb29-38"><a href="#cb29-38" aria-hidden="true" tabindex="-1"></a>df_cs_datasets <span class="op">=</span> df_cs_datasets.collect()</span>
 <span id="cb29-39"><a href="#cb29-39" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb29-40"><a href="#cb29-40" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> Dataset.from_polars(df_cs_datasets)</span>
-<span id="cb29-41"><a href="#cb29-41" aria-hidden="true" tabindex="-1"></a>ds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb29-41"><a href="#cb29-41" aria-hidden="true" tabindex="-1"></a>ds</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>We now end up with a dataset with a new column <code>prompt</code> which contains the correctly formatted input for the model.</p>
 <div id="cell-33" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:89}}" data-outputid="0e5910ef-f8d0-4903-dd2a-c95d970b7985">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>ds[<span class="dv">0</span>][<span class="st">"prompt"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>ds[<span class="dv">0</span>][<span class="st">"prompt"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="78">
 <pre><code>'TITLE: Good practices for a literature survey are not followed by authors while\n  preparing scientific manuscripts \n\nABSTRACT:   The number of citations received by authors in scientific journals has become\na major parameter to assess individual researchers and the journals themselves\nthrough the impact factor. A fair assessment therefore requires that the\ncriteria for selecting references in a given manuscript should be unbiased with\nrespect to the authors or the journals cited. In this paper, we advocate that\nauthors should follow two mandatory principles to select papers (later\nreflected in the list of references) while studying the literature for a given\nresearch: i) consider similarity of content with the topics investigated, lest\nvery related work should be reproduced or ignored; ii) perform a systematic\nsearch over the network of citations including seminal or very related papers.\nWe use formalisms of complex networks for two datasets of papers from the arXiv\nrepository to show that neither of these two criteria is fulfilled in practice.\n'</code></pre>
 </div>
 </div>
 <p>We can grab all of these prompts as a list</p>
 <div id="cell-35" class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>prompts <span class="op">=</span> ds[<span class="st">"prompt"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>prompts <span class="op">=</span> ds[<span class="st">"prompt"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s see how many rows we have to classify</p>
 <div id="cell-37" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="53f63b6d-3597-4d59-a65a-626eba811ef1">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(prompts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(prompts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="29">
 <pre><code>211190</code></pre>
 </div>
@@ -662,16 +667,16 @@ Confidence: 0.9527</code></pre>
 <h3 class="anchored" data-anchor-id="batching-and-classifying">Batching and classifying</h3>
 <p>While in theory you should be able to pass in the entire list to the model and have it take care of batching, I ran into some issues with very big inputs so I’ll use a simple batching approach. If you are working with smaller datasets you can probably skip this step.</p>
 <div id="cell-39" class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> toolz <span class="im">import</span> partition_all</span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.auto <span class="im">import</span> tqdm</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> toolz <span class="im">import</span> partition_all</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.auto <span class="im">import</span> tqdm</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-40" class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>all_results <span class="op">=</span> []</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>all_results <span class="op">=</span> []</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-41" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:245,&quot;referenced_widgets&quot;:[&quot;66fc197eb0474f8095744111ec9d5bda&quot;,&quot;1d55778f04f34cf990c1304d5948cbe2&quot;,&quot;7d5da83c5a254ac1833da563d922418e&quot;,&quot;93eccf5263bf40af83538456967fa90f&quot;,&quot;ee7551f8bdfe4ba5af90f32f4ee988c4&quot;,&quot;7861d9751eb04fc5bca692c124dc2cdd&quot;,&quot;1168cee23f344174a560d48291d50526&quot;,&quot;979146101070458f94f7e0b7f3217008&quot;,&quot;590f8c3ed5c84285bbd21781934204fb&quot;,&quot;a812f252d6844277ab3eba1fecc20d33&quot;,&quot;785eade5e27942e8b72109619ea83dc8&quot;,&quot;71db230627a045ca8fa1e7400909fd80&quot;,&quot;3abd2f2bb86c44729601f8e1c7773021&quot;,&quot;527ee1a58d8b499dba9d67bd100fd94f&quot;,&quot;be2bf7ab69844b3dbe99faf80627b751&quot;,&quot;fa8ab9e08918402c928bbe04aae05c24&quot;,&quot;1ddde0c4784f4dc880b520cd0018f9e7&quot;,&quot;98a91ac9d8cf48afadc4da52cf592c26&quot;,&quot;f6d069d25582478abbf7ba2a7e12bead&quot;,&quot;d186e5ba9d9e41c28a3717557494458f&quot;,&quot;7a29ee5fa1fa4646a8ae023cc97b2427&quot;,&quot;cf1e5695def34cdea6f07339111f0cb9&quot;,&quot;a0dcefd77ab94fcd856a998bf71c40ed&quot;,&quot;44e61c8bb43d4ce2bec944e7755c5437&quot;,&quot;694d138d925e48d2925012a975747d35&quot;,&quot;63f452d925e448268a5f9d0aaed7285f&quot;,&quot;0fc3a66ca8c24f0c9396b7df7cca8a88&quot;,&quot;b88f974c4572480ea831a39e75ddd226&quot;,&quot;55785029f93548f0be6858021c0d3f58&quot;,&quot;6aa81f1782044a12b28971ccadf03161&quot;,&quot;96570adbe4fb49ba83e9d7354291ebda&quot;,&quot;7d551bce5103405f94ffe224fb9d3c30&quot;,&quot;7833238c638a4742a65c4601605012fe&quot;,&quot;0e0bc3b33b1f42738343578b5f935080&quot;,&quot;b2ea6ea5ba3e49c395e9e75182882c2a&quot;,&quot;dab31ba0cdd146bea0a5f4a310e4957e&quot;,&quot;9d58c82d31fa4c379faa990e565dab0e&quot;,&quot;6a5183e671a14c0ba9ce899e0110fe98&quot;,&quot;d2e00e62d91242c093546457116aefd2&quot;,&quot;ebdd8d4a9cdc4e078f9b12bbadf8b7e6&quot;,&quot;fa688082d05c4eaeb9205eef9fc9e8bf&quot;,&quot;8665838ae95f4cd8bb5463899765c23e&quot;,&quot;a65af85aabe4484b9a994b2b1613f3c2&quot;,&quot;7d59bdd32e414d5eb9b5577912b4346c&quot;,&quot;bd0931e502cc435790ffec61f37e36ed&quot;,&quot;ad73b16e0c1c48838e738cd52e055d72&quot;,&quot;56ffd362aaec4c05b0530fe166289351&quot;,&quot;0e11d9df42fc484db6c6d5531925aa10&quot;,&quot;7512f4797d9943d9b930de4715451cc7&quot;,&quot;8cedd25fa943456bbbfce9a6ddaa1a78&quot;,&quot;915216d151fe4655917e34bfcef25f4e&quot;,&quot;96e09b3680234517952ce11b4d701e22&quot;,&quot;8cf90948daf44b8b82c362e2f20d00b3&quot;,&quot;7954a64c3144481c8c54f956f4022d7b&quot;,&quot;c7118f96c4dc4885b6cabfadb4b159d0&quot;,&quot;ac4871643da14b39a7a355143576e703&quot;,&quot;aca8c4a7197540dc84afe11328e7a99c&quot;,&quot;023edcf8ff314bf3a646927a039bb813&quot;,&quot;d3a5505036dc4e89bee4d0c1d5d40f95&quot;,&quot;133ed76c7f51428e9d3d95535cf84d17&quot;,&quot;8bf4c2ab20a54dcda712827572cd97f0&quot;,&quot;762601c0e2244634abe2ca03e6ab6afd&quot;,&quot;380cba8d32a141b1af8b1f0186c133eb&quot;,&quot;9a6d472d79234ec38e62437d9173334e&quot;,&quot;8026ad46c5d04badb4d5d6ca3e92c18f&quot;,&quot;5f85abaa686e48e09c65aa55cbcb8376&quot;]}}" data-outputid="2c56be2a-9bce-4785-e658-5934a59d64f2">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> batch <span class="kw">in</span> tqdm(<span class="bu">list</span>(partition_all(<span class="dv">50_000</span>, prompts))):</span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    all_results.append(llm.classify(batch))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    all_results.append(llm.classify(batch))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
 {"model_id":"66fc197eb0474f8095744111ec9d5bda","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
@@ -717,13 +722,13 @@ Wall time: 16min 18s</code></pre>
 <h2 class="anchored" data-anchor-id="working-with-the-results">Working with the results</h2>
 <p>We can now join all of the results into a single list</p>
 <div id="cell-45" class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> toolz <span class="im">import</span> concat</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> toolz <span class="im">import</span> concat</span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>outputs <span class="op">=</span> <span class="bu">list</span>(concat(all_results))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>outputs <span class="op">=</span> <span class="bu">list</span>(concat(all_results))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>At the moment the raw outputs don’t contains the labels we want so we’ll create a small function that maps the outputs to the string label and returns the confidence in the prediction.</p>
 <div id="cell-47" class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
 <span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -737,23 +742,23 @@ Wall time: 16min 18s</code></pre>
 <span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>    top_idx <span class="op">=</span> torch.argmax(probs).item()</span>
 <span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a>    top_prob <span class="op">=</span> probs[top_idx].item()</span>
 <span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a>    label <span class="op">=</span> label_map.get(top_idx)  <span class="co"># Returns None if key is missing</span></span>
-<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> label, top_prob</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> label, top_prob</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-48" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="263ed805-bc25-43d6-ccd9-89a14c2be5da">
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>get_top_label(outputs[<span class="dv">0</span>], id2label)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>get_top_label(outputs[<span class="dv">0</span>], id2label)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="47">
 <pre><code>('no_new_dataset', 0.9503649473190308)</code></pre>
 </div>
 </div>
 <p>Let’s create a new list with these results</p>
 <div id="cell-50" class="cell">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>clean_results <span class="op">=</span> [get_top_label(output, id2label) <span class="cf">for</span> output <span class="kw">in</span> outputs]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>clean_results <span class="op">=</span> [get_top_label(output, id2label) <span class="cf">for</span> output <span class="kw">in</span> outputs]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We can quickly count the label frequencies</p>
 <div id="cell-52" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="5a8f2a72-6f3a-4252-bd1e-1881c4c71887">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> collections <span class="im">import</span> Counter</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> collections <span class="im">import</span> Counter</span>
 <span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>Counter(result[<span class="dv">0</span>] <span class="cf">for</span> result <span class="kw">in</span> clean_results)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>Counter(result[<span class="dv">0</span>] <span class="cf">for</span> result <span class="kw">in</span> clean_results)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="51">
 <pre><code>Counter({'no_new_dataset': 182083, 'new_dataset': 29107})</code></pre>
 </div>
@@ -762,11 +767,11 @@ Wall time: 16min 18s</code></pre>
 <h3 class="anchored" data-anchor-id="add-labels-back-to-the-dataset">Add labels back to the dataset</h3>
 <p>We can now add the labels back to the dataset</p>
 <div id="cell-54" class="cell">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> ds.add_column(<span class="st">"is_new_dataset_label"</span>, [result[<span class="dv">0</span>] <span class="cf">for</span> result <span class="kw">in</span> clean_results])</span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> ds.add_column(<span class="st">"label_confidence"</span>, [result[<span class="dv">1</span>] <span class="cf">for</span> result <span class="kw">in</span> clean_results])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> ds.add_column(<span class="st">"is_new_dataset_label"</span>, [result[<span class="dv">0</span>] <span class="cf">for</span> result <span class="kw">in</span> clean_results])</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> ds.add_column(<span class="st">"label_confidence"</span>, [result[<span class="dv">1</span>] <span class="cf">for</span> result <span class="kw">in</span> clean_results])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-55" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="42e34940-94a9-40d4-c0b9-f86fbe0f02c2">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>ds[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>ds[<span class="dv">0</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="80">
 <pre><code>{'id': '1005.3063',
  'submitter': 'Diego  Amancio Raphael',
@@ -797,10 +802,10 @@ Wall time: 16min 18s</code></pre>
 <h2 class="anchored" data-anchor-id="filtering-the-dataset">Filtering the dataset</h2>
 <p>Now we have a new column with the labels, and a second column with the confidence in the label. We can now filter the dataset as needed. You could of course combine these filters in many ways depending on your use case.</p>
 <div id="cell-57" class="cell">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>df_with_labels <span class="op">=</span> ds.to_polars()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>df_with_labels <span class="op">=</span> ds.to_polars()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-58" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:282}}" data-outputid="a82c2437-e964-44d3-b150-b33464a1c339">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>df_with_labels.head(<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>df_with_labels.head(<span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="93">
 <div><style>
 .dataframe > thead > tr,
@@ -810,7 +815,7 @@ Wall time: 16min 18s</code></pre>
 }
 </style>
 <small>shape: (2, 17)</small>
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th">id</th>
@@ -832,23 +837,23 @@ Wall time: 16min 18s</code></pre>
 <th data-quarto-table-cell-role="th">label_confidence</th>
 </tr>
 <tr class="even">
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>list[struct[2]]</th>
-<th>datetime[ms]</th>
-<th>list[list[str]]</th>
-<th>str</th>
-<th>str</th>
-<th>f64</th>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>list[struct[2]]</td>
+<td>datetime[ms]</td>
+<td>list[list[str]]</td>
+<td>str</td>
+<td>str</td>
+<td>f64</td>
 </tr>
 </thead>
 <tbody>
@@ -896,18 +901,18 @@ Wall time: 16min 18s</code></pre>
 </div>
 </div>
 <div id="cell-59" class="cell">
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>df_with_labels <span class="op">=</span> df_with_labels.lazy()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>df_with_labels <span class="op">=</span> df_with_labels.lazy()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-60" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="450032cf-e175-4cdd-ce75-62e9b51b08eb">
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>df_with_labels.<span class="bu">filter</span>(pl.col(<span class="st">"is_new_dataset_label"</span>) <span class="op">==</span> <span class="st">"new_dataset"</span>).collect().shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>df_with_labels.<span class="bu">filter</span>(pl.col(<span class="st">"is_new_dataset_label"</span>) <span class="op">==</span> <span class="st">"new_dataset"</span>).collect().shape</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="95">
 <pre><code>(29107, 17)</code></pre>
 </div>
 </div>
 <div id="cell-61" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:244}}" data-outputid="22c9f242-6f71-4240-986b-de58d1c6a900">
-<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>df_predicted_as_new_dataset <span class="op">=</span> df_with_labels.<span class="bu">filter</span>(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>df_predicted_as_new_dataset <span class="op">=</span> df_with_labels.<span class="bu">filter</span>(</span>
 <span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"is_new_dataset_label"</span>) <span class="op">==</span> <span class="st">"new_dataset"</span></span>
-<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="96">
 <h4 class="anchored">NAIVE QUERY PLAN</h4><p>run <b>LazyFrame.show_graph()</b> to see the optimized version</p><!--?xml version="1.0" encoding="UTF-8" standalone="no"?-->
 
@@ -941,12 +946,12 @@ Wall time: 16min 18s</code></pre>
 </div>
 </div>
 <div id="cell-62" class="cell">
-<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>df_predicted_as_new_dataset_high_confidence <span class="op">=</span> df_predicted_as_new_dataset.<span class="bu">filter</span>(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>df_predicted_as_new_dataset_high_confidence <span class="op">=</span> df_predicted_as_new_dataset.<span class="bu">filter</span>(</span>
 <span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"label_confidence"</span>).ge(<span class="fl">0.95</span>)</span>
-<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-63" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:178}}" data-outputid="b0d48783-4c5f-4818-a8d9-502f9692bd19">
-<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>df_predicted_as_new_dataset_high_confidence.show_graph()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>df_predicted_as_new_dataset_high_confidence.show_graph()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -956,7 +961,7 @@ Wall time: 16min 18s</code></pre>
 </div>
 </div>
 <div id="cell-64" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:964}}" data-outputid="5913c5bc-c270-41b0-8874-5725deb3252a">
-<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>df_predicted_as_new_dataset_high_confidence.collect()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>df_predicted_as_new_dataset_high_confidence.collect()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="102">
 <div><style>
 .dataframe > thead > tr,
@@ -966,7 +971,7 @@ Wall time: 16min 18s</code></pre>
 }
 </style>
 <small>shape: (23_018, 17)</small>
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th">id</th>
@@ -988,23 +993,23 @@ Wall time: 16min 18s</code></pre>
 <th data-quarto-table-cell-role="th">label_confidence</th>
 </tr>
 <tr class="even">
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>list[struct[2]]</th>
-<th>datetime[ms]</th>
-<th>list[list[str]]</th>
-<th>str</th>
-<th>str</th>
-<th>f64</th>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>list[struct[2]]</td>
+<td>datetime[ms]</td>
+<td>list[list[str]]</td>
+<td>str</td>
+<td>str</td>
+<td>f64</td>
 </tr>
 </thead>
 <tbody>
@@ -1286,13 +1291,14 @@ Wall time: 16min 18s</code></pre>
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

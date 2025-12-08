@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.34">
+<meta name="generator" content="quarto-1.8.26">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -61,7 +61,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../../../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -71,14 +71,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../../icons/favicon.ico" rel="icon">
 <script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap-d68be38d83eca2bb035acf846ffba811.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-0b37c64f34216b628666a8dac638b53b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -106,7 +107,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
 
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 <script defer="" src="https://cloud.umami.is/script.js" data-website-id="85cb27d6-dbf9-43d7-97d0-be4e6724de7a"></script>
@@ -146,10 +147,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="nav-link" href="../../../about.html"> 
 <span class="menu-text">About</span></a>
   </li>  
-  <li class="nav-item compact">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../slides.qmd"> 
+<span class="menu-text">Slides</span></a>
+  </li>  
+  <li class="nav-item">
     <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
 </i> 
-<span class="menu-text"></span></a>
+<span class="menu-text">GitHub</span></a>
   </li>  
   <li class="nav-item compact">
     <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
@@ -241,7 +246,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <div id="cell-1" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="84e901c8-04fc-4812-affb-5b4d269fb407" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>pip install polars huggingface_hub datasets openai <span class="op">--</span>upgrade</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>pip install polars huggingface_hub datasets openai <span class="op">--</span>upgrade</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <section id="updates" class="level2">
 <h2 class="anchored" data-anchor-id="updates">Updates</h2>
@@ -281,25 +286,25 @@ Note
 </div>
 </div>
 <div id="cell-6" class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> snapshot_download</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">"HF_HUB_ENABLE_HF_TRANSFER"</span>] <span class="op">=</span> <span class="st">"1"</span>  <span class="co"># turn on HF_TRANSFER</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">"HF_HUB_ENABLE_HF_TRANSFER"</span>] <span class="op">=</span> <span class="st">"1"</span>  <span class="co"># turn on HF_TRANSFER</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-7" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>files <span class="op">=</span> snapshot_download(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>files <span class="op">=</span> snapshot_download(</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    repo_id<span class="op">=</span><span class="st">"librarian-bots/arxiv-metadata-snapshot"</span>,</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    allow_patterns<span class="op">=</span>[<span class="st">"*.parquet"</span>],</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    repo_type<span class="op">=</span><span class="st">"dataset"</span>,</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-8" class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pl.scan_parquet(files)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pl.scan_parquet(files)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s look at the first row. We see a bunch of metadata about the paper and then the title and abstract. These are probably the column we’ll want to use as input for our model.</p>
 <div id="cell-10" class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df.head(<span class="dv">1</span>).collect()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df.head(<span class="dv">1</span>).collect()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="5">
 <div><style>
 .dataframe > thead > tr,
@@ -309,7 +314,7 @@ Note
 }
 </style>
 <small>shape: (1, 14)</small>
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th">id</th>
@@ -328,20 +333,20 @@ Note
 <th data-quarto-table-cell-role="th">authors_parsed</th>
 </tr>
 <tr class="even">
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>list[struct[2]]</th>
-<th>datetime[ms]</th>
-<th>list[list[str]]</th>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>list[struct[2]]</td>
+<td>datetime[ms]</td>
+<td>list[list[str]]</td>
 </tr>
 </thead>
 <tbody>
@@ -368,7 +373,7 @@ Note
 </div>
 <p>You will see there is a categories column. This is a string that contains a list of categories that the paper belongs to. We can grab a few examples of the categories.</p>
 <div id="cell-12" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="a108a474-38d6-4a71-f758-d284498da8bd" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df.head(<span class="dv">10</span>).collect().select(<span class="st">"categories"</span>).to_series().to_list()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df.head(<span class="dv">10</span>).collect().select(<span class="st">"categories"</span>).to_series().to_list()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="6">
 <pre><code>['cs.DS',
  'math.GM',
@@ -384,12 +389,12 @@ Note
 </div>
 <p>For my particular use case I’m mostly interest in papers that are in the computer science category i.e contain “cs.” in the categories column.</p>
 <div id="cell-14" class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.<span class="bu">filter</span>(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.<span class="bu">filter</span>(</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"categories"</span>)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">str</span>.split(<span class="st">" "</span>)</span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">list</span>.<span class="bu">eval</span>(pl.element().<span class="bu">str</span>.starts_with(<span class="st">"cs."</span>))</span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">list</span>.<span class="bu">any</span>()</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We’ll filter papers to only include those that contain the word “dataset” in the title or abstract, again you could easily change this to use other words.</p>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -406,13 +411,13 @@ Note
 </div>
 </div>
 <div id="cell-17" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:199}}" data-outputid="72e83a74-efb2-4076-cbc9-b278bd7bab5f" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.<span class="bu">filter</span>(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.<span class="bu">filter</span>(</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"title"</span>).<span class="bu">str</span>.contains(<span class="st">"dataset"</span>) <span class="op">|</span> pl.col(<span class="st">"abstract"</span>).<span class="bu">str</span>.contains(<span class="st">"dataset"</span>)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Since we’re using the polars lazy api, we need to call <code>collect()</code> to actually get the data.</p>
 <div id="cell-19" class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.collect()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.collect()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="generate-labels-not-synthetic-data" class="level2">
@@ -421,8 +426,8 @@ Note
 <p>In this case, it might be more sensible to use a model’s reasoning ability to generate labels rather than generate synthetic data.</p>
 <p>Let’s grab a few examples from the data to use as a starting point.</p>
 <div id="cell-22" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="969cd1ce-3e10-4119-8d78-cc7cccebcf8b" data-execution_count="168">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>examples <span class="op">=</span> df.head(<span class="dv">4</span>).select(pl.col([<span class="st">"abstract"</span>, <span class="st">"title"</span>])).to_dicts()</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>examples[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>examples <span class="op">=</span> df.head(<span class="dv">4</span>).select(pl.col([<span class="st">"abstract"</span>, <span class="st">"title"</span>])).to_dicts()</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>examples[<span class="dv">0</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="168">
 <pre><code>{'abstract': '  This paper presents a new fuzzy k-means algorithm for the clustering of high\ndimensional data in various subspaces. Since, In the case of high dimensional\ndata, some features might be irrelevant and relevant but may have different\nsignificance in the clustering. For a better clustering, it is crucial to\nincorporate the contribution of these features in the clustering process. To\ncombine these features, in this paper, we have proposed a new fuzzy k-means\nclustering algorithm in which the objective function of the fuzzy k-means is\nmodified using two different entropy term. The first entropy term helps to\nminimize the within-cluster dispersion and maximize the negative entropy to\ndetermine clusters to contribute to the association of data points. The second\nentropy term helps to control the weight of the features because different\nfeatures have different contributing weights in the clustering process for\nobtaining the better partition of the data. The efficacy of the proposed method\nis presented in terms of various clustering measures on multiple datasets and\ncompared with various state-of-the-art methods.\n',
  'title': 'An Entropy-based Variable Feature Weighted Fuzzy k-Means Algorithm for\n  High Dimensional Data'}</code></pre>
@@ -434,7 +439,7 @@ Note
 <p>We’ll start by using a structured generation approach to generate the labels. This means we’ll define a schema for the model’s output and then use that to generate the labels. I’ve written more about this in a <a href="https://danielvanstrien.xyz/posts/plain-text/synthetic-data-generation/2024-05-03-synethic-data-1.html">previous blog post</a> but the basic idea is that we define a schema for the output of the model and then use that to generate the labels. This means we don’t have to do a lot of work to parse the output of the model and can be sure we can easily train on the output.</p>
 <p>In this case, we define a Pydantic model as one that has a label and an explanation.</p>
 <div id="cell-24" class="cell" data-execution_count="169">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> enum <span class="im">import</span> Enum</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> enum <span class="im">import</span> Enum</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pydantic <span class="im">import</span> BaseModel, constr</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> Annotated</span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -446,11 +451,11 @@ Note
 <span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> IntroducesNewDataset(BaseModel):</span>
 <span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    explanation: constr(min_length<span class="op">=</span><span class="dv">40</span>)</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    label: DatasetLabel</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    label: DatasetLabel</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We define a function to format the data as a prompt. This function takes a dictionary with the title and abstract and formats it as a prompt for the model.</p>
 <div id="cell-26" class="cell" data-execution_count="170">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> format_text_as_prompt(data: <span class="bu">dict</span>[<span class="bu">str</span>, <span class="bu">str</span>]):</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> format_text_as_prompt(data: <span class="bu">dict</span>[<span class="bu">str</span>, <span class="bu">str</span>]):</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="ss">f"""Look at the title and abstract for the following arXiv paper. Assess whether the paper is likely to introduce a newly created dataset.</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -467,10 +472,10 @@ Note
 <span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="ss">    "explanation": "The reasoning the model used to come to its conclusion"</span></span>
 <span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="ch">}}</span></span>
 <span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="ss">```</span></span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="ss">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="ss">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-27" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="d007252f-7f2d-46f9-d6b1-2a6f245af125" data-execution_count="171">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(format_text_as_prompt(examples[<span class="dv">0</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(format_text_as_prompt(examples[<span class="dv">0</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Look at the title and abstract for the following arXiv paper. Assess whether the paper is likely to introduce a newly created dataset.
 
@@ -513,7 +518,7 @@ Return your reasoning and the label you've chosen as a JSON object like this:
 <p>One of the powerful features of open source is that it makes it easier to run models in different places. While developing our approach, we can use a smaller version of the model to test it and then switch to a hosted version once we’re happy with it.</p>
 <p>We’ll run the model using <a href="https://lmstudio.ai/">LM Studio</a>. LM Studio is primarily known as a UI for running local LLMs, but it also has a server mode, which we’ll use here. We can interact with the server using the CLI. To start the server, we can run the following command.</p>
 <div id="cell-29" class="cell" data-execution_count="172">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>lms server start</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>lms server start</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Starting server...
 Success! Server is now running on port 1234</code></pre>
@@ -521,7 +526,7 @@ Success! Server is now running on port 1234</code></pre>
 </div>
 <p>We can use <code>ls</code> to see the models that are available, we’ll filter these to only show the DeepSeek models.</p>
 <div id="cell-31" class="cell" data-execution_count="135">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>lms ls <span class="op">|</span> grep DeepSeek</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>lms ls <span class="op">|</span> grep DeepSeek</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-bright-cyan-fg">lmstudio-community/DeepSeek-R1-Distill-Qwen-1.5B-GGUF</span>      <span class="ansi-bright-cyan-fg">1.12 GB</span>          <span class="ansi-bright-cyan-fg">Qwen2</span>           
@@ -550,7 +555,7 @@ Note
 </div>
 <p>We can load the model by running the following command. If the model is not already downloaded, LM Studio will download it. We’ll try and see how well the 7B model does.</p>
 <div id="cell-34" class="cell" data-execution_count="137">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>lms load DeepSeek<span class="op">-</span>R1<span class="op">-</span>Distill<span class="op">-</span>Qwen<span class="op">-</span><span class="dv">7</span><span class="er">B</span><span class="op">-</span>GGUF</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>lms load DeepSeek<span class="op">-</span>R1<span class="op">-</span>Distill<span class="op">-</span>Qwen<span class="op">-</span><span class="dv">7</span><span class="er">B</span><span class="op">-</span>GGUF</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <div class="ansi-escaped-output">
 <pre>Loading model "lmstudio-community/DeepSeek-R1-Distill-Qwen-7B-GGUF/DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf"...
@@ -568,14 +573,14 @@ To set a custom identifier, use the <span class="ansi-bright-yellow-fg">--identi
 </div>
 <p>Since LM Studio has an OpenAI compatible API, we can use the OpenAI Python client to interact with the server. We just need to set the base URL to the LM Studio server and set the API key to <code>lm-studio</code>.</p>
 <div id="cell-36" class="cell" data-execution_count="153">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> openai <span class="im">import</span> OpenAI</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> openai <span class="im">import</span> OpenAI</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-37" class="cell" data-execution_count="154">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>client <span class="op">=</span> OpenAI(base_url<span class="op">=</span><span class="st">"http://localhost:1234/v1"</span>, api_key<span class="op">=</span><span class="st">"lm-studio"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>client <span class="op">=</span> OpenAI(base_url<span class="op">=</span><span class="st">"http://localhost:1234/v1"</span>, api_key<span class="op">=</span><span class="st">"lm-studio"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Once we’ve created the client we can interact with it in the usual way i.e.&nbsp;to see available models we can run the following command.</p>
 <div id="cell-39" class="cell" data-execution_count="140">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>client.models.<span class="bu">list</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>client.models.<span class="bu">list</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="140">
 <pre><code>SyncPage[Model](data=[Model(id='deepseek-r1-distill-qwen-7b', created=None, object='model', owned_by='organization_owner')], object='list')</code></pre>
 </div>
@@ -585,7 +590,7 @@ To set a custom identifier, use the <span class="ansi-bright-yellow-fg">--identi
 <h2 class="anchored" data-anchor-id="generating-labels">Generating labels</h2>
 <p>We can now generate labels for our examples. We’ll use the <code>format_text_as_prompt</code> function to format the data as a prompt and then pass it to the model. Since we’re using a structured output, we need to use the <code>beta.chat.completions</code> endpoint. We pass in our Pydantic model as the <code>response_format</code> argument.</p>
 <div id="cell-41" class="cell" data-execution_count="173">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>messages <span class="op">=</span> [</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>messages <span class="op">=</span> [</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: format_text_as_prompt(examples[<span class="dv">0</span>])},</span>
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>]</span>
 <span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -595,18 +600,18 @@ To set a custom identifier, use the <span class="ansi-bright-yellow-fg">--identi
 <span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>    messages<span class="op">=</span>messages,</span>
 <span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>    temperature<span class="op">=</span><span class="fl">0.7</span>,</span>
 <span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>    response_format<span class="op">=</span>IntroducesNewDataset,</span>
-<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We can check that we can parse the output of the model into our Pydantic model.</p>
 <div id="cell-43" class="cell" data-execution_count="174">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>IntroducesNewDataset.model_validate_json(response.choices[<span class="dv">0</span>].message.content)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>IntroducesNewDataset.model_validate_json(response.choices[<span class="dv">0</span>].message.content)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="174">
 <pre><code>IntroducesNewDataset(explanation="The paper discusses an entropy-based fuzzy k-means algorithm designed for high-dimensional data. While it mentions incorporating feature contributions into clustering, there's no information about introducing a new dataset.", label=&lt;DatasetLabel.NOT_NEW: 'no_new_dataset'&gt;)</code></pre>
 </div>
 </div>
 <p>We’ll wrap this in a function so we can easily use it for a lot of examples.</p>
 <div id="cell-45" class="cell" data-execution_count="175">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> predict_label(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> predict_label(</span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    data: <span class="bu">dict</span>[<span class="bu">str</span>, <span class="bu">str</span>], model: <span class="bu">str</span> <span class="op">=</span> <span class="st">"deepseek-r1-distill-qwen-1.5b"</span>, client<span class="op">=</span>client</span>
 <span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> IntroducesNewDataset <span class="op">|</span> <span class="va">None</span>:</span>
 <span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
@@ -625,11 +630,11 @@ To set a custom identifier, use the <span class="ansi-bright-yellow-fg">--identi
 <span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>        )</span>
 <span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
 <span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(e)</span>
-<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Before doing a big batch of predictions, let’s run the model on a few examples so we can see how it does.</p>
 <div id="cell-47" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="4503d632-e290-4174-ebc3-b896e7ee9d00" data-execution_count="176">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> rich <span class="im">import</span> <span class="bu">print</span> <span class="im">as</span> rich_print</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> rich <span class="im">import</span> <span class="bu">print</span> <span class="im">as</span> rich_print</span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>structured_results <span class="op">=</span> []</span>
 <span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> example <span class="kw">in</span> examples:</span>
@@ -640,7 +645,7 @@ To set a custom identifier, use the <span class="ansi-bright-yellow-fg">--identi
 <span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>    rich_print(title)</span>
 <span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>    rich_print(abstract)</span>
 <span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>    rich_print(prediction)</span>
-<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>    rich_print(<span class="st">"---"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>    rich_print(<span class="st">"---"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">An Entropy-based Variable Feature Weighted Fuzzy k-Means Algorithm for
   High Dimensional Data
@@ -812,7 +817,7 @@ further research in SSL.
 <h2 class="anchored" data-anchor-id="room-to-think">Room to think?</h2>
 <p>One of the features of the R1 model is that it has “reasoning”, which is delineated by <thinking> and </thinking> tags. Since our structured output doesn’t allow for this, let’s try and see how well the model does without it.</p>
 <div id="cell-49" class="cell" data-execution_count="215">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> predict_label_without_structured_output(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> predict_label_without_structured_output(</span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>    data: <span class="bu">dict</span>[<span class="bu">str</span>, <span class="bu">str</span>], model: <span class="bu">str</span> <span class="op">=</span> <span class="st">"deepseek-r1-distill-qwen-1.5b"</span>, client<span class="op">=</span>client</span>
 <span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">str</span>:</span>
 <span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    prompt <span class="op">=</span> format_text_as_prompt(data)</span>
@@ -824,18 +829,18 @@ further research in SSL.
 <span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>        messages<span class="op">=</span>messages,</span>
 <span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>        temperature<span class="op">=</span><span class="fl">0.7</span>,</span>
 <span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> response.choices[<span class="dv">0</span>].message.content</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> response.choices[<span class="dv">0</span>].message.content</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We’ll compare the results from the two approaches.</p>
 <div id="cell-51" class="cell" data-execution_count="178">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># compare the results vs structured output</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># compare the results vs structured output</span></span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, example <span class="kw">in</span> <span class="bu">enumerate</span>(examples):</span>
 <span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>    rich_print(example[<span class="st">"title"</span>])</span>
 <span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>    rich_print(example[<span class="st">"abstract"</span>])</span>
 <span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>    prediction <span class="op">=</span> predict_label_without_structured_output(example)</span>
 <span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Previous: </span><span class="sc">{</span>structured_results[i]<span class="sc">.</span>label<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"New: </span><span class="sc">{</span>prediction<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>    rich_print(<span class="st">"---"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>    rich_print(<span class="st">"---"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">An Entropy-based Variable Feature Weighted Fuzzy k-Means Algorithm for
   High Dimensional Data
@@ -1076,7 +1081,7 @@ Note
 <div id="cell-55" class="cell" data-execution_count="179">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> contextlib</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> contextlib</span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re</span>
 <span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
 <span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -1093,12 +1098,12 @@ Note
 <span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>        json_text <span class="op">=</span> match.group(<span class="dv">0</span>)</span>
 <span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> contextlib.suppress(json.JSONDecodeError):</span>
 <span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> text, json.loads(json_text)</span>
-<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> text, <span class="va">None</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> text, <span class="va">None</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div id="cell-56" class="cell" data-execution_count="180">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>prediction <span class="op">=</span> predict_label_without_structured_output(examples[<span class="dv">0</span>])</span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>try_extract_json_from_text(prediction)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>prediction <span class="op">=</span> predict_label_without_structured_output(examples[<span class="dv">0</span>])</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>try_extract_json_from_text(prediction)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="180">
 <pre><code>('&lt;think&gt;\nOkay, so I\'m trying to figure out whether the paper titled "An Entropy-based Variable Feature Weighted Fuzzy k-Means Algorithm for High Dimensional Data" introduces a newly created dataset. Let me go through this step by step.\n\nFirst, I look at the title. The title mentions an algorithm called fuzzy k-means that\'s been modified with entropy terms and feature weighting to handle high-dimensional data. It doesn\'t explicitly say anything about introducing new datasets, but it does focus on improving clustering in such data environments, which often involves dealing with irrelevant or less important features.\n\nNow, looking at the abstract. The paper discusses modifying the fuzzy k-means algorithm by incorporating two entropy terms: one for within-cluster dispersion and negative entropy to determine clusters, and another to control feature weights because different features have varying contributions. They compare their method\'s efficacy using various clustering measures on multiple datasets against state-of-the-art methods.\n\nHmm, so in both the title and abstract, I don\'t see any mention of a new dataset being created or introduced. The focus is more on improving an existing algorithm to better handle high-dimensional data rather than introducing entirely new data for analysis.\n\nI should also consider whether it\'s possible that the paper might use standard datasets without explicitly stating so. For example, many clustering algorithms are tested on common datasets like MNIST, CIFAR-10, etc., especially when dealing with high-dimensional data because these datasets have numerous features after preprocessing (like PCA or similar techniques). However, since the abstract doesn\'t specify which datasets they used or mention any novel datasets, it\'s more about comparing performance rather than introducing a new dataset.\n\nSo, putting this together: The paper presents an improved clustering algorithm but doesn\'t introduce a new dataset. It evaluates its performance on existing ones, hence likely "no_new_dataset."\n&lt;/think&gt;\n\nThe paper discusses an enhanced fuzzy k-means algorithm designed for high-dimensional data, focusing on improving the clustering process by incorporating entropy terms and feature weighting. While it addresses challenges in handling irrelevant or less significant features, there is no mention of introducing a new dataset. Instead, it evaluates its method against existing datasets using various metrics.\n\n```json\n{\n    "label": "no_new_dataset",\n    "explanation": "The paper does not introduce a newly created dataset; instead, it focuses on improving an algorithm to handle high-dimensional data by modifying the objective function with entropy terms and feature weighting. It evaluates its performance on existing datasets without introducing new ones."\n}\n```',
  {'label': 'no_new_dataset',
@@ -1107,9 +1112,9 @@ Note
 </div>
 <p>Let’s see how well this works on all the examples we had before</p>
 <div id="cell-58" class="cell" data-execution_count="181">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> [predict_label_without_structured_output(example) <span class="cf">for</span> example <span class="kw">in</span> examples]</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> [predict_label_without_structured_output(example) <span class="cf">for</span> example <span class="kw">in</span> examples]</span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>parsed_results <span class="op">=</span> [try_extract_json_from_text(result) <span class="cf">for</span> result <span class="kw">in</span> results]</span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>[p <span class="cf">for</span> p <span class="kw">in</span> parsed_results <span class="cf">if</span> p[<span class="dv">1</span>] <span class="kw">is</span> <span class="va">None</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>[p <span class="cf">for</span> p <span class="kw">in</span> parsed_results <span class="cf">if</span> p[<span class="dv">1</span>] <span class="kw">is</span> <span class="va">None</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="181">
 <pre><code>[]</code></pre>
 </div>
@@ -1120,7 +1125,7 @@ Note
 <div id="cell-60" class="cell" data-execution_count="221">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> openai <span class="im">import</span> OpenAI</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> openai <span class="im">import</span> OpenAI</span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
 <span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dotenv <span class="im">import</span> load_dotenv</span>
 <span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -1129,15 +1134,15 @@ Note
 <span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>client <span class="op">=</span> OpenAI(</span>
 <span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>    base_url<span class="op">=</span><span class="st">"https://tgtdz7g5h3sd1lov.us-east-1.aws.endpoints.huggingface.cloud/v1/"</span>,</span>
 <span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>    api_key<span class="op">=</span>os.getenv(<span class="st">"HF_TOKEN"</span>),</span>
-<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div id="cell-61" class="cell" data-execution_count="222">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>rich_print(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>rich_print(</span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>    predict_label_without_structured_output(</span>
 <span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>        examples[<span class="dv">0</span>], model<span class="op">=</span><span class="st">"deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"</span>, client<span class="op">=</span>client</span>
 <span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">think</span><span style="color: #000000; text-decoration-color: #000000">&gt;</span>
 <span style="color: #000000; text-decoration-color: #000000">Alright, I'm looking at this paper to determine if it introduces a newly created dataset. The title mentions </span>
@@ -1170,16 +1175,16 @@ Note
 </div>
 <p>We’ll now sample 3000 examples from the dataset and use the hosted model to generate labels for them.</p>
 <div id="cell-63" class="cell" data-execution_count="223">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>sample_df <span class="op">=</span> df.sample(<span class="dv">3000</span>, seed<span class="op">=</span><span class="dv">42</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>sample_df <span class="op">=</span> df.sample(<span class="dv">3000</span>, seed<span class="op">=</span><span class="dv">42</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-64" class="cell" data-execution_count="224">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>examples <span class="op">=</span> sample_df.select(pl.col([<span class="st">"abstract"</span>, <span class="st">"title"</span>])).to_dicts()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>examples <span class="op">=</span> sample_df.select(pl.col([<span class="st">"abstract"</span>, <span class="st">"title"</span>])).to_dicts()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We create a function to predict the labels using the hosted model. We’ll use the <code>stamina</code> library to retry the request if it fails.</p>
 <div id="cell-66" class="cell" data-execution_count="225">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> stamina</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> stamina</span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> openai <span class="im">import</span> APIConnectionError, APIStatusError</span>
 <span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -1193,18 +1198,18 @@ Note
 <span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> predict_hf_endpoint(data)</span>
 <span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
 <span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(e)</span>
-<span id="cb45-15"><a href="#cb45-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb45-15"><a href="#cb45-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>Get the results from the model.</p>
 <div id="cell-68" class="cell">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.contrib.concurrent <span class="im">import</span> thread_map</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.contrib.concurrent <span class="im">import</span> thread_map</span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> thread_map(predict, examples, max_workers<span class="op">=</span><span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> thread_map(predict, examples, max_workers<span class="op">=</span><span class="dv">5</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s take a look at the first result</p>
 <div id="cell-70" class="cell" data-execution_count="192">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>rich_print(results[<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>rich_print(results[<span class="dv">0</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">think</span><span style="color: #000000; text-decoration-color: #000000">&gt;</span>
 <span style="color: #000000; text-decoration-color: #000000">Okay, so I need to figure out if the given arXiv paper introduces a newly created dataset. Let's look at the title </span>
@@ -1240,7 +1245,7 @@ Note
 </div>
 </div>
 <div id="cell-71" class="cell" data-execution_count="193">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>try_extract_json_from_text(results[<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>try_extract_json_from_text(results[<span class="dv">0</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="193">
 <pre><code>('&lt;think&gt;\nOkay, so I need to figure out if the given arXiv paper introduces a newly created dataset. Let\'s look at the title and abstract carefully.\n\nThe title is "Holistic Autonomous Driving Understanding by Bird\'s-Eye-View Injected Multi-Modal Large Models." That immediately suggests it\'s about a dataset related to autonomous driving. The abstract mentions that the paper introduces a dataset called NuInstruct, which has 91K multi-view video-QA pairs across 17 subtasks. Each task requires holistic information like temporal, multi-view, and spatial data, making the challenges higher.\n\nThe authors propose a method using SQL to generate instruction-response pairs automatically, inspired by human driving logic. They also introduce BEV-InMLLM, an end-to-end method that enhances large language models by integrating BEV features, language alignment, and tasks like multi-view, spatial awareness, and temporal semantics. They note that their BEV injection module is plug-and-play for existing MLLMs.\n\nExperiments on NuInstruct show significant improvements over existing MLLMs. The authors also mention releasing the dataset for future research.\n\nSo, from the title, abstract, and details, it\'s clear that NuInstruct is a new dataset they created specifically for their research. They describe it in detail, including the structure and methods used, so it\'s definitely a newly created dataset aimed at advancing autonomous driving through language models.\n&lt;/think&gt;\n\n```json\n{\n    "label": "new_dataset",\n    "explanation": "The paper introduces a dataset called NuInstruct with 91K multi-view video-QA pairs across 17 subtasks, each requiring holistic information for robust autonomous driving tasks. The authors detail its structure and methods for creation, confirming it as a newly developed dataset."\n}\n```',
  {'label': 'new_dataset',
@@ -1251,11 +1256,11 @@ Note
 <div id="cell-73" class="cell" data-execution_count="194">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>parsed_results <span class="op">=</span> [try_extract_json_from_text(result) <span class="cf">for</span> result <span class="kw">in</span> results]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>parsed_results <span class="op">=</span> [try_extract_json_from_text(result) <span class="cf">for</span> result <span class="kw">in</span> results]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div id="cell-74" class="cell" data-execution_count="195">
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>parsed_results[:<span class="dv">3</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>parsed_results[:<span class="dv">3</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="195">
 <pre><code>[('&lt;think&gt;\nOkay, so I need to figure out if the given arXiv paper introduces a newly created dataset. Let\'s look at the title and abstract carefully.\n\nThe title is "Holistic Autonomous Driving Understanding by Bird\'s-Eye-View Injected Multi-Modal Large Models." That immediately suggests it\'s about a dataset related to autonomous driving. The abstract mentions that the paper introduces a dataset called NuInstruct, which has 91K multi-view video-QA pairs across 17 subtasks. Each task requires holistic information like temporal, multi-view, and spatial data, making the challenges higher.\n\nThe authors propose a method using SQL to generate instruction-response pairs automatically, inspired by human driving logic. They also introduce BEV-InMLLM, an end-to-end method that enhances large language models by integrating BEV features, language alignment, and tasks like multi-view, spatial awareness, and temporal semantics. They note that their BEV injection module is plug-and-play for existing MLLMs.\n\nExperiments on NuInstruct show significant improvements over existing MLLMs. The authors also mention releasing the dataset for future research.\n\nSo, from the title, abstract, and details, it\'s clear that NuInstruct is a new dataset they created specifically for their research. They describe it in detail, including the structure and methods used, so it\'s definitely a newly created dataset aimed at advancing autonomous driving through language models.\n&lt;/think&gt;\n\n```json\n{\n    "label": "new_dataset",\n    "explanation": "The paper introduces a dataset called NuInstruct with 91K multi-view video-QA pairs across 17 subtasks, each requiring holistic information for robust autonomous driving tasks. The authors detail its structure and methods for creation, confirming it as a newly developed dataset."\n}\n```',
   {'label': 'new_dataset',
@@ -1271,7 +1276,7 @@ Note
 <div id="cell-75" class="cell" data-execution_count="196">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>labels_and_explanations <span class="op">=</span> [</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>labels_and_explanations <span class="op">=</span> [</span>
 <span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>    (result[<span class="dv">1</span>].get(<span class="st">"label"</span>), result[<span class="dv">1</span>].get(<span class="st">"explanation"</span>))</span>
 <span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> result[<span class="dv">1</span>] <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="kw">and</span> <span class="bu">isinstance</span>(result[<span class="dv">1</span>], <span class="bu">dict</span>)</span>
 <span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> (<span class="va">None</span>, <span class="va">None</span>)</span>
@@ -1285,11 +1290,11 @@ Note
 <span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a>sample_df <span class="op">=</span> sample_df.with_columns(</span>
 <span id="cb53-13"><a href="#cb53-13" aria-hidden="true" tabindex="-1"></a>    pl.Series(lables).alias(<span class="st">"labels"</span>),</span>
 <span id="cb53-14"><a href="#cb53-14" aria-hidden="true" tabindex="-1"></a>    pl.Series(explanations).alias(<span class="st">"explanations"</span>),</span>
-<span id="cb53-15"><a href="#cb53-15" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb53-15"><a href="#cb53-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div id="cell-76" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:1000}}" data-outputid="80b9e6b0-7449-4731-ebad-1aa37373bc3d" data-execution_count="200">
-<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>sample_df.head(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>sample_df.head(<span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="200">
 <div><style>
 .dataframe > thead > tr,
@@ -1299,7 +1304,7 @@ Note
 }
 </style>
 <small>shape: (1, 16)</small>
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th">id</th>
@@ -1320,22 +1325,22 @@ Note
 <th data-quarto-table-cell-role="th">explanations</th>
 </tr>
 <tr class="even">
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>str</th>
-<th>list[struct[2]]</th>
-<th>datetime[ms]</th>
-<th>list[list[str]]</th>
-<th>str</th>
-<th>str</th>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>str</td>
+<td>list[struct[2]]</td>
+<td>datetime[ms]</td>
+<td>list[list[str]]</td>
+<td>str</td>
+<td>str</td>
 </tr>
 </thead>
 <tbody>
@@ -1364,7 +1369,7 @@ Note
 </div>
 <p>Let’s take a look at the distribution of the labels.</p>
 <div id="cell-78" class="cell" data-execution_count="201">
-<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>sample_df.select(pl.col(<span class="st">"labels"</span>).value_counts()).unnest(<span class="st">"labels"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>sample_df.select(pl.col(<span class="st">"labels"</span>).value_counts()).unnest(<span class="st">"labels"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="201">
 <div><style>
 .dataframe > thead > tr,
@@ -1374,15 +1379,15 @@ Note
 }
 </style>
 <small>shape: (3, 2)</small>
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th">labels</th>
 <th data-quarto-table-cell-role="th">count</th>
 </tr>
 <tr class="even">
-<th>str</th>
-<th>u32</th>
+<td>str</td>
+<td>u32</td>
 </tr>
 </thead>
 <tbody>
@@ -1405,13 +1410,13 @@ Note
 </div>
 <p>We only get a few examples where the output doesn’t match the labels we want. We can filter these out.</p>
 <div id="cell-80" class="cell" data-execution_count="202">
-<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>sample_df <span class="op">=</span> sample_df.<span class="bu">filter</span>(pl.col(<span class="st">"labels"</span>).is_in([<span class="st">"new_dataset"</span>, <span class="st">"no_new_dataset"</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>sample_df <span class="op">=</span> sample_df.<span class="bu">filter</span>(pl.col(<span class="st">"labels"</span>).is_in([<span class="st">"new_dataset"</span>, <span class="st">"no_new_dataset"</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We’ll now convert the dataframe to a Hugging Face dataset and push it to the Hub.</p>
 <div id="cell-82" class="cell" data-execution_count="203">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> Dataset, Features, Value, ClassLabel</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> Dataset, Features, Value, ClassLabel</span>
 <span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> Dataset.from_polars(</span>
 <span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>    sample_df.select([<span class="st">"id"</span>, <span class="st">"title"</span>, <span class="st">"abstract"</span>, <span class="st">"labels"</span>, <span class="st">"explanations"</span>]),</span>
 <span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>)</span>
@@ -1423,7 +1428,7 @@ Note
 <span id="cb57-10"><a href="#cb57-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> column <span class="kw">in</span> large_string_columns:</span>
 <span id="cb57-11"><a href="#cb57-11" aria-hidden="true" tabindex="-1"></a>    ds <span class="op">=</span> ds.cast_column(column, Value(<span class="st">"string"</span>))</span>
 <span id="cb57-12"><a href="#cb57-12" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> ds.cast_column(<span class="st">"labels"</span>, ClassLabel(names<span class="op">=</span>[<span class="st">"new_dataset"</span>, <span class="st">"no_new_dataset"</span>]))</span>
-<span id="cb57-13"><a href="#cb57-13" aria-hidden="true" tabindex="-1"></a>ds.push_to_hub(<span class="st">"davanstrien/arxiv-new-datasets"</span>, token<span class="op">=</span>os.getenv(<span class="st">"HF_TOKEN"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb57-13"><a href="#cb57-13" aria-hidden="true" tabindex="-1"></a>ds.push_to_hub(<span class="st">"davanstrien/arxiv-new-datasets"</span>, token<span class="op">=</span>os.getenv(<span class="st">"HF_TOKEN"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>Here is the resulting dataset.</p>
@@ -1436,7 +1441,7 @@ Note
 <div id="cell-86" class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>pip install datasets setfit transformers accelerate <span class="op">--</span>upgrade</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>pip install datasets setfit transformers accelerate <span class="op">--</span>upgrade</span>
 <span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>pip install flash<span class="op">-</span>attn <span class="op">--</span>no<span class="op">-</span>build<span class="op">-</span>isolation</span>
 <span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
@@ -1549,10 +1554,10 @@ Note
 <span id="cb58-111"><a href="#cb58-111" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Final evaluation results:"</span>, eval_results)</span>
 <span id="cb58-112"><a href="#cb58-112" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb58-113"><a href="#cb58-113" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the best model</span></span>
-<span id="cb58-114"><a href="#cb58-114" aria-hidden="true" tabindex="-1"></a>trainer.save_model(<span class="st">"./best_model"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb58-114"><a href="#cb58-114" aria-hidden="true" tabindex="-1"></a>trainer.save_model(<span class="st">"./best_model"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<div class="sourceCode" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>Final evaluation results: {<span class="st">'eval_loss'</span>: <span class="fl">0.32631951570510864</span>, <span class="st">'eval_accuracy'</span>: <span class="fl">0.945</span>, <span class="st">'eval_f1'</span>: <span class="fl">0.9442747450661002</span>, <span class="st">'eval_runtime'</span>: <span class="fl">5.8106</span>, <span class="st">'eval_samples_per_second'</span>: <span class="fl">103.26</span>, <span class="st">'eval_steps_per_second'</span>: <span class="fl">1.721</span>, <span class="st">'epoch'</span>: <span class="fl">10.0</span>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>Final evaluation results: {<span class="st">'eval_loss'</span>: <span class="fl">0.32631951570510864</span>, <span class="st">'eval_accuracy'</span>: <span class="fl">0.945</span>, <span class="st">'eval_f1'</span>: <span class="fl">0.9442747450661002</span>, <span class="st">'eval_runtime'</span>: <span class="fl">5.8106</span>, <span class="st">'eval_samples_per_second'</span>: <span class="fl">103.26</span>, <span class="st">'eval_steps_per_second'</span>: <span class="fl">1.721</span>, <span class="st">'epoch'</span>: <span class="fl">10.0</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="conclusion" class="level1">
 <h1>Conclusion</h1>
@@ -1613,13 +1618,14 @@ Note
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

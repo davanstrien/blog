@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.34">
+<meta name="generator" content="quarto-1.8.26">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -61,7 +61,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -71,14 +71,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../icons/favicon.ico" rel="icon">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-d68be38d83eca2bb035acf846ffba811.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-0b37c64f34216b628666a8dac638b53b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -106,10 +107,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
 
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
-<script src="https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
 <script defer="" src="https://cloud.umami.is/script.js" data-website-id="85cb27d6-dbf9-43d7-97d0-be4e6724de7a"></script>
 <meta name="msvalidate.01" content="4246174F24A3CB7C9CBEAA94E1FF8E84">
 <meta name="google-site-verification" content="C7WoFOEuA4Msbvvk-kgDd_C6VGphZTp3awy_acXjZYU">
@@ -139,10 +140,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="nav-link" href="../../about.html"> 
 <span class="menu-text">About</span></a>
   </li>  
-  <li class="nav-item compact">
+  <li class="nav-item">
+    <a class="nav-link" href="../../slides.qmd"> 
+<span class="menu-text">Slides</span></a>
+  </li>  
+  <li class="nav-item">
     <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
 </i> 
-<span class="menu-text"></span></a>
+<span class="menu-text">GitHub</span></a>
   </li>  
   <li class="nav-item compact">
     <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
@@ -243,8 +248,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>I’ll use the remainder of this blog to see if we can use the 🤗 hub and the <code>[</code>huggingface_hub<code>](https://pypi.org/project/huggingface-hub/)</code> library for this purpose as a replacement for the current approach.</p>
 <p>We’ll start by installing the <code>huggingface_hub</code> library</p>
 <div id="cell-4" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="4de4f1a6-5f11-4665-a202-9d8398a3dc99" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># hide_output</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install huggingface_hub</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># hide_output</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install huggingface_hub</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Requirement already satisfied: huggingface_hub in /Users/dvanstrien/miniconda3/envs/blog/lib/python3.8/site-packages (0.2.1)
 Requirement already satisfied: requests in /Users/dvanstrien/miniconda3/envs/blog/lib/python3.8/site-packages (from huggingface_hub) (2.26.0)
@@ -265,11 +270,11 @@ Requirement already satisfied: certifi&gt;=2017.4.17 in /Users/dvanstrien/minico
 <h2 class="anchored" data-anchor-id="getting-information-about-a-model">Getting information about a model</h2>
 <p>One of the things we need to be able to do is get the latest version of the model. One way we could try and do this is by grabbing metadata about the model. This is the current approach taken by flyswot. We can import <code>model_info</code> to do this:</p>
 <div id="cell-6" class="cell" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> model_info</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> model_info</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-7" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="b6875e50-a15c-4cdd-9c14-7d3cd5936c78" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>info <span class="op">=</span> model_info(<span class="st">"distilbert-base-cased"</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>info</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>info <span class="op">=</span> model_info(<span class="st">"distilbert-base-cased"</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>info</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="12">
 <pre><code>ModelInfo: {
     modelId: distilbert-base-cased
@@ -291,14 +296,14 @@ Requirement already satisfied: certifi&gt;=2017.4.17 in /Users/dvanstrien/minico
 </div>
 </div>
 <div id="cell-8" class="cell" data-execution_count="13">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">type</span>(info)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">type</span>(info)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="13">
 <pre><code>huggingface_hub.hf_api.ModelInfo</code></pre>
 </div>
 </div>
 <p>You can see this gives us back a bunch of information about the model. We could for example grab the date the model was changed:</p>
 <div id="cell-10" class="cell" data-execution_count="15">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>info.lastModified</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>info.lastModified</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="15">
 <pre><code>'2020-12-11T21:23:53.000Z'</code></pre>
 </div>
@@ -306,7 +311,7 @@ Requirement already satisfied: certifi&gt;=2017.4.17 in /Users/dvanstrien/minico
 <p>This already gives us what we need for checking if a model is updated in comparison to a local model already downloaded by the flyswot CLI. However we might be able to cut out some of this checking work.</p>
 <p>Lets see if there are other ways we can do this in the library. Since <code>huggingface_hub</code> requires git-lfs lets start by installing this.</p>
 <div id="cell-12" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="961a93c1-5069-4289-b33d-86327078e598" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>apt install git<span class="op">-</span>lfs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>apt install git<span class="op">-</span>lfs</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Reading package lists... Done
 Building dependency tree       
@@ -317,7 +322,7 @@ git-lfs is already the newest version (2.3.4-1).
 </div>
 <p>We also need to make sure we have git-lfs setup</p>
 <div id="cell-14" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="2a456be2-5ba1-45e0-c150-183affb99a67" data-execution_count="52">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>git init <span class="op">&amp;&amp;</span> git lfs install</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>git init <span class="op">&amp;&amp;</span> git lfs install</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-yellow-fg">hint: Using 'master' as the name for the initial branch. This default branch name</span>
@@ -353,21 +358,21 @@ Git LFS initialized.
 <h3 class="anchored" data-anchor-id="downloading-files-from-the-hub">Downloading files from the hub</h3>
 <p>We can use <code>hf_hub_url</code> to get the url for a specific file from a repository</p>
 <div id="cell-17" class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> hf_hub_url</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> hf_hub_url</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-18" class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>onnx_model_url <span class="op">=</span> hf_hub_url(<span class="st">"davanstrien/flyswot-test"</span>, <span class="st">"2021-09-22.onnx"</span>)</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>onnx_model_url</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>onnx_model_url <span class="op">=</span> hf_hub_url(<span class="st">"davanstrien/flyswot-test"</span>, <span class="st">"2021-09-22.onnx"</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>onnx_model_url</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="9">
 <pre><code>'https://huggingface.co/davanstrien/flyswot-test/resolve/main/2021-09-22.onnx'</code></pre>
 </div>
 </div>
 <p>We can pass this url to <code>cached_download</code>, this will download the file for us if we don’t have the latest version, we can also specify a place to download the file. This is important so we can make sure we put the file somewhere <code>flyswot</code> can find.</p>
 <div id="cell-20" class="cell" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> cached_download</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> cached_download</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-21" class="cell" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>cached_download(onnx_model_url, cache_dir<span class="op">=</span><span class="st">"."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>cached_download(onnx_model_url, cache_dir<span class="op">=</span><span class="st">"."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
 {"model_id":"cb383bfcbf25400daaa1ccf7b2115ae3","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
@@ -379,8 +384,8 @@ Git LFS initialized.
 </div>
 <p>If we try and download this again it won’t download, and will instead return the path to the model</p>
 <div id="cell-23" class="cell" data-execution_count="14">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>path <span class="op">=</span> cached_download(onnx_model_url, cache_dir<span class="op">=</span><span class="st">"."</span>)</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>path <span class="op">=</span> cached_download(onnx_model_url, cache_dir<span class="op">=</span><span class="st">"."</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>path</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="14">
 <pre><code>'./de9d2ce054e3e410e3fc61b5c2ad55da7861d30e3b90aa018615b7d902e6e51e.1300a5792e44de2c59f4d25c4f7efd447ef91d69971a121e6b4df8b95047ad7c'</code></pre>
 </div>
@@ -390,11 +395,11 @@ Git LFS initialized.
 <h3 class="anchored" data-anchor-id="downloading-all-files-from-the-hub">Downloading all files from the hub</h3>
 <p>This is quite close to what we want our current approach requires us to get a bunch of different files in a folder. To replicate this we can instead use <code>snapshot_download</code></p>
 <div id="cell-26" class="cell" data-execution_count="17">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> snapshot_download</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> snapshot_download</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s see what this does</p>
 <div id="cell-28" class="cell" data-execution_count="18">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>?snapshot_download</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>?snapshot_download</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Signature:</span>
@@ -432,7 +437,7 @@ Return:
 </div>
 <p>This will do something similar to <code>cached_download</code> but will instead do it for a whole model repository. If we pass our repository it will download the directory if we don’t have the latest version of the files, if for example, the model has been updated.</p>
 <div id="cell-30" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:177,&quot;referenced_widgets&quot;:[&quot;f79afce7e5b441889a08261e836e765e&quot;,&quot;826d8c6c79804f31bbd2264c6fd7b58f&quot;,&quot;845d408760454af3a710f52d8cadb5b3&quot;,&quot;cb203329f54a4d938d5993529a6c8573&quot;,&quot;f1d920be2df74d83a1255d0528ec1833&quot;,&quot;d2bd12300c2541de858b27d51e5e9ebc&quot;,&quot;7236f8bcefee4e12bd48d8e64b9c369c&quot;,&quot;9d25f212a9f04c2aae783ef3f95dcf18&quot;,&quot;e22619ad2813408092ad4eeb8f8847a2&quot;,&quot;64e8ed68334a48a19116652679fe2259&quot;,&quot;fa18844952ef4a1e91ee9fef3a48957f&quot;,&quot;2a7c3d3e3e124707b30ec635a3a8b878&quot;,&quot;064ce7a4b1714064bfb6d8463a78f259&quot;,&quot;2dff182fa7dd4c69b2fc5300ef8925cb&quot;,&quot;87f1518c79564021b0eaaece9f6d4910&quot;,&quot;2f0540b336494502b969410ae01941c9&quot;,&quot;5004a76ed83b4fdf81061dc81ffc7906&quot;,&quot;f5976c2820b24578bdbd5967a30fdc21&quot;,&quot;d4a65d66d43e4e51ac3670b81ace909d&quot;,&quot;8b8cb707962a43e7b6a9845157cfbdac&quot;,&quot;c600b44f3e814ea79a314ac95072d6b8&quot;,&quot;18fc725d97be4edcb59d6ed519f3693f&quot;,&quot;80002afdecb94ab8ab3866c6a756f936&quot;,&quot;41597b2e8c7f44b18708c5cdda4952ac&quot;,&quot;6f7c295813fc41f3bcaca09209458308&quot;,&quot;4db8f8403c604951aec4429b8323dd73&quot;,&quot;10bf4346c0da407dae7f1451b67c61de&quot;,&quot;0d66cd03963b49cb8de019e74b028a1b&quot;,&quot;b09d7f354cc94781ae24b7ab242c5ba3&quot;,&quot;75915a80394741aa86026e2d1675cb88&quot;,&quot;8c48f40ac5034da18a5c1fbcbacb7e35&quot;,&quot;4cc6ef38421f4f52bf5336aff5a4baf2&quot;,&quot;49bd77b3d8a84a32bf7697f5bec9a08f&quot;,&quot;02cb62b8269f4cc3aa9082916e9874ba&quot;,&quot;a3eb74ab8b654891bcbbc7e7b0c03d2e&quot;,&quot;2fcd4b12415049c2b65c10c0968c6cef&quot;,&quot;356d78be3cb940fa8b228be36a539e17&quot;,&quot;1f90df4f43d84cd1b23dc61539856d42&quot;,&quot;ab9483833635455cb1e6a7b65378e43e&quot;,&quot;5f281b267851444c97111353d814915c&quot;,&quot;30c433de14d442a8be09e2d7fdd7fe40&quot;,&quot;b2eae4c93efb4d8aa274b5822beb81a1&quot;,&quot;6b8965e22d3243a09d825beeb028bd7a&quot;,&quot;33c6205ea42e41c3af6ef8020334e1df&quot;,&quot;fe41cee8fdf44e38a5fdfc63bea760ae&quot;,&quot;fe7734a516954d38a15def4668c568ff&quot;,&quot;94187d1636ef46af982f57d9de0c31a0&quot;,&quot;83b56a06a22c47889746de5e8597d660&quot;,&quot;cb18081a579f415fb5371f3f10d1729e&quot;,&quot;54f9f617cbf04ad0995eb98f1477afcd&quot;,&quot;83fcb5f9a7144c7481eb9299ba48c8fb&quot;,&quot;a62f403e991745c69382d781d362642e&quot;,&quot;1904c0a07846447e951ff6db94004440&quot;,&quot;9f16e75b09724652b4c258d9f1fc2ee1&quot;,&quot;d1eea35435ee457ea56f1c71fca1e388&quot;]}}" data-outputid="1a49a2ab-cfc2-4152-ba47-1d6d3baea79b" data-execution_count="20">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> snapshot_download(<span class="st">"davanstrien/flyswot-test"</span>, cache_dir<span class="op">=</span><span class="st">"."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> snapshot_download(<span class="st">"davanstrien/flyswot-test"</span>, cache_dir<span class="op">=</span><span class="st">"."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
 {"model_id":"1df0117a5aae4d19aad5f03405bcb4e7","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
@@ -460,22 +465,22 @@ Return:
 </div>
 </div>
 <div id="cell-31" class="cell" data-execution_count="21">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>model</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>model</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="21">
 <pre><code>'./davanstrien__flyswot-test.main.e54a7421f5e5eb240783452ab734288f252bb402'</code></pre>
 </div>
 </div>
 <p>If we look inside this directory we can see we have the files from the repository.</p>
 <div id="cell-33" class="cell" data-execution_count="22">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>ls {model}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>ls {model}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>2021-09-22.onnx README.md       modelcard.md    vocab.txt</code></pre>
 </div>
 </div>
 <p>If we try and download it again we just get back the directory path without having to download the files again.</p>
 <div id="cell-35" class="cell" data-execution_count="24">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> snapshot_download(<span class="st">"davanstrien/flyswot-test"</span>, cache_dir<span class="op">=</span><span class="st">"."</span>)</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>model</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> snapshot_download(<span class="st">"davanstrien/flyswot-test"</span>, cache_dir<span class="op">=</span><span class="st">"."</span>)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>model</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="24">
 <pre><code>'./davanstrien__flyswot-test.main.e54a7421f5e5eb240783452ab734288f252bb402'</code></pre>
 </div>
@@ -486,10 +491,10 @@ Return:
 <h3 class="anchored" data-anchor-id="uploading-to-the-hub">Uploading to the hub</h3>
 <p>At the moment flyswot models are uploaded to a GitHub repository which then creates a release. It would be nice to simplify this and upload directly at the end of model training. For this we can use the <code>Repository</code> class.</p>
 <div id="cell-38" class="cell" data-execution_count="30">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> Repository</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> Repository</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-39" class="cell" data-execution_count="29">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>?Repository</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>?Repository</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Init signature:</span>
@@ -547,22 +552,22 @@ Args:
 </div>
 <p>I’ll use <a href="https://huggingface.co/davanstrien/flyswot-test"><code>flyswot-test</code></a> as a way of playing around with this. To start with we can use Repository to clone the current version of the model.</p>
 <div id="cell-41" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="f106f222-71a6-4bad-e43b-593709f43d86" data-execution_count="53">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>repo <span class="op">=</span> Repository(local_dir<span class="op">=</span><span class="st">"flyswot-models"</span>, clone_from<span class="op">=</span><span class="st">"davanstrien/flyswot-test"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>repo <span class="op">=</span> Repository(local_dir<span class="op">=</span><span class="st">"flyswot-models"</span>, clone_from<span class="op">=</span><span class="st">"davanstrien/flyswot-test"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Cloning https://huggingface.co/davanstrien/flyswot-test into local empty directory.</code></pre>
 </div>
 </div>
 <div id="cell-42" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="986f1396-945a-4316-b944-0583a93305bc" data-execution_count="54">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>repo</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>repo</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="54">
 <pre><code>&lt;huggingface_hub.repository.Repository at 0x7fb10cccbc10&gt;</code></pre>
 </div>
 </div>
 <p>We’ll need to be logged in to push changes</p>
 <div id="cell-44" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:389,&quot;referenced_widgets&quot;:[&quot;8f9621249cbe4944a804a26f9d4608f2&quot;,&quot;e003a40afd1c437ab2421602978bea49&quot;,&quot;feebd464bf0e4bd69e5c1763c8c9d4f0&quot;,&quot;7e06b5c74f7d41c68a2cfa3cd4740545&quot;,&quot;a707e24297e04816909b9857fea36e9b&quot;,&quot;0e12086dfd1d4dd99da3a618ec68ff93&quot;,&quot;0cff65de2d01426fac959c96f5ebb9f8&quot;,&quot;0a171196a81f4cbe95784906593c860f&quot;,&quot;67d7f62866d04f8a8da4bb2e0493dd44&quot;,&quot;25f243b2491b4b4c9c06f795f3936894&quot;,&quot;7c4e2cb4aa72464c89ab1dcd28ba226a&quot;,&quot;6a97eaec191f496692f0dc1b93a4a777&quot;,&quot;9597dc40769a4e7791ff23d4be9ed86f&quot;,&quot;99f9eba5b57b4720804b07f7b3b47d83&quot;,&quot;3a80b3694e004a148b139bba298d7193&quot;,&quot;219bf3ff7ba14fd59d4b468546e6a60e&quot;,&quot;b8eceea4d1764266834db684939c37a3&quot;]}}" data-outputid="f70be078-3482-4e1b-cc2b-7c9adbb63c78" data-execution_count="35">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> notebook_login</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> notebook_login</span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>notebook_login()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>notebook_login()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
 {"model_id":"71f213964f554b978189f49c55f5f74b","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
@@ -571,13 +576,13 @@ Args:
 </div>
 <p>To start with let’s mock making a change to some of the repo files and seeing how we can upload these changes. We can use the <code>Repository</code> class as a context manager to make changes and have them committed to our model repository. Here we update the vocab file to add a new label.</p>
 <div id="cell-46" class="cell" data-execution_count="58">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> Repository(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> Repository(</span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>    local_dir<span class="op">=</span><span class="st">"flyswot-models"</span>,</span>
 <span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    clone_from<span class="op">=</span><span class="st">"davanstrien/flyswot-test"</span>,</span>
 <span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    git_user<span class="op">=</span><span class="st">"Daniel van Strien"</span>,</span>
 <span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>).commit(<span class="st">"update model"</span>):</span>
 <span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> <span class="bu">open</span>(<span class="st">"vocab.txt"</span>, <span class="st">"a"</span>) <span class="im">as</span> f:</span>
-<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>        f.write(<span class="st">"new label"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>        f.write(<span class="st">"new label"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>/Users/dvanstrien/Documents/daniel/blog/_notebooks/flyswot-models is already a clone of https://huggingface.co/davanstrien/flyswot-test. Make sure you pull the latest changes with `repo.git_pull()`.
 Pulling changes ...
@@ -592,25 +597,25 @@ To https://huggingface.co/davanstrien/flyswot-test
 <h3 class="anchored" data-anchor-id="adding-more-metadata-creating-revision-branches">Adding more metadata: creating revision branches</h3>
 <p>Currently flyswot uses filenames to capture metadata about the model version. The models are versioned using calendar versioning. This works okay but we might be able to manage this in a slightly better way. One of the nice features that <code>hf_hub</code> (the Python library) offers that <code>flyswot</code> currently doesn’t support well is being able to pass in a specific revision when using <code>snapshot_download</code>. This would then allow someone to run a specific older version of the model. This might be useful for various different scenarios. To do this we’ll create a revision branch for the date the model was created. All that we’ll do now is pass in a formatted date as the revision.</p>
 <div id="cell-49" class="cell" data-execution_count="59">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> datetime</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> datetime</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-50" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:36}}" data-outputid="e8d7c7eb-8ee0-42ee-c9c7-3d371571d718" data-execution_count="71">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>date_now <span class="op">=</span> datetime.now()</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>date_now <span class="op">=</span> datetime.now()</span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>now <span class="op">=</span> date_now.strftime(<span class="st">"%Y-%m-</span><span class="sc">%d</span><span class="st">"</span>)</span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>now</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>now</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="71">
 <pre><code>'2021-12-30'</code></pre>
 </div>
 </div>
 <div id="cell-51" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="e4a92d22-ae97-4988-e978-055cc7d6f5a5" data-execution_count="74">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> Repository(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> Repository(</span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>    local_dir<span class="op">=</span><span class="st">"flyswot-models"</span>,</span>
 <span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>    clone_from<span class="op">=</span><span class="st">"davanstrien/flyswot-test"</span>,</span>
 <span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>    git_user<span class="op">=</span><span class="st">"Daniel van Strien"</span>,</span>
 <span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>    revision<span class="op">=</span>now,</span>
 <span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>).commit(<span class="ss">f"update model </span><span class="sc">{</span>now<span class="sc">}</span><span class="ss">"</span>):</span>
 <span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> model <span class="kw">in</span> Path(<span class="st">"."</span>).glob(<span class="st">".onnx"</span>):</span>
-<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>        model.rename(<span class="ss">f"</span><span class="sc">{</span>now<span class="sc">}</span><span class="ss">-model.onnx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>        model.rename(<span class="ss">f"</span><span class="sc">{</span>now<span class="sc">}</span><span class="ss">-model.onnx"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>/Users/dvanstrien/Documents/daniel/blog/_notebooks/flyswot-models is already a clone of https://huggingface.co/davanstrien/flyswot-test. Make sure you pull the latest changes with `repo.git_pull()`.
 Checked out 2021-12-30 from 2021-12-30.
@@ -684,13 +689,14 @@ Everything up-to-date
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

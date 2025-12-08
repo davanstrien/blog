@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.34">
+<meta name="generator" content="quarto-1.8.26">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -61,7 +61,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../../../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -71,14 +71,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../../icons/favicon.ico" rel="icon">
 <script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap-d68be38d83eca2bb035acf846ffba811.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-0b37c64f34216b628666a8dac638b53b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -106,7 +107,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
 
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 <script defer="" src="https://cloud.umami.is/script.js" data-website-id="85cb27d6-dbf9-43d7-97d0-be4e6724de7a"></script>
@@ -138,10 +139,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="nav-link" href="../../../about.html"> 
 <span class="menu-text">About</span></a>
   </li>  
-  <li class="nav-item compact">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../slides.qmd"> 
+<span class="menu-text">Slides</span></a>
+  </li>  
+  <li class="nav-item">
     <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
 </i> 
-<span class="menu-text"></span></a>
+<span class="menu-text">GitHub</span></a>
   </li>  
   <li class="nav-item compact">
     <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
@@ -209,23 +214,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="library-imports">Library imports</h2>
 <p>For this post we’ll need a few libraries, <code>pandas</code>, <code>requests</code> and <code>matplotlib</code> are likely old friends (or foes…). The <code>huggingface_hub</code> library might be new to you but will soon become a good friend too! The <code>rich</code> library is fantastically useful for quickly getting familiar with a library (i.e.&nbsp;avoiding reading all the docs!) so we’ll import that too.</p>
 <div id="cell-4" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> requests</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> requests</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> hf_api</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> rich</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> rich</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-5" class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>matplotlib inline</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>plt.style.use(<span class="st">"ggplot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>matplotlib inline</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>plt.style.use(<span class="st">"ggplot"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We’ll instantiate an instance of the <code>HfApi</code> class.</p>
 <div id="cell-7" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>api <span class="op">=</span> hf_api.HfApi()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>api <span class="op">=</span> hf_api.HfApi()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We can use <code>rich</code> <code>inspect</code> to get a better sense of what a function or class instance is all about. Let’s see what methods the api has.</p>
 <div id="cell-9" class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>rich.inspect(api, methods<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>rich.inspect(api, methods<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #000080; text-decoration-color: #000080">╭──────────────────────────────────── </span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">class</span><span style="color: #000000; text-decoration-color: #000000"> </span><span style="color: #008000; text-decoration-color: #008000">'huggingface_hub.hf_api.HfApi'</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">&gt;</span><span style="color: #000080; text-decoration-color: #000080"> ─────────────────────────────────────╮</span>
 <span style="color: #000080; text-decoration-color: #000080">│</span> <span style="color: #008000; text-decoration-color: #008000">╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮</span> <span style="color: #000080; text-decoration-color: #000080">│</span>
@@ -395,7 +400,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>You’ll see from looking through this there is a bunch of different things we can now do programmatically via the hub. For this post we’re interested in the <code>list_datasets</code> and <code>list_models</code> methods. If we look at one of these we can see it has a bunch of different options we can use when listing datasets or models.</p>
 <div id="cell-11" class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>rich.inspect(api.list_models)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>rich.inspect(api.list_models)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #000080; text-decoration-color: #000080">╭─────────── </span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">bound</span><span style="color: #000000; text-decoration-color: #000000"> method HfApi.list_models of &lt;huggingface_hub.hf_api.HfApi object at </span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0x136a2ce80</span><span style="color: #000000; text-decoration-color: #000000">&gt;</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">&gt;</span><span style="color: #000080; text-decoration-color: #000080"> ────────────╮</span>
 <span style="color: #000080; text-decoration-color: #000080">│</span> <span style="color: #00ffff; text-decoration-color: #00ffff; font-style: italic">def </span><span style="color: #800000; text-decoration-color: #800000; font-weight: bold">HfApi.list_models</span><span style="font-weight: bold">(</span>*, filter: Union<span style="font-weight: bold">[</span>huggingface_hub.utils.endpoint_helpers.ModelFilter, str, Iterable<span style="font-weight: bold">[</span>str<span style="font-weight: bold">]</span>,  <span style="color: #000080; text-decoration-color: #000080">│</span>
@@ -414,14 +419,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>For our use case we want everything, so we set <code>limit=None</code>, we don’t want any <code>filters</code> so we set this to <code>None</code> (this is the default behaviour, but we set them explicitly here to make it clearer for our future selves). We also set <code>full=True</code> so we get back more verbose information about our dataset and models. We also wrap the result in <code>iter</code> and <code>list</code> since the behaviour of these methods will change in future versions to support paging.</p>
 <div id="cell-13" class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>hub_datasets <span class="op">=</span> <span class="bu">list</span>(<span class="bu">iter</span>(api.list_datasets(limit<span class="op">=</span><span class="va">None</span>, <span class="bu">filter</span><span class="op">=</span><span class="va">None</span>, full<span class="op">=</span><span class="va">True</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>hub_datasets <span class="op">=</span> <span class="bu">list</span>(<span class="bu">iter</span>(api.list_datasets(limit<span class="op">=</span><span class="va">None</span>, <span class="bu">filter</span><span class="op">=</span><span class="va">None</span>, full<span class="op">=</span><span class="va">True</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-14" class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>hub_models <span class="op">=</span> <span class="bu">list</span>(<span class="bu">iter</span>(api.list_models(limit<span class="op">=</span><span class="va">None</span>, <span class="bu">filter</span><span class="op">=</span><span class="va">None</span>, full<span class="op">=</span><span class="va">True</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>hub_models <span class="op">=</span> <span class="bu">list</span>(<span class="bu">iter</span>(api.list_models(limit<span class="op">=</span><span class="va">None</span>, <span class="bu">filter</span><span class="op">=</span><span class="va">None</span>, full<span class="op">=</span><span class="va">True</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s peek at an example of what we get back</p>
 <div id="cell-16" class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>hub_models[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>hub_models[<span class="dv">0</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="8">
 <pre><code>ModelInfo: {
     modelId: albert-base-v1
@@ -444,7 +449,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <div id="cell-17" class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>hub_datasets[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>hub_datasets[<span class="dv">0</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="9">
 <pre><code>DatasetInfo: {
     id: acronym_identification
@@ -475,30 +480,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>Since we want both models and datasets we create a dictionary which stores the types of item i.e.&nbsp;is it a dataset or a model.</p>
 <div id="cell-19" class="cell" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>hub_data <span class="op">=</span> {<span class="st">"model"</span>: hub_models, <span class="st">"dataset"</span>: hub_datasets}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>hub_data <span class="op">=</span> {<span class="st">"model"</span>: hub_models, <span class="st">"dataset"</span>: hub_datasets}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We’ll be putting our data inside a pandas DataFrame, so we’ll grab the <code>.__dict__</code> attribute for each hub item, so it’s more pandas friendly.</p>
 <div id="cell-21" class="cell" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>hub_item_dict <span class="op">=</span> []</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>hub_item_dict <span class="op">=</span> []</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> hub_type, hub_item <span class="kw">in</span> hub_data.items():</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> item <span class="kw">in</span> hub_item:</span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>        data <span class="op">=</span> item.__dict__</span>
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>        data[<span class="st">"type"</span>] <span class="op">=</span> hub_type</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>        hub_item_dict.append(data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>        hub_item_dict.append(data)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-22" class="cell" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame.from_dict(hub_item_dict)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame.from_dict(hub_item_dict)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>How many hub items do we have?</p>
 <div id="cell-24" class="cell" data-execution_count="13">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="13">
 <pre><code>151343</code></pre>
 </div>
 </div>
 <p>What info do we have?</p>
 <div id="cell-26" class="cell" data-execution_count="14">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>df.columns</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>df.columns</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="14">
 <pre><code>Index(['modelId', 'sha', 'lastModified', 'tags', 'pipeline_tag', 'siblings',
        'private', 'author', 'config', 'securityStatus', '_id', 'id',
@@ -513,7 +518,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="tags">Tags</h2>
 <p>Models and datasets have a bunch of metadata i.e.&nbsp;last modified and number of downloads. We’ll focus on <code>tags</code> here. Let’s start by looking at a single example.</p>
 <div id="cell-28" class="cell" data-execution_count="15">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>df.loc[<span class="dv">30</span>, <span class="st">"tags"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>df.loc[<span class="dv">30</span>, <span class="st">"tags"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="15">
 <pre><code>['pytorch',
  'tf',
@@ -533,15 +538,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>We can see that <code>tags</code> capture can relate to tasks i.e.&nbsp;<code>text-classification</code>, libraries supported i.e.&nbsp;<code>tf</code>, or the <code>licence</code> associated with a model or dataset. As a starting point for exploring tags we can take a look at how many tags models and datasets have. We’ll add a new column to capture this number.</p>
 <div id="cell-30" class="cell" data-execution_count="16">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_number_of_tags(tags: [<span class="bu">str</span>]) <span class="op">-&gt;</span> <span class="bu">int</span>:</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">len</span>(tags)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_number_of_tags(tags: [<span class="bu">str</span>]) <span class="op">-&gt;</span> <span class="bu">int</span>:</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">len</span>(tags)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-31" class="cell" data-execution_count="17">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">"number_of_tags"</span>] <span class="op">=</span> df[<span class="st">"tags"</span>].<span class="bu">apply</span>(<span class="kw">lambda</span> x: calculate_number_of_tags(x))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">"number_of_tags"</span>] <span class="op">=</span> df[<span class="st">"tags"</span>].<span class="bu">apply</span>(<span class="kw">lambda</span> x: calculate_number_of_tags(x))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We can now use <code>describe</code> to see the breakdown of this number.</p>
 <div id="cell-33" class="cell" data-execution_count="113">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>df.number_of_tags.describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>df.number_of_tags.describe()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="113">
 <pre><code>count    151343.000000
 mean          3.855566
@@ -556,12 +561,12 @@ Name: number_of_tags, dtype: float64</code></pre>
 </div>
 <p>We can see that we have quite a range of tag numbers ranging from <code>0</code> to <code>650</code>! If your brain works anything like mine you probably want to know what this high value is about!</p>
 <div id="cell-35" class="cell" data-execution_count="19">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>df[df.number_of_tags <span class="op">&gt;</span> <span class="dv">640</span>][[<span class="st">"id"</span>, <span class="st">"tags"</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>df[df.number_of_tags <span class="op">&gt;</span> <span class="dv">640</span>][[<span class="st">"id"</span>, <span class="st">"tags"</span>]]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="19">
 <div>
 
 
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th"></th>
@@ -571,7 +576,7 @@ Name: number_of_tags, dtype: float64</code></pre>
 </thead>
 <tbody>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">136372</td>
+<th data-quarto-table-cell-role="th">136372</th>
 <td>bible-nlp/biblenlp-corpus</td>
 <td>[task_categories:translation, annotations_crea...</td>
 </tr>
@@ -582,7 +587,7 @@ Name: number_of_tags, dtype: float64</code></pre>
 </div>
 </div>
 <div id="cell-36" class="cell" data-execution_count="20">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>df[df.number_of_tags <span class="op">&gt;</span> <span class="dv">640</span>][<span class="st">"tags"</span>].tolist()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>df[df.number_of_tags <span class="op">&gt;</span> <span class="dv">640</span>][<span class="st">"tags"</span>].tolist()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="20">
 <pre><code>[['task_categories:translation',
   'annotations_creators:no-annotation',
@@ -1239,12 +1244,12 @@ Name: number_of_tags, dtype: float64</code></pre>
 <p>We can see that in this case many of the tags relate to language. Since the dataset is bible related and the bible has been heavily translated this might not be as surprising.</p>
 <p>Although these high-level stats are somewhat interesting we probably want to break these numbers down. At a high level we can groupby datasets vs models.</p>
 <div id="cell-39" class="cell" data-execution_count="21">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>df.groupby(<span class="st">"type"</span>)[<span class="st">"number_of_tags"</span>].describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>df.groupby(<span class="st">"type"</span>)[<span class="st">"number_of_tags"</span>].describe()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="21">
 <div>
 
 
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th"></th>
@@ -1271,7 +1276,7 @@ Name: number_of_tags, dtype: float64</code></pre>
 </thead>
 <tbody>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">dataset</td>
+<th data-quarto-table-cell-role="th">dataset</th>
 <td>19576.0</td>
 <td>2.46935</td>
 <td>13.137220</td>
@@ -1282,7 +1287,7 @@ Name: number_of_tags, dtype: float64</code></pre>
 <td>650.0</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">model</td>
+<th data-quarto-table-cell-role="th">model</th>
 <td>131767.0</td>
 <td>4.06151</td>
 <td>5.327066</td>
@@ -1301,23 +1306,23 @@ Name: number_of_tags, dtype: float64</code></pre>
 <p>We can see that the mean number of tags for models is higher than datasets. We can also see at the 75% percentile models also have more tags compared to datasets. The possible reasons for this (and whether this is a problem or not) is something we may wish to explore further…</p>
 <p>Since the hub hosts models from different libraries we may want to also breakdown by library. First let’s grab only the model part of our DataFrame.</p>
 <div id="cell-41" class="cell" data-execution_count="22">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>models_df <span class="op">=</span> df[df[<span class="st">"type"</span>] <span class="op">==</span> <span class="st">"model"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>models_df <span class="op">=</span> df[df[<span class="st">"type"</span>] <span class="op">==</span> <span class="st">"model"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The <code>library_name</code> column contains info about the library. Let’s see how many unique libraries we have.</p>
 <div id="cell-43" class="cell" data-execution_count="23">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>models_df.library_name.unique().shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>models_df.library_name.unique().shape</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="23">
 <pre><code>(63,)</code></pre>
 </div>
 </div>
 <p>This is quite a few! We can do a groupby on this column</p>
 <div id="cell-45" class="cell" data-execution_count="24">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>models_df.groupby(<span class="st">"library_name"</span>)[<span class="st">"number_of_tags"</span>].describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>models_df.groupby(<span class="st">"library_name"</span>)[<span class="st">"number_of_tags"</span>].describe()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="24">
 <div>
 
 
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th"></th>
@@ -1344,7 +1349,7 @@ Name: number_of_tags, dtype: float64</code></pre>
 </thead>
 <tbody>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">BERT</td>
+<th data-quarto-table-cell-role="th">BERT</th>
 <td>1.0</td>
 <td>7.0</td>
 <td>NaN</td>
@@ -1355,7 +1360,7 @@ Name: number_of_tags, dtype: float64</code></pre>
 <td>7.0</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">Doc-UFCN</td>
+<th data-quarto-table-cell-role="th">Doc-UFCN</th>
 <td>2.0</td>
 <td>4.0</td>
 <td>0.000000</td>
@@ -1366,7 +1371,7 @@ Name: number_of_tags, dtype: float64</code></pre>
 <td>4.0</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">EveryDream</td>
+<th data-quarto-table-cell-role="th">EveryDream</th>
 <td>2.0</td>
 <td>7.0</td>
 <td>0.000000</td>
@@ -1377,7 +1382,7 @@ Name: number_of_tags, dtype: float64</code></pre>
 <td>7.0</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">FastAI</td>
+<th data-quarto-table-cell-role="th">FastAI</th>
 <td>1.0</td>
 <td>1.0</td>
 <td>NaN</td>
@@ -1388,7 +1393,7 @@ Name: number_of_tags, dtype: float64</code></pre>
 <td>1.0</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">JoeyNMT</td>
+<th data-quarto-table-cell-role="th">JoeyNMT</th>
 <td>1.0</td>
 <td>4.0</td>
 <td>NaN</td>
@@ -1399,7 +1404,7 @@ Name: number_of_tags, dtype: float64</code></pre>
 <td>4.0</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">...</td>
+<th data-quarto-table-cell-role="th">...</th>
 <td>...</td>
 <td>...</td>
 <td>...</td>
@@ -1410,7 +1415,7 @@ Name: number_of_tags, dtype: float64</code></pre>
 <td>...</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">ultralytics</td>
+<th data-quarto-table-cell-role="th">ultralytics</th>
 <td>4.0</td>
 <td>10.0</td>
 <td>1.414214</td>
@@ -1421,7 +1426,7 @@ Name: number_of_tags, dtype: float64</code></pre>
 <td>11.0</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">ultralyticsplus</td>
+<th data-quarto-table-cell-role="th">ultralyticsplus</th>
 <td>1.0</td>
 <td>9.0</td>
 <td>NaN</td>
@@ -1432,7 +1437,7 @@ Name: number_of_tags, dtype: float64</code></pre>
 <td>9.0</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">yolor</td>
+<th data-quarto-table-cell-role="th">yolor</th>
 <td>2.0</td>
 <td>9.0</td>
 <td>0.000000</td>
@@ -1443,7 +1448,7 @@ Name: number_of_tags, dtype: float64</code></pre>
 <td>9.0</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">yolov5</td>
+<th data-quarto-table-cell-role="th">yolov5</th>
 <td>36.0</td>
 <td>9.0</td>
 <td>0.000000</td>
@@ -1454,7 +1459,7 @@ Name: number_of_tags, dtype: float64</code></pre>
 <td>9.0</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">yolov6detect</td>
+<th data-quarto-table-cell-role="th">yolov6detect</th>
 <td>1.0</td>
 <td>10.0</td>
 <td>NaN</td>
@@ -1473,7 +1478,7 @@ Name: number_of_tags, dtype: float64</code></pre>
 </div>
 <p>We might find this a bit tricky to look at. We may want to only include the top n libraries since some of these libraries may be less well used.</p>
 <div id="cell-47" class="cell" data-execution_count="25">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>models_df.library_name.value_counts()[:<span class="dv">15</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>models_df.library_name.value_counts()[:<span class="dv">15</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="25">
 <pre><code>transformers             63754
 stable-baselines3         3183
@@ -1494,18 +1499,18 @@ Name: library_name, dtype: int64</code></pre>
 </div>
 </div>
 <div id="cell-48" class="cell" data-execution_count="26">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>top_libraries <span class="op">=</span> models_df.library_name.value_counts()[:<span class="dv">9</span>].index.to_list()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>top_libraries <span class="op">=</span> models_df.library_name.value_counts()[:<span class="dv">9</span>].index.to_list()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-49" class="cell" data-execution_count="27">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>top_libraries_df <span class="op">=</span> models_df[models_df.library_name.isin(top_libraries)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>top_libraries_df <span class="op">=</span> models_df[models_df.library_name.isin(top_libraries)]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-50" class="cell" data-execution_count="28">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>top_libraries_df.groupby(<span class="st">"library_name"</span>)[<span class="st">"number_of_tags"</span>].describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>top_libraries_df.groupby(<span class="st">"library_name"</span>)[<span class="st">"number_of_tags"</span>].describe()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="28">
 <div>
 
 
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th"></th>
@@ -1532,7 +1537,7 @@ Name: library_name, dtype: int64</code></pre>
 </thead>
 <tbody>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">diffusers</td>
+<th data-quarto-table-cell-role="th">diffusers</th>
 <td>2802.0</td>
 <td>4.374732</td>
 <td>2.171226</td>
@@ -1543,7 +1548,7 @@ Name: library_name, dtype: int64</code></pre>
 <td>18.0</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">espnet</td>
+<th data-quarto-table-cell-role="th">espnet</th>
 <td>381.0</td>
 <td>6.965879</td>
 <td>0.595060</td>
@@ -1554,7 +1559,7 @@ Name: library_name, dtype: int64</code></pre>
 <td>9.0</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">keras</td>
+<th data-quarto-table-cell-role="th">keras</th>
 <td>470.0</td>
 <td>3.842553</td>
 <td>14.422674</td>
@@ -1565,7 +1570,7 @@ Name: library_name, dtype: int64</code></pre>
 <td>311.0</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">ml-agents</td>
+<th data-quarto-table-cell-role="th">ml-agents</th>
 <td>763.0</td>
 <td>6.965924</td>
 <td>0.273775</td>
@@ -1576,7 +1581,7 @@ Name: library_name, dtype: int64</code></pre>
 <td>7.0</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">sentence-transformers</td>
+<th data-quarto-table-cell-role="th">sentence-transformers</th>
 <td>1273.0</td>
 <td>6.984289</td>
 <td>3.221840</td>
@@ -1587,7 +1592,7 @@ Name: library_name, dtype: int64</code></pre>
 <td>36.0</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">spacy</td>
+<th data-quarto-table-cell-role="th">spacy</th>
 <td>296.0</td>
 <td>4.611486</td>
 <td>0.985180</td>
@@ -1598,7 +1603,7 @@ Name: library_name, dtype: int64</code></pre>
 <td>10.0</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">stable-baselines3</td>
+<th data-quarto-table-cell-role="th">stable-baselines3</th>
 <td>3183.0</td>
 <td>4.997801</td>
 <td>0.163426</td>
@@ -1609,7 +1614,7 @@ Name: library_name, dtype: int64</code></pre>
 <td>8.0</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">timm</td>
+<th data-quarto-table-cell-role="th">timm</th>
 <td>383.0</td>
 <td>3.548303</td>
 <td>1.315291</td>
@@ -1620,7 +1625,7 @@ Name: library_name, dtype: int64</code></pre>
 <td>13.0</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">transformers</td>
+<th data-quarto-table-cell-role="th">transformers</th>
 <td>63754.0</td>
 <td>6.912037</td>
 <td>5.262633</td>
@@ -1638,9 +1643,9 @@ Name: library_name, dtype: int64</code></pre>
 </div>
 <p>Let’s take a quick look at some examples from the library with the highest and lowest number or tags.</p>
 <div id="cell-52" class="cell" data-execution_count="29">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>top_libraries_df[top_libraries_df.library_name <span class="op">==</span> <span class="st">"sentence-transformers"</span>].sample(<span class="dv">15</span>)[</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>top_libraries_df[top_libraries_df.library_name <span class="op">==</span> <span class="st">"sentence-transformers"</span>].sample(<span class="dv">15</span>)[</span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"tags"</span></span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="29">
 <pre><code>6123      [pytorch, gpt_neo, arxiv:2202.08904, sentence-...
 2488      [pytorch, distilbert, sentence-transformers, f...
@@ -1661,7 +1666,7 @@ Name: tags, dtype: object</code></pre>
 </div>
 </div>
 <div id="cell-54" class="cell" data-execution_count="30">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>top_libraries_df[top_libraries_df.library_name <span class="op">==</span> <span class="st">"timm"</span>].sample(<span class="dv">15</span>)[<span class="st">"tags"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>top_libraries_df[top_libraries_df.library_name <span class="op">==</span> <span class="st">"timm"</span>].sample(<span class="dv">15</span>)[<span class="st">"tags"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="30">
 <pre><code>104432                [pytorch, timm, image-classification]
 110296    [pytorch, arxiv:2301.00808, timm, image-classi...
@@ -1686,7 +1691,7 @@ Name: tags, dtype: object</code></pre>
 <h3 class="anchored" data-anchor-id="grouping-by-pipeline-tags">Grouping by pipeline tags</h3>
 <p>We have a column in our dataframe <code>pipeline</code> tag, which refers to the type of task a model is for. We should be careful relying too much on this but we can have a quick look at how often these are used.</p>
 <div id="cell-57" class="cell" data-execution_count="31">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>models_df[<span class="st">"pipeline_tag"</span>].value_counts()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>models_df[<span class="st">"pipeline_tag"</span>].value_counts()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="31">
 <pre><code>text-classification               14479
 text2text-generation               8102
@@ -1729,7 +1734,7 @@ Name: pipeline_tag, dtype: int64</code></pre>
 </div>
 <p>We may also want to see if there are some type of task that have more tags.</p>
 <div id="cell-59" class="cell" data-execution_count="32">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>models_df.groupby(<span class="st">"pipeline_tag"</span>)[<span class="st">"number_of_tags"</span>].mean().sort_values().plot.barh()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>models_df.groupby(<span class="st">"pipeline_tag"</span>)[<span class="st">"number_of_tags"</span>].mean().sort_values().plot.barh()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -1740,10 +1745,10 @@ Name: pipeline_tag, dtype: int64</code></pre>
 </div>
 <p>We can also look at the breakdown for a particular task</p>
 <div id="cell-61" class="cell" data-execution_count="98">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>text_classification_df <span class="op">=</span> models_df[models_df[<span class="st">"pipeline_tag"</span>] <span class="op">==</span> <span class="st">"text-classification"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>text_classification_df <span class="op">=</span> models_df[models_df[<span class="st">"pipeline_tag"</span>] <span class="op">==</span> <span class="st">"text-classification"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-62" class="cell" data-execution_count="99">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>text_classification_df[<span class="st">"number_of_tags"</span>].describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>text_classification_df[<span class="st">"number_of_tags"</span>].describe()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="99">
 <pre><code>count    14479.000000
 mean         5.948822
@@ -1758,12 +1763,12 @@ Name: number_of_tags, dtype: float64</code></pre>
 </div>
 <p>Again, we have some extreme outliers</p>
 <div id="cell-64" class="cell" data-execution_count="100">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>text_classification_df[text_classification_df.number_of_tags <span class="op">&gt;</span> <span class="dv">230</span>][[<span class="st">"tags"</span>, <span class="st">"modelId"</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>text_classification_df[text_classification_df.number_of_tags <span class="op">&gt;</span> <span class="dv">230</span>][[<span class="st">"tags"</span>, <span class="st">"modelId"</span>]]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="100">
 <div>
 
 
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th"></th>
@@ -1773,12 +1778,12 @@ Name: number_of_tags, dtype: float64</code></pre>
 </thead>
 <tbody>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">22457</td>
+<th data-quarto-table-cell-role="th">22457</th>
 <td>[pytorch, tf, roberta, text-classification, mu...</td>
 <td>m3hrdadfi/zabanshenas-roberta-base-mix</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">101628</td>
+<th data-quarto-table-cell-role="th">101628</th>
 <td>[pytorch, canine, text-classification, ace, af...</td>
 <td>SebOchs/canine-c-lang-id</td>
 </tr>
@@ -1790,11 +1795,11 @@ Name: number_of_tags, dtype: float64</code></pre>
 </div>
 <p>We see that these mostly seem to relate to language. Let’s remove these outliers and look at the distribution in the number of tags without these.</p>
 <div id="cell-66" class="cell" data-execution_count="114">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>text_classification_df_no_outliers <span class="op">=</span> text_classification_df[</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>text_classification_df_no_outliers <span class="op">=</span> text_classification_df[</span>
 <span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>    text_classification_df[<span class="st">"number_of_tags"</span>]</span>
 <span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;=</span> text_classification_df[<span class="st">"number_of_tags"</span>].quantile(<span class="fl">0.95</span>)</span>
 <span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>text_classification_df_no_outliers[<span class="st">"number_of_tags"</span>].plot.hist(bins<span class="op">=</span><span class="dv">9</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>text_classification_df_no_outliers[<span class="st">"number_of_tags"</span>].plot.hist(bins<span class="op">=</span><span class="dv">9</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -1809,15 +1814,15 @@ Name: number_of_tags, dtype: float64</code></pre>
 <h2 class="anchored" data-anchor-id="why-counting-tags-might-not-make-sense">Why counting tags might not make sense</h2>
 <p>I’e already hinted at why looking at raw number of tags might not be a good idea. Let’s close this blog by briefly digging into at least one reason why. We’ll use the toolz library for some of this analysis.</p>
 <div id="cell-68" class="cell" data-execution_count="102">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> toolz <span class="im">import</span> concat</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> toolz <span class="im">import</span> concat</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>First we grab all the tags and put them in a single list.</p>
 <div id="cell-70" class="cell" data-execution_count="103">
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>all_tags <span class="op">=</span> <span class="bu">list</span>(concat(df.tags.tolist()))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>all_tags <span class="op">=</span> <span class="bu">list</span>(concat(df.tags.tolist()))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>If we look at some examples, we’ll see some tags are in the form of <code>something:somethingelse</code>.</p>
 <div id="cell-72" class="cell" data-execution_count="104">
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>all_tags[:<span class="dv">10</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>all_tags[:<span class="dv">10</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="104">
 <pre><code>['pytorch',
  'tf',
@@ -1833,24 +1838,24 @@ Name: number_of_tags, dtype: float64</code></pre>
 </div>
 <p>for example <code>dataset:wikipedia</code>, we should therefore avoid treating all tags as the same since tags can have a particular purpose. i.e.&nbsp;indicating a dataset is associated with a model.</p>
 <div id="cell-74" class="cell" data-execution_count="105">
-<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> is_special_tag(tag: <span class="bu">str</span>):</span>
-<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">":"</span> <span class="kw">in</span> tag</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> is_special_tag(tag: <span class="bu">str</span>):</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">":"</span> <span class="kw">in</span> tag</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-75" class="cell" data-execution_count="106">
-<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> toolz <span class="im">import</span> countby, valmap</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> toolz <span class="im">import</span> countby, valmap</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-76" class="cell" data-execution_count="107">
-<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>special_tag_vs_normal <span class="op">=</span> countby(is_special_tag, all_tags)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>special_tag_vs_normal <span class="op">=</span> countby(is_special_tag, all_tags)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-77" class="cell" data-execution_count="108">
-<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>special_tag_vs_normal</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>special_tag_vs_normal</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="108">
 <pre><code>{False: 467758, True: 115755}</code></pre>
 </div>
 </div>
 <div id="cell-78" class="cell" data-execution_count="109">
-<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>total <span class="op">=</span> <span class="bu">sum</span>(special_tag_vs_normal.values())</span>
-<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>valmap(<span class="kw">lambda</span> x: x <span class="op">/</span> total, special_tag_vs_normal)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>total <span class="op">=</span> <span class="bu">sum</span>(special_tag_vs_normal.values())</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>valmap(<span class="kw">lambda</span> x: x <span class="op">/</span> total, special_tag_vs_normal)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="109">
 <pre><code>{False: 0.8016239569641121, True: 0.1983760430358878}</code></pre>
 </div>
@@ -1912,13 +1917,14 @@ Name: number_of_tags, dtype: float64</code></pre>
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
