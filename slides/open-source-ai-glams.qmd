@@ -1,0 +1,339 @@
+---
+title: "Open Source AI for GLAMs"
+subtitle: "From Using to Contributing"
+description: "An introduction to open source AI for galleries, libraries, archives and museums - covering what makes AI open, how to run models, and how GLAMs can contribute back to the ecosystem."
+author: "Daniel van Strien"
+institute: "Hugging Face"
+date: today
+format:
+  revealjs:
+    theme: serif
+    slide-number: true
+    show-slide-number: all
+    preview-links: auto
+    footer: "[danielvanstrien.xyz](https://danielvanstrien.xyz) | Open Source AI for GLAMs"
+    logo: "https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.svg"
+---
+
+
+### About Me
+
+- Machine Learning Librarian @ Hugging Face 
+- [BigLAM](https://huggingface.co/biglam) /  [Small Models for GLAM]()
+
+# Part 1: What and Why?
+
+
+## What is Open Source AI?
+
+- AI systems where key components are publicly accessible
+- A spectrum: from "open weights" to fully open training pipelines
+- Growing ecosystem of models, tools, and communities
+
+::: {.notes}
+- Open source AI isn't binary - there's a spectrum of openness
+- We'll explore what "open" means in practice
+:::
+
+# What can Libraries do with AI?
+
+## The Chat Interface?
+
+![](assets/quickfix.jpg)
+
+::: {.notes}
+- As I already mentioned in my intro, Generative AI has become the dominant way of thinking about AI
+- In particular, the "chat interface" i.e. chat GPT, claude etc, are the dominant way in which many people (consciously) interact with AI
+- this sometimes leads to the default answer to "what can we do with AI" to be "How can we create a chat interface for our collection?"
+
+:::
+
+
+## The Default Answer
+
+"Let's build a chatbot for our collections!" 
+
+::: {.fragment}
+But is this the best starting point?
+:::
+
+
+## AI: Ferrari vs Honda Civic
+
+> "A frontier model like GPT-4 is like a Ferrari. It's an obvious triumph of engineering, designed to win races. But it takes a special pit crew just to change the tires.
+
+> In contrast, a smaller specialized model is like a Honda Civic. It's engineered to be affordable, reliable, and extremely useful. And that's why they're absolutely everywhere."
+
+::: {style="text-align: right; font-size: 0.8em;"}
+— Adapted from "Finally, a Replacement for BERT" [https://huggingface.co/blog/modernbert](https://huggingface.co/blog/modernbert)
+:::
+
+
+# What Makes AI Open?
+
+- Open weights vs closed weights
+- Open weights vs open source? 
+- Open data?
+  
+
+## What is an AI Model?
+
+```{mermaid}
+flowchart LR
+    W[Weights<br/>Learned numbers] --> M((Model))
+    C[Code<br/>Instructions] --> M
+    M --> T[Does tasks]
+```
+
+The **weights** are the "brain" - patterns learned from training data
+
+## What Are Weights?
+
+```{mermaid}
+flowchart TD
+    D[(Training Data<br/>Books, websites, images)] --> L[Learning Process]
+    L --> W[Weights File<br/>.safetensors]
+    W --> E["Billions of numbers:<br/>[0.023, -0.891, 0.442, ...]"]
+```
+
+These numbers encode everything the model "knows"
+
+## Open vs Closed Weights
+
+::: {.columns}
+::: {.column width="50%"}
+**Open Weights**
+
+```{mermaid}
+flowchart TD
+    O[Download weights] --> R[Run anywhere]
+    R --> I[Inspect & modify]
+```
+:::
+
+::: {.column width="50%"}
+**Closed Weights**
+
+```{mermaid}
+flowchart TD
+    A[API only] --> B[Black box]
+    B --> V[Vendor controlled]
+```
+:::
+:::
+
+## Open Source (Beyond Weights)
+
+"fully" open source AI includes:
+
+- **Training code**: How the model was built
+- **Training data**: What the model learned from
+- **Evaluation details**: How performance was measured
+
+**Examples of "fully" open models:**
+
+- [OLMo](https://allenai.org/olmo) - Allen AI's fully open LLM
+- [SmolLM](https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B) - Hugging Face's small, efficient models
+
+
+## Why Open?
+
+| | |
+|---|---|
+| **Choice** | 1M+ models vs ~100 closed APIs |
+| **Control** | Run where you want, pin versions |
+| **Flexibility** | Fine-tune for your domain |
+| **Cost** | Often cheaper at scale |
+| **Privacy** | Data never leaves your infra |
+| **Transparency** | Inspect model & training data |
+
+# Part 2: How?
+
+## Choosing a Model
+
+**AI/ML is more than LLMs!**
+
+Many tasks don't need a large language model:
+
+- **Classification**: Categorize documents, detect languages
+- **Embeddings**: Semantic search, similarity matching
+- **Vision**: OCR, image classification, object detection
+- **Structured extraction**: Named entities, dates, metadata
+
+**Finding models**: [Hugging Face Hub](https://huggingface.co/models) - 1M+ open models, filterable by task, language, size
+
+
+
+## Running the model 
+
+Open models != local models 
+
+A few genres of inference for open models:
+
+- Pay per token via a hosted endpoint "serverless"
+- Run the model on your own hardware (laptop, desktop, server)
+- Rent the hardware to run the model and pay per hour
+
+## Tradeoffs
+
+| Approach | Setup | Best For |
+|----------|-------|----------|
+| Pay per token | Minimal | Prototyping, low volume |
+| Local hardware | Medium | Privacy, offline use |
+| Rent hardware | Higher | Production, scale |
+
+## Pay Per Token (Serverless)
+
+**Setup**: Minimal - use via OpenAI-compatible client
+
+::: {.columns}
+::: {.column width="50%"}
+**Pros**
+
+- Quick to start
+- No hardware needed
+- Competitive pricing
+- Easy model switching
+:::
+
+::: {.column width="50%"}
+**Cons**
+
+- Vendor dependency
+- Results can vary across providers
+- Ongoing costs
+- Data leaves your infrastructure
+:::
+:::
+
+## Local Hardware
+
+**Setup**: Medium - install runtime + download model
+
+::: {.columns}
+::: {.column width="50%"}
+**Pros**
+
+- Full control
+- Data stays local
+- No ongoing costs
+- Works offline
+:::
+
+::: {.column width="50%"}
+**Cons**
+
+- Hardware limitations
+- Model size constraints
+- Setup/maintenance
+- Updates are manual
+:::
+:::
+
+## Rent Hardware (Dedicated)
+
+**Setup**: Higher - configure cloud instance
+
+::: {.columns}
+::: {.column width="50%"}
+**Pros**
+
+- Scalable resources
+- Run any model size
+- Dedicated capacity
+- Production-ready
+:::
+
+::: {.column width="50%"}
+**Cons**
+
+- Costs scale with usage
+- Infrastructure complexity
+- Requires DevOps skills
+- Cold start times
+:::
+:::
+
+
+## Local hosting
+
+```{mermaid}
+mindmap
+  root((Local model ecosystem))
+    Python Libraries
+      Pytorch / Tensorflow / JAX
+      Transformers
+      Diffusers
+      Sentence Transformers
+      ONNX Runtime
+      Optimum
+    JavaScript
+      Transformers.js
+    Inference Frameworks
+      GPU Poor focused
+        llama.cpp
+          LM Studio
+          Ollama
+        MLX Apple Silicon
+          mlx-lm
+          mlx-vlm
+        ExLlamaV2
+        Jan
+      Enterprise Focused
+        vLLM
+        SgLang
+        Triton Inference Server
+    Quantization Formats
+      GGUF
+      GPTQ
+      AWQ
+    UIs
+      Gradio
+      Open WebUI
+```
+
+
+# Part 3: A case study
+
+Switch to notebook 
+
+# Part 4: Contributing
+
+How can GLAMs contribute to Open Source AI?
+
+
+## Contributing: Datasets
+
+GLAMs hold unique assets for AI training:
+
+- **Curated collections**: High-quality, well-documented data
+- **Domain expertise**: Historical texts, scientific literature, archival materials
+- **Linguistic diversity**: Multilingual and underrepresented language resources
+- **Rich metadata**: Structured information often missing from web scrapes
+
+## Contributing: Evaluations
+
+Move beyond "vibe checks" with domain expertise:
+
+- **Task benchmarks**: Cataloging, transcription, metadata extraction
+- **Quality assessment**: Expert evaluation of model outputs
+- **Edge cases**: Cultural heritage contexts models often get wrong
+- **Bias detection**: Identifying gaps in historical & cultural knowledge
+
+## Contributing: Models
+
+Share trained models back to the community:
+
+- **Fine-tuned models**: Adapt general models to your domain (historical texts, scientific literature)
+- **Specialized task models**: OCR for historical typefaces, metadata extraction, document classification
+- **Embedding models**: Better semantic search using domain-specific vocabularies
+
+## Thank You! {.center}
+
+### Let's Connect
+
+- Follow me on **Hugging Face**: [huggingface.co/davanstrien](https://huggingface.co/davanstrien)
+- **socials**: [https://linktr.ee/danielvanstrien](https://linktr.ee/danielvanstrien)
+
+
+## Questions?
