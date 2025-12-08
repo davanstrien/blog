@@ -11,7 +11,10 @@ website:
     right:
       - text: "About"
         href: about.qmd
+      - text: "Slides"
+        href: slides.qmd
       - icon: github
+        text: GitHub
         href: https://github.com/davanstrien
       - icon: twitter
         href: https://twitter.com/vanstriendaniel
