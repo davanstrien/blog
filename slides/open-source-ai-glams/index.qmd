@@ -1,6 +1,6 @@
 ---
 title: "Open Source AI for GLAMs"
-subtitle: "From Using to Contributing"
+subtitle: "From Using to Contributing (AI4LAM Fantastic Futures 2025 Workshop)"
 description: "An introduction to open source AI for galleries, libraries, archives and museums - covering what makes AI open, how to run models, and how GLAMs can contribute back to the ecosystem."
 author: "Daniel van Strien"
 institute: "Hugging Face"
