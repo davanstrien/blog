@@ -18,7 +18,7 @@ format:
 
 ### About Me
 - Machine Learning Librarian @ Hugging Face 
-- BigLAM /  Small Models for GLAM
+- [BigLAM](https://huggingface.co/biglam) /  [Small Models for GLAM](https://huggingface.co/small-models-for-glam)
 
 # Part 1: What and Why?
 
