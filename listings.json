@@ -1,13 +1,8 @@
 [
   {
-    "listing": "/slides.html",
-    "items": [
-      "/slides/open-source-ai-glams/index.html"
-    ]
-  },
-  {
     "listing": "/index.html",
     "items": [
+      "/posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html",
       "/posts/2025/iconclass-vlm-sft/trl-vlm-fine-tuning-iconclass.html",
       "/posts/2025/hf-jobs/vllm-batch-inference.html",
       "/posts/2025/who-benefits-rethinking-library-data-ai/libraries-as-training-data.html",
@@ -41,6 +36,12 @@
       "/posts/post-with-code/2020-10-12-labelling_vs_classification_models.html",
       "/posts/post-with-code/optuna/2020-07-01-optuna.html",
       "/posts/post-with-code/2020-05-03-multi-model.html"
+    ]
+  },
+  {
+    "listing": "/slides.html",
+    "items": [
+      "/slides/open-source-ai-glams/index.html"
     ]
   }
 ]
