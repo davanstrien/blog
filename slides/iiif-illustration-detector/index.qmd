@@ -1,0 +1,155 @@
+---
+title: "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model"
+subtitle: "IIIF Community Call"
+description: "A browser-based tool for detecting illustrations in digitized cultural heritage collections using a tiny machine learning model that runs entirely client-side via IIIF."
+author: "Daniel van Strien"
+institute: "Hugging Face"
+date: "2026-02-11"
+categories: [IIIF, GLAM, machine-learning, small-models]
+format:
+  revealjs:
+    theme: serif
+    slide-number: true
+    footer: "IIIF Community Call | Daniel van Strien, ML Librarian @ Hugging Face"
+    logo: assets/hf-logo.png
+    transition: fade
+    width: 1280
+    height: 720
+---
+
+##
+
+**Daniel van Strien** — Machine Learning Librarian @ Hugging Face
+
+
+
+## Demo
+
+
+### [huggingface.co/spaces/small-models-for-glam/iiif-illustration-detector](https://huggingface.co/spaces/small-models-for-glam/iiif-illustration-detector){style="color: #4fc3f7;"}
+
+
+
+---
+
+## What just happened?
+
+| | |
+|---|---|
+| **Model** | MobileNetV2 — 2.5MB, quantized ONNX |
+| **Runs** | Entirely in your browser via transformers.js |
+| **Privacy** | No data leaves your institution |
+| **IIIF** | Supports Presentation API v2 AND v3 |
+| **Output** | W3C Web Annotations — plugs into your existing infra |
+
+. . .
+
+You just saw the **model**, the **dataset**, and the **tool** — all open, all on Hugging Face.
+
+---
+
+## How this got made
+
+- **2022**: Hand-labeled **1,896** pages as "illustrated" or "not"
+- Data sat for **3 years**
+- One evening in 2025:
+    - Train MobileNetV2 on that data
+    - Convert to ONNX, quantize to 2.5MB
+    - Build browser tool with transformers.js
+
+. . .
+
+> One evening with modern tools turned 3-year-old data into a working browser tool.
+
+---
+
+## Training models is getting easier
+
+- Fine-tuning a classifier: **an afternoon, not a PhD**
+- Expanding training data with AI: **$15, not $15,000**
+- This illustration detector: one evening of work
+
+---
+
+## Running models is getting easier
+
+- **2.5MB** — runs in any browser, no GPU needed
+- No server to maintain, no API keys, no cloud costs
+- Ship a model as a **URL** — nothing to install
+
+---
+
+## Small models can be very powerful
+
+- One model finds illustrations across **any IIIF collection**
+- Imagine an ecosystem: illustration detection, handwriting recognition, layout analysis, map detection...
+- Each model small, focused, composable
+
+. . .
+
+> An ecosystem of task-specific models built by and for the cultural heritage community.
+
+---
+
+## So what's the bottleneck?
+
+. . .
+
+**Data.**
+
+- AI can help prepare training data (VLMs, zero-shot labeling)
+- But it still needs **human domain expertise** to validate and guide it
+- Cultural heritage professionals have that expertise
+
+---
+
+## Data as infrastructure
+
+- Union catalogs → MARC → **IIIF** → ...?
+- IIIF = the cultural heritage community saying "we build our own interop"
+
+. . .
+
+**Shared datasets and small models are the next layer.**
+
+. . .
+
+The GLAM sector can build AI infrastructure by building **datasets for training and evaluation**.
+
+---
+
+## Get involved
+
+- **Org**: [huggingface.co/small-models-for-glam](https://huggingface.co/small-models-for-glam) — a shared home for task-specific cultural heritage models
+
+**What would help:**
+
+- Training data from **your** collections
+- Feedback on edge cases and new collection types
+- Feature requests
+
+> The model works well on Western European printed material — **we need more diversity**.
+
+---
+
+## Questions & Discussion
+
+- What types of illustrations does your collection have?
+- Would you use this in a cataloguing workflow?
+- What other "boring but useful" classification tasks would help your work?
+- Is the annotation export format right for your infrastructure?
+
+---
+
+## Thank You
+
+**Daniel van Strien**
+
+- Bluesky: [@vanstriendaniel](https://bsky.app/profile/vanstriendaniel)
+- Hugging Face: [huggingface.co/davanstrien](https://huggingface.co/davanstrien)
+
+**Links:**
+
+- Demo: [small-models-for-glam/iiif-illustration-detector](https://huggingface.co/spaces/small-models-for-glam/iiif-illustration-detector)
+- Model: [small-models-for-glam/historical-illustration-detector](https://huggingface.co/small-models-for-glam/historical-illustration-detector)
+- Org: [small-models-for-glam](https://huggingface.co/small-models-for-glam)
