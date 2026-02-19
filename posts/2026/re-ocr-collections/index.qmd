@@ -1,0 +1,203 @@
+---
+title: "Re-OCR Your Digitised Collections for ~$0.002/Page"
+date: "2026-02-19"
+author: "Daniel van Strien"
+categories: [ocr, glam, hugging-face, uv-scripts]
+description: "A guide to re-processing digitised collections with open-source VLM-based OCR models."
+draft: false
+---
+
+## Why re-OCR?
+
+This post is a quick-start guide to re-processing digitised collections with modern OCR models — not a full discussion of the pros and cons of VLM-based OCR. I'll cover more of the nuances in follow-up posts. For now, the goal is to get you from scanned images to structured text as quickly as possible.
+
+Many libraries and cultural heritage institutions digitised their collections years ago. The OCR from that era — often Tesseract or ABBYY — was state of the art at the time, but often struggles with historical typefaces, degraded scans, and complex layouts.
+
+In the last few years, a new generation of OCR models based on Vision Language Models (VLMs) has emerged. These models are primarily the result of "running out of tokens" and the consequent desire from AI companies to find new sources of data to train on. This led to the development of OCR models using VLMs as backbones which usually aim to output "reading order" text — i.e. text with minimal markup, usually targeting Markdown. These models *can* perform much better on the same scans that older tools struggled with, producing cleaner, more structured output.
+
+The downside for many libraries is that these models mostly don't aim to output ALTO XML or other formats common in library workflows. The question of whether clinging on to ALTO XML as **the only possible format** is beyond the scope of this post, but it's worth considering this tradeoff when evaluating whether to re-OCR using these tools! 
+
+Models like [GLM-OCR](https://huggingface.co/zai-org/GLM-OCR) (0.9B parameters) produce clean, structured markdown from the same scans that tripped up older tools.
+
+Here's the difference on a page from the 1771 Encyclopaedia Britannica:
+
+**Before** (old Tesseract OCR):
+```
+Encyclopaedia Britannica;Or, A NEW and
+COMPLETEDICTIONARYO FARTS and SCIENCES.A BABAA
+A, the name of feveral rivers in different...
+```
+
+**After** (GLM-OCR):
+```
+Encyclopædia Britannica; OR, A NEW AND
+COMPLETE DICTIONARY OF ARTS and SCIENCES. AB
+A, the name of several rivers in different...
+```
+
+But is it practical to do this at scale? How much does it actually cost?
+
+## How much does it cost?
+
+This is the question I get asked most. The short answer is that the costs are rapidly falling as models get smaller and more efficient, and the ability to run them on demand on cloud GPUs means you can re-process even large collections without a huge upfront investment.
+
+I recently re-OCR'd the complete [1771 Encyclopaedia Britannica](https://huggingface.co/datasets/davanstrien/enc-brit-glm-ocr-v2-full) — 2,724 pages — for about **$5 total** on a single GPU. That's roughly **$0.002 per page**.
+
+| Collection size | Approximate cost | Approximate time |
+|----------------|-----------------|-----------------|
+| 100 pages | ~$0.20 | ~10 min |
+| 1,000 pages | ~$2 | ~1 hour |
+| 10,000 pages | ~$20 | ~10 hours |
+| 100,000 pages | ~$200 | ~4 days |
+
+For comparison, commercial OCR APIs typically charge $0.01–0.05 per page — and you don't get to choose or swap the model.
+
+These are rough estimates — actual throughput depends on page complexity and image resolution. But the order of magnitude is right: re-OCRing even large collections is now within reach for most institutions.
+
+## Test before you commit
+
+Before running OCR across your entire collection, **test on a small sample first**. Not every model works equally well on every type of document. Historical typefaces, manuscript text, tables, and mixed layouts can all produce very different results depending on the model.
+
+A good workflow:
+
+1. **Start with 20–50 pages** to check output quality
+2. **Try 2–3 different models** on the same sample (see [Other OCR models](#other-ocr-models) below)
+3. **Look at the results** in the [Hugging Face dataset viewer](https://huggingface.co/docs/hub/datasets-viewer) — you can see the original image alongside the OCR text right in your browser
+
+I've been building tools to [benchmark OCR models](https://huggingface.co/datasets/uv-scripts/ocr) systematically across different document types — more on that in a follow-up post. But even a quick manual check of 20 pages will tell you a lot about whether a model suits your collection.
+
+## How it works: HF Jobs + uv
+
+Two tools make this practical:
+
+[**Hugging Face Jobs**](https://huggingface.co/docs/hub/spaces-gpu-jobs) lets you run scripts on cloud GPUs directly from the command line. You don't set up servers, build Docker images, or manage environments — you point it at a script and it handles the rest. When the job finishes (or crashes), the GPU shuts down and you stop paying.
+
+[**uv**](https://docs.astral.sh/uv/) is a Python package manager that can run scripts with their dependencies declared inline ([PEP 723](https://peps.python.org/pep-0723/)). This means the OCR scripts are entirely self-contained — all the dependencies are specified inside the script file itself, and uv installs them automatically.
+
+Together: one command spins up a GPU, installs everything, runs OCR, uploads results to the Hub, and shuts down. No setup on your end.
+
+## What you need
+
+- A **Hugging Face account** ([sign up here](https://huggingface.co/join) — free)
+- The **[`hf` CLI](https://huggingface.co/docs/huggingface_hub/en/guides/cli)** installed and logged in
+- Your collection as a **Hugging Face dataset** with an `image` column (see [Getting your images onto the Hub](#getting-your-images-onto-the-hub) below)
+
+## Running the OCR
+
+Once your images are on the Hub, the entire pipeline is a single command:
+
+```bash
+hf jobs uv run --flavor l4x1 \
+    -s HF_TOKEN \
+    https://huggingface.co/datasets/uv-scripts/ocr/raw/main/glm-ocr-v2.py \
+    your-username/your-input-dataset \
+    your-username/your-output-dataset
+```
+
+What this does:
+
+- Spins up an L4 GPU on Hugging Face Jobs
+- Installs all dependencies automatically
+- Loads your dataset from the Hub
+- Runs OCR on every page using GLM-OCR
+- **Uploads results incrementally** — completed batches are pushed to the Hub every few minutes, so a crash or timeout never loses work
+- If interrupted, add `--resume` to pick up where you left off
+
+### Try a small sample first
+
+```bash
+hf jobs uv run --flavor l4x1 \
+    -s HF_TOKEN \
+    https://huggingface.co/datasets/uv-scripts/ocr/raw/main/glm-ocr-v2.py \
+    your-username/your-dataset \
+    your-username/your-dataset-ocr-test \
+    --max-samples 20 --shuffle --seed 42
+```
+
+The `--shuffle` flag picks random pages from across the collection rather than just the first 20, which gives you a better sense of how the model handles variety.
+
+### Useful options
+
+| Flag | What it does |
+|------|-------------|
+| `--max-samples 50` | Process a subset to check quality |
+| `--shuffle --seed 42` | Random sample instead of sequential |
+| `--batch-size 64` | Larger batches for better GPU utilisation |
+| `--resume` | Continue after a crash or timeout |
+
+For large collections, set a longer timeout on the job itself:
+
+```bash
+hf jobs uv run --flavor l4x1 --timeout 8h \
+    -s HF_TOKEN \
+    https://huggingface.co/datasets/uv-scripts/ocr/raw/main/glm-ocr-v2.py \
+    ...
+```
+
+If the job times out anyway, just rerun with `--resume` — it picks up from the last completed batch.
+
+## Getting your images onto the Hub {#getting-your-images-onto-the-hub}
+
+The OCR scripts expect a Hugging Face dataset with an `image` column. There are a few common paths depending on what you're starting with.
+
+### A folder of images
+
+If you have scanned pages as TIFF, JPEG, or PNG files, the [`datasets`](https://huggingface.co/docs/datasets) library can load and upload them:
+
+```python
+from datasets import load_dataset
+
+ds = load_dataset("imagefolder", data_dir="./my-scans")
+ds.push_to_hub("your-username/your-collection")
+```
+
+This creates a dataset with an `image` column automatically. You can include metadata (page numbers, volume info, etc.) by adding a `metadata.csv` alongside your images — see the [ImageFolder documentation](https://huggingface.co/docs/datasets/image_dataset#imagefolder) for details.
+
+**Tips for large collections:**
+
+- For 10,000+ images, see the [Hub documentation on uploading large datasets](https://huggingface.co/docs/datasets/upload_dataset) for guidance on chunked uploads.
+- If your originals are high-resolution TIFFs, converting to JPEG or PNG first will speed up uploads significantly. The OCR models don't need more than ~2000px on the longest side.
+
+### PDFs
+
+Many digitised collections exist as PDFs. The [`uv-scripts/dataset-creation`](https://huggingface.co/datasets/uv-scripts/dataset-creation) collection includes a script that converts PDFs to a Hugging Face dataset with one image per page.
+
+### Already-online collections
+
+Check whether your collection (or something similar) already exists on the Hub — search at [huggingface.co/datasets](https://huggingface.co/datasets). Collections from Internet Archive, national libraries, and other sources are increasingly available as Hugging Face datasets.
+
+## Other OCR models {#other-ocr-models}
+
+GLM-OCR is a good default — small, fast, and clean output. But the [`uv-scripts/ocr`](https://huggingface.co/datasets/uv-scripts/ocr) collection includes scripts for several models:
+
+| Model | Size | Notes |
+|-------|------|-------|
+| [GLM-OCR](https://huggingface.co/zai-org/GLM-OCR) | 0.9B | Good cost/quality ratio, fast on L4 |
+| [DeepSeek-OCR](https://huggingface.co/deepseek-ai/DeepSeek-OCR) | 4B | Highest quality in my testing |
+| [LightOnOCR-2](https://huggingface.co/lightonai/LightOnOCR-2-1B) | 1B | Strong on typewritten and manuscript material |
+| [DoTS.ocr](https://huggingface.co/rednote-hilab/dots.ocr) | 1.7B | Good all-rounder |
+
+All use the same command pattern — just swap the script URL. In my benchmarking across different document types, **rankings shift depending on the collection**, so testing on your own material matters more than any leaderboard. I'll share the benchmarking tools and results in a follow-up post.
+
+## What's next
+
+This post covers the essentials: get images on the Hub, run one command, get structured OCR. I'll follow up with:
+
+- **How to benchmark OCR models** on your specific collection
+- **Systematically comparing** old vs new OCR quality
+- **Post-processing** and quality filtering strategies
+
+## Get involved
+
+If you try this on your own collection, I'd love to hear about it.
+
+If you'd find a **GUI tool**, a more step-by-step workflow, or anything else that would make this easier to use — please open a discussion on the [uv-scripts/ocr community page](https://huggingface.co/datasets/uv-scripts/ocr/discussions). That feedback directly shapes what gets built next.
+
+## Links
+
+- **Example output**: [davanstrien/enc-brit-glm-ocr-v2-full](https://huggingface.co/datasets/davanstrien/enc-brit-glm-ocr-v2-full) — 2,724 pages of the 1771 Encyclopaedia Britannica
+- **OCR scripts**: [uv-scripts/ocr](https://huggingface.co/datasets/uv-scripts/ocr)
+- **GLM-OCR model**: [zai-org/GLM-OCR](https://huggingface.co/zai-org/GLM-OCR)
+- **Hugging Face Jobs**: [documentation](https://huggingface.co/docs/hub/spaces-gpu-jobs)
+- **Hugging Face Datasets**: [documentation](https://huggingface.co/docs/datasets)
+- **uv**: [docs.astral.sh/uv](https://docs.astral.sh/uv/)
