@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Daniel van Strien">
+<meta name="dcterms.date" content="2026-02-19">
+<meta name="description" content="A guide to re-processing digitised collections with open-source VLM-based OCR models.">
+
+<title>Re-OCR Your Digitised Collections for ~$0.002/Page – Daniel van Strien</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../icons/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-afa37c5c79185640b9c231024f4fe5ea.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script defer="" src="https://cloud.umami.is/script.js" data-website-id="85cb27d6-dbf9-43d7-97d0-be4e6724de7a"></script>
+<meta name="msvalidate.01" content="4246174F24A3CB7C9CBEAA94E1FF8E84">
+<meta name="google-site-verification" content="C7WoFOEuA4Msbvvk-kgDd_C6VGphZTp3awy_acXjZYU">
+
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Daniel van Strien</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../slides.html"> 
+<span class="menu-text">Slides</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text">GitHub</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../index.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Re-OCR Your Digitised Collections for ~$0.002/Page</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">ocr</div>
+    <div class="quarto-category">glam</div>
+    <div class="quarto-category">hugging-face</div>
+    <div class="quarto-category">uv-scripts</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    A guide to re-processing digitised collections with open-source VLM-based OCR models.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Daniel van Strien </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 19, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="why-re-ocr" class="level2">
+<h2 class="anchored" data-anchor-id="why-re-ocr">Why re-OCR?</h2>
+<p>This post is a quick-start guide to re-processing digitised collections with modern OCR models — not a full discussion of the pros and cons of VLM-based OCR. I’ll cover more of the nuances in follow-up posts. For now, the goal is to get you from scanned images to structured text as quickly as possible.</p>
+<p>Many libraries and cultural heritage institutions digitised their collections years ago. The OCR from that era — often Tesseract or ABBYY — was state of the art at the time, but often struggles with historical typefaces, degraded scans, and complex layouts.</p>
+<p>In the last few years, a new generation of OCR models based on Vision Language Models (VLMs) has emerged. These models are primarily the result of “running out of tokens” and the consequent desire from AI companies to find new sources of data to train on. This led to the development of OCR models using VLMs as backbones which usually aim to output “reading order” text — i.e.&nbsp;text with minimal markup, usually targeting Markdown. These models <em>can</em> perform much better on the same scans that older tools struggled with, producing cleaner, more structured output.</p>
+<p>The downside for many libraries is that these models mostly don’t aim to output ALTO XML or other formats common in library workflows. The question of whether clinging on to ALTO XML as <strong>the only possible format</strong> is beyond the scope of this post, but it’s worth considering this tradeoff when evaluating whether to re-OCR using these tools!</p>
+<p>Models like <a href="https://huggingface.co/zai-org/GLM-OCR">GLM-OCR</a> (0.9B parameters) produce clean, structured markdown from the same scans that tripped up older tools.</p>
+<p>Here’s the difference on a page from the 1771 Encyclopaedia Britannica:</p>
+<p><strong>Before</strong> (old Tesseract OCR):</p>
+<pre><code>Encyclopaedia Britannica;Or, A NEW and
+COMPLETEDICTIONARYO FARTS and SCIENCES.A BABAA
+A, the name of feveral rivers in different...</code></pre>
+<p><strong>After</strong> (GLM-OCR):</p>
+<pre><code>Encyclopædia Britannica; OR, A NEW AND
+COMPLETE DICTIONARY OF ARTS and SCIENCES. AB
+A, the name of several rivers in different...</code></pre>
+<p>But is it practical to do this at scale? How much does it actually cost?</p>
+</section>
+<section id="how-much-does-it-cost" class="level2">
+<h2 class="anchored" data-anchor-id="how-much-does-it-cost">How much does it cost?</h2>
+<p>This is the question I get asked most. The short answer is that the costs are rapidly falling as models get smaller and more efficient, and the ability to run them on demand on cloud GPUs means you can re-process even large collections without a huge upfront investment.</p>
+<p>I recently re-OCR’d the complete <a href="https://huggingface.co/datasets/davanstrien/enc-brit-glm-ocr-v2-full">1771 Encyclopaedia Britannica</a> — 2,724 pages — for about <strong>$5 total</strong> on a single GPU. That’s roughly <strong>$0.002 per page</strong>.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Collection size</th>
+<th>Approximate cost</th>
+<th>Approximate time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>100 pages</td>
+<td>~$0.20</td>
+<td>~10 min</td>
+</tr>
+<tr class="even">
+<td>1,000 pages</td>
+<td>~$2</td>
+<td>~1 hour</td>
+</tr>
+<tr class="odd">
+<td>10,000 pages</td>
+<td>~$20</td>
+<td>~10 hours</td>
+</tr>
+<tr class="even">
+<td>100,000 pages</td>
+<td>~$200</td>
+<td>~4 days</td>
+</tr>
+</tbody>
+</table>
+<p>For comparison, commercial OCR APIs typically charge $0.01–0.05 per page — and you don’t get to choose or swap the model.</p>
+<p>These are rough estimates — actual throughput depends on page complexity and image resolution. But the order of magnitude is right: re-OCRing even large collections is now within reach for most institutions.</p>
+</section>
+<section id="test-before-you-commit" class="level2">
+<h2 class="anchored" data-anchor-id="test-before-you-commit">Test before you commit</h2>
+<p>Before running OCR across your entire collection, <strong>test on a small sample first</strong>. Not every model works equally well on every type of document. Historical typefaces, manuscript text, tables, and mixed layouts can all produce very different results depending on the model.</p>
+<p>A good workflow:</p>
+<ol type="1">
+<li><strong>Start with 20–50 pages</strong> to check output quality</li>
+<li><strong>Try 2–3 different models</strong> on the same sample (see <a href="#other-ocr-models">Other OCR models</a> below)</li>
+<li><strong>Look at the results</strong> in the <a href="https://huggingface.co/docs/hub/datasets-viewer">Hugging Face dataset viewer</a> — you can see the original image alongside the OCR text right in your browser</li>
+</ol>
+<p>I’ve been building tools to <a href="https://huggingface.co/datasets/uv-scripts/ocr">benchmark OCR models</a> systematically across different document types — more on that in a follow-up post. But even a quick manual check of 20 pages will tell you a lot about whether a model suits your collection.</p>
+</section>
+<section id="how-it-works-hf-jobs-uv" class="level2">
+<h2 class="anchored" data-anchor-id="how-it-works-hf-jobs-uv">How it works: HF Jobs + uv</h2>
+<p>Two tools make this practical:</p>
+<p><a href="https://huggingface.co/docs/hub/spaces-gpu-jobs"><strong>Hugging Face Jobs</strong></a> lets you run scripts on cloud GPUs directly from the command line. You don’t set up servers, build Docker images, or manage environments — you point it at a script and it handles the rest. When the job finishes (or crashes), the GPU shuts down and you stop paying.</p>
+<p><a href="https://docs.astral.sh/uv/"><strong>uv</strong></a> is a Python package manager that can run scripts with their dependencies declared inline (<a href="https://peps.python.org/pep-0723/">PEP 723</a>). This means the OCR scripts are entirely self-contained — all the dependencies are specified inside the script file itself, and uv installs them automatically.</p>
+<p>Together: one command spins up a GPU, installs everything, runs OCR, uploads results to the Hub, and shuts down. No setup on your end.</p>
+</section>
+<section id="what-you-need" class="level2">
+<h2 class="anchored" data-anchor-id="what-you-need">What you need</h2>
+<ul>
+<li>A <strong>Hugging Face account</strong> (<a href="https://huggingface.co/join">sign up here</a> — free)</li>
+<li>The <strong><a href="https://huggingface.co/docs/huggingface_hub/en/guides/cli"><code>hf</code> CLI</a></strong> installed and logged in</li>
+<li>Your collection as a <strong>Hugging Face dataset</strong> with an <code>image</code> column (see <a href="#getting-your-images-onto-the-hub">Getting your images onto the Hub</a> below)</li>
+</ul>
+</section>
+<section id="running-the-ocr" class="level2">
+<h2 class="anchored" data-anchor-id="running-the-ocr">Running the OCR</h2>
+<p>Once your images are on the Hub, the entire pipeline is a single command:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">hf</span> jobs uv run <span class="at">--flavor</span> l4x1 <span class="dt">\</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">-s</span> HF_TOKEN <span class="dt">\</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    https://huggingface.co/datasets/uv-scripts/ocr/raw/main/glm-ocr-v2.py <span class="dt">\</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    your-username/your-input-dataset <span class="dt">\</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    your-username/your-output-dataset</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>What this does:</p>
+<ul>
+<li>Spins up an L4 GPU on Hugging Face Jobs</li>
+<li>Installs all dependencies automatically</li>
+<li>Loads your dataset from the Hub</li>
+<li>Runs OCR on every page using GLM-OCR</li>
+<li><strong>Uploads results incrementally</strong> — completed batches are pushed to the Hub every few minutes, so a crash or timeout never loses work</li>
+<li>If interrupted, add <code>--resume</code> to pick up where you left off</li>
+</ul>
+<section id="try-a-small-sample-first" class="level3">
+<h3 class="anchored" data-anchor-id="try-a-small-sample-first">Try a small sample first</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">hf</span> jobs uv run <span class="at">--flavor</span> l4x1 <span class="dt">\</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">-s</span> HF_TOKEN <span class="dt">\</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    https://huggingface.co/datasets/uv-scripts/ocr/raw/main/glm-ocr-v2.py <span class="dt">\</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    your-username/your-dataset <span class="dt">\</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    your-username/your-dataset-ocr-test <span class="dt">\</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">--max-samples</span> 20 <span class="at">--shuffle</span> <span class="at">--seed</span> 42</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The <code>--shuffle</code> flag picks random pages from across the collection rather than just the first 20, which gives you a better sense of how the model handles variety.</p>
+</section>
+<section id="useful-options" class="level3">
+<h3 class="anchored" data-anchor-id="useful-options">Useful options</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Flag</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>--max-samples 50</code></td>
+<td>Process a subset to check quality</td>
+</tr>
+<tr class="even">
+<td><code>--shuffle --seed 42</code></td>
+<td>Random sample instead of sequential</td>
+</tr>
+<tr class="odd">
+<td><code>--batch-size 64</code></td>
+<td>Larger batches for better GPU utilisation</td>
+</tr>
+<tr class="even">
+<td><code>--resume</code></td>
+<td>Continue after a crash or timeout</td>
+</tr>
+</tbody>
+</table>
+<p>For large collections, set a longer timeout on the job itself:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">hf</span> jobs uv run <span class="at">--flavor</span> l4x1 <span class="at">--timeout</span> 8h <span class="dt">\</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">-s</span> HF_TOKEN <span class="dt">\</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    https://huggingface.co/datasets/uv-scripts/ocr/raw/main/glm-ocr-v2.py <span class="dt">\</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    ...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>If the job times out anyway, just rerun with <code>--resume</code> — it picks up from the last completed batch.</p>
+</section>
+</section>
+<section id="getting-your-images-onto-the-hub" class="level2">
+<h2 class="anchored" data-anchor-id="getting-your-images-onto-the-hub">Getting your images onto the Hub</h2>
+<p>The OCR scripts expect a Hugging Face dataset with an <code>image</code> column. There are a few common paths depending on what you’re starting with.</p>
+<section id="a-folder-of-images" class="level3">
+<h3 class="anchored" data-anchor-id="a-folder-of-images">A folder of images</h3>
+<p>If you have scanned pages as TIFF, JPEG, or PNG files, the <a href="https://huggingface.co/docs/datasets"><code>datasets</code></a> library can load and upload them:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> load_dataset(<span class="st">"imagefolder"</span>, data_dir<span class="op">=</span><span class="st">"./my-scans"</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>ds.push_to_hub(<span class="st">"your-username/your-collection"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This creates a dataset with an <code>image</code> column automatically. You can include metadata (page numbers, volume info, etc.) by adding a <code>metadata.csv</code> alongside your images — see the <a href="https://huggingface.co/docs/datasets/image_dataset#imagefolder">ImageFolder documentation</a> for details.</p>
+<p><strong>Tips for large collections:</strong></p>
+<ul>
+<li>For 10,000+ images, see the <a href="https://huggingface.co/docs/datasets/upload_dataset">Hub documentation on uploading large datasets</a> for guidance on chunked uploads.</li>
+<li>If your originals are high-resolution TIFFs, converting to JPEG or PNG first will speed up uploads significantly. The OCR models don’t need more than ~2000px on the longest side.</li>
+</ul>
+</section>
+<section id="pdfs" class="level3">
+<h3 class="anchored" data-anchor-id="pdfs">PDFs</h3>
+<p>Many digitised collections exist as PDFs. The <a href="https://huggingface.co/datasets/uv-scripts/dataset-creation"><code>uv-scripts/dataset-creation</code></a> collection includes a script that converts PDFs to a Hugging Face dataset with one image per page.</p>
+</section>
+<section id="already-online-collections" class="level3">
+<h3 class="anchored" data-anchor-id="already-online-collections">Already-online collections</h3>
+<p>Check whether your collection (or something similar) already exists on the Hub — search at <a href="https://huggingface.co/datasets">huggingface.co/datasets</a>. Collections from Internet Archive, national libraries, and other sources are increasingly available as Hugging Face datasets.</p>
+</section>
+</section>
+<section id="other-ocr-models" class="level2">
+<h2 class="anchored" data-anchor-id="other-ocr-models">Other OCR models</h2>
+<p>GLM-OCR is a good default — small, fast, and clean output. But the <a href="https://huggingface.co/datasets/uv-scripts/ocr"><code>uv-scripts/ocr</code></a> collection includes scripts for several models:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Size</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="https://huggingface.co/zai-org/GLM-OCR">GLM-OCR</a></td>
+<td>0.9B</td>
+<td>Good cost/quality ratio, fast on L4</td>
+</tr>
+<tr class="even">
+<td><a href="https://huggingface.co/deepseek-ai/DeepSeek-OCR">DeepSeek-OCR</a></td>
+<td>4B</td>
+<td>Highest quality in my testing</td>
+</tr>
+<tr class="odd">
+<td><a href="https://huggingface.co/lightonai/LightOnOCR-2-1B">LightOnOCR-2</a></td>
+<td>1B</td>
+<td>Strong on typewritten and manuscript material</td>
+</tr>
+<tr class="even">
+<td><a href="https://huggingface.co/rednote-hilab/dots.ocr">DoTS.ocr</a></td>
+<td>1.7B</td>
+<td>Good all-rounder</td>
+</tr>
+</tbody>
+</table>
+<p>All use the same command pattern — just swap the script URL. In my benchmarking across different document types, <strong>rankings shift depending on the collection</strong>, so testing on your own material matters more than any leaderboard. I’ll share the benchmarking tools and results in a follow-up post.</p>
+</section>
+<section id="whats-next" class="level2">
+<h2 class="anchored" data-anchor-id="whats-next">What’s next</h2>
+<p>This post covers the essentials: get images on the Hub, run one command, get structured OCR. I’ll follow up with:</p>
+<ul>
+<li><strong>How to benchmark OCR models</strong> on your specific collection</li>
+<li><strong>Systematically comparing</strong> old vs new OCR quality</li>
+<li><strong>Post-processing</strong> and quality filtering strategies</li>
+</ul>
+</section>
+<section id="get-involved" class="level2">
+<h2 class="anchored" data-anchor-id="get-involved">Get involved</h2>
+<p>If you try this on your own collection, I’d love to hear about it.</p>
+<p>If you’d find a <strong>GUI tool</strong>, a more step-by-step workflow, or anything else that would make this easier to use — please open a discussion on the <a href="https://huggingface.co/datasets/uv-scripts/ocr/discussions">uv-scripts/ocr community page</a>. That feedback directly shapes what gets built next.</p>
+</section>
+<section id="links" class="level2">
+<h2 class="anchored" data-anchor-id="links">Links</h2>
+<ul>
+<li><strong>Example output</strong>: <a href="https://huggingface.co/datasets/davanstrien/enc-brit-glm-ocr-v2-full">davanstrien/enc-brit-glm-ocr-v2-full</a> — 2,724 pages of the 1771 Encyclopaedia Britannica</li>
+<li><strong>OCR scripts</strong>: <a href="https://huggingface.co/datasets/uv-scripts/ocr">uv-scripts/ocr</a></li>
+<li><strong>GLM-OCR model</strong>: <a href="https://huggingface.co/zai-org/GLM-OCR">zai-org/GLM-OCR</a></li>
+<li><strong>Hugging Face Jobs</strong>: <a href="https://huggingface.co/docs/hub/spaces-gpu-jobs">documentation</a></li>
+<li><strong>Hugging Face Datasets</strong>: <a href="https://huggingface.co/docs/datasets">documentation</a></li>
+<li><strong>uv</strong>: <a href="https://docs.astral.sh/uv/">docs.astral.sh/uv</a></li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/danielvanstrien\.xyz");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
