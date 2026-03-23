@@ -9,10 +9,14 @@ website:
   favicon: icons/favicon.ico
   navbar:
     right:
+      - text: "AI Patterns for GLAM"
+        href: https://davanstrien.github.io/ai-patterns-for-glam/
       - text: "About"
         href: about.qmd
       - text: "Slides"
         href: slides.qmd
+      - text: "Memes"
+        href: pages/memes/index.qmd
       - icon: github
         text: GitHub
         href: https://github.com/davanstrien
