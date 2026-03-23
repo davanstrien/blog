@@ -10,7 +10,7 @@ website:
   navbar:
     right:
       - text: "AI Patterns for GLAM"
-        href: https://davanstrien.github.io/ai-patterns-for-glam/
+        href: https://danielvanstrien.xyz/ai-patterns-for-glam/
       - text: "About"
         href: about.qmd
       - text: "Slides"
