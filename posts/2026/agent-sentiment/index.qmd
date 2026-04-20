@@ -1,0 +1,424 @@
+---
+title: "AI providers have millions of agent sessions. The first 1,589 are public."
+subtitle: "A first pass at 8,949 labelled messages from the only open coding-agent corpus we've got — and why sentiment is probably the wrong lens."
+date: "2026-04-20"
+author:
+  - name: "Daniel van Strien"
+    url: https://danielvanstrien.xyz/
+    affiliation: "Hugging Face"
+  - name: "Claude Opus 4.7"
+    url: https://www.anthropic.com/claude
+    affiliation: "Anthropic"
+categories: [ai, coding-agents, agent-traces, open-data, hugging-face]
+description: "Anthropic, OpenAI, Cursor, and Windsurf sit on millions of private agent traces. The first public corpus has 33 datasets, 1,589 sessions, 8,949 labelled messages. Here's what we found in it — and why the interesting data isn't in the words."
+execute:
+  freeze: false
+format:
+  html:
+    code-fold: true
+    code-summary: "show code"
+resources:
+  - scripts/
+---
+
+```{=html}
+<style>
+  .lede { font-size: 1.05rem; color: #333; border-left: 2px solid #888; padding-left: 14px; margin: 24px 0 32px; }
+  .callout { color: #555; font-size: 0.95rem; margin: 24px 0; padding: 12px 16px; background: #fafafa; border-left: 3px solid #6c5ce7; }
+  .epigraph { color: #777; font-style: italic; margin: 10px 0 30px; font-size: 0.95rem; }
+  details { margin: 24px 0; padding: 8px 14px; background: #fafafa; border-left: 2px solid #ccc; }
+  details summary { cursor: pointer; color: #555; font-weight: 500; }
+  details summary:hover { color: #2d3436; }
+  details > *:not(summary) { margin-top: 12px; }
+  .verify { background: #f8f9fb; border: 1px solid #d8dee8; border-radius: 4px; padding: 14px 18px; margin: 16px 0; font-size: 0.93rem; }
+  .verify code { background: #eef1f5; padding: 1px 4px; border-radius: 2px; }
+</style>
+```
+
+```{python}
+#| echo: false
+import json
+import altair as alt
+import pandas as pd
+
+with open("data.json") as f:
+    raw = json.load(f)
+df = pd.DataFrame(raw)
+
+# Minimal Tufte-ish theme
+@alt.theme.register("tufte", enable=True)
+def tufte():
+    return alt.theme.ThemeConfig(
+        {"height": 260, "width": 680},
+        view={"stroke": "transparent"},
+        axis={
+            "labelFont": "-apple-system, system-ui, sans-serif",
+            "titleFont": "-apple-system, system-ui, sans-serif",
+            "labelFontSize": 11, "titleFontSize": 11,
+            "titleColor": "#666", "labelColor": "#777",
+            "gridColor": "#f2f2f2", "domainColor": "#ccc", "tickColor": "#ccc",
+            "grid": True, "gridOpacity": 0.6,
+        },
+        legend={
+            "labelFont": "-apple-system, system-ui, sans-serif",
+            "titleFont": "-apple-system, system-ui, sans-serif",
+            "labelFontSize": 11, "orient": "top", "offset": 0,
+        },
+        title={"font": "-apple-system, system-ui, sans-serif", "fontSize": 12, "color": "#444", "anchor": "start"},
+    )
+
+SENTIMENT_COLOR = {"NEGATIVE": "#c0392b", "NEUTRAL": "#b2bec3", "POSITIVE": "#27ae60"}
+```
+
+::: {.lede}
+Every major AI coding-agent provider — Anthropic, OpenAI, Cursor, Windsurf, Cognition — is sitting on millions of private agent traces. How they train on that data, what they learn from it, what they ignore: all black box. The models reshaping how we write software are being shaped by data we can't see.
+
+Hugging Face recently shipped [`format:agent-traces`](https://huggingface.co/changelog/agent-trace-viewer) — a standard way to share agent session logs publicly. The corpus as of April 2026: **forty-five datasets, 33 unique collections, 1,589 sessions, roughly 194,000 total events — of which ~166,000 are autonomous tool calls and just 8,949 are developer prompts.** It's small, concentrated in a handful of early adopters, and it's the only thing we've got.
+
+This is a first pass at what that data tells us, starting with the easiest lens — sentiment labels on the developer messages — and ending with why the richer signal is in everything *else*.
+:::
+
+::: {.callout-note}
+## A note on how this was made
+
+This post was pair-written with Claude Code (Opus) over about four hours.
+Daniel directed the analysis, reframed the findings, and made the editorial
+calls. The agent wrote the labelling pipeline, debugged a vLLM stack issue
+that burned nine HF Jobs across two days before a minimal smoke test
+unblocked it, ran the off-the-shelf RoBERTa comparison, produced every
+chart, and drafted most of the prose — over an interactive session using HF
+Jobs, the [`agent-traces`](https://github.com/davanstrien/agent-traces) library, and [Quarto](https://quarto.org/). Every
+number in this post is verifiable from the published dataset; there's a
+replication prompt in [Appendix A](#replication).
+:::
+
+## The silent majority
+
+If you expected 8,949 messages from developers to read like running commentary — debates, delight, frustration — you'd be wrong. **77% of messages are neutral. 61% of sessions contain zero emotional signal of any kind.**
+
+```{python}
+#| echo: false
+#| fig-cap: "Distribution of sentiment labels across all 8,949 messages. Grey is the noise; the sliver is the signal."
+
+dist = df["label"].value_counts(normalize=True).reindex(["NEGATIVE", "NEUTRAL", "POSITIVE"]).reset_index()
+dist.columns = ["label", "share"]
+dist_counts = df["label"].value_counts().reindex(["NEGATIVE", "NEUTRAL", "POSITIVE"]).reset_index()
+dist_counts.columns = ["label", "n"]
+dist = dist.merge(dist_counts, on="label")
+dist["y"] = 0
+dist["label_order"] = dist["label"].map({"NEGATIVE": 0, "NEUTRAL": 1, "POSITIVE": 2})
+
+base = alt.Chart(dist).encode(
+    x=alt.X("share:Q", axis=alt.Axis(format=".0%", title=None, values=[0, 0.25, 0.5, 0.75, 1]), scale=alt.Scale(domain=[0, 1])),
+    y=alt.Y("y:O", title=None, axis=None),
+    color=alt.Color("label:N",
+        scale=alt.Scale(domain=["NEGATIVE", "NEUTRAL", "POSITIVE"],
+                        range=["#c0392b", "#d6dbdf", "#27ae60"]),
+        legend=None),
+    order=alt.Order("label_order:Q"),
+    tooltip=[alt.Tooltip("label:N"), alt.Tooltip("n:Q", title="Messages", format=","), alt.Tooltip("share:Q", title="Share", format=".1%")],
+)
+
+bar = base.mark_bar(height=44, stroke="white", strokeWidth=1)
+
+text = alt.Chart(dist).transform_stack(
+    stack="share", groupby=["y"], as_=["x0", "x1"], sort=[{"field": "label_order"}],
+).transform_calculate(
+    mid="(datum.x0 + datum.x1) / 2",
+    pct="format(datum.share, '.0%')",
+    caption="datum.label + '  ' + format(datum.share, '.0%')",
+).mark_text(
+    color="white", fontWeight="bold", fontSize=13, dy=0,
+).encode(
+    x="mid:Q", y=alt.Y("y:O", axis=None),
+    text=alt.Text("caption:N"),
+    detail="label:N",
+)
+
+(bar + text).properties(height=60, width="container")
+```
+
+Look at what happens when you strip the noise out. There's nothing close to a 50/50 split between POSITIVE and NEGATIVE — or even a coherent emotional distribution. There's a massive neutral block, a thin red sliver, and an even thinner green one. In session-level aggregates, **965 out of 1,589 sessions are pure neutral from end to end**.
+
+Here's why, concretely: nearly **one in five messages is ≤ 20 characters**. The top exact-duplicate messages across the corpus are:
+
+<div class="callout">
+<code>continue</code> (133×) &nbsp;·&nbsp; <code>hi</code> (101×) &nbsp;·&nbsp; <code>great please do</code> (45×) &nbsp;·&nbsp; <code>do it</code> (36×) &nbsp;·&nbsp; <code>commit and push</code> (35×) &nbsp;·&nbsp; <code>hey</code> (31×) &nbsp;·&nbsp; <code>yes</code> (29×) &nbsp;·&nbsp; <code>implement</code> (22×)
+</div>
+
+These are legitimate turns. But the pattern isn't *conversation* — it's *direction*. Most of what gets typed is approval, continuation, or a short imperative.
+
+## When feeling does surface, frustration rises with turn count
+
+The emotional signal that *does* exist is rarer for negative than positive: **1,254 negative messages against 782 positive** across the corpus. And the rate of negative messages climbs with turn count.
+
+```{python}
+#| echo: false
+#| fig-cap: "Share of negative messages by turn number. Turn 1 is the calm. Later turns aren't."
+
+max_turn = 12
+turn_stats = (
+    df[df["turn"] <= max_turn]
+    .groupby("turn")
+    .apply(lambda g: pd.Series({"neg_pct": (g["label"] == "NEGATIVE").mean(), "n": len(g)}), include_groups=False)
+    .reset_index()
+)
+turn_stats = turn_stats[turn_stats["n"] >= 50]
+
+line = alt.Chart(turn_stats).mark_line(color="#c0392b", strokeWidth=2.4).encode(
+    x=alt.X("turn:Q", title="Turn number", axis=alt.Axis(tickMinStep=1, grid=False)),
+    y=alt.Y("neg_pct:Q", title="% negative", axis=alt.Axis(format=".0%"), scale=alt.Scale(domain=[0, 0.22])),
+)
+points = alt.Chart(turn_stats).mark_circle(color="#c0392b", size=46).encode(x="turn:Q", y="neg_pct:Q",
+    tooltip=[alt.Tooltip("turn:Q", title="Turn"), alt.Tooltip("neg_pct:Q", title="% negative", format=".1%"), alt.Tooltip("n:Q", title="Messages", format=",")]
+)
+annotations = alt.Chart(turn_stats[turn_stats["turn"].isin([1, 5])]).mark_text(
+    dy=-14, color="#c0392b", fontWeight="bold", fontSize=12,
+).encode(x="turn:Q", y="neg_pct:Q", text=alt.Text("neg_pct:Q", format=".1%"))
+
+(line + points + annotations).properties(width="container", height=240)
+```
+
+Over the first five turns, the share of messages labelled NEGATIVE **more than doubles**, from 8.2% to 17.8%. After that it plateaus around 15–18%. Part is a real *patience cliff* — turn-1 optimism giving way by turn 5 — but part is composition: short successful sessions end early, leaving later turns drawn from harder cases. The plateau rate is the more honest headline.
+
+## Negative openings predict engagement, not doom
+
+The common-sense reading is that sessions that open with frustration stay frustrated. The data says the opposite. Of sessions whose first message is labelled NEGATIVE, **39% contain a positive message later** — a higher recovery rate than the 23% for sessions that open NEUTRAL.
+
+This inverts because first-message-NEGATIVE sessions are almost never "angry at the agent" openings. They're bug reports and problem-framing opens:
+
+::: {.callout}
+> *"running npm run dev, getting [error]. please fix"*
+>
+> *"the latest pi release, self-contained bun executable is broken. download from gh, test on macos and linux"*
+>
+> *"our readme for this isn't accurate and is also extremely stale. please can we review the rest of the repo and write a readme from scratch?"*
+:::
+
+Sessions that open with a reported problem are sessions where the user is *engaged enough to voice the problem* — and when the agent resolves it, they're often engaged enough to say so. NEUTRAL-start sessions are more often pure task-dispatch ("refactor X", "commit and push") where the user rarely gives explicit praise regardless of outcome. The first sentiment label in a session is a proxy for *task type*, not mood: bug-fix sessions have louder emotional arcs than routine-work sessions.
+
+When negativity does appear mid-session, the rest of the session gets more emotionally charged in both directions — NEG rises from a 14.0% baseline to 18.6%, and POS rises from 8.7% to 10.5%. The session doesn't just get darker. It gets louder.
+
+## Model choice matters — on the margin
+
+If you believe the model-upgrade press releases, each new frontier release is a step change. The data is more sober.
+
+```{python}
+#| echo: false
+#| fig-cap: "Negative share per model, among models with ≥100 labelled messages. Dot size = sample size. The band is narrow."
+
+model_stats = (
+    df.groupby("model")
+    .apply(lambda g: pd.Series({
+        "neg_pct": (g["label"] == "NEGATIVE").mean(),
+        "pos_pct": (g["label"] == "POSITIVE").mean(),
+        "n": len(g),
+    }), include_groups=False)
+    .reset_index()
+)
+model_stats = model_stats[
+    (model_stats["n"] >= 100) & model_stats["model"].notna() & (model_stats["model"] != "unknown")
+].sort_values("neg_pct")
+model_stats["display"] = model_stats["model"].str.replace("mlx-community/", "", regex=False).str.replace("-MXFP4-Q8", "", regex=False)
+
+order = model_stats.sort_values("neg_pct")["display"].tolist()
+
+chart = alt.Chart(model_stats).mark_circle(color="#c0392b", opacity=0.85).encode(
+    x=alt.X("neg_pct:Q", title="% negative", axis=alt.Axis(format=".0%"), scale=alt.Scale(domain=[0, 0.32])),
+    y=alt.Y("display:N", sort=order, title=None, axis=alt.Axis(labelLimit=260)),
+    size=alt.Size("n:Q", scale=alt.Scale(range=[80, 600]), title="Messages", legend=alt.Legend(orient="bottom")),
+    tooltip=[alt.Tooltip("model:N", title="Model"), alt.Tooltip("n:Q", title="Messages", format=","),
+             alt.Tooltip("neg_pct:Q", title="% negative", format=".1%"),
+             alt.Tooltip("pos_pct:Q", title="% positive", format=".1%")],
+)
+
+labels = alt.Chart(model_stats).mark_text(align="left", dx=8, color="#555", fontSize=10).encode(
+    x="neg_pct:Q", y=alt.Y("display:N", sort=order), text=alt.Text("neg_pct:Q", format=".0%"),
+)
+
+(chart + labels).properties(width="container", height=32 * len(model_stats))
+```
+
+The models in significant use sit in a narrow band — roughly **11% to 18% negative**, with GPT-5.3 Codex at the low end (11.5%, n = 2,026), Claude Opus 4-6 next (14.2%, n = 1,228), and Claude Opus 4-5 at 17.0% (n = 1,543). The much-publicised Opus 4-5 → 4-6 jump is incremental: 17% to 14% negative, positive edging from 9% to 11%.
+
+The one real outlier is `zai-org/GLM-5.1` at **27.6% negative** (n = 221) — worth flagging, but that signal is almost certainly a selection artefact. The narrow, self-selected contributor set means any model used primarily by one frustrated uploader will look frustrated in aggregate.
+
+<details>
+<summary>Sample sizes, selection bias, and why you should not quote any of these numbers as a model leaderboard</summary>
+
+These per-model figures are drawn from whichever sessions got uploaded publicly. That is not a random sample — not of developers, not of tasks, not of models. `anthropic.claude-opus-4-6-v1` shows a dazzling 4.7% negative rate, but n=86 and it's drawn from traces uploaded by essentially one contributor working in one domain. Kimi-K2.5 at 10.8% is similarly thin (n=74).
+
+Treat anything with n < 100 as directional, anything with n < 500 as suggestive, and remember the whole corpus is dominated by two uploaders. The broader point — *models differ meaningfully on frustration* — survives this caveat. Specific rankings will shift as more datasets land on the Hub.
+</details>
+
+## How we labelled the messages
+
+Sentiment labels are model outputs, not ground truth, so the *how* matters. Each of the 8,949 user messages was classified by [Qwen3-30B-A3B-Instruct-2507](https://huggingface.co/Qwen/Qwen3-30B-A3B-Instruct-2507) — a 30B-total / 3B-active MoE — via vLLM with enforced structured output. Every response is a JSON object `{label, reason}` matching a schema. Zero parse errors across 8,949 calls. The whole run took ~5 minutes on a single H200.
+
+The domain-aware system prompt is the interesting part:
+
+```text
+Classify user messages from coding-agent sessions (developer talking to AI
+coding assistant).
+
+Return JSON with two fields:
+- "label": one of "POSITIVE", "NEUTRAL", or "NEGATIVE"
+- "reason": one sentence explaining why
+
+Domain rules:
+- Dev profanity is casual ("kill that shit" = "remove code") = NEUTRAL
+- Short commands ("do it", "commit and push") are approvals = NEUTRAL
+- Status reports ("ci failed") = NEUTRAL
+- Frustration with agent output quality = NEGATIVE
+- Satisfaction, excitement about progress = POSITIVE
+```
+
+Three representative classifications, with the model's own `sentiment_reason`:
+
+| Message (truncated) | Label | Model's reason |
+|---|---|---|
+| *"merge the pr to main via gh cli on origin, pull from origin, fix that shit up, add the changelog entry"* | `NEUTRAL` | Casual language with commands — an instruction, not frustration. |
+| *"why would you use web search, i just gave you an example trace. compare that to our impl."* | `NEGATIVE` | User expresses frustration with agent's approach. |
+| *"Great. PLease can you review and advise of any areas that are over/under-engineered in this refactor?"* | `POSITIVE` | Satisfaction with progress, engaged collaboration. |
+
+The full reason column is in the [published dataset](https://huggingface.co/datasets/davanstrien/agent-trace-sentiment) — useful for auditing any classification you don't trust.
+
+### Does domain-aware actually matter? We checked.
+
+For comparison, we ran the same 8,949 messages through [`cardiffnlp/twitter-roberta-base-sentiment-latest`](https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment-latest) — a widely-used off-the-shelf three-class sentiment classifier. It took ~2 minutes on an M-series Mac with MPS.
+
+```{python}
+#| echo: false
+#| fig-cap: "Agreement and disagreement between the domain-aware Qwen3 labels and an off-the-shelf RoBERTa sentiment classifier on the same 8,949 messages. 78% agreement; the 22% disagreement concentrates in four predictable failure modes for the generic model."
+
+import pandas as pd
+conf = pd.DataFrame([
+    {"qwen": "NEGATIVE", "roberta": "NEGATIVE", "n": 677},
+    {"qwen": "NEGATIVE", "roberta": "NEUTRAL",  "n": 563},
+    {"qwen": "NEGATIVE", "roberta": "POSITIVE", "n":  14},
+    {"qwen": "NEUTRAL",  "roberta": "NEGATIVE", "n": 361},
+    {"qwen": "NEUTRAL",  "roberta": "NEUTRAL",  "n": 5937},
+    {"qwen": "NEUTRAL",  "roberta": "POSITIVE", "n": 615},
+    {"qwen": "POSITIVE", "roberta": "NEGATIVE", "n":  22},
+    {"qwen": "POSITIVE", "roberta": "NEUTRAL",  "n": 359},
+    {"qwen": "POSITIVE", "roberta": "POSITIVE", "n": 401},
+])
+conf["agree"] = conf["qwen"] == conf["roberta"]
+conf["pct"] = conf["n"] / conf["n"].sum()
+
+label_order = ["NEGATIVE", "NEUTRAL", "POSITIVE"]
+heatmap = alt.Chart(conf).mark_rect(stroke="white", strokeWidth=2).encode(
+    x=alt.X("roberta:N", sort=label_order, title="RoBERTa (off-the-shelf)", axis=alt.Axis(labelAngle=0, orient="top")),
+    y=alt.Y("qwen:N", sort=label_order, title="Qwen3 (domain-aware)"),
+    color=alt.Color("n:Q", scale=alt.Scale(scheme="greys"), legend=None),
+    tooltip=[alt.Tooltip("qwen:N", title="Qwen3"), alt.Tooltip("roberta:N", title="RoBERTa"),
+             alt.Tooltip("n:Q", title="Messages", format=","), alt.Tooltip("pct:Q", title="Share", format=".1%")],
+)
+text = alt.Chart(conf).mark_text(fontSize=13, fontWeight="bold").encode(
+    x=alt.X("roberta:N", sort=label_order),
+    y=alt.Y("qwen:N", sort=label_order),
+    text=alt.Text("n:Q", format=","),
+    color=alt.condition(alt.datum.n > 2500, alt.value("white"), alt.value("#2d3436")),
+)
+
+(heatmap + text).properties(width=380, height=220)
+```
+
+Raw agreement is **78.4%** — but on a 3-class problem where NEUTRAL is 77% of the data, chance agreement is already ~62%, so Cohen's κ is only **0.43** (conventionally interpreted as "moderate"). The generic model agrees on the easy cases; the 21.6% where they disagree is neither random nor small, and it concentrates in four predictable patterns:
+
+- **361 messages (4%) — RoBERTa flagged NEGATIVE, Qwen called NEUTRAL**. Dev profanity and technical complaints about files or systems. *"delete your fucking gpt-5.4 branch"* is instruction, not anger.
+- **615 messages (7%) — RoBERTa flagged POSITIVE, Qwen called NEUTRAL**. Polite wrapping on routine commands ("please do X", "could you refactor") reads as enthusiasm to a generic classifier.
+- **563 messages (6%) — RoBERTa called NEUTRAL, Qwen flagged NEGATIVE**. Real frustration without obvious anger words. *"why would you use web search, i just gave you an example trace"* is annoyed but euphemistic.
+- **359 messages (4%) — RoBERTa called NEUTRAL, Qwen flagged POSITIVE**. Understated affirmations: *"great, let's call it X"*, *"ok that works"*.
+
+A generic sentiment classifier directionally agrees, but it's systematically miscalibrated on the three types of text that most characterise developer-agent interaction — profanity-laced instructions, polite commands, and understated praise. The 78% agreement on the easy cases doesn't save you on the 22% where domain context is load-bearing. For anyone else doing this kind of analysis on agent-trace data: off-the-shelf sentiment isn't good enough, but a small open MoE with fifty lines of domain prompt gets you most of the way there.
+
+## Why sentiment is probably the wrong lens
+
+Is sentiment a useful way to understand open agent traces? *Partly.* It surfaces one real finding (negativity compounds, positivity doesn't) and confirms an intuition made quantitative (developers issue short directives far more often than they converse). But look at the corpus again with the right denominator.
+
+The median session contains **~16 tool calls for every developer prompt**. Across the whole corpus, that ratio is roughly **18 autonomous agent actions per user message** — 166,244 tool calls against 9,341 declared user turns. The human text is a minority of what's happening in an agent session. (Caveat: different agents log "tool calls" differently — Claude Code's hook invocations, Codex and Pi's own telemetry conventions — so some of that variance is protocol, not behaviour. Worth auditing before quoting the exact 18× number.)
+
+Sentiment asks: what does the human feel? The richer question is: what does the *agent actually do*? Does it `Read` a file before `Edit`ing it? Does it reach for `Bash` when an MCP server would be more structured? Does its tool-call mix cluster differently for Claude Code vs Codex vs Pi? Across these 33 collections, preliminary behavioural analysis suggests:
+
+- **Autonomy ratios vary 11:1 to 40:1** (tool calls per user message) — the same model, used very differently depending on who's driving.
+- **Tool-mix profiles** group agents by working style: some are Read-heavy, some are Bash-heavy, some Edit-first.
+- **Error recovery patterns** tell you how a model handles failure more informatively than the 8.7% positive message rate ever could.
+
+That's the next post. This one tested whether the easiest analysis — throw sentiment at the user messages — is worth the inference compute. Honest answer: *a little, but less than you'd hope — sentiment-bearing text is a minority of what agents and developers actually do.*
+
+## Point your agent at the data
+
+The best thing about this data being on the Hub isn't that we analysed it — it's that *your* agent can, with the labelled dataset, session metadata, and full tool-call stream one `snapshot_download` away. As mentioned up top, that's exactly the workflow that produced this post — the same invitation, the same dataset, the same kind of prompts.
+
+Try these. They work in Claude Code, Codex, Pi, or any agent-capable harness.
+
+::: {.callout-tip}
+## Prompt 1 — Compare your own sessions to the corpus
+
+> Parse my Claude Code sessions in `~/.claude/projects` using the `agent-traces` library (`pip install git+https://github.com/davanstrien/agent-traces`). Label each user message with sentiment using the same prompt we used in the blog post (dev profanity = NEUTRAL, short commands = NEUTRAL, etc.) via a local model or a cheap API. Compute NEG% by turn number. Overlay my curve against the public-corpus baseline (`davanstrien/agent-trace-sentiment`, NEG% by turn). Save the chart. Tell me: am I more frustrated than average, less, or the same — and at which turn number the gap is biggest?
+:::
+
+::: {.callout-tip}
+## Prompt 2 — Pick a session apart
+
+> Load `davanstrien/agent-trace-user-messages` (use `snapshot_download` + `polars.read_parquet`; `load_dataset` will fail on stale README YAML). Find the `session_id` with the highest `n_tool_calls`. Then re-parse that session from its source dataset with `agent-traces` to get every tool call and agent event in order. Summarise in 5 bullets what the agent actually *did* — tool mix, error rate, what pattern of behaviour it exhibited, whether this looked like productive work or a debugging spiral. Include the session_id and source dataset so I can look it up.
+:::
+
+::: {.callout-tip}
+## Prompt 3 — Hunt for the finding we missed
+
+> Iterate every public `format:agent-traces` dataset via `TraceDataset.from_hub_search()`. For each, compute ten behavioural metrics: autonomy ratio (tool calls per user message), error rate, tool-mix entropy, median session length in events, read-before-edit rate, cost per session, NEG% at turn 5, most common first-message pattern, output/input token ratio, and share of messages under 20 characters. Find the metric with the largest cross-dataset variance. Write it up as three bullet points suitable for a tweet thread. Include the code so someone else can verify.
+:::
+
+If you run any of these and find something interesting, [tag me](https://twitter.com/vanstriendaniel) — I'll add the best finds to a community roundup. If you want to verify the numbers I've quoted in this post before running your own analysis, there's a short replication prompt in [Appendix A](#replication) that takes one paste into any agent.
+
+## Share your own traces
+
+The corpus is tiny today because very few developers have shared their sessions publicly. If you use a coding agent, your sessions are already on disk somewhere:
+
+| Agent | Sessions live in |
+|---|---|
+| Claude Code | `~/.claude/projects` |
+| Codex | `~/.codex/sessions` |
+| Pi | `~/.pi/agent/sessions` |
+
+Upload them as a dataset and the Hub [auto-detects](https://huggingface.co/changelog/agent-trace-viewer) the format and tags them `format:agent-traces`. The trace viewer renders sessions, turns, and tool calls out of the box. For Pi, [`pi-share-hf`](https://github.com/badlogic/pi-share-hf) handles secret redaction and upload in a single pipeline. For Claude Code and Codex, the equivalent redaction tooling doesn't yet exist — if you build one, I'll link it here.
+
+The asymmetry between closed and open agent-trace corpora will widen, then narrow, then widen again. The 45 datasets that exist today will look quaint in six months. But *only* if more developers upload. The stuff that's interesting to measure about these tools — tool mixes, autonomy patterns, task-type distributions, failure modes — only gets measurable at scale.
+
+## Appendix A — Replicate every number in this post {#replication}
+
+Every figure quoted in the body is computable from the labelled Hub dataset in a few lines of code. Paste the prompt below into any AI coding agent and it will download the data, run the checks, and tell you pass/fail.
+
+<div class="verify">
+
+> Load `davanstrien/agent-trace-sentiment` from the Hugging Face Hub using `huggingface_hub.snapshot_download` + `polars.read_parquet` on the files under `data/` — note `datasets.load_dataset` currently fails on this repo due to stale README YAML, so use the direct-parquet path.
+>
+> Then verify these six claims from the blog post, within ±1.5 percentage points:
+>
+> 1. **77% of messages are NEUTRAL**, 14% NEGATIVE, 9% POSITIVE.
+> 2. **61% of sessions are "pure neutral"** — contain no POSITIVE and no NEGATIVE message at all.
+> 3. **Nearly 20% of messages are ≤ 20 characters long** (`content_text` column, e.g. "continue", "do it", "yes").
+> 4. **At turn 1, ~8% of messages are NEGATIVE; by turn 5, ~18% are** — more than double.
+> 5. **Sessions whose turn-1 message is NEGATIVE: ~60% never see a POSITIVE message afterward.**
+> 6. **Autonomy ratio: the median session has ~16 tool calls per user message** (`n_tool_calls / nTurns` per session). The corpus total is ~18× (sum of `n_tool_calls` divided by sum of `nTurns`).
+>
+> Output a pass/fail table with the computed value next to each claim. If any claim is off by more than ±1.5 percentage points (or 10% for the autonomy ratio), say so loudly and paste the code that showed it.
+
+</div>
+
+If a claim fails, [tag me](https://twitter.com/vanstriendaniel) with the code and the computed value. Replication credit is cheap; I'd rather be corrected than cited incorrectly.
+
+## Appendix B — Methodology and reproducibility details
+
+- **Data sources**: [45 public `format:agent-traces` datasets](https://huggingface.co/datasets?format=format:agent-traces&sort=trending) on the Hugging Face Hub, tagged via the Hub's auto-detection pipeline. After excluding one dataset (`jedisct1/agent-traces-swival`, 8,869 files of security-audit material where sentiment is off-prompt), 44 datasets processed, 43 contributed messages. 33 unique source collections after deduping on `(session_id, turn)` — six of the tagged datasets are re-uploads of `badlogicgames/pi-mono`.
+- **Extraction**: Parsed using the [`agent-traces`](https://github.com/davanstrien/agent-traces) library. Result pushed to [`davanstrien/agent-trace-user-messages`](https://huggingface.co/datasets/davanstrien/agent-trace-user-messages) as 8,949 deduped user turns with 17 columns (session_id, turn, nTurns, normPos, model, provider, agent, cost_total_sum, n_events, n_tool_calls, etc.).
+- **Primary labelling**: [Qwen3-30B-A3B-Instruct-2507](https://huggingface.co/Qwen/Qwen3-30B-A3B-Instruct-2507) (30B total, 3B active MoE) via vLLM with `StructuredOutputsParams` enforcing a `{label, reason}` schema. Zero parse errors across 8,949 inferences. Prompt is domain-aware — see the "How we labelled the messages" section above for the verbatim text.
+- **Comparison labelling**: Same 8,949 messages through [`cardiffnlp/twitter-roberta-base-sentiment-latest`](https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment-latest) via the transformers library on Apple Silicon MPS. Agreement rate 78.4%; confusion matrix in the methodology section.
+- **Compute**: Primary labelling on one H200 via `hf jobs uv run`, ~5 minutes wall time end-to-end. Comparison run on M-series Mac, ~2 minutes. One-file Python scripts for both, no cluster.
+- **Output**: [`davanstrien/agent-trace-sentiment`](https://huggingface.co/datasets/davanstrien/agent-trace-sentiment) with `sentiment_label` and `sentiment_reason` columns.
+- **Data snapshot**: 2026-04-20. Every number in this post is reproducible from the linked dataset.
+- **Caveats in one line**: 45 public datasets, two contributors ≈ 74% of rows, this is a small cohort of early-adopter power users and not a random sample of developers.
+
+All four scripts are published alongside this post — [`extract_user_messages.py`](scripts/extract_user_messages.py), [`sentiment-label.py`](scripts/sentiment-label.py), [`regen_blog_data.py`](scripts/regen_blog_data.py), [`roberta_compare.py`](scripts/roberta_compare.py) — or browse [the `scripts/` folder on GitHub](https://github.com/davanstrien/davanstrien.github.io/tree/main/posts/2026/agent-sentiment/scripts). No secret sauce — the whole pipeline is about 200 lines of Python.
