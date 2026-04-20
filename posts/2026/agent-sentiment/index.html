@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Daniel van Strien">
+<meta name="author" content="Claude Opus 4.7">
+<meta name="dcterms.date" content="2026-04-20">
+<meta name="description" content="Anthropic, OpenAI, Cursor, and Windsurf sit on millions of private agent traces. The first public corpus has 33 datasets, 1,589 sessions, 8,949 labelled messages. Here’s what we found in it — and why the interesting data isn’t in the words.">
+
+<title>AI providers have millions of agent sessions. The first 1,589 are public. – Daniel van Strien</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../icons/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-4897d45d2f75ed4f519693be625836c5.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+<script defer="" src="https://cloud.umami.is/script.js" data-website-id="85cb27d6-dbf9-43d7-97d0-be4e6724de7a"></script>
+<meta name="msvalidate.01" content="4246174F24A3CB7C9CBEAA94E1FF8E84">
+<meta name="google-site-verification" content="C7WoFOEuA4Msbvvk-kgDd_C6VGphZTp3awy_acXjZYU">
+
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Daniel van Strien</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://danielvanstrien.xyz/ai-patterns-for-glam/"> 
+<span class="menu-text">AI Patterns for GLAM</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../slides.html"> 
+<span class="menu-text">Slides</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../pages/memes/index.qmd"> 
+<span class="menu-text">Memes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text">GitHub</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../index.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">AI providers have millions of agent sessions. The first 1,589 are public.</h1>
+<p class="subtitle lead">A first pass at 8,949 labelled messages from the only open coding-agent corpus we’ve got — and why sentiment is probably the wrong lens.</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">ai</div>
+    <div class="quarto-category">coding-agents</div>
+    <div class="quarto-category">agent-traces</div>
+    <div class="quarto-category">open-data</div>
+    <div class="quarto-category">hugging-face</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Anthropic, OpenAI, Cursor, and Windsurf sit on millions of private agent traces. The first public corpus has 33 datasets, 1,589 sessions, 8,949 labelled messages. Here’s what we found in it — and why the interesting data isn’t in the words.
+  </div>
+</div>
+
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Authors</div>
+  <div class="quarto-title-meta-heading">Affiliations</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author"><a href="https://danielvanstrien.xyz/">Daniel van Strien</a> </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Hugging Face
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author"><a href="https://www.anthropic.com/claude">Claude Opus 4.7</a> </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Anthropic
+          </p>
+      </div>
+  </div>
+
+<div class="quarto-title-meta">
+
+      
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">April 20, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<style>
+  .lede { font-size: 1.05rem; color: #333; border-left: 2px solid #888; padding-left: 14px; margin: 24px 0 32px; }
+  .callout { color: #555; font-size: 0.95rem; margin: 24px 0; padding: 12px 16px; background: #fafafa; border-left: 3px solid #6c5ce7; }
+  .epigraph { color: #777; font-style: italic; margin: 10px 0 30px; font-size: 0.95rem; }
+  details { margin: 24px 0; padding: 8px 14px; background: #fafafa; border-left: 2px solid #ccc; }
+  details summary { cursor: pointer; color: #555; font-weight: 500; }
+  details summary:hover { color: #2d3436; }
+  details > *:not(summary) { margin-top: 12px; }
+  .verify { background: #f8f9fb; border: 1px solid #d8dee8; border-radius: 4px; padding: 14px 18px; margin: 16px 0; font-size: 0.93rem; }
+  .verify code { background: #eef1f5; padding: 1px 4px; border-radius: 2px; }
+</style>
+<div class="lede">
+<p>Every major AI coding-agent provider — Anthropic, OpenAI, Cursor, Windsurf, Cognition — is sitting on millions of private agent traces. How they train on that data, what they learn from it, what they ignore: all black box. The models reshaping how we write software are being shaped by data we can’t see.</p>
+<p>Hugging Face recently shipped <a href="https://huggingface.co/changelog/agent-trace-viewer"><code>format:agent-traces</code></a> — a standard way to share agent session logs publicly. The corpus as of April 2026: <strong>forty-five datasets, 33 unique collections, 1,589 sessions, roughly 194,000 total events — of which ~166,000 are autonomous tool calls and just 8,949 are developer prompts.</strong> It’s small, concentrated in a handful of early adopters, and it’s the only thing we’ve got.</p>
+<p>This is a first pass at what that data tells us, starting with the easiest lens — sentiment labels on the developer messages — and ending with why the richer signal is in everything <em>else</em>.</p>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>A note on how this was made
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This post was pair-written with Claude Code (Opus) over about four hours. Daniel directed the analysis, reframed the findings, and made the editorial calls. The agent wrote the labelling pipeline, debugged a vLLM stack issue that burned nine HF Jobs across two days before a minimal smoke test unblocked it, ran the off-the-shelf RoBERTa comparison, produced every chart, and drafted most of the prose — over an interactive session using HF Jobs, the <a href="https://github.com/davanstrien/agent-traces"><code>agent-traces</code></a> library, and <a href="https://quarto.org/">Quarto</a>. Every number in this post is verifiable from the published dataset; there’s a replication prompt in <a href="#replication">Appendix A</a>.</p>
+</div>
+</div>
+<section id="the-silent-majority" class="level2">
+<h2 class="anchored" data-anchor-id="the-silent-majority">The silent majority</h2>
+<p>If you expected 8,949 messages from developers to read like running commentary — debates, delight, frustration — you’d be wrong. <strong>77% of messages are neutral. 61% of sessions contain zero emotional signal of any kind.</strong></p>
+<div id="a555b5fd" class="cell" data-execution_count="2">
+<div class="cell-output cell-output-display" data-execution_count="2">
+
+<style>
+  #altair-viz-a670314b73434f869c668b19a39e966f.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #altair-viz-a670314b73434f869c668b19a39e966f.vega-embed details,
+  #altair-viz-a670314b73434f869c668b19a39e966f.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="altair-viz-a670314b73434f869c668b19a39e966f"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-a670314b73434f869c668b19a39e966f") {
+      outputDiv = document.getElementById("altair-viz-a670314b73434f869c668b19a39e966f");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@6?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@6.1.0?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@7?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "6")
+        .then(() => maybeLoadScript("vega-lite", "6.1.0"))
+        .then(() => maybeLoadScript("vega-embed", "7"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"height": 60, "width": "container", "view": {"stroke": "transparent"}, "axis": {"labelFont": "-apple-system, system-ui, sans-serif", "titleFont": "-apple-system, system-ui, sans-serif", "labelFontSize": 11, "titleFontSize": 11, "titleColor": "#666", "labelColor": "#777", "gridColor": "#f2f2f2", "domainColor": "#ccc", "tickColor": "#ccc", "grid": true, "gridOpacity": 0.6}, "legend": {"labelFont": "-apple-system, system-ui, sans-serif", "titleFont": "-apple-system, system-ui, sans-serif", "labelFontSize": 11, "orient": "top", "offset": 0}, "title": {"font": "-apple-system, system-ui, sans-serif", "fontSize": 12, "color": "#444", "anchor": "start"}, "layer": [{"mark": {"type": "bar", "height": 44, "stroke": "white", "strokeWidth": 1}, "encoding": {"color": {"field": "label", "legend": null, "scale": {"domain": ["NEGATIVE", "NEUTRAL", "POSITIVE"], "range": ["#c0392b", "#d6dbdf", "#27ae60"]}, "type": "nominal"}, "order": {"field": "label_order", "type": "quantitative"}, "tooltip": [{"field": "label", "type": "nominal"}, {"field": "n", "format": ",", "title": "Messages", "type": "quantitative"}, {"field": "share", "format": ".1%", "title": "Share", "type": "quantitative"}], "x": {"axis": {"format": ".0%", "title": null, "values": [0, 0.25, 0.5, 0.75, 1]}, "field": "share", "scale": {"domain": [0, 1]}, "type": "quantitative"}, "y": {"axis": null, "field": "y", "title": null, "type": "ordinal"}}}, {"mark": {"type": "text", "color": "white", "dy": 0, "fontSize": 13, "fontWeight": "bold"}, "encoding": {"detail": {"field": "label", "type": "nominal"}, "text": {"field": "caption", "type": "nominal"}, "x": {"field": "mid", "type": "quantitative"}, "y": {"axis": null, "field": "y", "type": "ordinal"}}, "transform": [{"groupby": ["y"], "stack": "share", "sort": [{"field": "label_order"}], "as": ["x0", "x1"]}, {"calculate": "(datum.x0 + datum.x1) / 2", "as": "mid"}, {"calculate": "format(datum.share, '.0%')", "as": "pct"}, {"calculate": "datum.label + '  ' + format(datum.share, '.0%')", "as": "caption"}]}], "data": {"name": "data-b8f6faf3a732ffc0450813050e381b76"}, "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json", "datasets": {"data-b8f6faf3a732ffc0450813050e381b76": [{"label": "NEGATIVE", "share": 0.14012738853503184, "n": 1254, "y": 0, "label_order": 0}, {"label": "NEUTRAL", "share": 0.77248854620628, "n": 6913, "y": 0, "label_order": 1}, {"label": "POSITIVE", "share": 0.08738406525868812, "n": 782, "y": 0, "label_order": 2}]}}, {"mode": "vega-lite"});
+</script>
+<p>Distribution of sentiment labels across all 8,949 messages. Grey is the noise; the sliver is the signal.</p>
+</div>
+</div>
+<p>Look at what happens when you strip the noise out. There’s nothing close to a 50/50 split between POSITIVE and NEGATIVE — or even a coherent emotional distribution. There’s a massive neutral block, a thin red sliver, and an even thinner green one. In session-level aggregates, <strong>965 out of 1,589 sessions are pure neutral from end to end</strong>.</p>
+<p>Here’s why, concretely: nearly <strong>one in five messages is ≤ 20 characters</strong>. The top exact-duplicate messages across the corpus are:</p>
+<div class="callout callout-style-simple callout-none no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p><code>continue</code> (133×) &nbsp;·&nbsp; <code>hi</code> (101×) &nbsp;·&nbsp; <code>great please do</code> (45×) &nbsp;·&nbsp; <code>do it</code> (36×) &nbsp;·&nbsp; <code>commit and push</code> (35×) &nbsp;·&nbsp; <code>hey</code> (31×) &nbsp;·&nbsp; <code>yes</code> (29×) &nbsp;·&nbsp; <code>implement</code> (22×)</p>
+</div>
+</div>
+</div>
+<p>These are legitimate turns. But the pattern isn’t <em>conversation</em> — it’s <em>direction</em>. Most of what gets typed is approval, continuation, or a short imperative.</p>
+</section>
+<section id="when-feeling-does-surface-frustration-rises-with-turn-count" class="level2">
+<h2 class="anchored" data-anchor-id="when-feeling-does-surface-frustration-rises-with-turn-count">When feeling does surface, frustration rises with turn count</h2>
+<p>The emotional signal that <em>does</em> exist is rarer for negative than positive: <strong>1,254 negative messages against 782 positive</strong> across the corpus. And the rate of negative messages climbs with turn count.</p>
+<div id="d3eacd4b" class="cell" data-execution_count="3">
+<div class="cell-output cell-output-display" data-execution_count="3">
+
+<style>
+  #altair-viz-043b21b06c4341babfec570bce1894f0.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #altair-viz-043b21b06c4341babfec570bce1894f0.vega-embed details,
+  #altair-viz-043b21b06c4341babfec570bce1894f0.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="altair-viz-043b21b06c4341babfec570bce1894f0"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-043b21b06c4341babfec570bce1894f0") {
+      outputDiv = document.getElementById("altair-viz-043b21b06c4341babfec570bce1894f0");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@6?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@6.1.0?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@7?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "6")
+        .then(() => maybeLoadScript("vega-lite", "6.1.0"))
+        .then(() => maybeLoadScript("vega-embed", "7"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"height": 240, "width": "container", "view": {"stroke": "transparent"}, "axis": {"labelFont": "-apple-system, system-ui, sans-serif", "titleFont": "-apple-system, system-ui, sans-serif", "labelFontSize": 11, "titleFontSize": 11, "titleColor": "#666", "labelColor": "#777", "gridColor": "#f2f2f2", "domainColor": "#ccc", "tickColor": "#ccc", "grid": true, "gridOpacity": 0.6}, "legend": {"labelFont": "-apple-system, system-ui, sans-serif", "titleFont": "-apple-system, system-ui, sans-serif", "labelFontSize": 11, "orient": "top", "offset": 0}, "title": {"font": "-apple-system, system-ui, sans-serif", "fontSize": 12, "color": "#444", "anchor": "start"}, "layer": [{"mark": {"type": "line", "color": "#c0392b", "strokeWidth": 2.4}, "encoding": {"x": {"axis": {"grid": false, "tickMinStep": 1}, "field": "turn", "title": "Turn number", "type": "quantitative"}, "y": {"axis": {"format": ".0%"}, "field": "neg_pct", "scale": {"domain": [0, 0.22]}, "title": "% negative", "type": "quantitative"}}}, {"mark": {"type": "circle", "color": "#c0392b", "size": 46}, "encoding": {"tooltip": [{"field": "turn", "title": "Turn", "type": "quantitative"}, {"field": "neg_pct", "format": ".1%", "title": "% negative", "type": "quantitative"}, {"field": "n", "format": ",", "title": "Messages", "type": "quantitative"}], "x": {"field": "turn", "type": "quantitative"}, "y": {"field": "neg_pct", "type": "quantitative"}}}, {"data": {"name": "data-89b27e1bdd4bd7a04dccaaacd3a6cda0"}, "mark": {"type": "text", "color": "#c0392b", "dy": -14, "fontSize": 12, "fontWeight": "bold"}, "encoding": {"text": {"field": "neg_pct", "format": ".1%", "type": "quantitative"}, "x": {"field": "turn", "type": "quantitative"}, "y": {"field": "neg_pct", "type": "quantitative"}}}], "data": {"name": "data-5536808470cb3c355da203d42c0e0a56"}, "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json", "datasets": {"data-5536808470cb3c355da203d42c0e0a56": [{"turn": 1, "neg_pct": 0.08181246066708622, "n": 1589.0}, {"turn": 2, "neg_pct": 0.13047808764940239, "n": 1004.0}, {"turn": 3, "neg_pct": 0.14743589743589744, "n": 780.0}, {"turn": 4, "neg_pct": 0.15270935960591134, "n": 609.0}, {"turn": 5, "neg_pct": 0.17777777777777778, "n": 495.0}, {"turn": 6, "neg_pct": 0.18072289156626506, "n": 415.0}, {"turn": 7, "neg_pct": 0.1225071225071225, "n": 351.0}, {"turn": 8, "neg_pct": 0.16721311475409836, "n": 305.0}, {"turn": 9, "neg_pct": 0.16988416988416988, "n": 259.0}, {"turn": 10, "neg_pct": 0.1504424778761062, "n": 226.0}, {"turn": 11, "neg_pct": 0.15346534653465346, "n": 202.0}, {"turn": 12, "neg_pct": 0.18232044198895028, "n": 181.0}], "data-89b27e1bdd4bd7a04dccaaacd3a6cda0": [{"turn": 1, "neg_pct": 0.08181246066708622, "n": 1589.0}, {"turn": 5, "neg_pct": 0.17777777777777778, "n": 495.0}]}}, {"mode": "vega-lite"});
+</script>
+<p>Share of negative messages by turn number. Turn 1 is the calm. Later turns aren’t.</p>
+</div>
+</div>
+<p>Over the first five turns, the share of messages labelled NEGATIVE <strong>more than doubles</strong>, from 8.2% to 17.8%. After that it plateaus around 15–18%. Part is a real <em>patience cliff</em> — turn-1 optimism giving way by turn 5 — but part is composition: short successful sessions end early, leaving later turns drawn from harder cases. The plateau rate is the more honest headline.</p>
+</section>
+<section id="negative-openings-predict-engagement-not-doom" class="level2">
+<h2 class="anchored" data-anchor-id="negative-openings-predict-engagement-not-doom">Negative openings predict engagement, not doom</h2>
+<p>The common-sense reading is that sessions that open with frustration stay frustrated. The data says the opposite. Of sessions whose first message is labelled NEGATIVE, <strong>39% contain a positive message later</strong> — a higher recovery rate than the 23% for sessions that open NEUTRAL.</p>
+<p>This inverts because first-message-NEGATIVE sessions are almost never “angry at the agent” openings. They’re bug reports and problem-framing opens:</p>
+<div class="callout callout-style-simple callout-none no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<blockquote class="blockquote">
+<p><em>“running npm run dev, getting [error]. please fix”</em></p>
+<p><em>“the latest pi release, self-contained bun executable is broken. download from gh, test on macos and linux”</em></p>
+<p><em>“our readme for this isn’t accurate and is also extremely stale. please can we review the rest of the repo and write a readme from scratch?”</em></p>
+</blockquote>
+</div>
+</div>
+</div>
+<p>Sessions that open with a reported problem are sessions where the user is <em>engaged enough to voice the problem</em> — and when the agent resolves it, they’re often engaged enough to say so. NEUTRAL-start sessions are more often pure task-dispatch (“refactor X”, “commit and push”) where the user rarely gives explicit praise regardless of outcome. The first sentiment label in a session is a proxy for <em>task type</em>, not mood: bug-fix sessions have louder emotional arcs than routine-work sessions.</p>
+<p>When negativity does appear mid-session, the rest of the session gets more emotionally charged in both directions — NEG rises from a 14.0% baseline to 18.6%, and POS rises from 8.7% to 10.5%. The session doesn’t just get darker. It gets louder.</p>
+</section>
+<section id="model-choice-matters-on-the-margin" class="level2">
+<h2 class="anchored" data-anchor-id="model-choice-matters-on-the-margin">Model choice matters — on the margin</h2>
+<p>If you believe the model-upgrade press releases, each new frontier release is a step change. The data is more sober.</p>
+<div id="aac8852d" class="cell" data-execution_count="4">
+<div class="cell-output cell-output-display" data-execution_count="4">
+
+<style>
+  #altair-viz-538db5d6f35446c080773167063f2b97.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #altair-viz-538db5d6f35446c080773167063f2b97.vega-embed details,
+  #altair-viz-538db5d6f35446c080773167063f2b97.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="altair-viz-538db5d6f35446c080773167063f2b97"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-538db5d6f35446c080773167063f2b97") {
+      outputDiv = document.getElementById("altair-viz-538db5d6f35446c080773167063f2b97");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@6?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@6.1.0?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@7?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "6")
+        .then(() => maybeLoadScript("vega-lite", "6.1.0"))
+        .then(() => maybeLoadScript("vega-embed", "7"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"height": 256, "width": "container", "view": {"stroke": "transparent"}, "axis": {"labelFont": "-apple-system, system-ui, sans-serif", "titleFont": "-apple-system, system-ui, sans-serif", "labelFontSize": 11, "titleFontSize": 11, "titleColor": "#666", "labelColor": "#777", "gridColor": "#f2f2f2", "domainColor": "#ccc", "tickColor": "#ccc", "grid": true, "gridOpacity": 0.6}, "legend": {"labelFont": "-apple-system, system-ui, sans-serif", "titleFont": "-apple-system, system-ui, sans-serif", "labelFontSize": 11, "orient": "top", "offset": 0}, "title": {"font": "-apple-system, system-ui, sans-serif", "fontSize": 12, "color": "#444", "anchor": "start"}, "layer": [{"mark": {"type": "circle", "color": "#c0392b", "opacity": 0.85}, "encoding": {"size": {"field": "n", "legend": {"orient": "bottom"}, "scale": {"range": [80, 600]}, "title": "Messages", "type": "quantitative"}, "tooltip": [{"field": "model", "title": "Model", "type": "nominal"}, {"field": "n", "format": ",", "title": "Messages", "type": "quantitative"}, {"field": "neg_pct", "format": ".1%", "title": "% negative", "type": "quantitative"}, {"field": "pos_pct", "format": ".1%", "title": "% positive", "type": "quantitative"}], "x": {"axis": {"format": ".0%"}, "field": "neg_pct", "scale": {"domain": [0, 0.32]}, "title": "% negative", "type": "quantitative"}, "y": {"axis": {"labelLimit": 260}, "field": "display", "sort": ["gpt-oss-120b", "gpt-5.3-codex", "gpt-5.4", "claude-opus-4-6", "gpt-5.2-codex", "claude-opus-4-5", "hf:zai-org/GLM-5.1", "zai-org/GLM-5.1"], "title": null, "type": "nominal"}}}, {"mark": {"type": "text", "align": "left", "color": "#555", "dx": 8, "fontSize": 10}, "encoding": {"text": {"field": "neg_pct", "format": ".0%", "type": "quantitative"}, "x": {"field": "neg_pct", "type": "quantitative"}, "y": {"field": "display", "sort": ["gpt-oss-120b", "gpt-5.3-codex", "gpt-5.4", "claude-opus-4-6", "gpt-5.2-codex", "claude-opus-4-5", "hf:zai-org/GLM-5.1", "zai-org/GLM-5.1"], "type": "nominal"}}}], "data": {"name": "data-a8ecd0873e06f2ead03a0b2103daec6c"}, "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json", "datasets": {"data-a8ecd0873e06f2ead03a0b2103daec6c": [{"model": "mlx-community/gpt-oss-120b-MXFP4-Q8", "neg_pct": 0.08550185873605948, "pos_pct": 0.01486988847583643, "n": 269.0, "display": "gpt-oss-120b"}, {"model": "gpt-5.3-codex", "neg_pct": 0.11500493583415597, "pos_pct": 0.11105626850937808, "n": 2026.0, "display": "gpt-5.3-codex"}, {"model": "gpt-5.4", "neg_pct": 0.13417190775681342, "pos_pct": 0.04716981132075472, "n": 954.0, "display": "gpt-5.4"}, {"model": "claude-opus-4-6", "neg_pct": 0.14169381107491857, "pos_pct": 0.11156351791530944, "n": 1228.0, "display": "claude-opus-4-6"}, {"model": "gpt-5.2-codex", "neg_pct": 0.15, "pos_pct": 0.08046875, "n": 1280.0, "display": "gpt-5.2-codex"}, {"model": "claude-opus-4-5", "neg_pct": 0.17044718081659105, "pos_pct": 0.08943616331821128, "n": 1543.0, "display": "claude-opus-4-5"}, {"model": "hf:zai-org/GLM-5.1", "neg_pct": 0.17959183673469387, "pos_pct": 0.0163265306122449, "n": 245.0, "display": "hf:zai-org/GLM-5.1"}, {"model": "zai-org/GLM-5.1", "neg_pct": 0.27601809954751133, "pos_pct": 0.12669683257918551, "n": 221.0, "display": "zai-org/GLM-5.1"}]}}, {"mode": "vega-lite"});
+</script>
+<p>Negative share per model, among models with ≥100 labelled messages. Dot size = sample size. The band is narrow.</p>
+</div>
+</div>
+<p>The models in significant use sit in a narrow band — roughly <strong>11% to 18% negative</strong>, with GPT-5.3 Codex at the low end (11.5%, n = 2,026), Claude Opus 4-6 next (14.2%, n = 1,228), and Claude Opus 4-5 at 17.0% (n = 1,543). The much-publicised Opus 4-5 → 4-6 jump is incremental: 17% to 14% negative, positive edging from 9% to 11%.</p>
+<p>The one real outlier is <code>zai-org/GLM-5.1</code> at <strong>27.6% negative</strong> (n = 221) — worth flagging, but that signal is almost certainly a selection artefact. The narrow, self-selected contributor set means any model used primarily by one frustrated uploader will look frustrated in aggregate.</p>
+<details>
+<summary>
+Sample sizes, selection bias, and why you should not quote any of these numbers as a model leaderboard
+</summary>
+<p>These per-model figures are drawn from whichever sessions got uploaded publicly. That is not a random sample — not of developers, not of tasks, not of models. <code>anthropic.claude-opus-4-6-v1</code> shows a dazzling 4.7% negative rate, but n=86 and it’s drawn from traces uploaded by essentially one contributor working in one domain. Kimi-K2.5 at 10.8% is similarly thin (n=74).</p>
+Treat anything with n &lt; 100 as directional, anything with n &lt; 500 as suggestive, and remember the whole corpus is dominated by two uploaders. The broader point — <em>models differ meaningfully on frustration</em> — survives this caveat. Specific rankings will shift as more datasets land on the Hub.
+</details>
+</section>
+<section id="how-we-labelled-the-messages" class="level2">
+<h2 class="anchored" data-anchor-id="how-we-labelled-the-messages">How we labelled the messages</h2>
+<p>Sentiment labels are model outputs, not ground truth, so the <em>how</em> matters. Each of the 8,949 user messages was classified by <a href="https://huggingface.co/Qwen/Qwen3-30B-A3B-Instruct-2507">Qwen3-30B-A3B-Instruct-2507</a> — a 30B-total / 3B-active MoE — via vLLM with enforced structured output. Every response is a JSON object <code>{label, reason}</code> matching a schema. Zero parse errors across 8,949 calls. The whole run took ~5 minutes on a single H200.</p>
+<p>The domain-aware system prompt is the interesting part:</p>
+<pre class="text"><code>Classify user messages from coding-agent sessions (developer talking to AI
+coding assistant).
+
+Return JSON with two fields:
+- "label": one of "POSITIVE", "NEUTRAL", or "NEGATIVE"
+- "reason": one sentence explaining why
+
+Domain rules:
+- Dev profanity is casual ("kill that shit" = "remove code") = NEUTRAL
+- Short commands ("do it", "commit and push") are approvals = NEUTRAL
+- Status reports ("ci failed") = NEUTRAL
+- Frustration with agent output quality = NEGATIVE
+- Satisfaction, excitement about progress = POSITIVE</code></pre>
+<p>Three representative classifications, with the model’s own <code>sentiment_reason</code>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Message (truncated)</th>
+<th>Label</th>
+<th>Model’s reason</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><em>“merge the pr to main via gh cli on origin, pull from origin, fix that shit up, add the changelog entry”</em></td>
+<td><code>NEUTRAL</code></td>
+<td>Casual language with commands — an instruction, not frustration.</td>
+</tr>
+<tr class="even">
+<td><em>“why would you use web search, i just gave you an example trace. compare that to our impl.”</em></td>
+<td><code>NEGATIVE</code></td>
+<td>User expresses frustration with agent’s approach.</td>
+</tr>
+<tr class="odd">
+<td><em>“Great. PLease can you review and advise of any areas that are over/under-engineered in this refactor?”</em></td>
+<td><code>POSITIVE</code></td>
+<td>Satisfaction with progress, engaged collaboration.</td>
+</tr>
+</tbody>
+</table>
+<p>The full reason column is in the <a href="https://huggingface.co/datasets/davanstrien/agent-trace-sentiment">published dataset</a> — useful for auditing any classification you don’t trust.</p>
+<section id="does-domain-aware-actually-matter-we-checked." class="level3">
+<h3 class="anchored" data-anchor-id="does-domain-aware-actually-matter-we-checked.">Does domain-aware actually matter? We checked.</h3>
+<p>For comparison, we ran the same 8,949 messages through <a href="https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment-latest"><code>cardiffnlp/twitter-roberta-base-sentiment-latest</code></a> — a widely-used off-the-shelf three-class sentiment classifier. It took ~2 minutes on an M-series Mac with MPS.</p>
+<div id="3a0cb92d" class="cell" data-execution_count="5">
+<div class="cell-output cell-output-display" data-execution_count="5">
+
+<style>
+  #altair-viz-f4d79238720f4cb0a41663ea05245c56.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #altair-viz-f4d79238720f4cb0a41663ea05245c56.vega-embed details,
+  #altair-viz-f4d79238720f4cb0a41663ea05245c56.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="altair-viz-f4d79238720f4cb0a41663ea05245c56"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-f4d79238720f4cb0a41663ea05245c56") {
+      outputDiv = document.getElementById("altair-viz-f4d79238720f4cb0a41663ea05245c56");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@6?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@6.1.0?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@7?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "6")
+        .then(() => maybeLoadScript("vega-lite", "6.1.0"))
+        .then(() => maybeLoadScript("vega-embed", "7"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"height": 220, "width": 380, "view": {"stroke": "transparent"}, "axis": {"labelFont": "-apple-system, system-ui, sans-serif", "titleFont": "-apple-system, system-ui, sans-serif", "labelFontSize": 11, "titleFontSize": 11, "titleColor": "#666", "labelColor": "#777", "gridColor": "#f2f2f2", "domainColor": "#ccc", "tickColor": "#ccc", "grid": true, "gridOpacity": 0.6}, "legend": {"labelFont": "-apple-system, system-ui, sans-serif", "titleFont": "-apple-system, system-ui, sans-serif", "labelFontSize": 11, "orient": "top", "offset": 0}, "title": {"font": "-apple-system, system-ui, sans-serif", "fontSize": 12, "color": "#444", "anchor": "start"}, "layer": [{"mark": {"type": "rect", "stroke": "white", "strokeWidth": 2}, "encoding": {"color": {"field": "n", "legend": null, "scale": {"scheme": "greys"}, "type": "quantitative"}, "tooltip": [{"field": "qwen", "title": "Qwen3", "type": "nominal"}, {"field": "roberta", "title": "RoBERTa", "type": "nominal"}, {"field": "n", "format": ",", "title": "Messages", "type": "quantitative"}, {"field": "pct", "format": ".1%", "title": "Share", "type": "quantitative"}], "x": {"axis": {"labelAngle": 0, "orient": "top"}, "field": "roberta", "sort": ["NEGATIVE", "NEUTRAL", "POSITIVE"], "title": "RoBERTa (off-the-shelf)", "type": "nominal"}, "y": {"field": "qwen", "sort": ["NEGATIVE", "NEUTRAL", "POSITIVE"], "title": "Qwen3 (domain-aware)", "type": "nominal"}}}, {"mark": {"type": "text", "fontSize": 13, "fontWeight": "bold"}, "encoding": {"color": {"condition": {"test": "(datum.n > 2500)", "value": "white"}, "value": "#2d3436"}, "text": {"field": "n", "format": ",", "type": "quantitative"}, "x": {"field": "roberta", "sort": ["NEGATIVE", "NEUTRAL", "POSITIVE"], "type": "nominal"}, "y": {"field": "qwen", "sort": ["NEGATIVE", "NEUTRAL", "POSITIVE"], "type": "nominal"}}}], "data": {"name": "data-b2d7165e8e71aa80cf284cbf2dc865ac"}, "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json", "datasets": {"data-b2d7165e8e71aa80cf284cbf2dc865ac": [{"qwen": "NEGATIVE", "roberta": "NEGATIVE", "n": 677, "agree": true, "pct": 0.07565091071628115}, {"qwen": "NEGATIVE", "roberta": "NEUTRAL", "n": 563, "agree": false, "pct": 0.06291205721309644}, {"qwen": "NEGATIVE", "roberta": "POSITIVE", "n": 14, "agree": false, "pct": 0.001564420605654263}, {"qwen": "NEUTRAL", "roberta": "NEGATIVE", "n": 361, "agree": false, "pct": 0.040339702760084924}, {"qwen": "NEUTRAL", "roberta": "NEUTRAL", "n": 5937, "agree": true, "pct": 0.6634260811263828}, {"qwen": "NEUTRAL", "roberta": "POSITIVE", "n": 615, "agree": false, "pct": 0.06872276231981227}, {"qwen": "POSITIVE", "roberta": "NEGATIVE", "n": 22, "agree": false, "pct": 0.002458375237456699}, {"qwen": "POSITIVE", "roberta": "NEUTRAL", "n": 359, "agree": false, "pct": 0.04011621410213432}, {"qwen": "POSITIVE", "roberta": "POSITIVE", "n": 401, "agree": true, "pct": 0.044809475919097105}]}}, {"mode": "vega-lite"});
+</script>
+<p>Agreement and disagreement between the domain-aware Qwen3 labels and an off-the-shelf RoBERTa sentiment classifier on the same 8,949 messages. 78% agreement; the 22% disagreement concentrates in four predictable failure modes for the generic model.</p>
+</div>
+</div>
+<p>Raw agreement is <strong>78.4%</strong> — but on a 3-class problem where NEUTRAL is 77% of the data, chance agreement is already ~62%, so Cohen’s κ is only <strong>0.43</strong> (conventionally interpreted as “moderate”). The generic model agrees on the easy cases; the 21.6% where they disagree is neither random nor small, and it concentrates in four predictable patterns:</p>
+<ul>
+<li><strong>361 messages (4%) — RoBERTa flagged NEGATIVE, Qwen called NEUTRAL</strong>. Dev profanity and technical complaints about files or systems. <em>“delete your fucking gpt-5.4 branch”</em> is instruction, not anger.</li>
+<li><strong>615 messages (7%) — RoBERTa flagged POSITIVE, Qwen called NEUTRAL</strong>. Polite wrapping on routine commands (“please do X”, “could you refactor”) reads as enthusiasm to a generic classifier.</li>
+<li><strong>563 messages (6%) — RoBERTa called NEUTRAL, Qwen flagged NEGATIVE</strong>. Real frustration without obvious anger words. <em>“why would you use web search, i just gave you an example trace”</em> is annoyed but euphemistic.</li>
+<li><strong>359 messages (4%) — RoBERTa called NEUTRAL, Qwen flagged POSITIVE</strong>. Understated affirmations: <em>“great, let’s call it X”</em>, <em>“ok that works”</em>.</li>
+</ul>
+<p>A generic sentiment classifier directionally agrees, but it’s systematically miscalibrated on the three types of text that most characterise developer-agent interaction — profanity-laced instructions, polite commands, and understated praise. The 78% agreement on the easy cases doesn’t save you on the 22% where domain context is load-bearing. For anyone else doing this kind of analysis on agent-trace data: off-the-shelf sentiment isn’t good enough, but a small open MoE with fifty lines of domain prompt gets you most of the way there.</p>
+</section>
+</section>
+<section id="why-sentiment-is-probably-the-wrong-lens" class="level2">
+<h2 class="anchored" data-anchor-id="why-sentiment-is-probably-the-wrong-lens">Why sentiment is probably the wrong lens</h2>
+<p>Is sentiment a useful way to understand open agent traces? <em>Partly.</em> It surfaces one real finding (negativity compounds, positivity doesn’t) and confirms an intuition made quantitative (developers issue short directives far more often than they converse). But look at the corpus again with the right denominator.</p>
+<p>The median session contains <strong>~16 tool calls for every developer prompt</strong>. Across the whole corpus, that ratio is roughly <strong>18 autonomous agent actions per user message</strong> — 166,244 tool calls against 9,341 declared user turns. The human text is a minority of what’s happening in an agent session. (Caveat: different agents log “tool calls” differently — Claude Code’s hook invocations, Codex and Pi’s own telemetry conventions — so some of that variance is protocol, not behaviour. Worth auditing before quoting the exact 18× number.)</p>
+<p>Sentiment asks: what does the human feel? The richer question is: what does the <em>agent actually do</em>? Does it <code>Read</code> a file before <code>Edit</code>ing it? Does it reach for <code>Bash</code> when an MCP server would be more structured? Does its tool-call mix cluster differently for Claude Code vs Codex vs Pi? Across these 33 collections, preliminary behavioural analysis suggests:</p>
+<ul>
+<li><strong>Autonomy ratios vary 11:1 to 40:1</strong> (tool calls per user message) — the same model, used very differently depending on who’s driving.</li>
+<li><strong>Tool-mix profiles</strong> group agents by working style: some are Read-heavy, some are Bash-heavy, some Edit-first.</li>
+<li><strong>Error recovery patterns</strong> tell you how a model handles failure more informatively than the 8.7% positive message rate ever could.</li>
+</ul>
+<p>That’s the next post. This one tested whether the easiest analysis — throw sentiment at the user messages — is worth the inference compute. Honest answer: <em>a little, but less than you’d hope — sentiment-bearing text is a minority of what agents and developers actually do.</em></p>
+</section>
+<section id="point-your-agent-at-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="point-your-agent-at-the-data">Point your agent at the data</h2>
+<p>The best thing about this data being on the Hub isn’t that we analysed it — it’s that <em>your</em> agent can, with the labelled dataset, session metadata, and full tool-call stream one <code>snapshot_download</code> away. As mentioned up top, that’s exactly the workflow that produced this post — the same invitation, the same dataset, the same kind of prompts.</p>
+<p>Try these. They work in Claude Code, Codex, Pi, or any agent-capable harness.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Prompt 1 — Compare your own sessions to the corpus
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<blockquote class="blockquote">
+<p>Parse my Claude Code sessions in <code>~/.claude/projects</code> using the <code>agent-traces</code> library (<code>pip install git+https://github.com/davanstrien/agent-traces</code>). Label each user message with sentiment using the same prompt we used in the blog post (dev profanity = NEUTRAL, short commands = NEUTRAL, etc.) via a local model or a cheap API. Compute NEG% by turn number. Overlay my curve against the public-corpus baseline (<code>davanstrien/agent-trace-sentiment</code>, NEG% by turn). Save the chart. Tell me: am I more frustrated than average, less, or the same — and at which turn number the gap is biggest?</p>
+</blockquote>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Prompt 2 — Pick a session apart
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<blockquote class="blockquote">
+<p>Load <code>davanstrien/agent-trace-user-messages</code> (use <code>snapshot_download</code> + <code>polars.read_parquet</code>; <code>load_dataset</code> will fail on stale README YAML). Find the <code>session_id</code> with the highest <code>n_tool_calls</code>. Then re-parse that session from its source dataset with <code>agent-traces</code> to get every tool call and agent event in order. Summarise in 5 bullets what the agent actually <em>did</em> — tool mix, error rate, what pattern of behaviour it exhibited, whether this looked like productive work or a debugging spiral. Include the session_id and source dataset so I can look it up.</p>
+</blockquote>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Prompt 3 — Hunt for the finding we missed
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<blockquote class="blockquote">
+<p>Iterate every public <code>format:agent-traces</code> dataset via <code>TraceDataset.from_hub_search()</code>. For each, compute ten behavioural metrics: autonomy ratio (tool calls per user message), error rate, tool-mix entropy, median session length in events, read-before-edit rate, cost per session, NEG% at turn 5, most common first-message pattern, output/input token ratio, and share of messages under 20 characters. Find the metric with the largest cross-dataset variance. Write it up as three bullet points suitable for a tweet thread. Include the code so someone else can verify.</p>
+</blockquote>
+</div>
+</div>
+<p>If you run any of these and find something interesting, <a href="https://twitter.com/vanstriendaniel">tag me</a> — I’ll add the best finds to a community roundup. If you want to verify the numbers I’ve quoted in this post before running your own analysis, there’s a short replication prompt in <a href="#replication">Appendix A</a> that takes one paste into any agent.</p>
+</section>
+<section id="share-your-own-traces" class="level2">
+<h2 class="anchored" data-anchor-id="share-your-own-traces">Share your own traces</h2>
+<p>The corpus is tiny today because very few developers have shared their sessions publicly. If you use a coding agent, your sessions are already on disk somewhere:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Agent</th>
+<th>Sessions live in</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Claude Code</td>
+<td><code>~/.claude/projects</code></td>
+</tr>
+<tr class="even">
+<td>Codex</td>
+<td><code>~/.codex/sessions</code></td>
+</tr>
+<tr class="odd">
+<td>Pi</td>
+<td><code>~/.pi/agent/sessions</code></td>
+</tr>
+</tbody>
+</table>
+<p>Upload them as a dataset and the Hub <a href="https://huggingface.co/changelog/agent-trace-viewer">auto-detects</a> the format and tags them <code>format:agent-traces</code>. The trace viewer renders sessions, turns, and tool calls out of the box. For Pi, <a href="https://github.com/badlogic/pi-share-hf"><code>pi-share-hf</code></a> handles secret redaction and upload in a single pipeline. For Claude Code and Codex, the equivalent redaction tooling doesn’t yet exist — if you build one, I’ll link it here.</p>
+<p>The asymmetry between closed and open agent-trace corpora will widen, then narrow, then widen again. The 45 datasets that exist today will look quaint in six months. But <em>only</em> if more developers upload. The stuff that’s interesting to measure about these tools — tool mixes, autonomy patterns, task-type distributions, failure modes — only gets measurable at scale.</p>
+</section>
+<section id="replication" class="level2">
+<h2 class="anchored" data-anchor-id="replication">Appendix A — Replicate every number in this post</h2>
+<p>Every figure quoted in the body is computable from the labelled Hub dataset in a few lines of code. Paste the prompt below into any AI coding agent and it will download the data, run the checks, and tell you pass/fail.</p>
+<div class="verify">
+<blockquote class="blockquote">
+<p>Load <code>davanstrien/agent-trace-sentiment</code> from the Hugging Face Hub using <code>huggingface_hub.snapshot_download</code> + <code>polars.read_parquet</code> on the files under <code>data/</code> — note <code>datasets.load_dataset</code> currently fails on this repo due to stale README YAML, so use the direct-parquet path.</p>
+<p>Then verify these six claims from the blog post, within ±1.5 percentage points:</p>
+<ol type="1">
+<li><strong>77% of messages are NEUTRAL</strong>, 14% NEGATIVE, 9% POSITIVE.</li>
+<li><strong>61% of sessions are “pure neutral”</strong> — contain no POSITIVE and no NEGATIVE message at all.</li>
+<li><strong>Nearly 20% of messages are ≤ 20 characters long</strong> (<code>content_text</code> column, e.g.&nbsp;“continue”, “do it”, “yes”).</li>
+<li><strong>At turn 1, ~8% of messages are NEGATIVE; by turn 5, ~18% are</strong> — more than double.</li>
+<li><strong>Sessions whose turn-1 message is NEGATIVE: ~60% never see a POSITIVE message afterward.</strong></li>
+<li><strong>Autonomy ratio: the median session has ~16 tool calls per user message</strong> (<code>n_tool_calls / nTurns</code> per session). The corpus total is ~18× (sum of <code>n_tool_calls</code> divided by sum of <code>nTurns</code>).</li>
+</ol>
+<p>Output a pass/fail table with the computed value next to each claim. If any claim is off by more than ±1.5 percentage points (or 10% for the autonomy ratio), say so loudly and paste the code that showed it.</p>
+</blockquote>
+</div>
+<p>If a claim fails, <a href="https://twitter.com/vanstriendaniel">tag me</a> with the code and the computed value. Replication credit is cheap; I’d rather be corrected than cited incorrectly.</p>
+</section>
+<section id="appendix-b-methodology-and-reproducibility-details" class="level2">
+<h2 class="anchored" data-anchor-id="appendix-b-methodology-and-reproducibility-details">Appendix B — Methodology and reproducibility details</h2>
+<ul>
+<li><strong>Data sources</strong>: <a href="https://huggingface.co/datasets?format=format:agent-traces&amp;sort=trending">45 public <code>format:agent-traces</code> datasets</a> on the Hugging Face Hub, tagged via the Hub’s auto-detection pipeline. After excluding one dataset (<code>jedisct1/agent-traces-swival</code>, 8,869 files of security-audit material where sentiment is off-prompt), 44 datasets processed, 43 contributed messages. 33 unique source collections after deduping on <code>(session_id, turn)</code> — six of the tagged datasets are re-uploads of <code>badlogicgames/pi-mono</code>.</li>
+<li><strong>Extraction</strong>: Parsed using the <a href="https://github.com/davanstrien/agent-traces"><code>agent-traces</code></a> library. Result pushed to <a href="https://huggingface.co/datasets/davanstrien/agent-trace-user-messages"><code>davanstrien/agent-trace-user-messages</code></a> as 8,949 deduped user turns with 17 columns (session_id, turn, nTurns, normPos, model, provider, agent, cost_total_sum, n_events, n_tool_calls, etc.).</li>
+<li><strong>Primary labelling</strong>: <a href="https://huggingface.co/Qwen/Qwen3-30B-A3B-Instruct-2507">Qwen3-30B-A3B-Instruct-2507</a> (30B total, 3B active MoE) via vLLM with <code>StructuredOutputsParams</code> enforcing a <code>{label, reason}</code> schema. Zero parse errors across 8,949 inferences. Prompt is domain-aware — see the “How we labelled the messages” section above for the verbatim text.</li>
+<li><strong>Comparison labelling</strong>: Same 8,949 messages through <a href="https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment-latest"><code>cardiffnlp/twitter-roberta-base-sentiment-latest</code></a> via the transformers library on Apple Silicon MPS. Agreement rate 78.4%; confusion matrix in the methodology section.</li>
+<li><strong>Compute</strong>: Primary labelling on one H200 via <code>hf jobs uv run</code>, ~5 minutes wall time end-to-end. Comparison run on M-series Mac, ~2 minutes. One-file Python scripts for both, no cluster.</li>
+<li><strong>Output</strong>: <a href="https://huggingface.co/datasets/davanstrien/agent-trace-sentiment"><code>davanstrien/agent-trace-sentiment</code></a> with <code>sentiment_label</code> and <code>sentiment_reason</code> columns.</li>
+<li><strong>Data snapshot</strong>: 2026-04-20. Every number in this post is reproducible from the linked dataset.</li>
+<li><strong>Caveats in one line</strong>: 45 public datasets, two contributors ≈ 74% of rows, this is a small cohort of early-adopter power users and not a random sample of developers.</li>
+</ul>
+<p>All four scripts are published alongside this post — <a href="scripts/extract_user_messages.py"><code>extract_user_messages.py</code></a>, <a href="scripts/sentiment-label.py"><code>sentiment-label.py</code></a>, <a href="scripts/regen_blog_data.py"><code>regen_blog_data.py</code></a>, <a href="scripts/roberta_compare.py"><code>roberta_compare.py</code></a> — or browse <a href="https://github.com/davanstrien/davanstrien.github.io/tree/main/posts/2026/agent-sentiment/scripts">the <code>scripts/</code> folder on GitHub</a>. No secret sauce — the whole pipeline is about 200 lines of Python.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/danielvanstrien\.xyz");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
