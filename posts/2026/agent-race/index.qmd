@@ -17,7 +17,18 @@ I gave two coding agents the same one-line task and watched what each one decide
 
 The task: fine-tune a model on [`biglam/on_the_books`](https://huggingface.co/datasets/biglam/on_the_books) — UNC Chapel Hill Libraries' labelled training set from *On the Books: Jim Crow and Algorithms of Resistance* — and push the trained classifier to the Hub. Train via [`hf jobs`](https://huggingface.co/docs/huggingface_hub/guides/cli#hf-jobs).
 
-One agent was [Pi](https://pi.dev/) running on Kimi K2.6 (open weights, via API). The other was Claude Code on Opus 4.7. Same prompt, parallel runs, ~13 minutes each.
+::: {.callout-tip collapse="true"}
+## Preview the dataset
+
+<iframe
+  src="https://huggingface.co/datasets/biglam/on_the_books/embed/viewer/default/train"
+  frameborder="0"
+  width="100%"
+  height="560px"
+></iframe>
+:::
+
+One agent was [Pi](https://pi.dev/) running on [Kimi K2.6](https://huggingface.co/moonshotai/Kimi-K2.6) (open weights, via API). The other was Claude Code on Opus 4.7. Same prompt, parallel runs, ~13 minutes each.
 
 ## The prompt
 
@@ -61,8 +72,8 @@ Both produced working binary classifiers. The headline numbers are close:
 | Model card | full (use, limits, ethics, hparams, citation) | auto-generated `Trainer` placeholder |
 | Domain tags | 7 | 0 |
 
-→ Claude's model: [`davanstrien/jim-crow-laws-claude-code`](https://huggingface.co/davanstrien/jim-crow-laws-claude-code)
-→ Pi+Kimi's model: [`davanstrien/jim-crow-laws-pi-kimi`](https://huggingface.co/davanstrien/jim-crow-laws-pi-kimi)
+- Claude's model: [`davanstrien/jim-crow-laws-claude-code`](https://huggingface.co/davanstrien/jim-crow-laws-claude-code)
+- Pi+Kimi's model: [`davanstrien/jim-crow-laws-pi-kimi`](https://huggingface.co/davanstrien/jim-crow-laws-pi-kimi)
 
 ## The interesting bit
 
