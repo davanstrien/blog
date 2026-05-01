@@ -5,7 +5,7 @@ date: "2026-05-01"
 author: "Daniel van Strien"
 categories: [coding-agents, hugging-face, glam, datasets]
 description: "I gave two coding agents the same one-line prompt and watched what each decided to do. Both shipped working classifiers via hf jobs. The headline metrics were within 1.5pp — the interesting differences were everywhere else."
-image: ""
+image: thumbnail.png
 format:
   html:
     toc: false
@@ -48,7 +48,7 @@ Push the final model to davanstrien/<repo-name>.
 
 ## The race
 
-<video controls width="100%" preload="metadata">
+<video controls width="100%" preload="metadata" poster="thumbnail.png">
   <source src="https://huggingface.co/buckets/davanstrien/blog-assets/resolve/agent-race.mp4?download=true" type="video/mp4">
   Your browser doesn't support embedded video. <a href="https://huggingface.co/buckets/davanstrien/blog-assets/resolve/agent-race.mp4?download=true">Download the recording</a>.
 </video>
