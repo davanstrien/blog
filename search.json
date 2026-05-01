@@ -826,291 +826,116 @@
     "text": "Links\n\nExample output: davanstrien/enc-brit-glm-ocr-v2-full — 2,724 pages of the 1771 Encyclopaedia Britannica\nOCR scripts: uv-scripts/ocr\nGLM-OCR model: zai-org/GLM-OCR\nHugging Face Jobs: documentation\nHugging Face Datasets: documentation\nuv: docs.astral.sh/uv"
   },
   {
-    "objectID": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html",
-    "href": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html",
-    "title": "Train on Massive Datasets Without Downloading with Hugging Face Streaming and Unsloth",
+    "objectID": "posts/2026/agent-sentiment/index.html",
+    "href": "posts/2026/agent-sentiment/index.html",
+    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
     "section": "",
-    "text": "Unsloth has massively lowered the barriers to training and fine-tuning models by reducing the GPU resources required.\nHowever, many AI datasets are very large — often multiple TBs. What if you want to train on a dataset larger than your disk?\nUsing 🤗 datasets + streaming means you can train directly from a Hugging Face hosted dataset without needing to download and store the whole dataset locally. This means even GPU and disk poor people can do things like continued pretraining!\n\n\nFineWeb-2 has 1.47 million Latin texts (~1.7GB). Let’s use them to try to teach a small LLM some Latin - no disk space required.\nThis is perfect for “GPU poor AND disk poor” setups - Colab, Kaggle, or any constrained environment.\n\n%%capture\n!pip install unsloth\n\n\nfrom unsloth import FastLanguageModel\nimport torch\n\nmodel, tokenizer = FastLanguageModel.from_pretrained(\n    \"unsloth/Qwen3-0.6B-Base-unsloth-bnb-4bit\",\n    max_seq_length=2048,\n    load_in_4bit=True,\n)\n\nmodel = FastLanguageModel.get_peft_model(\n    model,\n    r=16,\n    lora_alpha=16,\n    lora_dropout=0,\n    target_modules=[\"q_proj\", \"k_proj\", \"v_proj\", \"o_proj\",\n                    \"gate_proj\", \"up_proj\", \"down_proj\"],\n    bias=\"none\",\n    use_gradient_checkpointing=\"unsloth\",\n    random_state=3407,\n)\n\n==((====))==  Unsloth 2026.1.2: Fast Qwen3 patching. Transformers: 4.57.3.\n   \\\\   /|    NVIDIA A100-SXM4-80GB. Num GPUs = 1. Max memory: 79.318 GB. Platform: Linux.\nO^O/ \\_/ \\    Torch: 2.9.1+cu128. CUDA: 8.0. CUDA Toolkit: 12.8. Triton: 3.5.1\n\\        /    Bfloat16 = TRUE. FA [Xformers = 0.0.33.post2. FA2 = False]\n \"-____-\"     Free license: http://github.com/unslothai/unsloth\nUnsloth: Fast downloading is enabled - ignore downloading bars which are red colored!"
+    "text": "Every major AI coding-agent provider — Anthropic, OpenAI, Cursor, Windsurf, Cognition — is sitting on millions of private agent traces. How they train on that data, what they learn from it, what they ignore: all black box. The models reshaping how we write software are being shaped by data we can’t see.\nHugging Face recently shipped format:agent-traces — a standard way to share agent session logs publicly. The corpus as of April 2026: forty-five datasets, 33 unique collections, 1,589 sessions, roughly 194,000 total events — of which ~166,000 are autonomous tool calls and just 8,949 are developer prompts. It’s small, concentrated in a handful of early adopters, and it’s the only thing we’ve got.\nThis is a first pass at what that data tells us, starting with the easiest lens — sentiment labels on the developer messages — and ending with why the richer signal is in everything else."
   },
   {
-    "objectID": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#gpu-poor-and-disk-poor",
-    "href": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#gpu-poor-and-disk-poor",
-    "title": "Train on Massive Datasets Without Downloading with Hugging Face Streaming and Unsloth",
+    "objectID": "posts/2026/agent-sentiment/index.html#the-silent-majority",
+    "href": "posts/2026/agent-sentiment/index.html#the-silent-majority",
+    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
+    "section": "The silent majority",
+    "text": "The silent majority\nIf you expected 8,949 messages from developers to read like running commentary — debates, delight, frustration — you’d be wrong. 77% of messages are neutral. 61% of sessions contain zero emotional signal of any kind.\n\n\n\n\n\n\nDistribution of sentiment labels across all 8,949 messages. Grey is the noise; the sliver is the signal.\n\n\nLook at what happens when you strip the noise out. There’s nothing close to a 50/50 split between POSITIVE and NEGATIVE — or even a coherent emotional distribution. There’s a massive neutral block, a thin red sliver, and an even thinner green one. In session-level aggregates, 965 out of 1,589 sessions are pure neutral from end to end.\nHere’s why, concretely: nearly one in five messages is ≤ 20 characters. The top exact-duplicate messages across the corpus are:\n\n\n\n\n\n\ncontinue (133×)  ·  hi (101×)  ·  great please do (45×)  ·  do it (36×)  ·  commit and push (35×)  ·  hey (31×)  ·  yes (29×)  ·  implement (22×)\n\n\n\nThese are legitimate turns. But the pattern isn’t conversation — it’s direction. Most of what gets typed is approval, continuation, or a short imperative."
+  },
+  {
+    "objectID": "posts/2026/agent-sentiment/index.html#when-feeling-does-surface-frustration-rises-with-turn-count",
+    "href": "posts/2026/agent-sentiment/index.html#when-feeling-does-surface-frustration-rises-with-turn-count",
+    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
+    "section": "When feeling does surface, frustration rises with turn count",
+    "text": "When feeling does surface, frustration rises with turn count\nThe emotional signal that does exist is rarer for negative than positive: 1,254 negative messages against 782 positive across the corpus. And the rate of negative messages climbs with turn count.\n\n\n\n\n\n\nShare of negative messages by turn number. Turn 1 is the calm. Later turns aren’t.\n\n\nOver the first five turns, the share of messages labelled NEGATIVE more than doubles, from 8.2% to 17.8%. After that it plateaus around 15–18%. Part is a real patience cliff — turn-1 optimism giving way by turn 5 — but part is composition: short successful sessions end early, leaving later turns drawn from harder cases. The plateau rate is the more honest headline."
+  },
+  {
+    "objectID": "posts/2026/agent-sentiment/index.html#negative-openings-predict-engagement-not-doom",
+    "href": "posts/2026/agent-sentiment/index.html#negative-openings-predict-engagement-not-doom",
+    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
+    "section": "Negative openings predict engagement, not doom",
+    "text": "Negative openings predict engagement, not doom\nThe common-sense reading is that sessions that open with frustration stay frustrated. The data says the opposite. Of sessions whose first message is labelled NEGATIVE, 39% contain a positive message later — a higher recovery rate than the 23% for sessions that open NEUTRAL.\nThis inverts because first-message-NEGATIVE sessions are almost never “angry at the agent” openings. They’re bug reports and problem-framing opens:\n\n\n\n\n\n\n\n“running npm run dev, getting [error]. please fix”\n“the latest pi release, self-contained bun executable is broken. download from gh, test on macos and linux”\n“our readme for this isn’t accurate and is also extremely stale. please can we review the rest of the repo and write a readme from scratch?”\n\n\n\n\nSessions that open with a reported problem are sessions where the user is engaged enough to voice the problem — and when the agent resolves it, they’re often engaged enough to say so. NEUTRAL-start sessions are more often pure task-dispatch (“refactor X”, “commit and push”) where the user rarely gives explicit praise regardless of outcome. The first sentiment label in a session is a proxy for task type, not mood: bug-fix sessions have louder emotional arcs than routine-work sessions.\nWhen negativity does appear mid-session, the rest of the session gets more emotionally charged in both directions — NEG rises from a 14.0% baseline to 18.6%, and POS rises from 8.7% to 10.5%. The session doesn’t just get darker. It gets louder."
+  },
+  {
+    "objectID": "posts/2026/agent-sentiment/index.html#model-choice-matters-on-the-margin",
+    "href": "posts/2026/agent-sentiment/index.html#model-choice-matters-on-the-margin",
+    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
+    "section": "Model choice matters — on the margin",
+    "text": "Model choice matters — on the margin\nIf you believe the model-upgrade press releases, each new frontier release is a step change. The data is more sober.\n\n\n\n\n\n\nNegative share per model, among models with ≥100 labelled messages. Dot size = sample size. The band is narrow.\n\n\nThe models in significant use sit in a narrow band — roughly 11% to 18% negative, with GPT-5.3 Codex at the low end (11.5%, n = 2,026), Claude Opus 4-6 next (14.2%, n = 1,228), and Claude Opus 4-5 at 17.0% (n = 1,543). The much-publicised Opus 4-5 → 4-6 jump is incremental: 17% to 14% negative, positive edging from 9% to 11%.\nThe one real outlier is zai-org/GLM-5.1 at 27.6% negative (n = 221) — worth flagging, but that signal is almost certainly a selection artefact. The narrow, self-selected contributor set means any model used primarily by one frustrated uploader will look frustrated in aggregate.\n\n\nSample sizes, selection bias, and why you should not quote any of these numbers as a model leaderboard\n\nThese per-model figures are drawn from whichever sessions got uploaded publicly. That is not a random sample — not of developers, not of tasks, not of models. anthropic.claude-opus-4-6-v1 shows a dazzling 4.7% negative rate, but n=86 and it’s drawn from traces uploaded by essentially one contributor working in one domain. Kimi-K2.5 at 10.8% is similarly thin (n=74).\nTreat anything with n &lt; 100 as directional, anything with n &lt; 500 as suggestive, and remember the whole corpus is dominated by two uploaders. The broader point — models differ meaningfully on frustration — survives this caveat. Specific rankings will shift as more datasets land on the Hub."
+  },
+  {
+    "objectID": "posts/2026/agent-sentiment/index.html#how-we-labelled-the-messages",
+    "href": "posts/2026/agent-sentiment/index.html#how-we-labelled-the-messages",
+    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
+    "section": "How we labelled the messages",
+    "text": "How we labelled the messages\nSentiment labels are model outputs, not ground truth, so the how matters. Each of the 8,949 user messages was classified by Qwen3-30B-A3B-Instruct-2507 — a 30B-total / 3B-active MoE — via vLLM with enforced structured output. Every response is a JSON object {label, reason} matching a schema. Zero parse errors across 8,949 calls. The whole run took ~5 minutes on a single H200.\nThe domain-aware system prompt is the interesting part:\nClassify user messages from coding-agent sessions (developer talking to AI\ncoding assistant).\n\nReturn JSON with two fields:\n- \"label\": one of \"POSITIVE\", \"NEUTRAL\", or \"NEGATIVE\"\n- \"reason\": one sentence explaining why\n\nDomain rules:\n- Dev profanity is casual (\"kill that shit\" = \"remove code\") = NEUTRAL\n- Short commands (\"do it\", \"commit and push\") are approvals = NEUTRAL\n- Status reports (\"ci failed\") = NEUTRAL\n- Frustration with agent output quality = NEGATIVE\n- Satisfaction, excitement about progress = POSITIVE\nThree representative classifications, with the model’s own sentiment_reason:\n\n\n\n\n\n\n\n\nMessage (truncated)\nLabel\nModel’s reason\n\n\n\n\n“merge the pr to main via gh cli on origin, pull from origin, fix that shit up, add the changelog entry”\nNEUTRAL\nCasual language with commands — an instruction, not frustration.\n\n\n“why would you use web search, i just gave you an example trace. compare that to our impl.”\nNEGATIVE\nUser expresses frustration with agent’s approach.\n\n\n“Great. PLease can you review and advise of any areas that are over/under-engineered in this refactor?”\nPOSITIVE\nSatisfaction with progress, engaged collaboration.\n\n\n\nThe full reason column is in the published dataset — useful for auditing any classification you don’t trust.\n\nDoes domain-aware actually matter? We checked.\nFor comparison, we ran the same 8,949 messages through cardiffnlp/twitter-roberta-base-sentiment-latest — a widely-used off-the-shelf three-class sentiment classifier. It took ~2 minutes on an M-series Mac with MPS.\n\n\n\n\n\n\nAgreement and disagreement between the domain-aware Qwen3 labels and an off-the-shelf RoBERTa sentiment classifier on the same 8,949 messages. 78% agreement; the 22% disagreement concentrates in four predictable failure modes for the generic model.\n\n\nRaw agreement is 78.4% — but on a 3-class problem where NEUTRAL is 77% of the data, chance agreement is already ~62%, so Cohen’s κ is only 0.43 (conventionally interpreted as “moderate”). The generic model agrees on the easy cases; the 21.6% where they disagree is neither random nor small, and it concentrates in four predictable patterns:\n\n361 messages (4%) — RoBERTa flagged NEGATIVE, Qwen called NEUTRAL. Dev profanity and technical complaints about files or systems. “delete your fucking gpt-5.4 branch” is instruction, not anger.\n615 messages (7%) — RoBERTa flagged POSITIVE, Qwen called NEUTRAL. Polite wrapping on routine commands (“please do X”, “could you refactor”) reads as enthusiasm to a generic classifier.\n563 messages (6%) — RoBERTa called NEUTRAL, Qwen flagged NEGATIVE. Real frustration without obvious anger words. “why would you use web search, i just gave you an example trace” is annoyed but euphemistic.\n359 messages (4%) — RoBERTa called NEUTRAL, Qwen flagged POSITIVE. Understated affirmations: “great, let’s call it X”, “ok that works”.\n\nA generic sentiment classifier directionally agrees, but it’s systematically miscalibrated on the three types of text that most characterise developer-agent interaction — profanity-laced instructions, polite commands, and understated praise. The 78% agreement on the easy cases doesn’t save you on the 22% where domain context is load-bearing. For anyone else doing this kind of analysis on agent-trace data: off-the-shelf sentiment isn’t good enough, but a small open MoE with fifty lines of domain prompt gets you most of the way there."
+  },
+  {
+    "objectID": "posts/2026/agent-sentiment/index.html#why-sentiment-is-probably-the-wrong-lens",
+    "href": "posts/2026/agent-sentiment/index.html#why-sentiment-is-probably-the-wrong-lens",
+    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
+    "section": "Why sentiment is probably the wrong lens",
+    "text": "Why sentiment is probably the wrong lens\nIs sentiment a useful way to understand open agent traces? Partly. It surfaces one real finding (negativity compounds, positivity doesn’t) and confirms an intuition made quantitative (developers issue short directives far more often than they converse). But look at the corpus again with the right denominator.\nThe median session contains ~16 tool calls for every developer prompt. Across the whole corpus, that ratio is roughly 18 autonomous agent actions per user message — 166,244 tool calls against 9,341 declared user turns. The human text is a minority of what’s happening in an agent session. (Caveat: different agents log “tool calls” differently — Claude Code’s hook invocations, Codex and Pi’s own telemetry conventions — so some of that variance is protocol, not behaviour. Worth auditing before quoting the exact 18× number.)\nSentiment asks: what does the human feel? The richer question is: what does the agent actually do? Does it Read a file before Editing it? Does it reach for Bash when an MCP server would be more structured? Does its tool-call mix cluster differently for Claude Code vs Codex vs Pi? Across these 33 collections, preliminary behavioural analysis suggests:\n\nAutonomy ratios vary 11:1 to 40:1 (tool calls per user message) — the same model, used very differently depending on who’s driving.\nTool-mix profiles group agents by working style: some are Read-heavy, some are Bash-heavy, some Edit-first.\nError recovery patterns tell you how a model handles failure more informatively than the 8.7% positive message rate ever could.\n\nThat’s the next post. This one tested whether the easiest analysis — throw sentiment at the user messages — is worth the inference compute. Honest answer: a little, but less than you’d hope — sentiment-bearing text is a minority of what agents and developers actually do."
+  },
+  {
+    "objectID": "posts/2026/agent-sentiment/index.html#point-your-agent-at-the-data",
+    "href": "posts/2026/agent-sentiment/index.html#point-your-agent-at-the-data",
+    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
+    "section": "Point your agent at the data",
+    "text": "Point your agent at the data\nThe best thing about this data being on the Hub isn’t that we analysed it — it’s that your agent can, with the labelled dataset, session metadata, and full tool-call stream one snapshot_download away. As mentioned up top, that’s exactly the workflow that produced this post — the same invitation, the same dataset, the same kind of prompts.\nTry these. They work in Claude Code, Codex, Pi, or any agent-capable harness.\n\n\n\n\n\n\nTipPrompt 1 — Compare your own sessions to the corpus\n\n\n\n\nParse my Claude Code sessions in ~/.claude/projects using the agent-traces library (pip install git+https://github.com/davanstrien/agent-traces). Label each user message with sentiment using the same prompt we used in the blog post (dev profanity = NEUTRAL, short commands = NEUTRAL, etc.) via a local model or a cheap API. Compute NEG% by turn number. Overlay my curve against the public-corpus baseline (davanstrien/agent-trace-sentiment, NEG% by turn). Save the chart. Tell me: am I more frustrated than average, less, or the same — and at which turn number the gap is biggest?\n\n\n\n\n\n\n\n\n\nTipPrompt 2 — Pick a session apart\n\n\n\n\nLoad davanstrien/agent-trace-user-messages (use snapshot_download + polars.read_parquet; load_dataset will fail on stale README YAML). Find the session_id with the highest n_tool_calls. Then re-parse that session from its source dataset with agent-traces to get every tool call and agent event in order. Summarise in 5 bullets what the agent actually did — tool mix, error rate, what pattern of behaviour it exhibited, whether this looked like productive work or a debugging spiral. Include the session_id and source dataset so I can look it up.\n\n\n\n\n\n\n\n\n\nTipPrompt 3 — Hunt for the finding we missed\n\n\n\n\nIterate every public format:agent-traces dataset via TraceDataset.from_hub_search(). For each, compute ten behavioural metrics: autonomy ratio (tool calls per user message), error rate, tool-mix entropy, median session length in events, read-before-edit rate, cost per session, NEG% at turn 5, most common first-message pattern, output/input token ratio, and share of messages under 20 characters. Find the metric with the largest cross-dataset variance. Write it up as three bullet points suitable for a tweet thread. Include the code so someone else can verify.\n\n\n\nIf you run any of these and find something interesting, tag me — I’ll add the best finds to a community roundup. If you want to verify the numbers I’ve quoted in this post before running your own analysis, there’s a short replication prompt in Appendix A that takes one paste into any agent."
+  },
+  {
+    "objectID": "posts/2026/agent-sentiment/index.html#share-your-own-traces",
+    "href": "posts/2026/agent-sentiment/index.html#share-your-own-traces",
+    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
+    "section": "Share your own traces",
+    "text": "Share your own traces\nThe corpus is tiny today because very few developers have shared their sessions publicly. If you use a coding agent, your sessions are already on disk somewhere:\n\n\n\nAgent\nSessions live in\n\n\n\n\nClaude Code\n~/.claude/projects\n\n\nCodex\n~/.codex/sessions\n\n\nPi\n~/.pi/agent/sessions\n\n\n\nUpload them as a dataset and the Hub auto-detects the format and tags them format:agent-traces. The trace viewer renders sessions, turns, and tool calls out of the box. For Pi, pi-share-hf handles secret redaction and upload in a single pipeline. For Claude Code and Codex, the equivalent redaction tooling doesn’t yet exist — if you build one, I’ll link it here.\nThe asymmetry between closed and open agent-trace corpora will widen, then narrow, then widen again. The 45 datasets that exist today will look quaint in six months. But only if more developers upload. The stuff that’s interesting to measure about these tools — tool mixes, autonomy patterns, task-type distributions, failure modes — only gets measurable at scale."
+  },
+  {
+    "objectID": "posts/2026/agent-sentiment/index.html#replication",
+    "href": "posts/2026/agent-sentiment/index.html#replication",
+    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
+    "section": "Appendix A — Replicate every number in this post",
+    "text": "Appendix A — Replicate every number in this post\nEvery figure quoted in the body is computable from the labelled Hub dataset in a few lines of code. Paste the prompt below into any AI coding agent and it will download the data, run the checks, and tell you pass/fail.\n\n\nLoad davanstrien/agent-trace-sentiment from the Hugging Face Hub using huggingface_hub.snapshot_download + polars.read_parquet on the files under data/ — note datasets.load_dataset currently fails on this repo due to stale README YAML, so use the direct-parquet path.\nThen verify these six claims from the blog post, within ±1.5 percentage points:\n\n77% of messages are NEUTRAL, 14% NEGATIVE, 9% POSITIVE.\n61% of sessions are “pure neutral” — contain no POSITIVE and no NEGATIVE message at all.\nNearly 20% of messages are ≤ 20 characters long (content_text column, e.g. “continue”, “do it”, “yes”).\nAt turn 1, ~8% of messages are NEGATIVE; by turn 5, ~18% are — more than double.\nSessions whose turn-1 message is NEGATIVE: ~60% never see a POSITIVE message afterward.\nAutonomy ratio: the median session has ~16 tool calls per user message (n_tool_calls / nTurns per session). The corpus total is ~18× (sum of n_tool_calls divided by sum of nTurns).\n\nOutput a pass/fail table with the computed value next to each claim. If any claim is off by more than ±1.5 percentage points (or 10% for the autonomy ratio), say so loudly and paste the code that showed it.\n\n\nIf a claim fails, tag me with the code and the computed value. Replication credit is cheap; I’d rather be corrected than cited incorrectly."
+  },
+  {
+    "objectID": "posts/2026/agent-sentiment/index.html#appendix-b-methodology-and-reproducibility-details",
+    "href": "posts/2026/agent-sentiment/index.html#appendix-b-methodology-and-reproducibility-details",
+    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
+    "section": "Appendix B — Methodology and reproducibility details",
+    "text": "Appendix B — Methodology and reproducibility details\n\nData sources: 45 public format:agent-traces datasets on the Hugging Face Hub, tagged via the Hub’s auto-detection pipeline. After excluding one dataset (jedisct1/agent-traces-swival, 8,869 files of security-audit material where sentiment is off-prompt), 44 datasets processed, 43 contributed messages. 33 unique source collections after deduping on (session_id, turn) — six of the tagged datasets are re-uploads of badlogicgames/pi-mono.\nExtraction: Parsed using the agent-traces library. Result pushed to davanstrien/agent-trace-user-messages as 8,949 deduped user turns with 17 columns (session_id, turn, nTurns, normPos, model, provider, agent, cost_total_sum, n_events, n_tool_calls, etc.).\nPrimary labelling: Qwen3-30B-A3B-Instruct-2507 (30B total, 3B active MoE) via vLLM with StructuredOutputsParams enforcing a {label, reason} schema. Zero parse errors across 8,949 inferences. Prompt is domain-aware — see the “How we labelled the messages” section above for the verbatim text.\nComparison labelling: Same 8,949 messages through cardiffnlp/twitter-roberta-base-sentiment-latest via the transformers library on Apple Silicon MPS. Agreement rate 78.4%; confusion matrix in the methodology section.\nCompute: Primary labelling on one H200 via hf jobs uv run, ~5 minutes wall time end-to-end. Comparison run on M-series Mac, ~2 minutes. One-file Python scripts for both, no cluster.\nOutput: davanstrien/agent-trace-sentiment with sentiment_label and sentiment_reason columns.\nData snapshot: 2026-04-20. Every number in this post is reproducible from the linked dataset.\nCaveats in one line: 45 public datasets, two contributors ≈ 74% of rows, this is a small cohort of early-adopter power users and not a random sample of developers.\n\nAll four scripts are published alongside this post — extract_user_messages.py, sentiment-label.py, regen_blog_data.py, roberta_compare.py — or browse the scripts/ folder on GitHub. No secret sauce — the whole pipeline is about 200 lines of Python."
+  },
+  {
+    "objectID": "pages/projects.html",
+    "href": "pages/projects.html",
+    "title": "Selected projects",
     "section": "",
-    "text": "Unsloth has massively lowered the barriers to training and fine-tuning models by reducing the GPU resources required.\nHowever, many AI datasets are very large — often multiple TBs. What if you want to train on a dataset larger than your disk?\nUsing 🤗 datasets + streaming means you can train directly from a Hugging Face hosted dataset without needing to download and store the whole dataset locally. This means even GPU and disk poor people can do things like continued pretraining!\n\n\nFineWeb-2 has 1.47 million Latin texts (~1.7GB). Let’s use them to try to teach a small LLM some Latin - no disk space required.\nThis is perfect for “GPU poor AND disk poor” setups - Colab, Kaggle, or any constrained environment.\n\n%%capture\n!pip install unsloth\n\n\nfrom unsloth import FastLanguageModel\nimport torch\n\nmodel, tokenizer = FastLanguageModel.from_pretrained(\n    \"unsloth/Qwen3-0.6B-Base-unsloth-bnb-4bit\",\n    max_seq_length=2048,\n    load_in_4bit=True,\n)\n\nmodel = FastLanguageModel.get_peft_model(\n    model,\n    r=16,\n    lora_alpha=16,\n    lora_dropout=0,\n    target_modules=[\"q_proj\", \"k_proj\", \"v_proj\", \"o_proj\",\n                    \"gate_proj\", \"up_proj\", \"down_proj\"],\n    bias=\"none\",\n    use_gradient_checkpointing=\"unsloth\",\n    random_state=3407,\n)\n\n==((====))==  Unsloth 2026.1.2: Fast Qwen3 patching. Transformers: 4.57.3.\n   \\\\   /|    NVIDIA A100-SXM4-80GB. Num GPUs = 1. Max memory: 79.318 GB. Platform: Linux.\nO^O/ \\_/ \\    Torch: 2.9.1+cu128. CUDA: 8.0. CUDA Toolkit: 12.8. Triton: 3.5.1\n\\        /    Bfloat16 = TRUE. FA [Xformers = 0.0.33.post2. FA2 = False]\n \"-____-\"     Free license: http://github.com/unslothai/unsloth\nUnsloth: Fast downloading is enabled - ignore downloading bars which are red colored!"
+    "text": "This page collects selected projects that I have worked on."
   },
   {
-    "objectID": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#vibe-check-before-training",
-    "href": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#vibe-check-before-training",
-    "title": "Train on Massive Datasets Without Downloading with Hugging Face Streaming and Unsloth",
-    "section": "Vibe Check: Before Training",
-    "text": "Vibe Check: Before Training\nLet’s see what this base model generates from a Latin prompt before any Latin training.\n\n# Before any Latin training - what does the base model produce?\nFastLanguageModel.for_inference(model)\n\ninputs = tokenizer(\"Lingua Latina est\", return_tensors=\"pt\").to(\"cuda\")\noutputs = model.generate(\n    **inputs,\n    max_new_tokens=64,\n    temperature=0.7,\n    do_sample=True,\n)\nprint(\"BEFORE:\", tokenizer.decode(outputs[0], skip_special_tokens=True))\n\nBEFORE: Lingua Latina estémao\n\n# 04555 - Pórticos, conyugues y mujeres\n\nHasta ahora, el libro de esta edición ha tratado de la historia del púrpico en todo el mundo, pero sobre la mujer. No se trata, por lo tanto, de un"
+    "objectID": "pages/projects.html#machine-learning-projects",
+    "href": "pages/projects.html#machine-learning-projects",
+    "title": "Selected projects",
+    "section": "Machine learning projects",
+    "text": "Machine learning projects\n\nflyswot: using computer vision to detect ‘fake flysheets’\nRelated Posts\nAn increasing challenge for libraries is managing the scale of digitised material resulting from digitisation projects and ‘born digital’ materials. This project aims to detect mislabelled digitised manuscript pages.\n\n\n\nA manuscript page with the correct label “fse.ivr”\n\n\nAs a result of the limitations of a previous system for hosting digitised manuscript images, many images have incorrect page metadata associated with the image. An image has been correctly labelled as an ‘end flysheet’ in the example above. This label is represented by the fse label, which is included in the filename for the image. However other types of manuscript pages also have this label incorrectly assigned, i.e. a ‘cover’ has fse in the filename. There is around a petabyte of images to review before ingesting a new library system. This project uses computer vision to support library staff in processing this collection. At the moment, this project does the following:\n\npulls in an updated dataset of training examples\ntrains a model on these images\nthe model architecture has multiple heads to allow the model to make both a ‘crude’ prediction for whether the image is incorrectly labelled and a ‘full’ prediction for the true label.\nonce a new version of the model has been trained, it is pushed to the 🤗 model hub.\nthe end-user uses the model through a command-line tool which is pointed at a directory of images to be checked.\n\nThe code for the command-line tool is available here: github.com/davanstrien/flyswot/\nSome of the tools used: fastai, DVC, Weights and Biases, 🤗 model hub, pytest, nox, poetry\n\n\nBook Genre Detection\n\nThis project created machine learning models which would predict whether a book was ‘fiction’ or ‘non- fiction’ based on the book title:\n\nThe project was developed to address a gap in metadata in a large scale digitised book collection.\nThe project used weak supervision to generate a more extensive training set beyond the initial human-generated annotations.\nCurrently, two models are publicly available, one via the 🤗 Model Hub and one via Zenodo.\nThe process of creating the models is documented in a Jupyter Book. This documentation aims to communicate the critical steps in the machine learning pipeline to aid other people in the sector develop similar models. https://huggingface.co/spaces https://huggingface.co/spaces/BritishLibraryLabs/British-Library-books-genre-classifier-v2\n\nSome of the tools used: fastai, transformers, blurr, Hugging face model hub, Jupyter Book, Snorkel, Gradio"
   },
   {
-    "objectID": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#the-key-streaming-dataset",
-    "href": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#the-key-streaming-dataset",
-    "title": "Train on Massive Datasets Without Downloading with Hugging Face Streaming and Unsloth",
-    "section": "The Key: Streaming Dataset",
-    "text": "The Key: Streaming Dataset\nThe magic is streaming=True - data flows directly from the Hugging Face Hub without you first needing to download data locally.\n\nfrom datasets import load_dataset\n\ndataset = load_dataset(\n    \"HuggingFaceFW/fineweb-2\",\n    name=\"lat_Latn\",\n    split=\"train\",\n    streaming=True\n)\n\n# Peek at the data\nnext(iter(dataset))\n\n{'text': 'Ita est in oratione senex mente confusus, eo quod illam imaginem Deitatis, quam proponere sibi in oratione consueverat, aboleri de suo corde sentiret, ut in amarissimos fletus, crebrosque singultus repente prorumpens, in terram prostratus, cum ejulatu validissimo proclamaret; \"Heu me miserum! tulerunt a me Deum meum, et quem nunc teneam non habeo, vel quem adorem, aut interpallam am nescio.\" Cassian, Collat. x. 2.',\n 'id': '&lt;urn:uuid:318d65fb-88ea-43cd-8687-8a8d802317a5&gt;',\n 'dump': 'CC-MAIN-2013-20',\n 'url': 'http://www.ourcivilisation.com/smartboard/shop/gibbone/rome/volume2/nt470/013.htm',\n 'date': '2013-05-18T13:41:33Z',\n 'file_path': 's3://commoncrawl/crawl-data/CC-MAIN-2013-20/segments/1368696382398/warc/CC-MAIN-20130516092622-00034-ip-10-60-113-184.ec2.internal.warc.gz',\n 'language': 'lat',\n 'language_score': 0.9927687644958496,\n 'language_script': 'Latn',\n 'minhash_cluster_size': 10,\n 'top_langs': '{}'}\n\n\n\ndef format_text(example):\n    return {\"text\": example[\"text\"] + tokenizer.eos_token}\n\nformatted_dataset = dataset.map(format_text)\n\n\nexample = dataset.map(format_text)\nexample\n\nIterableDataset({\n    features: Unknown,\n    num_shards: 1\n})\n\n\n\nnext(iter(example))['text']\n\n'Ita est in oratione senex mente confusus, eo quod illam imaginem Deitatis, quam proponere sibi in oratione consueverat, aboleri de suo corde sentiret, ut in amarissimos fletus, crebrosque singultus repente prorumpens, in terram prostratus, cum ejulatu validissimo proclamaret; \"Heu me miserum! tulerunt a me Deum meum, et quem nunc teneam non habeo, vel quem adorem, aut interpallam am nescio.\" Cassian, Collat. x. 2.&lt;|endoftext|&gt;'"
+    "objectID": "pages/projects.html#datasets",
+    "href": "pages/projects.html#datasets",
+    "title": "Selected projects",
+    "section": "Datasets",
+    "text": "Datasets\n\nBritish Library books\n\nExtracted plain text and other metadata files from ALTO XML https://github.com/davanstrien/digitised-books-ocr-and-metadata\nAdded the dataset to the 🤗 datasets hub\n\n\n\nBritish Library Books Genre data\n\nCreated a datasets loading script and prepared a Dataset card for a dataset supporting book genre detection using machine learning: https://huggingface.co/datasets/blbooksgenre\n\n\n\nDatasets to support programming historian lessons\nI think having more realistic datasets is important for teaching machine learning effectively. As a result, I created two datasets for two under review Programming Historian lessons.\n\n19th Century United States Newspaper Advert images with ‘illustrated’ or ‘non illustrated’ labels\n19th Century United States Newspaper images predicted as Photographs with labels for “human”, “animal”, “human-structure” and “landscape”\n\n\n\nWorkshop datasets\n\nImages from Newspaper Navigator predicted as maps, with human corrected labels"
   },
   {
-    "objectID": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#training",
-    "href": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#training",
-    "title": "Train on Massive Datasets Without Downloading with Hugging Face Streaming and Unsloth",
-    "section": "Training",
-    "text": "Training\nFor streaming datasets, use max_steps instead of epochs.\n\nfrom trl import SFTTrainer, SFTConfig\n\ntrainer = SFTTrainer(\n    model=model,\n    tokenizer=tokenizer,\n    train_dataset=formatted_dataset,\n    args=SFTConfig(\n        per_device_train_batch_size=2,\n        gradient_accumulation_steps=4,\n        warmup_steps=5,\n        max_steps=100,  # Use max_steps, not epochs!\n        learning_rate=2e-4,\n        logging_steps=10,\n        optim=\"adamw_8bit\",\n        weight_decay=0.01,\n        lr_scheduler_type=\"linear\",\n        seed=3407,\n        output_dir=\"outputs\",\n        report_to=\"none\",\n        dataset_text_field=\"text\",\n        max_seq_length=2048,\n        packing=False,\n    ),\n)\n\ntrainer.train()\n\nThe model is already on multiple devices. Skipping the move to device specified in `args`.\n==((====))==  Unsloth - 2x faster free finetuning | Num GPUs used = 1\n   \\\\   /|    Num examples = 800 | Num Epochs = 9,223,372,036,854,775,807 | Total steps = 100\nO^O/ \\_/ \\    Batch size per device = 2 | Gradient accumulation steps = 4\n\\        /    Data Parallel GPUs = 1 | Total batch size (2 x 4 x 1) = 8\n \"-____-\"     Trainable parameters = 10,092,544 of 606,142,464 (1.67% trained)\n\n\nUnsloth: Will smartly offload gradients to save VRAM!\n\n\n\n      \n      \n      [100/100 02:51, Epoch 1/9223372036854775807]\n    \n    \n\n\n\nStep\nTraining Loss\n\n\n\n\n10\n3.229800\n\n\n20\n3.384800\n\n\n30\n3.717900\n\n\n40\n3.657300\n\n\n50\n3.491100\n\n\n60\n3.537200\n\n\n70\n3.623300\n\n\n80\n3.539600\n\n\n90\n3.585700\n\n\n100\n3.716300\n\n\n\n\n\n\nTrainOutput(global_step=100, training_loss=3.5483124160766604, metrics={'train_runtime': 185.9221, 'train_samples_per_second': 4.303, 'train_steps_per_second': 0.538, 'total_flos': 2425465405440000.0, 'train_loss': 3.5483124160766604, 'epoch': 1.0})"
+    "objectID": "pages/projects.html#workshop-materials",
+    "href": "pages/projects.html#workshop-materials",
+    "title": "Selected projects",
+    "section": "Workshop materials",
+    "text": "Workshop materials\n\nComputer Vision for the Humanities workshop: This workshop aims to provide an introduction to computer vision aimed for humanities applications. In particular this workshop focuses on providing a high level overivew of machine learning based approaches to computer vision focusing on supervised learning. The workshop includes discussion on working with historical data. The materials are based on in progress Programming Historian lessons.\nWorking with maps at scale using Computer Vision and Jupyter notebooks\nIntroduction to Jupyter Notebooks: the weird and the wonderful\nImage Search: Materials for a workshop on image search with a focus on heritage data. The workshop is based on a blog post Image search with 🤗 datasets but goes into a little bit more detail."
   },
   {
-    "objectID": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#vibe-check-after-training",
-    "href": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#vibe-check-after-training",
-    "title": "Train on Massive Datasets Without Downloading with Hugging Face Streaming and Unsloth",
-    "section": "Vibe Check: After Training",
-    "text": "Vibe Check: After Training\nSame prompt, same settings - let’s see if 100 steps of Latin made a difference (probably not…)\n\n# After Latin training - same prompt, same settings\nFastLanguageModel.for_inference(model)\n\ninputs = tokenizer(\"Lingua Latina est\", return_tensors=\"pt\").to(\"cuda\")\noutputs = model.generate(\n    **inputs,\n    max_new_tokens=64,\n    temperature=0.7,\n    do_sample=True,\n)\nprint(\"AFTER:\", tokenizer.decode(outputs[0], skip_special_tokens=True))\n\nAFTER: Lingua Latina est invenire, ut invenire est. Ego, invenire, invenire, ut, ut, ut, ut, ut, ut, ut ut, ut, ut, ut, ut. Invenire, invenire, invenire, ut, ut, ut, ut,"
-  },
-  {
-    "objectID": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#scaling-up-with-hf-jobs",
-    "href": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#scaling-up-with-hf-jobs",
-    "title": "Train on Massive Datasets Without Downloading with Hugging Face Streaming and Unsloth",
-    "section": "Scaling Up with HF Jobs",
-    "text": "Scaling Up with HF Jobs\nThe notebook above works great for quick experiments. But streaming in Colab isn’t as fast as it could be since the network speed in Colab can be quite slow.\nWhat if we ran training directly on Hugging Face?\nWith HF Jobs, compute is co-located with the data and Jobs have very fast connection so it can be much faster!\n\n\n\nEnvironment\nSpeed\nBottleneck\n\n\n\n\nColab A100\n0.36 it/s\nNetwork latency\n\n\nHF Jobs A100\n0.74 it/s\nGPU\n\n\n\nThis streaming approach was fairly naive so there are likely some extra tweaks to make it even faster!\nI trained a larger model (Qwen3 4B) for 1000 steps using a UV script on HF Jobs. The result: davanstrien/qwen3-4b-latin\n\nTry the Trained Model\n\n# Load the Latin-trained 4B model\nfrom unsloth import FastLanguageModel\n\nmodel, tokenizer = FastLanguageModel.from_pretrained(\n    \"davanstrien/qwen3-4b-latin\",\n    max_seq_length=2048,\n    load_in_4bit=True,\n)\nFastLanguageModel.for_inference(model)\n\n# Generate some Latin\ninputs = tokenizer(\"Lingua Latina est\", return_tensors=\"pt\").to(\"cuda\")\noutputs = model.generate(\n    **inputs,\n    max_new_tokens=64,\n    temperature=0.7,\n    do_sample=True,\n)\nprint(tokenizer.decode(outputs[0], skip_special_tokens=True))\n\n==((====))==  Unsloth 2026.1.2: Fast Qwen3 patching. Transformers: 4.57.3.\n   \\\\   /|    NVIDIA A100-SXM4-80GB. Num GPUs = 1. Max memory: 79.318 GB. Platform: Linux.\nO^O/ \\_/ \\    Torch: 2.9.1+cu128. CUDA: 8.0. CUDA Toolkit: 12.8. Triton: 3.5.1\n\\        /    Bfloat16 = TRUE. FA [Xformers = 0.0.33.post2. FA2 = False]\n \"-____-\"     Free license: http://github.com/unslothai/unsloth\nUnsloth: Fast downloading is enabled - ignore downloading bars which are red colored!\nLingua Latina est etum, nec.,usis. atit, et.,.. n.um sedam,em ei.,,que\n,.am a. quisus et.,,, et a inus in e. aliqu.is,,....\n,.,at ipsum\n\n\nStill bad, but more Latin for sure!\nThe goal in this post wasn’t really to show how to continued fine tuning effectively, but to show how you can avoid needing huge amounts of disk space to train models effectively."
-  },
-  {
-    "objectID": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#why-this-matters",
-    "href": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#why-this-matters",
-    "title": "Train on Massive Datasets Without Downloading with Hugging Face Streaming and Unsloth",
-    "section": "Why This Matters",
-    "text": "Why This Matters\n\nNo disk space needed - train on massive datasets without downloading\nWorks everywhere - Colab, Kaggle, HF Jobs, any constrained environment\nAny language - FineWeb-2 has 90+ languages available\nScales up - combine with HF Jobs for 2x faster streaming\n\nThe full UV script is available here if you want to train your own.\n\nPerformance Tips\nIf streaming feels slow, you can tune PyArrow’s prefetching when loading the dataset:\nimport pyarrow\nimport pyarrow.dataset\n\nfragment_scan_options = pyarrow.dataset.ParquetFragmentScanOptions(\n    cache_options=pyarrow.CacheOptions(\n        prefetch_limit=1,  # prefetch chunks in background\n        range_size_limit=128 &lt;&lt; 20  # 128 MiB minimum request size (default 32 MiB)\n    ),\n)\n\ndataset = load_dataset(..., streaming=True, fragment_scan_options=fragment_scan_options)\n\n\nLearn More\n\nStreaming Datasets for ML Training - HF blog with more performance tuning tips\nDatasets Streaming Documentation - full docs"
-  },
-  {
-    "objectID": "slides/iiif-illustration-detector/index.html#section",
-    "href": "slides/iiif-illustration-detector/index.html#section",
-    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
-    "section": "",
-    "text": "Daniel van Strien — Machine Learning Librarian @ Hugging Face"
-  },
-  {
-    "objectID": "slides/iiif-illustration-detector/index.html#demo",
-    "href": "slides/iiif-illustration-detector/index.html#demo",
-    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
-    "section": "Demo",
-    "text": "Demo\nhuggingface.co/spaces/small-models-for-glam/iiif-illustration-detector"
-  },
-  {
-    "objectID": "slides/iiif-illustration-detector/index.html#what-just-happened",
-    "href": "slides/iiif-illustration-detector/index.html#what-just-happened",
-    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
-    "section": "What just happened?",
-    "text": "What just happened?\n\n\n\nModel\nMobileNetV2 — 2.5MB, quantized ONNX\n\n\nRuns\nEntirely in your browser via transformers.js\n\n\nPrivacy\nNo data leaves your institution\n\n\nIIIF\nSupports Presentation API v2 AND v3\n\n\nOutput\nW3C Web Annotations — plugs into your existing infra\n\n\n\n\nYou just saw the model, the dataset, and the tool — all open, all on Hugging Face."
-  },
-  {
-    "objectID": "slides/iiif-illustration-detector/index.html#how-this-got-made",
-    "href": "slides/iiif-illustration-detector/index.html#how-this-got-made",
-    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
-    "section": "How this got made",
-    "text": "How this got made\n\n2022: Hand-labeled 1,896 pages as “illustrated” or “not”\nData sat for 3 years\nOne evening in 2025:\n\nTrain MobileNetV2 on that data\nConvert to ONNX, quantize to 2.5MB\nBuild browser tool with transformers.js\n\n\n\n\nOne evening with modern tools turned 3-year-old data into a working browser tool."
-  },
-  {
-    "objectID": "slides/iiif-illustration-detector/index.html#training-models-is-getting-easier",
-    "href": "slides/iiif-illustration-detector/index.html#training-models-is-getting-easier",
-    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
-    "section": "Training models is getting easier",
-    "text": "Training models is getting easier\n\nFine-tuning a classifier: an afternoon, not a PhD\nExpanding training data with AI: $15, not $15,000\nThis illustration detector: one evening of work"
-  },
-  {
-    "objectID": "slides/iiif-illustration-detector/index.html#running-models-is-getting-easier",
-    "href": "slides/iiif-illustration-detector/index.html#running-models-is-getting-easier",
-    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
-    "section": "Running models is getting easier",
-    "text": "Running models is getting easier\n\n2.5MB — runs in any browser, no GPU needed\nNo server to maintain, no API keys, no cloud costs\nShip a model as a URL — nothing to install"
-  },
-  {
-    "objectID": "slides/iiif-illustration-detector/index.html#small-models-can-be-very-powerful",
-    "href": "slides/iiif-illustration-detector/index.html#small-models-can-be-very-powerful",
-    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
-    "section": "Small models can be very powerful",
-    "text": "Small models can be very powerful\n\nOne model finds illustrations across any IIIF collection\nImagine an ecosystem: illustration detection, handwriting recognition, layout analysis, map detection…\nEach model small, focused, composable\n\n\n\nAn ecosystem of task-specific models built by and for the cultural heritage community."
-  },
-  {
-    "objectID": "slides/iiif-illustration-detector/index.html#so-whats-the-bottleneck",
-    "href": "slides/iiif-illustration-detector/index.html#so-whats-the-bottleneck",
-    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
-    "section": "So what’s the bottleneck?",
-    "text": "So what’s the bottleneck?\n\nData.\n\nAI can help prepare training data (VLMs, zero-shot labeling)\nBut it still needs human domain expertise to validate and guide it\nCultural heritage professionals have that expertise"
-  },
-  {
-    "objectID": "slides/iiif-illustration-detector/index.html#data-as-infrastructure",
-    "href": "slides/iiif-illustration-detector/index.html#data-as-infrastructure",
-    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
-    "section": "Data as infrastructure",
-    "text": "Data as infrastructure\n\nUnion catalogs → MARC → IIIF → …?\nIIIF = the cultural heritage community saying “we build our own interop”\n\n\nShared datasets and small models are the next layer.\n\n\nThe GLAM sector can build AI infrastructure by building datasets for training and evaluation."
-  },
-  {
-    "objectID": "slides/iiif-illustration-detector/index.html#get-involved",
-    "href": "slides/iiif-illustration-detector/index.html#get-involved",
-    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
-    "section": "Get involved",
-    "text": "Get involved\n\nOrg: huggingface.co/small-models-for-glam — a shared home for task-specific cultural heritage models\n\nWhat would help:\n\nTraining data from your collections\nFeedback on edge cases and new collection types\nFeature requests\n\n\nThe model works well on Western European printed material — we need more diversity."
-  },
-  {
-    "objectID": "slides/iiif-illustration-detector/index.html#questions-discussion",
-    "href": "slides/iiif-illustration-detector/index.html#questions-discussion",
-    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
-    "section": "Questions & Discussion",
-    "text": "Questions & Discussion\n\nWhat types of illustrations does your collection have?\nWould you use this in a cataloguing workflow?\nWhat other “boring but useful” classification tasks would help your work?\nIs the annotation export format right for your infrastructure?"
-  },
-  {
-    "objectID": "slides/iiif-illustration-detector/index.html#thank-you",
-    "href": "slides/iiif-illustration-detector/index.html#thank-you",
-    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
-    "section": "Thank You",
-    "text": "Thank You\nDaniel van Strien\n\nBluesky: @vanstriendaniel\nHugging Face: huggingface.co/davanstrien\n\nLinks:\n\nDemo: small-models-for-glam/iiif-illustration-detector\nModel: small-models-for-glam/historical-illustration-detector\nOrg: small-models-for-glam"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#what-is-open-source-ai",
-    "href": "slides/open-source-ai-glams.html#what-is-open-source-ai",
-    "title": "Open Source AI for GLAMs",
-    "section": "What is Open Source AI?",
-    "text": "What is Open Source AI?\n\nAI systems where key components are publicly accessible\nA spectrum: from “open weights” to fully open training pipelines\nGrowing ecosystem of models, tools, and communities\n\n\n\nOpen source AI isn’t binary - there’s a spectrum of openness\nWe’ll explore what “open” means in practice"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#the-chat-interface",
-    "href": "slides/open-source-ai-glams.html#the-chat-interface",
-    "title": "Open Source AI for GLAMs",
-    "section": "The Chat Interface?",
-    "text": "The Chat Interface?\n\n\n\nAs I already mentioned in my intro, Generative AI has become the dominant way of thinking about AI\nIn particular, the “chat interface” i.e. chat GPT, claude etc, are the dominant way in which many people (consciously) interact with AI\nthis sometimes leads to the default answer to “what can we do with AI” to be “How can we create a chat interface for our collection?”"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#the-default-answer",
-    "href": "slides/open-source-ai-glams.html#the-default-answer",
-    "title": "Open Source AI for GLAMs",
-    "section": "The Default Answer",
-    "text": "The Default Answer\n“Let’s build a chatbot for our collections!”\n\nBut is this the best starting point?"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#ai-ferrari-vs-honda-civic",
-    "href": "slides/open-source-ai-glams.html#ai-ferrari-vs-honda-civic",
-    "title": "Open Source AI for GLAMs",
-    "section": "AI: Ferrari vs Honda Civic",
-    "text": "AI: Ferrari vs Honda Civic\n\n“A frontier model like GPT-4 is like a Ferrari. It’s an obvious triumph of engineering, designed to win races. But it takes a special pit crew just to change the tires.\n\n\nIn contrast, a smaller specialized model is like a Honda Civic. It’s engineered to be affordable, reliable, and extremely useful. And that’s why they’re absolutely everywhere.”\n\n\n— Adapted from “Finally, a Replacement for BERT” https://huggingface.co/blog/modernbert"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#what-is-an-ai-model",
-    "href": "slides/open-source-ai-glams.html#what-is-an-ai-model",
-    "title": "Open Source AI for GLAMs",
-    "section": "What is an AI Model?",
-    "text": "What is an AI Model?\n\n\n\n\n\nflowchart LR\n    W[Weights&lt;br/&gt;Learned numbers] --&gt; M((Model))\n    C[Code&lt;br/&gt;Instructions] --&gt; M\n    M --&gt; T[Does tasks]\n\n\n\n\n\n\nThe weights are the “brain” - patterns learned from training data"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#what-are-weights",
-    "href": "slides/open-source-ai-glams.html#what-are-weights",
-    "title": "Open Source AI for GLAMs",
-    "section": "What Are Weights?",
-    "text": "What Are Weights?\n\n\n\n\n\nflowchart TD\n    D[(Training Data&lt;br/&gt;Books, websites, images)] --&gt; L[Learning Process]\n    L --&gt; W[Weights File&lt;br/&gt;.safetensors]\n    W --&gt; E[\"Billions of numbers:&lt;br/&gt;[0.023, -0.891, 0.442, ...]\"]\n\n\n\n\n\n\nThese numbers encode everything the model “knows”"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#open-vs-closed-weights",
-    "href": "slides/open-source-ai-glams.html#open-vs-closed-weights",
-    "title": "Open Source AI for GLAMs",
-    "section": "Open vs Closed Weights",
-    "text": "Open vs Closed Weights\n\n\nOpen Weights\n\n\n\n\n\nflowchart TD\n    O[Download weights] --&gt; R[Run anywhere]\n    R --&gt; I[Inspect & modify]\n\n\n\n\n\n\n\nClosed Weights\n\n\n\n\n\nflowchart TD\n    A[API only] --&gt; B[Black box]\n    B --&gt; V[Vendor controlled]"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#open-source-beyond-weights",
-    "href": "slides/open-source-ai-glams.html#open-source-beyond-weights",
-    "title": "Open Source AI for GLAMs",
-    "section": "Open Source (Beyond Weights)",
-    "text": "Open Source (Beyond Weights)\n“fully” open source AI includes:\n\nTraining code: How the model was built\nTraining data: What the model learned from\nEvaluation details: How performance was measured\n\nExamples of “fully” open models:\n\nOLMo - Allen AI’s fully open LLM\nSmolLM - Hugging Face’s small, efficient models"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#why-open",
-    "href": "slides/open-source-ai-glams.html#why-open",
-    "title": "Open Source AI for GLAMs",
-    "section": "Why Open?",
-    "text": "Why Open?\n\n\n\nChoice\n1M+ models vs ~100 closed APIs\n\n\nControl\nRun where you want, pin versions\n\n\nFlexibility\nFine-tune for your domain\n\n\nCost\nOften cheaper at scale\n\n\nPrivacy\nData never leaves your infra\n\n\nTransparency\nInspect model & training data"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#choosing-a-model",
-    "href": "slides/open-source-ai-glams.html#choosing-a-model",
-    "title": "Open Source AI for GLAMs",
-    "section": "Choosing a Model",
-    "text": "Choosing a Model\nAI/ML is more than LLMs!\nMany tasks don’t need a large language model:\n\nClassification: Categorize documents, detect languages\nEmbeddings: Semantic search, similarity matching\nVision: OCR, image classification, object detection\nStructured extraction: Named entities, dates, metadata\n\nFinding models: Hugging Face Hub - 1M+ open models, filterable by task, language, size"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#running-the-model",
-    "href": "slides/open-source-ai-glams.html#running-the-model",
-    "title": "Open Source AI for GLAMs",
-    "section": "Running the model",
-    "text": "Running the model\nOpen models != local models\nA few genres of inference for open models:\n\nPay per token via a hosted endpoint “serverless”\nRun the model on your own hardware (laptop, desktop, server)\nRent the hardware to run the model and pay per hour"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#tradeoffs",
-    "href": "slides/open-source-ai-glams.html#tradeoffs",
-    "title": "Open Source AI for GLAMs",
-    "section": "Tradeoffs",
-    "text": "Tradeoffs\n\n\n\nApproach\nSetup\nBest For\n\n\n\n\nPay per token\nMinimal\nPrototyping, low volume\n\n\nLocal hardware\nMedium\nPrivacy, offline use\n\n\nRent hardware\nHigher\nProduction, scale"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#pay-per-token-serverless",
-    "href": "slides/open-source-ai-glams.html#pay-per-token-serverless",
-    "title": "Open Source AI for GLAMs",
-    "section": "Pay Per Token (Serverless)",
-    "text": "Pay Per Token (Serverless)\nSetup: Minimal - use via OpenAI-compatible client\n\n\nPros\n\nQuick to start\nNo hardware needed\nCompetitive pricing\nEasy model switching\n\n\nCons\n\nVendor dependency\nResults can vary across providers\nOngoing costs\nData leaves your infrastructure"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#local-hardware",
-    "href": "slides/open-source-ai-glams.html#local-hardware",
-    "title": "Open Source AI for GLAMs",
-    "section": "Local Hardware",
-    "text": "Local Hardware\nSetup: Medium - install runtime + download model\n\n\nPros\n\nFull control\nData stays local\nNo ongoing costs\nWorks offline\n\n\nCons\n\nHardware limitations\nModel size constraints\nSetup/maintenance\nUpdates are manual"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#rent-hardware-dedicated",
-    "href": "slides/open-source-ai-glams.html#rent-hardware-dedicated",
-    "title": "Open Source AI for GLAMs",
-    "section": "Rent Hardware (Dedicated)",
-    "text": "Rent Hardware (Dedicated)\nSetup: Higher - configure cloud instance\n\n\nPros\n\nScalable resources\nRun any model size\nDedicated capacity\nProduction-ready\n\n\nCons\n\nCosts scale with usage\nInfrastructure complexity\nRequires DevOps skills\nCold start times"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#local-hosting",
-    "href": "slides/open-source-ai-glams.html#local-hosting",
-    "title": "Open Source AI for GLAMs",
-    "section": "Local hosting",
-    "text": "Local hosting\n\n\n\n\n\nmindmap\n  root((Local model ecosystem))\n    Python Libraries\n      Pytorch / Tensorflow / JAX\n      Transformers\n      Diffusers\n      Sentence Transformers\n      ONNX Runtime\n      Optimum\n    JavaScript\n      Transformers.js\n    Inference Frameworks\n      GPU Poor focused\n        llama.cpp\n          LM Studio\n          Ollama\n        MLX Apple Silicon\n          mlx-lm\n          mlx-vlm\n        ExLlamaV2\n        Jan\n      Enterprise Focused\n        vLLM\n        SgLang\n        Triton Inference Server\n    Quantization Formats\n      GGUF\n      GPTQ\n      AWQ\n    UIs\n      Gradio\n      Open WebUI"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#contributing-datasets",
-    "href": "slides/open-source-ai-glams.html#contributing-datasets",
-    "title": "Open Source AI for GLAMs",
-    "section": "Contributing: Datasets",
-    "text": "Contributing: Datasets\nGLAMs hold unique assets for AI training:\n\nCurated collections: High-quality, well-documented data\nDomain expertise: Historical texts, scientific literature, archival materials\nLinguistic diversity: Multilingual and underrepresented language resources\nRich metadata: Structured information often missing from web scrapes"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#contributing-evaluations",
-    "href": "slides/open-source-ai-glams.html#contributing-evaluations",
-    "title": "Open Source AI for GLAMs",
-    "section": "Contributing: Evaluations",
-    "text": "Contributing: Evaluations\nMove beyond “vibe checks” with domain expertise:\n\nTask benchmarks: Cataloging, transcription, metadata extraction\nQuality assessment: Expert evaluation of model outputs\nEdge cases: Cultural heritage contexts models often get wrong\nBias detection: Identifying gaps in historical & cultural knowledge"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#contributing-models",
-    "href": "slides/open-source-ai-glams.html#contributing-models",
-    "title": "Open Source AI for GLAMs",
-    "section": "Contributing: Models",
-    "text": "Contributing: Models\nShare trained models back to the community:\n\nFine-tuned models: Adapt general models to your domain (historical texts, scientific literature)\nSpecialized task models: OCR for historical typefaces, metadata extraction, document classification\nEmbedding models: Better semantic search using domain-specific vocabularies"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#thank-you",
-    "href": "slides/open-source-ai-glams.html#thank-you",
-    "title": "Open Source AI for GLAMs",
-    "section": "Thank You!",
-    "text": "Thank You!\nLet’s Connect\n\nFollow me on Hugging Face: huggingface.co/davanstrien\nsocials: https://linktr.ee/danielvanstrien"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#questions",
-    "href": "slides/open-source-ai-glams.html#questions",
-    "title": "Open Source AI for GLAMs",
-    "section": "Questions?",
-    "text": "Questions?"
+    "objectID": "pages/projects.html#tutorials",
+    "href": "pages/projects.html#tutorials",
+    "title": "Selected projects",
+    "section": "Tutorials",
+    "text": "Tutorials\n\nJupyter book showing how to build an ML powered book genre classifier\nA (brief) history of advertising in US Newspapers using computer vision\n(Under review) Computer Vision for the Humanities: An Introduction to Deep Learning for Image Classification, Programming Historian lessons\n(Under development) Intro to AI for GLAM, Carpentries Lesson"
   },
   {
     "objectID": "slides/open-source-ai-glams/index.html#what-is-open-source-ai",
@@ -1267,116 +1092,361 @@
     "text": "Questions?"
   },
   {
-    "objectID": "pages/projects.html",
-    "href": "pages/projects.html",
-    "title": "Selected projects",
+    "objectID": "slides/open-source-ai-glams.html#what-is-open-source-ai",
+    "href": "slides/open-source-ai-glams.html#what-is-open-source-ai",
+    "title": "Open Source AI for GLAMs",
+    "section": "What is Open Source AI?",
+    "text": "What is Open Source AI?\n\nAI systems where key components are publicly accessible\nA spectrum: from “open weights” to fully open training pipelines\nGrowing ecosystem of models, tools, and communities\n\n\n\nOpen source AI isn’t binary - there’s a spectrum of openness\nWe’ll explore what “open” means in practice"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#the-chat-interface",
+    "href": "slides/open-source-ai-glams.html#the-chat-interface",
+    "title": "Open Source AI for GLAMs",
+    "section": "The Chat Interface?",
+    "text": "The Chat Interface?\n\n\n\nAs I already mentioned in my intro, Generative AI has become the dominant way of thinking about AI\nIn particular, the “chat interface” i.e. chat GPT, claude etc, are the dominant way in which many people (consciously) interact with AI\nthis sometimes leads to the default answer to “what can we do with AI” to be “How can we create a chat interface for our collection?”"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#the-default-answer",
+    "href": "slides/open-source-ai-glams.html#the-default-answer",
+    "title": "Open Source AI for GLAMs",
+    "section": "The Default Answer",
+    "text": "The Default Answer\n“Let’s build a chatbot for our collections!”\n\nBut is this the best starting point?"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#ai-ferrari-vs-honda-civic",
+    "href": "slides/open-source-ai-glams.html#ai-ferrari-vs-honda-civic",
+    "title": "Open Source AI for GLAMs",
+    "section": "AI: Ferrari vs Honda Civic",
+    "text": "AI: Ferrari vs Honda Civic\n\n“A frontier model like GPT-4 is like a Ferrari. It’s an obvious triumph of engineering, designed to win races. But it takes a special pit crew just to change the tires.\n\n\nIn contrast, a smaller specialized model is like a Honda Civic. It’s engineered to be affordable, reliable, and extremely useful. And that’s why they’re absolutely everywhere.”\n\n\n— Adapted from “Finally, a Replacement for BERT” https://huggingface.co/blog/modernbert"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#what-is-an-ai-model",
+    "href": "slides/open-source-ai-glams.html#what-is-an-ai-model",
+    "title": "Open Source AI for GLAMs",
+    "section": "What is an AI Model?",
+    "text": "What is an AI Model?\n\n\n\n\n\nflowchart LR\n    W[Weights&lt;br/&gt;Learned numbers] --&gt; M((Model))\n    C[Code&lt;br/&gt;Instructions] --&gt; M\n    M --&gt; T[Does tasks]\n\n\n\n\n\n\nThe weights are the “brain” - patterns learned from training data"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#what-are-weights",
+    "href": "slides/open-source-ai-glams.html#what-are-weights",
+    "title": "Open Source AI for GLAMs",
+    "section": "What Are Weights?",
+    "text": "What Are Weights?\n\n\n\n\n\nflowchart TD\n    D[(Training Data&lt;br/&gt;Books, websites, images)] --&gt; L[Learning Process]\n    L --&gt; W[Weights File&lt;br/&gt;.safetensors]\n    W --&gt; E[\"Billions of numbers:&lt;br/&gt;[0.023, -0.891, 0.442, ...]\"]\n\n\n\n\n\n\nThese numbers encode everything the model “knows”"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#open-vs-closed-weights",
+    "href": "slides/open-source-ai-glams.html#open-vs-closed-weights",
+    "title": "Open Source AI for GLAMs",
+    "section": "Open vs Closed Weights",
+    "text": "Open vs Closed Weights\n\n\nOpen Weights\n\n\n\n\n\nflowchart TD\n    O[Download weights] --&gt; R[Run anywhere]\n    R --&gt; I[Inspect & modify]\n\n\n\n\n\n\n\nClosed Weights\n\n\n\n\n\nflowchart TD\n    A[API only] --&gt; B[Black box]\n    B --&gt; V[Vendor controlled]"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#open-source-beyond-weights",
+    "href": "slides/open-source-ai-glams.html#open-source-beyond-weights",
+    "title": "Open Source AI for GLAMs",
+    "section": "Open Source (Beyond Weights)",
+    "text": "Open Source (Beyond Weights)\n“fully” open source AI includes:\n\nTraining code: How the model was built\nTraining data: What the model learned from\nEvaluation details: How performance was measured\n\nExamples of “fully” open models:\n\nOLMo - Allen AI’s fully open LLM\nSmolLM - Hugging Face’s small, efficient models"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#why-open",
+    "href": "slides/open-source-ai-glams.html#why-open",
+    "title": "Open Source AI for GLAMs",
+    "section": "Why Open?",
+    "text": "Why Open?\n\n\n\nChoice\n1M+ models vs ~100 closed APIs\n\n\nControl\nRun where you want, pin versions\n\n\nFlexibility\nFine-tune for your domain\n\n\nCost\nOften cheaper at scale\n\n\nPrivacy\nData never leaves your infra\n\n\nTransparency\nInspect model & training data"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#choosing-a-model",
+    "href": "slides/open-source-ai-glams.html#choosing-a-model",
+    "title": "Open Source AI for GLAMs",
+    "section": "Choosing a Model",
+    "text": "Choosing a Model\nAI/ML is more than LLMs!\nMany tasks don’t need a large language model:\n\nClassification: Categorize documents, detect languages\nEmbeddings: Semantic search, similarity matching\nVision: OCR, image classification, object detection\nStructured extraction: Named entities, dates, metadata\n\nFinding models: Hugging Face Hub - 1M+ open models, filterable by task, language, size"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#running-the-model",
+    "href": "slides/open-source-ai-glams.html#running-the-model",
+    "title": "Open Source AI for GLAMs",
+    "section": "Running the model",
+    "text": "Running the model\nOpen models != local models\nA few genres of inference for open models:\n\nPay per token via a hosted endpoint “serverless”\nRun the model on your own hardware (laptop, desktop, server)\nRent the hardware to run the model and pay per hour"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#tradeoffs",
+    "href": "slides/open-source-ai-glams.html#tradeoffs",
+    "title": "Open Source AI for GLAMs",
+    "section": "Tradeoffs",
+    "text": "Tradeoffs\n\n\n\nApproach\nSetup\nBest For\n\n\n\n\nPay per token\nMinimal\nPrototyping, low volume\n\n\nLocal hardware\nMedium\nPrivacy, offline use\n\n\nRent hardware\nHigher\nProduction, scale"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#pay-per-token-serverless",
+    "href": "slides/open-source-ai-glams.html#pay-per-token-serverless",
+    "title": "Open Source AI for GLAMs",
+    "section": "Pay Per Token (Serverless)",
+    "text": "Pay Per Token (Serverless)\nSetup: Minimal - use via OpenAI-compatible client\n\n\nPros\n\nQuick to start\nNo hardware needed\nCompetitive pricing\nEasy model switching\n\n\nCons\n\nVendor dependency\nResults can vary across providers\nOngoing costs\nData leaves your infrastructure"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#local-hardware",
+    "href": "slides/open-source-ai-glams.html#local-hardware",
+    "title": "Open Source AI for GLAMs",
+    "section": "Local Hardware",
+    "text": "Local Hardware\nSetup: Medium - install runtime + download model\n\n\nPros\n\nFull control\nData stays local\nNo ongoing costs\nWorks offline\n\n\nCons\n\nHardware limitations\nModel size constraints\nSetup/maintenance\nUpdates are manual"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#rent-hardware-dedicated",
+    "href": "slides/open-source-ai-glams.html#rent-hardware-dedicated",
+    "title": "Open Source AI for GLAMs",
+    "section": "Rent Hardware (Dedicated)",
+    "text": "Rent Hardware (Dedicated)\nSetup: Higher - configure cloud instance\n\n\nPros\n\nScalable resources\nRun any model size\nDedicated capacity\nProduction-ready\n\n\nCons\n\nCosts scale with usage\nInfrastructure complexity\nRequires DevOps skills\nCold start times"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#local-hosting",
+    "href": "slides/open-source-ai-glams.html#local-hosting",
+    "title": "Open Source AI for GLAMs",
+    "section": "Local hosting",
+    "text": "Local hosting\n\n\n\n\n\nmindmap\n  root((Local model ecosystem))\n    Python Libraries\n      Pytorch / Tensorflow / JAX\n      Transformers\n      Diffusers\n      Sentence Transformers\n      ONNX Runtime\n      Optimum\n    JavaScript\n      Transformers.js\n    Inference Frameworks\n      GPU Poor focused\n        llama.cpp\n          LM Studio\n          Ollama\n        MLX Apple Silicon\n          mlx-lm\n          mlx-vlm\n        ExLlamaV2\n        Jan\n      Enterprise Focused\n        vLLM\n        SgLang\n        Triton Inference Server\n    Quantization Formats\n      GGUF\n      GPTQ\n      AWQ\n    UIs\n      Gradio\n      Open WebUI"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#contributing-datasets",
+    "href": "slides/open-source-ai-glams.html#contributing-datasets",
+    "title": "Open Source AI for GLAMs",
+    "section": "Contributing: Datasets",
+    "text": "Contributing: Datasets\nGLAMs hold unique assets for AI training:\n\nCurated collections: High-quality, well-documented data\nDomain expertise: Historical texts, scientific literature, archival materials\nLinguistic diversity: Multilingual and underrepresented language resources\nRich metadata: Structured information often missing from web scrapes"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#contributing-evaluations",
+    "href": "slides/open-source-ai-glams.html#contributing-evaluations",
+    "title": "Open Source AI for GLAMs",
+    "section": "Contributing: Evaluations",
+    "text": "Contributing: Evaluations\nMove beyond “vibe checks” with domain expertise:\n\nTask benchmarks: Cataloging, transcription, metadata extraction\nQuality assessment: Expert evaluation of model outputs\nEdge cases: Cultural heritage contexts models often get wrong\nBias detection: Identifying gaps in historical & cultural knowledge"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#contributing-models",
+    "href": "slides/open-source-ai-glams.html#contributing-models",
+    "title": "Open Source AI for GLAMs",
+    "section": "Contributing: Models",
+    "text": "Contributing: Models\nShare trained models back to the community:\n\nFine-tuned models: Adapt general models to your domain (historical texts, scientific literature)\nSpecialized task models: OCR for historical typefaces, metadata extraction, document classification\nEmbedding models: Better semantic search using domain-specific vocabularies"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#thank-you",
+    "href": "slides/open-source-ai-glams.html#thank-you",
+    "title": "Open Source AI for GLAMs",
+    "section": "Thank You!",
+    "text": "Thank You!\nLet’s Connect\n\nFollow me on Hugging Face: huggingface.co/davanstrien\nsocials: https://linktr.ee/danielvanstrien"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#questions",
+    "href": "slides/open-source-ai-glams.html#questions",
+    "title": "Open Source AI for GLAMs",
+    "section": "Questions?",
+    "text": "Questions?"
+  },
+  {
+    "objectID": "slides/iiif-illustration-detector/index.html#section",
+    "href": "slides/iiif-illustration-detector/index.html#section",
+    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
     "section": "",
-    "text": "This page collects selected projects that I have worked on."
+    "text": "Daniel van Strien — Machine Learning Librarian @ Hugging Face"
   },
   {
-    "objectID": "pages/projects.html#machine-learning-projects",
-    "href": "pages/projects.html#machine-learning-projects",
-    "title": "Selected projects",
-    "section": "Machine learning projects",
-    "text": "Machine learning projects\n\nflyswot: using computer vision to detect ‘fake flysheets’\nRelated Posts\nAn increasing challenge for libraries is managing the scale of digitised material resulting from digitisation projects and ‘born digital’ materials. This project aims to detect mislabelled digitised manuscript pages.\n\n\n\nA manuscript page with the correct label “fse.ivr”\n\n\nAs a result of the limitations of a previous system for hosting digitised manuscript images, many images have incorrect page metadata associated with the image. An image has been correctly labelled as an ‘end flysheet’ in the example above. This label is represented by the fse label, which is included in the filename for the image. However other types of manuscript pages also have this label incorrectly assigned, i.e. a ‘cover’ has fse in the filename. There is around a petabyte of images to review before ingesting a new library system. This project uses computer vision to support library staff in processing this collection. At the moment, this project does the following:\n\npulls in an updated dataset of training examples\ntrains a model on these images\nthe model architecture has multiple heads to allow the model to make both a ‘crude’ prediction for whether the image is incorrectly labelled and a ‘full’ prediction for the true label.\nonce a new version of the model has been trained, it is pushed to the 🤗 model hub.\nthe end-user uses the model through a command-line tool which is pointed at a directory of images to be checked.\n\nThe code for the command-line tool is available here: github.com/davanstrien/flyswot/\nSome of the tools used: fastai, DVC, Weights and Biases, 🤗 model hub, pytest, nox, poetry\n\n\nBook Genre Detection\n\nThis project created machine learning models which would predict whether a book was ‘fiction’ or ‘non- fiction’ based on the book title:\n\nThe project was developed to address a gap in metadata in a large scale digitised book collection.\nThe project used weak supervision to generate a more extensive training set beyond the initial human-generated annotations.\nCurrently, two models are publicly available, one via the 🤗 Model Hub and one via Zenodo.\nThe process of creating the models is documented in a Jupyter Book. This documentation aims to communicate the critical steps in the machine learning pipeline to aid other people in the sector develop similar models. https://huggingface.co/spaces https://huggingface.co/spaces/BritishLibraryLabs/British-Library-books-genre-classifier-v2\n\nSome of the tools used: fastai, transformers, blurr, Hugging face model hub, Jupyter Book, Snorkel, Gradio"
+    "objectID": "slides/iiif-illustration-detector/index.html#demo",
+    "href": "slides/iiif-illustration-detector/index.html#demo",
+    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
+    "section": "Demo",
+    "text": "Demo\nhuggingface.co/spaces/small-models-for-glam/iiif-illustration-detector"
   },
   {
-    "objectID": "pages/projects.html#datasets",
-    "href": "pages/projects.html#datasets",
-    "title": "Selected projects",
-    "section": "Datasets",
-    "text": "Datasets\n\nBritish Library books\n\nExtracted plain text and other metadata files from ALTO XML https://github.com/davanstrien/digitised-books-ocr-and-metadata\nAdded the dataset to the 🤗 datasets hub\n\n\n\nBritish Library Books Genre data\n\nCreated a datasets loading script and prepared a Dataset card for a dataset supporting book genre detection using machine learning: https://huggingface.co/datasets/blbooksgenre\n\n\n\nDatasets to support programming historian lessons\nI think having more realistic datasets is important for teaching machine learning effectively. As a result, I created two datasets for two under review Programming Historian lessons.\n\n19th Century United States Newspaper Advert images with ‘illustrated’ or ‘non illustrated’ labels\n19th Century United States Newspaper images predicted as Photographs with labels for “human”, “animal”, “human-structure” and “landscape”\n\n\n\nWorkshop datasets\n\nImages from Newspaper Navigator predicted as maps, with human corrected labels"
+    "objectID": "slides/iiif-illustration-detector/index.html#what-just-happened",
+    "href": "slides/iiif-illustration-detector/index.html#what-just-happened",
+    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
+    "section": "What just happened?",
+    "text": "What just happened?\n\n\n\nModel\nMobileNetV2 — 2.5MB, quantized ONNX\n\n\nRuns\nEntirely in your browser via transformers.js\n\n\nPrivacy\nNo data leaves your institution\n\n\nIIIF\nSupports Presentation API v2 AND v3\n\n\nOutput\nW3C Web Annotations — plugs into your existing infra\n\n\n\n\nYou just saw the model, the dataset, and the tool — all open, all on Hugging Face."
   },
   {
-    "objectID": "pages/projects.html#workshop-materials",
-    "href": "pages/projects.html#workshop-materials",
-    "title": "Selected projects",
-    "section": "Workshop materials",
-    "text": "Workshop materials\n\nComputer Vision for the Humanities workshop: This workshop aims to provide an introduction to computer vision aimed for humanities applications. In particular this workshop focuses on providing a high level overivew of machine learning based approaches to computer vision focusing on supervised learning. The workshop includes discussion on working with historical data. The materials are based on in progress Programming Historian lessons.\nWorking with maps at scale using Computer Vision and Jupyter notebooks\nIntroduction to Jupyter Notebooks: the weird and the wonderful\nImage Search: Materials for a workshop on image search with a focus on heritage data. The workshop is based on a blog post Image search with 🤗 datasets but goes into a little bit more detail."
+    "objectID": "slides/iiif-illustration-detector/index.html#how-this-got-made",
+    "href": "slides/iiif-illustration-detector/index.html#how-this-got-made",
+    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
+    "section": "How this got made",
+    "text": "How this got made\n\n2022: Hand-labeled 1,896 pages as “illustrated” or “not”\nData sat for 3 years\nOne evening in 2025:\n\nTrain MobileNetV2 on that data\nConvert to ONNX, quantize to 2.5MB\nBuild browser tool with transformers.js\n\n\n\n\nOne evening with modern tools turned 3-year-old data into a working browser tool."
   },
   {
-    "objectID": "pages/projects.html#tutorials",
-    "href": "pages/projects.html#tutorials",
-    "title": "Selected projects",
-    "section": "Tutorials",
-    "text": "Tutorials\n\nJupyter book showing how to build an ML powered book genre classifier\nA (brief) history of advertising in US Newspapers using computer vision\n(Under review) Computer Vision for the Humanities: An Introduction to Deep Learning for Image Classification, Programming Historian lessons\n(Under development) Intro to AI for GLAM, Carpentries Lesson"
+    "objectID": "slides/iiif-illustration-detector/index.html#training-models-is-getting-easier",
+    "href": "slides/iiif-illustration-detector/index.html#training-models-is-getting-easier",
+    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
+    "section": "Training models is getting easier",
+    "text": "Training models is getting easier\n\nFine-tuning a classifier: an afternoon, not a PhD\nExpanding training data with AI: $15, not $15,000\nThis illustration detector: one evening of work"
   },
   {
-    "objectID": "posts/2026/agent-sentiment/index.html",
-    "href": "posts/2026/agent-sentiment/index.html",
-    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
+    "objectID": "slides/iiif-illustration-detector/index.html#running-models-is-getting-easier",
+    "href": "slides/iiif-illustration-detector/index.html#running-models-is-getting-easier",
+    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
+    "section": "Running models is getting easier",
+    "text": "Running models is getting easier\n\n2.5MB — runs in any browser, no GPU needed\nNo server to maintain, no API keys, no cloud costs\nShip a model as a URL — nothing to install"
+  },
+  {
+    "objectID": "slides/iiif-illustration-detector/index.html#small-models-can-be-very-powerful",
+    "href": "slides/iiif-illustration-detector/index.html#small-models-can-be-very-powerful",
+    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
+    "section": "Small models can be very powerful",
+    "text": "Small models can be very powerful\n\nOne model finds illustrations across any IIIF collection\nImagine an ecosystem: illustration detection, handwriting recognition, layout analysis, map detection…\nEach model small, focused, composable\n\n\n\nAn ecosystem of task-specific models built by and for the cultural heritage community."
+  },
+  {
+    "objectID": "slides/iiif-illustration-detector/index.html#so-whats-the-bottleneck",
+    "href": "slides/iiif-illustration-detector/index.html#so-whats-the-bottleneck",
+    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
+    "section": "So what’s the bottleneck?",
+    "text": "So what’s the bottleneck?\n\nData.\n\nAI can help prepare training data (VLMs, zero-shot labeling)\nBut it still needs human domain expertise to validate and guide it\nCultural heritage professionals have that expertise"
+  },
+  {
+    "objectID": "slides/iiif-illustration-detector/index.html#data-as-infrastructure",
+    "href": "slides/iiif-illustration-detector/index.html#data-as-infrastructure",
+    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
+    "section": "Data as infrastructure",
+    "text": "Data as infrastructure\n\nUnion catalogs → MARC → IIIF → …?\nIIIF = the cultural heritage community saying “we build our own interop”\n\n\nShared datasets and small models are the next layer.\n\n\nThe GLAM sector can build AI infrastructure by building datasets for training and evaluation."
+  },
+  {
+    "objectID": "slides/iiif-illustration-detector/index.html#get-involved",
+    "href": "slides/iiif-illustration-detector/index.html#get-involved",
+    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
+    "section": "Get involved",
+    "text": "Get involved\n\nOrg: huggingface.co/small-models-for-glam — a shared home for task-specific cultural heritage models\n\nWhat would help:\n\nTraining data from your collections\nFeedback on edge cases and new collection types\nFeature requests\n\n\nThe model works well on Western European printed material — we need more diversity."
+  },
+  {
+    "objectID": "slides/iiif-illustration-detector/index.html#questions-discussion",
+    "href": "slides/iiif-illustration-detector/index.html#questions-discussion",
+    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
+    "section": "Questions & Discussion",
+    "text": "Questions & Discussion\n\nWhat types of illustrations does your collection have?\nWould you use this in a cataloguing workflow?\nWhat other “boring but useful” classification tasks would help your work?\nIs the annotation export format right for your infrastructure?"
+  },
+  {
+    "objectID": "slides/iiif-illustration-detector/index.html#thank-you",
+    "href": "slides/iiif-illustration-detector/index.html#thank-you",
+    "title": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model",
+    "section": "Thank You",
+    "text": "Thank You\nDaniel van Strien\n\nBluesky: @vanstriendaniel\nHugging Face: huggingface.co/davanstrien\n\nLinks:\n\nDemo: small-models-for-glam/iiif-illustration-detector\nModel: small-models-for-glam/historical-illustration-detector\nOrg: small-models-for-glam"
+  },
+  {
+    "objectID": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html",
+    "href": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html",
+    "title": "Train on Massive Datasets Without Downloading with Hugging Face Streaming and Unsloth",
     "section": "",
-    "text": "Every major AI coding-agent provider — Anthropic, OpenAI, Cursor, Windsurf, Cognition — is sitting on millions of private agent traces. How they train on that data, what they learn from it, what they ignore: all black box. The models reshaping how we write software are being shaped by data we can’t see.\nHugging Face recently shipped format:agent-traces — a standard way to share agent session logs publicly. The corpus as of April 2026: forty-five datasets, 33 unique collections, 1,589 sessions, roughly 194,000 total events — of which ~166,000 are autonomous tool calls and just 8,949 are developer prompts. It’s small, concentrated in a handful of early adopters, and it’s the only thing we’ve got.\nThis is a first pass at what that data tells us, starting with the easiest lens — sentiment labels on the developer messages — and ending with why the richer signal is in everything else."
+    "text": "Unsloth has massively lowered the barriers to training and fine-tuning models by reducing the GPU resources required.\nHowever, many AI datasets are very large — often multiple TBs. What if you want to train on a dataset larger than your disk?\nUsing 🤗 datasets + streaming means you can train directly from a Hugging Face hosted dataset without needing to download and store the whole dataset locally. This means even GPU and disk poor people can do things like continued pretraining!\n\n\nFineWeb-2 has 1.47 million Latin texts (~1.7GB). Let’s use them to try to teach a small LLM some Latin - no disk space required.\nThis is perfect for “GPU poor AND disk poor” setups - Colab, Kaggle, or any constrained environment.\n\n%%capture\n!pip install unsloth\n\n\nfrom unsloth import FastLanguageModel\nimport torch\n\nmodel, tokenizer = FastLanguageModel.from_pretrained(\n    \"unsloth/Qwen3-0.6B-Base-unsloth-bnb-4bit\",\n    max_seq_length=2048,\n    load_in_4bit=True,\n)\n\nmodel = FastLanguageModel.get_peft_model(\n    model,\n    r=16,\n    lora_alpha=16,\n    lora_dropout=0,\n    target_modules=[\"q_proj\", \"k_proj\", \"v_proj\", \"o_proj\",\n                    \"gate_proj\", \"up_proj\", \"down_proj\"],\n    bias=\"none\",\n    use_gradient_checkpointing=\"unsloth\",\n    random_state=3407,\n)\n\n==((====))==  Unsloth 2026.1.2: Fast Qwen3 patching. Transformers: 4.57.3.\n   \\\\   /|    NVIDIA A100-SXM4-80GB. Num GPUs = 1. Max memory: 79.318 GB. Platform: Linux.\nO^O/ \\_/ \\    Torch: 2.9.1+cu128. CUDA: 8.0. CUDA Toolkit: 12.8. Triton: 3.5.1\n\\        /    Bfloat16 = TRUE. FA [Xformers = 0.0.33.post2. FA2 = False]\n \"-____-\"     Free license: http://github.com/unslothai/unsloth\nUnsloth: Fast downloading is enabled - ignore downloading bars which are red colored!"
   },
   {
-    "objectID": "posts/2026/agent-sentiment/index.html#the-silent-majority",
-    "href": "posts/2026/agent-sentiment/index.html#the-silent-majority",
-    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
-    "section": "The silent majority",
-    "text": "The silent majority\nIf you expected 8,949 messages from developers to read like running commentary — debates, delight, frustration — you’d be wrong. 77% of messages are neutral. 61% of sessions contain zero emotional signal of any kind.\n\n\n\n\n\n\nDistribution of sentiment labels across all 8,949 messages. Grey is the noise; the sliver is the signal.\n\n\nLook at what happens when you strip the noise out. There’s nothing close to a 50/50 split between POSITIVE and NEGATIVE — or even a coherent emotional distribution. There’s a massive neutral block, a thin red sliver, and an even thinner green one. In session-level aggregates, 965 out of 1,589 sessions are pure neutral from end to end.\nHere’s why, concretely: nearly one in five messages is ≤ 20 characters. The top exact-duplicate messages across the corpus are:\n\n\n\n\n\n\ncontinue (133×)  ·  hi (101×)  ·  great please do (45×)  ·  do it (36×)  ·  commit and push (35×)  ·  hey (31×)  ·  yes (29×)  ·  implement (22×)\n\n\n\nThese are legitimate turns. But the pattern isn’t conversation — it’s direction. Most of what gets typed is approval, continuation, or a short imperative."
+    "objectID": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#gpu-poor-and-disk-poor",
+    "href": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#gpu-poor-and-disk-poor",
+    "title": "Train on Massive Datasets Without Downloading with Hugging Face Streaming and Unsloth",
+    "section": "",
+    "text": "Unsloth has massively lowered the barriers to training and fine-tuning models by reducing the GPU resources required.\nHowever, many AI datasets are very large — often multiple TBs. What if you want to train on a dataset larger than your disk?\nUsing 🤗 datasets + streaming means you can train directly from a Hugging Face hosted dataset without needing to download and store the whole dataset locally. This means even GPU and disk poor people can do things like continued pretraining!\n\n\nFineWeb-2 has 1.47 million Latin texts (~1.7GB). Let’s use them to try to teach a small LLM some Latin - no disk space required.\nThis is perfect for “GPU poor AND disk poor” setups - Colab, Kaggle, or any constrained environment.\n\n%%capture\n!pip install unsloth\n\n\nfrom unsloth import FastLanguageModel\nimport torch\n\nmodel, tokenizer = FastLanguageModel.from_pretrained(\n    \"unsloth/Qwen3-0.6B-Base-unsloth-bnb-4bit\",\n    max_seq_length=2048,\n    load_in_4bit=True,\n)\n\nmodel = FastLanguageModel.get_peft_model(\n    model,\n    r=16,\n    lora_alpha=16,\n    lora_dropout=0,\n    target_modules=[\"q_proj\", \"k_proj\", \"v_proj\", \"o_proj\",\n                    \"gate_proj\", \"up_proj\", \"down_proj\"],\n    bias=\"none\",\n    use_gradient_checkpointing=\"unsloth\",\n    random_state=3407,\n)\n\n==((====))==  Unsloth 2026.1.2: Fast Qwen3 patching. Transformers: 4.57.3.\n   \\\\   /|    NVIDIA A100-SXM4-80GB. Num GPUs = 1. Max memory: 79.318 GB. Platform: Linux.\nO^O/ \\_/ \\    Torch: 2.9.1+cu128. CUDA: 8.0. CUDA Toolkit: 12.8. Triton: 3.5.1\n\\        /    Bfloat16 = TRUE. FA [Xformers = 0.0.33.post2. FA2 = False]\n \"-____-\"     Free license: http://github.com/unslothai/unsloth\nUnsloth: Fast downloading is enabled - ignore downloading bars which are red colored!"
   },
   {
-    "objectID": "posts/2026/agent-sentiment/index.html#when-feeling-does-surface-frustration-rises-with-turn-count",
-    "href": "posts/2026/agent-sentiment/index.html#when-feeling-does-surface-frustration-rises-with-turn-count",
-    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
-    "section": "When feeling does surface, frustration rises with turn count",
-    "text": "When feeling does surface, frustration rises with turn count\nThe emotional signal that does exist is rarer for negative than positive: 1,254 negative messages against 782 positive across the corpus. And the rate of negative messages climbs with turn count.\n\n\n\n\n\n\nShare of negative messages by turn number. Turn 1 is the calm. Later turns aren’t.\n\n\nOver the first five turns, the share of messages labelled NEGATIVE more than doubles, from 8.2% to 17.8%. After that it plateaus around 15–18%. Part is a real patience cliff — turn-1 optimism giving way by turn 5 — but part is composition: short successful sessions end early, leaving later turns drawn from harder cases. The plateau rate is the more honest headline."
+    "objectID": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#vibe-check-before-training",
+    "href": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#vibe-check-before-training",
+    "title": "Train on Massive Datasets Without Downloading with Hugging Face Streaming and Unsloth",
+    "section": "Vibe Check: Before Training",
+    "text": "Vibe Check: Before Training\nLet’s see what this base model generates from a Latin prompt before any Latin training.\n\n# Before any Latin training - what does the base model produce?\nFastLanguageModel.for_inference(model)\n\ninputs = tokenizer(\"Lingua Latina est\", return_tensors=\"pt\").to(\"cuda\")\noutputs = model.generate(\n    **inputs,\n    max_new_tokens=64,\n    temperature=0.7,\n    do_sample=True,\n)\nprint(\"BEFORE:\", tokenizer.decode(outputs[0], skip_special_tokens=True))\n\nBEFORE: Lingua Latina estémao\n\n# 04555 - Pórticos, conyugues y mujeres\n\nHasta ahora, el libro de esta edición ha tratado de la historia del púrpico en todo el mundo, pero sobre la mujer. No se trata, por lo tanto, de un"
   },
   {
-    "objectID": "posts/2026/agent-sentiment/index.html#negative-openings-predict-engagement-not-doom",
-    "href": "posts/2026/agent-sentiment/index.html#negative-openings-predict-engagement-not-doom",
-    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
-    "section": "Negative openings predict engagement, not doom",
-    "text": "Negative openings predict engagement, not doom\nThe common-sense reading is that sessions that open with frustration stay frustrated. The data says the opposite. Of sessions whose first message is labelled NEGATIVE, 39% contain a positive message later — a higher recovery rate than the 23% for sessions that open NEUTRAL.\nThis inverts because first-message-NEGATIVE sessions are almost never “angry at the agent” openings. They’re bug reports and problem-framing opens:\n\n\n\n\n\n\n\n“running npm run dev, getting [error]. please fix”\n“the latest pi release, self-contained bun executable is broken. download from gh, test on macos and linux”\n“our readme for this isn’t accurate and is also extremely stale. please can we review the rest of the repo and write a readme from scratch?”\n\n\n\n\nSessions that open with a reported problem are sessions where the user is engaged enough to voice the problem — and when the agent resolves it, they’re often engaged enough to say so. NEUTRAL-start sessions are more often pure task-dispatch (“refactor X”, “commit and push”) where the user rarely gives explicit praise regardless of outcome. The first sentiment label in a session is a proxy for task type, not mood: bug-fix sessions have louder emotional arcs than routine-work sessions.\nWhen negativity does appear mid-session, the rest of the session gets more emotionally charged in both directions — NEG rises from a 14.0% baseline to 18.6%, and POS rises from 8.7% to 10.5%. The session doesn’t just get darker. It gets louder."
+    "objectID": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#the-key-streaming-dataset",
+    "href": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#the-key-streaming-dataset",
+    "title": "Train on Massive Datasets Without Downloading with Hugging Face Streaming and Unsloth",
+    "section": "The Key: Streaming Dataset",
+    "text": "The Key: Streaming Dataset\nThe magic is streaming=True - data flows directly from the Hugging Face Hub without you first needing to download data locally.\n\nfrom datasets import load_dataset\n\ndataset = load_dataset(\n    \"HuggingFaceFW/fineweb-2\",\n    name=\"lat_Latn\",\n    split=\"train\",\n    streaming=True\n)\n\n# Peek at the data\nnext(iter(dataset))\n\n{'text': 'Ita est in oratione senex mente confusus, eo quod illam imaginem Deitatis, quam proponere sibi in oratione consueverat, aboleri de suo corde sentiret, ut in amarissimos fletus, crebrosque singultus repente prorumpens, in terram prostratus, cum ejulatu validissimo proclamaret; \"Heu me miserum! tulerunt a me Deum meum, et quem nunc teneam non habeo, vel quem adorem, aut interpallam am nescio.\" Cassian, Collat. x. 2.',\n 'id': '&lt;urn:uuid:318d65fb-88ea-43cd-8687-8a8d802317a5&gt;',\n 'dump': 'CC-MAIN-2013-20',\n 'url': 'http://www.ourcivilisation.com/smartboard/shop/gibbone/rome/volume2/nt470/013.htm',\n 'date': '2013-05-18T13:41:33Z',\n 'file_path': 's3://commoncrawl/crawl-data/CC-MAIN-2013-20/segments/1368696382398/warc/CC-MAIN-20130516092622-00034-ip-10-60-113-184.ec2.internal.warc.gz',\n 'language': 'lat',\n 'language_score': 0.9927687644958496,\n 'language_script': 'Latn',\n 'minhash_cluster_size': 10,\n 'top_langs': '{}'}\n\n\n\ndef format_text(example):\n    return {\"text\": example[\"text\"] + tokenizer.eos_token}\n\nformatted_dataset = dataset.map(format_text)\n\n\nexample = dataset.map(format_text)\nexample\n\nIterableDataset({\n    features: Unknown,\n    num_shards: 1\n})\n\n\n\nnext(iter(example))['text']\n\n'Ita est in oratione senex mente confusus, eo quod illam imaginem Deitatis, quam proponere sibi in oratione consueverat, aboleri de suo corde sentiret, ut in amarissimos fletus, crebrosque singultus repente prorumpens, in terram prostratus, cum ejulatu validissimo proclamaret; \"Heu me miserum! tulerunt a me Deum meum, et quem nunc teneam non habeo, vel quem adorem, aut interpallam am nescio.\" Cassian, Collat. x. 2.&lt;|endoftext|&gt;'"
   },
   {
-    "objectID": "posts/2026/agent-sentiment/index.html#model-choice-matters-on-the-margin",
-    "href": "posts/2026/agent-sentiment/index.html#model-choice-matters-on-the-margin",
-    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
-    "section": "Model choice matters — on the margin",
-    "text": "Model choice matters — on the margin\nIf you believe the model-upgrade press releases, each new frontier release is a step change. The data is more sober.\n\n\n\n\n\n\nNegative share per model, among models with ≥100 labelled messages. Dot size = sample size. The band is narrow.\n\n\nThe models in significant use sit in a narrow band — roughly 11% to 18% negative, with GPT-5.3 Codex at the low end (11.5%, n = 2,026), Claude Opus 4-6 next (14.2%, n = 1,228), and Claude Opus 4-5 at 17.0% (n = 1,543). The much-publicised Opus 4-5 → 4-6 jump is incremental: 17% to 14% negative, positive edging from 9% to 11%.\nThe one real outlier is zai-org/GLM-5.1 at 27.6% negative (n = 221) — worth flagging, but that signal is almost certainly a selection artefact. The narrow, self-selected contributor set means any model used primarily by one frustrated uploader will look frustrated in aggregate.\n\n\nSample sizes, selection bias, and why you should not quote any of these numbers as a model leaderboard\n\nThese per-model figures are drawn from whichever sessions got uploaded publicly. That is not a random sample — not of developers, not of tasks, not of models. anthropic.claude-opus-4-6-v1 shows a dazzling 4.7% negative rate, but n=86 and it’s drawn from traces uploaded by essentially one contributor working in one domain. Kimi-K2.5 at 10.8% is similarly thin (n=74).\nTreat anything with n &lt; 100 as directional, anything with n &lt; 500 as suggestive, and remember the whole corpus is dominated by two uploaders. The broader point — models differ meaningfully on frustration — survives this caveat. Specific rankings will shift as more datasets land on the Hub."
+    "objectID": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#training",
+    "href": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#training",
+    "title": "Train on Massive Datasets Without Downloading with Hugging Face Streaming and Unsloth",
+    "section": "Training",
+    "text": "Training\nFor streaming datasets, use max_steps instead of epochs.\n\nfrom trl import SFTTrainer, SFTConfig\n\ntrainer = SFTTrainer(\n    model=model,\n    tokenizer=tokenizer,\n    train_dataset=formatted_dataset,\n    args=SFTConfig(\n        per_device_train_batch_size=2,\n        gradient_accumulation_steps=4,\n        warmup_steps=5,\n        max_steps=100,  # Use max_steps, not epochs!\n        learning_rate=2e-4,\n        logging_steps=10,\n        optim=\"adamw_8bit\",\n        weight_decay=0.01,\n        lr_scheduler_type=\"linear\",\n        seed=3407,\n        output_dir=\"outputs\",\n        report_to=\"none\",\n        dataset_text_field=\"text\",\n        max_seq_length=2048,\n        packing=False,\n    ),\n)\n\ntrainer.train()\n\nThe model is already on multiple devices. Skipping the move to device specified in `args`.\n==((====))==  Unsloth - 2x faster free finetuning | Num GPUs used = 1\n   \\\\   /|    Num examples = 800 | Num Epochs = 9,223,372,036,854,775,807 | Total steps = 100\nO^O/ \\_/ \\    Batch size per device = 2 | Gradient accumulation steps = 4\n\\        /    Data Parallel GPUs = 1 | Total batch size (2 x 4 x 1) = 8\n \"-____-\"     Trainable parameters = 10,092,544 of 606,142,464 (1.67% trained)\n\n\nUnsloth: Will smartly offload gradients to save VRAM!\n\n\n\n      \n      \n      [100/100 02:51, Epoch 1/9223372036854775807]\n    \n    \n\n\n\nStep\nTraining Loss\n\n\n\n\n10\n3.229800\n\n\n20\n3.384800\n\n\n30\n3.717900\n\n\n40\n3.657300\n\n\n50\n3.491100\n\n\n60\n3.537200\n\n\n70\n3.623300\n\n\n80\n3.539600\n\n\n90\n3.585700\n\n\n100\n3.716300\n\n\n\n\n\n\nTrainOutput(global_step=100, training_loss=3.5483124160766604, metrics={'train_runtime': 185.9221, 'train_samples_per_second': 4.303, 'train_steps_per_second': 0.538, 'total_flos': 2425465405440000.0, 'train_loss': 3.5483124160766604, 'epoch': 1.0})"
   },
   {
-    "objectID": "posts/2026/agent-sentiment/index.html#how-we-labelled-the-messages",
-    "href": "posts/2026/agent-sentiment/index.html#how-we-labelled-the-messages",
-    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
-    "section": "How we labelled the messages",
-    "text": "How we labelled the messages\nSentiment labels are model outputs, not ground truth, so the how matters. Each of the 8,949 user messages was classified by Qwen3-30B-A3B-Instruct-2507 — a 30B-total / 3B-active MoE — via vLLM with enforced structured output. Every response is a JSON object {label, reason} matching a schema. Zero parse errors across 8,949 calls. The whole run took ~5 minutes on a single H200.\nThe domain-aware system prompt is the interesting part:\nClassify user messages from coding-agent sessions (developer talking to AI\ncoding assistant).\n\nReturn JSON with two fields:\n- \"label\": one of \"POSITIVE\", \"NEUTRAL\", or \"NEGATIVE\"\n- \"reason\": one sentence explaining why\n\nDomain rules:\n- Dev profanity is casual (\"kill that shit\" = \"remove code\") = NEUTRAL\n- Short commands (\"do it\", \"commit and push\") are approvals = NEUTRAL\n- Status reports (\"ci failed\") = NEUTRAL\n- Frustration with agent output quality = NEGATIVE\n- Satisfaction, excitement about progress = POSITIVE\nThree representative classifications, with the model’s own sentiment_reason:\n\n\n\n\n\n\n\n\nMessage (truncated)\nLabel\nModel’s reason\n\n\n\n\n“merge the pr to main via gh cli on origin, pull from origin, fix that shit up, add the changelog entry”\nNEUTRAL\nCasual language with commands — an instruction, not frustration.\n\n\n“why would you use web search, i just gave you an example trace. compare that to our impl.”\nNEGATIVE\nUser expresses frustration with agent’s approach.\n\n\n“Great. PLease can you review and advise of any areas that are over/under-engineered in this refactor?”\nPOSITIVE\nSatisfaction with progress, engaged collaboration.\n\n\n\nThe full reason column is in the published dataset — useful for auditing any classification you don’t trust.\n\nDoes domain-aware actually matter? We checked.\nFor comparison, we ran the same 8,949 messages through cardiffnlp/twitter-roberta-base-sentiment-latest — a widely-used off-the-shelf three-class sentiment classifier. It took ~2 minutes on an M-series Mac with MPS.\n\n\n\n\n\n\nAgreement and disagreement between the domain-aware Qwen3 labels and an off-the-shelf RoBERTa sentiment classifier on the same 8,949 messages. 78% agreement; the 22% disagreement concentrates in four predictable failure modes for the generic model.\n\n\nRaw agreement is 78.4% — but on a 3-class problem where NEUTRAL is 77% of the data, chance agreement is already ~62%, so Cohen’s κ is only 0.43 (conventionally interpreted as “moderate”). The generic model agrees on the easy cases; the 21.6% where they disagree is neither random nor small, and it concentrates in four predictable patterns:\n\n361 messages (4%) — RoBERTa flagged NEGATIVE, Qwen called NEUTRAL. Dev profanity and technical complaints about files or systems. “delete your fucking gpt-5.4 branch” is instruction, not anger.\n615 messages (7%) — RoBERTa flagged POSITIVE, Qwen called NEUTRAL. Polite wrapping on routine commands (“please do X”, “could you refactor”) reads as enthusiasm to a generic classifier.\n563 messages (6%) — RoBERTa called NEUTRAL, Qwen flagged NEGATIVE. Real frustration without obvious anger words. “why would you use web search, i just gave you an example trace” is annoyed but euphemistic.\n359 messages (4%) — RoBERTa called NEUTRAL, Qwen flagged POSITIVE. Understated affirmations: “great, let’s call it X”, “ok that works”.\n\nA generic sentiment classifier directionally agrees, but it’s systematically miscalibrated on the three types of text that most characterise developer-agent interaction — profanity-laced instructions, polite commands, and understated praise. The 78% agreement on the easy cases doesn’t save you on the 22% where domain context is load-bearing. For anyone else doing this kind of analysis on agent-trace data: off-the-shelf sentiment isn’t good enough, but a small open MoE with fifty lines of domain prompt gets you most of the way there."
+    "objectID": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#vibe-check-after-training",
+    "href": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#vibe-check-after-training",
+    "title": "Train on Massive Datasets Without Downloading with Hugging Face Streaming and Unsloth",
+    "section": "Vibe Check: After Training",
+    "text": "Vibe Check: After Training\nSame prompt, same settings - let’s see if 100 steps of Latin made a difference (probably not…)\n\n# After Latin training - same prompt, same settings\nFastLanguageModel.for_inference(model)\n\ninputs = tokenizer(\"Lingua Latina est\", return_tensors=\"pt\").to(\"cuda\")\noutputs = model.generate(\n    **inputs,\n    max_new_tokens=64,\n    temperature=0.7,\n    do_sample=True,\n)\nprint(\"AFTER:\", tokenizer.decode(outputs[0], skip_special_tokens=True))\n\nAFTER: Lingua Latina est invenire, ut invenire est. Ego, invenire, invenire, ut, ut, ut, ut, ut, ut, ut ut, ut, ut, ut, ut. Invenire, invenire, invenire, ut, ut, ut, ut,"
   },
   {
-    "objectID": "posts/2026/agent-sentiment/index.html#why-sentiment-is-probably-the-wrong-lens",
-    "href": "posts/2026/agent-sentiment/index.html#why-sentiment-is-probably-the-wrong-lens",
-    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
-    "section": "Why sentiment is probably the wrong lens",
-    "text": "Why sentiment is probably the wrong lens\nIs sentiment a useful way to understand open agent traces? Partly. It surfaces one real finding (negativity compounds, positivity doesn’t) and confirms an intuition made quantitative (developers issue short directives far more often than they converse). But look at the corpus again with the right denominator.\nThe median session contains ~16 tool calls for every developer prompt. Across the whole corpus, that ratio is roughly 18 autonomous agent actions per user message — 166,244 tool calls against 9,341 declared user turns. The human text is a minority of what’s happening in an agent session. (Caveat: different agents log “tool calls” differently — Claude Code’s hook invocations, Codex and Pi’s own telemetry conventions — so some of that variance is protocol, not behaviour. Worth auditing before quoting the exact 18× number.)\nSentiment asks: what does the human feel? The richer question is: what does the agent actually do? Does it Read a file before Editing it? Does it reach for Bash when an MCP server would be more structured? Does its tool-call mix cluster differently for Claude Code vs Codex vs Pi? Across these 33 collections, preliminary behavioural analysis suggests:\n\nAutonomy ratios vary 11:1 to 40:1 (tool calls per user message) — the same model, used very differently depending on who’s driving.\nTool-mix profiles group agents by working style: some are Read-heavy, some are Bash-heavy, some Edit-first.\nError recovery patterns tell you how a model handles failure more informatively than the 8.7% positive message rate ever could.\n\nThat’s the next post. This one tested whether the easiest analysis — throw sentiment at the user messages — is worth the inference compute. Honest answer: a little, but less than you’d hope — sentiment-bearing text is a minority of what agents and developers actually do."
+    "objectID": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#scaling-up-with-hf-jobs",
+    "href": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#scaling-up-with-hf-jobs",
+    "title": "Train on Massive Datasets Without Downloading with Hugging Face Streaming and Unsloth",
+    "section": "Scaling Up with HF Jobs",
+    "text": "Scaling Up with HF Jobs\nThe notebook above works great for quick experiments. But streaming in Colab isn’t as fast as it could be since the network speed in Colab can be quite slow.\nWhat if we ran training directly on Hugging Face?\nWith HF Jobs, compute is co-located with the data and Jobs have very fast connection so it can be much faster!\n\n\n\nEnvironment\nSpeed\nBottleneck\n\n\n\n\nColab A100\n0.36 it/s\nNetwork latency\n\n\nHF Jobs A100\n0.74 it/s\nGPU\n\n\n\nThis streaming approach was fairly naive so there are likely some extra tweaks to make it even faster!\nI trained a larger model (Qwen3 4B) for 1000 steps using a UV script on HF Jobs. The result: davanstrien/qwen3-4b-latin\n\nTry the Trained Model\n\n# Load the Latin-trained 4B model\nfrom unsloth import FastLanguageModel\n\nmodel, tokenizer = FastLanguageModel.from_pretrained(\n    \"davanstrien/qwen3-4b-latin\",\n    max_seq_length=2048,\n    load_in_4bit=True,\n)\nFastLanguageModel.for_inference(model)\n\n# Generate some Latin\ninputs = tokenizer(\"Lingua Latina est\", return_tensors=\"pt\").to(\"cuda\")\noutputs = model.generate(\n    **inputs,\n    max_new_tokens=64,\n    temperature=0.7,\n    do_sample=True,\n)\nprint(tokenizer.decode(outputs[0], skip_special_tokens=True))\n\n==((====))==  Unsloth 2026.1.2: Fast Qwen3 patching. Transformers: 4.57.3.\n   \\\\   /|    NVIDIA A100-SXM4-80GB. Num GPUs = 1. Max memory: 79.318 GB. Platform: Linux.\nO^O/ \\_/ \\    Torch: 2.9.1+cu128. CUDA: 8.0. CUDA Toolkit: 12.8. Triton: 3.5.1\n\\        /    Bfloat16 = TRUE. FA [Xformers = 0.0.33.post2. FA2 = False]\n \"-____-\"     Free license: http://github.com/unslothai/unsloth\nUnsloth: Fast downloading is enabled - ignore downloading bars which are red colored!\nLingua Latina est etum, nec.,usis. atit, et.,.. n.um sedam,em ei.,,que\n,.am a. quisus et.,,, et a inus in e. aliqu.is,,....\n,.,at ipsum\n\n\nStill bad, but more Latin for sure!\nThe goal in this post wasn’t really to show how to continued fine tuning effectively, but to show how you can avoid needing huge amounts of disk space to train models effectively."
   },
   {
-    "objectID": "posts/2026/agent-sentiment/index.html#point-your-agent-at-the-data",
-    "href": "posts/2026/agent-sentiment/index.html#point-your-agent-at-the-data",
-    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
-    "section": "Point your agent at the data",
-    "text": "Point your agent at the data\nThe best thing about this data being on the Hub isn’t that we analysed it — it’s that your agent can, with the labelled dataset, session metadata, and full tool-call stream one snapshot_download away. As mentioned up top, that’s exactly the workflow that produced this post — the same invitation, the same dataset, the same kind of prompts.\nTry these. They work in Claude Code, Codex, Pi, or any agent-capable harness.\n\n\n\n\n\n\nTipPrompt 1 — Compare your own sessions to the corpus\n\n\n\n\nParse my Claude Code sessions in ~/.claude/projects using the agent-traces library (pip install git+https://github.com/davanstrien/agent-traces). Label each user message with sentiment using the same prompt we used in the blog post (dev profanity = NEUTRAL, short commands = NEUTRAL, etc.) via a local model or a cheap API. Compute NEG% by turn number. Overlay my curve against the public-corpus baseline (davanstrien/agent-trace-sentiment, NEG% by turn). Save the chart. Tell me: am I more frustrated than average, less, or the same — and at which turn number the gap is biggest?\n\n\n\n\n\n\n\n\n\nTipPrompt 2 — Pick a session apart\n\n\n\n\nLoad davanstrien/agent-trace-user-messages (use snapshot_download + polars.read_parquet; load_dataset will fail on stale README YAML). Find the session_id with the highest n_tool_calls. Then re-parse that session from its source dataset with agent-traces to get every tool call and agent event in order. Summarise in 5 bullets what the agent actually did — tool mix, error rate, what pattern of behaviour it exhibited, whether this looked like productive work or a debugging spiral. Include the session_id and source dataset so I can look it up.\n\n\n\n\n\n\n\n\n\nTipPrompt 3 — Hunt for the finding we missed\n\n\n\n\nIterate every public format:agent-traces dataset via TraceDataset.from_hub_search(). For each, compute ten behavioural metrics: autonomy ratio (tool calls per user message), error rate, tool-mix entropy, median session length in events, read-before-edit rate, cost per session, NEG% at turn 5, most common first-message pattern, output/input token ratio, and share of messages under 20 characters. Find the metric with the largest cross-dataset variance. Write it up as three bullet points suitable for a tweet thread. Include the code so someone else can verify.\n\n\n\nIf you run any of these and find something interesting, tag me — I’ll add the best finds to a community roundup. If you want to verify the numbers I’ve quoted in this post before running your own analysis, there’s a short replication prompt in Appendix A that takes one paste into any agent."
+    "objectID": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#why-this-matters",
+    "href": "posts/2026/hf-streaming-unsloth/train-massive-datasets-without-downloading.html#why-this-matters",
+    "title": "Train on Massive Datasets Without Downloading with Hugging Face Streaming and Unsloth",
+    "section": "Why This Matters",
+    "text": "Why This Matters\n\nNo disk space needed - train on massive datasets without downloading\nWorks everywhere - Colab, Kaggle, HF Jobs, any constrained environment\nAny language - FineWeb-2 has 90+ languages available\nScales up - combine with HF Jobs for 2x faster streaming\n\nThe full UV script is available here if you want to train your own.\n\nPerformance Tips\nIf streaming feels slow, you can tune PyArrow’s prefetching when loading the dataset:\nimport pyarrow\nimport pyarrow.dataset\n\nfragment_scan_options = pyarrow.dataset.ParquetFragmentScanOptions(\n    cache_options=pyarrow.CacheOptions(\n        prefetch_limit=1,  # prefetch chunks in background\n        range_size_limit=128 &lt;&lt; 20  # 128 MiB minimum request size (default 32 MiB)\n    ),\n)\n\ndataset = load_dataset(..., streaming=True, fragment_scan_options=fragment_scan_options)\n\n\nLearn More\n\nStreaming Datasets for ML Training - HF blog with more performance tuning tips\nDatasets Streaming Documentation - full docs"
   },
   {
-    "objectID": "posts/2026/agent-sentiment/index.html#share-your-own-traces",
-    "href": "posts/2026/agent-sentiment/index.html#share-your-own-traces",
-    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
-    "section": "Share your own traces",
-    "text": "Share your own traces\nThe corpus is tiny today because very few developers have shared their sessions publicly. If you use a coding agent, your sessions are already on disk somewhere:\n\n\n\nAgent\nSessions live in\n\n\n\n\nClaude Code\n~/.claude/projects\n\n\nCodex\n~/.codex/sessions\n\n\nPi\n~/.pi/agent/sessions\n\n\n\nUpload them as a dataset and the Hub auto-detects the format and tags them format:agent-traces. The trace viewer renders sessions, turns, and tool calls out of the box. For Pi, pi-share-hf handles secret redaction and upload in a single pipeline. For Claude Code and Codex, the equivalent redaction tooling doesn’t yet exist — if you build one, I’ll link it here.\nThe asymmetry between closed and open agent-trace corpora will widen, then narrow, then widen again. The 45 datasets that exist today will look quaint in six months. But only if more developers upload. The stuff that’s interesting to measure about these tools — tool mixes, autonomy patterns, task-type distributions, failure modes — only gets measurable at scale."
+    "objectID": "posts/2026/agent-race/index.html",
+    "href": "posts/2026/agent-race/index.html",
+    "title": "Two agents, one prompt",
+    "section": "",
+    "text": "Agents are getting more and more capable of training models. This means domain experts can have agents fine tune models for them without needing to write code themselves. But how do different agents approach the same task? Do they make the same choices? How good are the models they produce?\nI gave two coding agents the same one-line task and watched what each one decided to do.\nThe task: fine-tune a model on biglam/on_the_books — UNC Chapel Hill Libraries’ labelled training set from On the Books: Jim Crow and Algorithms of Resistance — and push the trained classifier to the Hub. Train via hf jobs.\nOne agent was Pi running on Kimi K2.6 (open weights, via API). The other was Claude Code on Opus 4.7. Same prompt, parallel runs, ~13 minutes each."
   },
   {
-    "objectID": "posts/2026/agent-sentiment/index.html#replication",
-    "href": "posts/2026/agent-sentiment/index.html#replication",
-    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
-    "section": "Appendix A — Replicate every number in this post",
-    "text": "Appendix A — Replicate every number in this post\nEvery figure quoted in the body is computable from the labelled Hub dataset in a few lines of code. Paste the prompt below into any AI coding agent and it will download the data, run the checks, and tell you pass/fail.\n\n\nLoad davanstrien/agent-trace-sentiment from the Hugging Face Hub using huggingface_hub.snapshot_download + polars.read_parquet on the files under data/ — note datasets.load_dataset currently fails on this repo due to stale README YAML, so use the direct-parquet path.\nThen verify these six claims from the blog post, within ±1.5 percentage points:\n\n77% of messages are NEUTRAL, 14% NEGATIVE, 9% POSITIVE.\n61% of sessions are “pure neutral” — contain no POSITIVE and no NEGATIVE message at all.\nNearly 20% of messages are ≤ 20 characters long (content_text column, e.g. “continue”, “do it”, “yes”).\nAt turn 1, ~8% of messages are NEGATIVE; by turn 5, ~18% are — more than double.\nSessions whose turn-1 message is NEGATIVE: ~60% never see a POSITIVE message afterward.\nAutonomy ratio: the median session has ~16 tool calls per user message (n_tool_calls / nTurns per session). The corpus total is ~18× (sum of n_tool_calls divided by sum of nTurns).\n\nOutput a pass/fail table with the computed value next to each claim. If any claim is off by more than ±1.5 percentage points (or 10% for the autonomy ratio), say so loudly and paste the code that showed it.\n\n\nIf a claim fails, tag me with the code and the computed value. Replication credit is cheap; I’d rather be corrected than cited incorrectly."
+    "objectID": "posts/2026/agent-race/index.html#the-prompt",
+    "href": "posts/2026/agent-race/index.html#the-prompt",
+    "title": "Two agents, one prompt",
+    "section": "The prompt",
+    "text": "The prompt\nFine-tune a model on biglam/on_the_books to identify Jim Crow laws.\nTrain via hf jobs and push the trained model to my namespace.\n\nRun `hf --help` to understand the Hub CLI and `hf jobs uv run --help`\nto understand how to submit uv scripts. You can use `uv run --with`\nto run small scripts for exploring the dataset.\n\nStart by exploring the dataset structure, then proceed to choose\nand fine-tune an appropriate model.\n\nPush the final model to davanstrien/&lt;repo-name&gt;."
   },
   {
-    "objectID": "posts/2026/agent-sentiment/index.html#appendix-b-methodology-and-reproducibility-details",
-    "href": "posts/2026/agent-sentiment/index.html#appendix-b-methodology-and-reproducibility-details",
-    "title": "AI providers have millions of agent sessions. The first 1,589 are public.",
-    "section": "Appendix B — Methodology and reproducibility details",
-    "text": "Appendix B — Methodology and reproducibility details\n\nData sources: 45 public format:agent-traces datasets on the Hugging Face Hub, tagged via the Hub’s auto-detection pipeline. After excluding one dataset (jedisct1/agent-traces-swival, 8,869 files of security-audit material where sentiment is off-prompt), 44 datasets processed, 43 contributed messages. 33 unique source collections after deduping on (session_id, turn) — six of the tagged datasets are re-uploads of badlogicgames/pi-mono.\nExtraction: Parsed using the agent-traces library. Result pushed to davanstrien/agent-trace-user-messages as 8,949 deduped user turns with 17 columns (session_id, turn, nTurns, normPos, model, provider, agent, cost_total_sum, n_events, n_tool_calls, etc.).\nPrimary labelling: Qwen3-30B-A3B-Instruct-2507 (30B total, 3B active MoE) via vLLM with StructuredOutputsParams enforcing a {label, reason} schema. Zero parse errors across 8,949 inferences. Prompt is domain-aware — see the “How we labelled the messages” section above for the verbatim text.\nComparison labelling: Same 8,949 messages through cardiffnlp/twitter-roberta-base-sentiment-latest via the transformers library on Apple Silicon MPS. Agreement rate 78.4%; confusion matrix in the methodology section.\nCompute: Primary labelling on one H200 via hf jobs uv run, ~5 minutes wall time end-to-end. Comparison run on M-series Mac, ~2 minutes. One-file Python scripts for both, no cluster.\nOutput: davanstrien/agent-trace-sentiment with sentiment_label and sentiment_reason columns.\nData snapshot: 2026-04-20. Every number in this post is reproducible from the linked dataset.\nCaveats in one line: 45 public datasets, two contributors ≈ 74% of rows, this is a small cohort of early-adopter power users and not a random sample of developers.\n\nAll four scripts are published alongside this post — extract_user_messages.py, sentiment-label.py, regen_blog_data.py, roberta_compare.py — or browse the scripts/ folder on GitHub. No secret sauce — the whole pipeline is about 200 lines of Python."
+    "objectID": "posts/2026/agent-race/index.html#the-race",
+    "href": "posts/2026/agent-race/index.html#the-race",
+    "title": "Two agents, one prompt",
+    "section": "The race",
+    "text": "The race\n\n\nYour browser doesn’t support embedded video. Download the recording. \n\n\n\n\n\n\nNote\n\n\n\nThe two terminals are running side-by-side: Claude Code on the left, Pi+Kimi on the right. Both call hf directly, both submit hf jobs uv run, both push to the Hub when training finishes."
+  },
+  {
+    "objectID": "posts/2026/agent-race/index.html#what-each-one-shipped",
+    "href": "posts/2026/agent-race/index.html#what-each-one-shipped",
+    "title": "Two agents, one prompt",
+    "section": "What each one shipped",
+    "text": "What each one shipped\nBoth produced working binary classifiers. The headline numbers are close:\n\n\n\n\n\n\n\n\n\nClaude Code (Opus 4.7)\nPi + Kimi K2.6\n\n\n\n\nBase model\nModernBERT-base (8K context)\nRoBERTa-base\n\n\nWall-clock\n~13 min\n~13 min\n\n\nF1 (jim_crow)\n0.962\n0.947\n\n\nAccuracy\n0.978\n(not reported)\n\n\nHardware\nL4 via hf jobs\nL4 via hf jobs\n\n\nClass imbalance handling\ninverse-frequency weighted loss\nnot addressed\n\n\nModel card\nfull (use, limits, ethics, hparams, citation)\nauto-generated Trainer placeholder\n\n\nDomain tags\n7\n0\n\n\n\n\nClaude’s model: davanstrien/jim-crow-laws-claude-code\nPi+Kimi’s model: davanstrien/jim-crow-laws-pi-kimi"
+  },
+  {
+    "objectID": "posts/2026/agent-race/index.html#the-interesting-bit",
+    "href": "posts/2026/agent-race/index.html#the-interesting-bit",
+    "title": "Two agents, one prompt",
+    "section": "The interesting bit",
+    "text": "The interesting bit\nThe F1 gap is real but small. What’s more striking is what each agent decided to do beyond producing weights:\n\nBase model choice. Claude Code picked ModernBERT — the obvious 2025 choice for legal text given its 8K context window. Pi+Kimi went with RoBERTa-base. Both produce viable classifiers; only one of those is a current decision.\nThe label-leak gotcha. The dataset’s source field is 100% positive for paschal and 92% positive for murray — using it as a feature would leak the label. Claude noticed this in the dataset card and explicitly excluded source. Pi+Kimi didn’t mention it.\nClass imbalance. ~29% of the data is positive. Claude added inverse-frequency class weights to the loss; Pi+Kimi trained with default cross-entropy.\nThe model card. Claude wrote a full card with intended use, limitations, OCR-noise caveats, ethical framing carried over from the dataset, full hyperparameters, per-epoch metrics, and a citation back to the On the Books project. Pi+Kimi shipped the auto-generated Trainer template with three “More information needed” placeholders.\nDiscoverability. Claude added seven domain tags (legal, glam, jim-crow, north-carolina, history, etc.). Pi+Kimi added zero. One of these models is findable by an archivist; the other isn’t."
+  },
+  {
+    "objectID": "posts/2026/agent-race/index.html#what-this-means",
+    "href": "posts/2026/agent-race/index.html#what-this-means",
+    "title": "Two agents, one prompt",
+    "section": "What this means",
+    "text": "What this means\nAgents are able to produce working models with minimal prompting and no code. Using Hugging Face Jobs means you don’t need local GPU access or ML expertise to get a model trained and pushed to the Hub. One of the reasons in the past people didn’t bother training task and domain-specific models was the friction of setting up training pipelines; agents + hf jobs are changing that.\nIMO the biggest gap is still datasets (sorry broken record). In my experience agents still struggle when working with domain specific data “from scratch” but likely with some hand holding from a domain expert the process from unlablled data -&gt; labelled dataset -&gt; trained model can be done with agents by a domain expert who is not an ML engineer."
+  },
+  {
+    "objectID": "posts/2026/agent-race/index.html#browse-the-agent-traces",
+    "href": "posts/2026/agent-race/index.html#browse-the-agent-traces",
+    "title": "Two agents, one prompt",
+    "section": "Browse the agent traces",
+    "text": "Browse the agent traces\nBoth agents’ full session traces are on the Hub using the new agent trace viewer. You can step through each turn, tool call, and model response:\n\n\nDirect links to each session file:\n\nClaude Code: claude-code.jsonl\nPi + Kimi: pi-kimi.jsonl"
+  },
+  {
+    "objectID": "posts/2026/agent-race/index.html#reproduce-inspect",
+    "href": "posts/2026/agent-race/index.html#reproduce-inspect",
+    "title": "Two agents, one prompt",
+    "section": "Reproduce / inspect",
+    "text": "Reproduce / inspect\n\nDataset: biglam/on_the_books\nClaude Code’s training script: claude-workspace/train_jim_crow.py\nPi+Kimi’s training script: pi-workspace/train.py\nClaude’s model: davanstrien/jim-crow-laws-claude-code\nPi+Kimi’s model: davanstrien/jim-crow-laws-pi-kimi\nAgent traces: davanstrien/agent-race-traces"
+  },
+  {
+    "objectID": "posts/2026/agent-race/index.html#try-it-yourself",
+    "href": "posts/2026/agent-race/index.html#try-it-yourself",
+    "title": "Two agents, one prompt",
+    "section": "Try it yourself",
+    "text": "Try it yourself\n\nHF Jobs — launch GPU training from the CLI without managing infrastructure\nAgent trace viewer — host and browse coding-agent sessions on the Hub"
+  },
+  {
+    "objectID": "posts/2026/agent-race/index.html#caveats",
+    "href": "posts/2026/agent-race/index.html#caveats",
+    "title": "Two agents, one prompt",
+    "section": "Caveats",
+    "text": "Caveats\nN=1, single dataset, single prompt, single run per agent. Run-to-run variance from random seeds and agent non-determinism would shift the numbers within a few points either way. Don’t read this as a benchmark — read it as a snapshot of what each agent chose to do given the same minimal brief. A fairer comparison would repeat both runs across multiple datasets and seeds, and would also try frontier-open (e.g. Claude Code on Kimi K2.6) and open-frontier (Pi on Opus 4.7) crosses to disentangle agent-vs-model effects.\nCredit to the On the Books project at UNC Chapel Hill Libraries for the underlying data and the algorithms of resistance framing."
   },
   {
     "objectID": "posts/2025/who-benefits-rethinking-library-data-ai/libraries-as-training-data.html",
@@ -2174,6 +2244,6 @@
     "href": "index.html",
     "title": "Posts",
     "section": "",
-    "text": "AI providers have millions of agent sessions. The first 1,589 are public.\n\n\nA first pass at 8,949 labelled messages from the only open coding-agent corpus we’ve got — and why sentiment is probably the wrong lens.\n\n\n\nai\n\ncoding-agents\n\nagent-traces\n\nopen-data\n\nhugging-face\n\n\n\nAnthropic, OpenAI, Cursor, and Windsurf sit on millions of private agent traces. The first public corpus has 33 datasets, 1,589 sessions, 8,949 labelled messages. Here’s what we found in it — and why the interesting data isn’t in the words.\n\n\n\n\n\nApr 20, 2026\n\n\nDaniel van Strien, Claude Opus 4.7\n\n\n\n\n\n\n\n\n\n\n\n\nRe-OCR Your Digitised Collections for ~$0.002/Page\n\n\n\n\n\n\nocr\n\nglam\n\nhugging-face\n\nuv-scripts\n\n\n\nA guide to re-processing digitised collections with open-source VLM-based OCR models.\n\n\n\n\n\nFeb 19, 2026\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nTrain on Massive Datasets Without Downloading with Hugging Face Streaming and Unsloth\n\n\n\n\n\n\nhuggingface\n\nunsloth\n\nstreaming-datasets\n\nfineweb\n\n\n\nStream datasets directly from Hugging Face Hub without downloading. Combine streaming with Unsloth for disk-free LLM training on Colab, Kaggle, or HF Jobs.\n\n\n\n\n\nJan 7, 2026\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nFine-tuning Vision-Language Models for Art History: Iconclass Classification with TRL and HF Jobs\n\n\n\n\n\n\nhuggingface\n\nuv-scripts\n\nvlm\n\nhf Jobs\n\nart-history\n\niconclass\n\n\n\nLearn how to fine-tune open-source VLMs like Qwen2.5-VL for specialized art history tasks using Iconclass metadata. This tutorial shows how to use TRL’s new VLM support with Hugging Face Jobs for cloud-based training - no local GPU required!\n\n\n\n\n\nSep 4, 2025\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nEfficient batch inference for LLMs with vLLM + UV Scripts on HF Jobs\n\n\n\n\n\n\nhuggingface\n\nuv-scripts\n\nvllm\n\nhf Jobs\n\n\n\nGenerate responses for thousands of dataset prompts using Qwen/Qwen3-30B-A3B-Instruct-2507 across 4 GPUs with automatic prompt filtering and tensor parallelism\n\n\n\n\n\nJul 30, 2025\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nWho Benefits? Rethinking Library Data in the Age of AI\n\n\n\n\n\n\nAI\n\nlibraries\n\ndatasets\n\nGLAM\n\ncommunity\n\n\n\nFrom data providers to AI partners: How libraries can collaborate with developers to build tools that improve collections, enhance discovery, and serve communities while contributing to responsible AI development.\n\n\n\n\n\nJun 9, 2025\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nEfficient Inference for ModernBERT Classifiers Using vLLM\n\n\n\n\n\n\nhuggingface\n\ndatasets\n\narxiv\n\nvllm\n\nmodernbert\n\n\n\nModern Inference for modern models. Using vLLM to scale ModernBERT based classifier models to clean and curate datasets\n\n\n\n\n\nApr 24, 2025\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nUsing QwQ to generate a reasoning dataset for structured data extraction\n\n\n\n\n\n\nhuggingface\n\ndatasets\n\nsynthetic-data\n\nqwq\n\nreasoning\n\n\n\nLearn how to use QwQ-32B to generate synthetic reasoning datasets for training smaller models on structured data extraction tasks\n\n\n\n\n\nMar 11, 2025\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nLog GRPO Completions to 🤗 Datasets\n\n\n\n\n\n\nhuggingface\n\ntrl\n\ndatasets\n\n\n\nLog GRPO training completions from trl to a 🤗 Dataset repo for easy analysis\n\n\n\n\n\nFeb 20, 2025\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nDistiling DeepSeek reasoning to ModernBERT classifiers\n\n\n\n\n\n\nhuggingface\n\ndatasets\n\narxiv\n\nsynthetic-data\n\ndeepseek\n\n\n\nHow can we use the reasoning ability of DeepSeek to generate synthetic labels for fine tuning a ModernBERT model?\n\n\n\n\n\nJan 29, 2025\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nHygge Data - Cozy Content Filtering for a finer Scandinavian FineWeb\n\n\n\n\n\n\npolars\n\nhuggingface\n\nfineweb\n\ndatasets\n\n\n\nTraining lightweight, disposable web scale data curation models for Scandinavian language texts using the FineWeb-c dataset\n\n\n\n\n\nJan 9, 2025\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nHow Fine is FineWeb2?\n\n\n\n\n\n\npolars\n\nhuggingface\n\nfineweb\n\n\n\nAnalysis of the FineWeb-C dataset\n\n\n\n\n\nJan 7, 2025\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nFiltering FineWeb2 using Polars\n\n\n\n\n\n\npolars\n\nhuggingface\n\n\n\nUsing Polars to filter the FineWeb2 dataset and other large Hugging Face datasets\n\n\n\n\n\nDec 30, 2024\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nRunning a Local Vision Language Model with LM Studio to sort out my screenshot mess\n\n\n\n\n\nHow I used a VLM to sort out my screenshot mess\n\n\n\n\n\nOct 23, 2024\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nUsing ColPali with Qdrant to index and search a UFO document dataset\n\n\n\n\n\nUsing Qdrant multivectors to index and search a UFO document dataset\n\n\n\n\n\nOct 2, 2024\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nGenerating a dataset of queries for training and fine-tuning ColPali models on a UFO dataset\n\n\n\n\n\nLearn how to generate custom ColPali dataset using an open VLM for multimodal retrieval model training and fine-tuning.\n\n\n\n\n\nSep 23, 2024\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nSynthetic dataset generation techniques: generating custom sentence similarity data\n\n\n\n\n\n\ndata\n\nsynthetic-data\n\n\n\nThis post is part of a series on synthetic data generation techniques. You may also want to check out Awesome Synthetic (text) datasets, where I will be collecting these posts.\n\n\n\n\n\nMay 23, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nSynthetic dataset generation techniques: Self-Instruct\n\n\n\n\n\n\ndata\n\nsynthetic-data\n\n\n\nThis post is part of a series on synthetic data generation techniques. You may also want to check out Awesome Synthetic (text) datasets, where I will be collecting these posts.\n\n\n\n\n\nMay 15, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nTracing Text Generation Inference calls\n\n\n\n\n\nHow to trace text generation inference calls with Langfuse.\n\n\n\n\n\nApr 5, 2024\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nExtracting Insights from Model Cards Using Open Large Language Models\n\n\n\n\n\n\nHugging Face\n\n\n\nWhat do people talk about in their model cards?\n\n\n\n\n\nNov 27, 2023\n\n\n\n\n\n\n\n\n\n\n\n\nHow to load a Hugging Face dataset into Qdrant?\n\n\n\n\n\nLoading a Hugging Face dataset into Qdrant is easy. This post shows how to do it.\n\n\n\n\n\nNov 8, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nHow to do groupby for Hugging Face datasets\n\n\n\n\n\nHow can you groupby in Hugging Face datasets?\n\n\n\n\n\nSep 18, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nExploring language metadata for datasets on the Hugging Face Hub\n\n\n\n\n\nUsing the huggingface_hub library to asses metadata on the hub\n\n\n\n\n\nJun 7, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nDynamically updating a Hugging Face hub organization README\n\n\n\n\n\nUsing the huggingface_hub library and Jinja to update a README dynamically\n\n\n\n\n\nMar 7, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nUsing Hugging Face AutoTrain to train an image classifier without writing any code.\n\n\n\n\n\n\nautotrain\n\n\n\nHow can we train useful machine learning models without writing code?\n\n\n\n\n\nFeb 22, 2023\n\n\n\n\n\n\n\n\n\n\n\n\nA (very brief) intro to exploring metadata on the Hugging Face Hub\n\n\n\n\n\nHow we can use the huggingface_hub library to explore metadata on the Hugging Face Hub.\n\n\n\n\n\nJan 16, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nLabel Studio x Hugging Face datasets hub\n\n\n\n\n\nUsing label studio and the Hugging Face datasets hub to iteratively annotate a dataset\n\n\n\n\n\nSep 7, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nTraining an object detection model using Hugging Face\n\n\n\n\n\nTraining a Detr object detection model using Hugging Face transformers and datasets\n\n\n\n\n\nAug 16, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nSearching for machine learning models using semantic search\n\n\n\n\n\nFinding models on the Hugging Face hub using semantic search\n\n\n\n\n\nJul 26, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nCombining Hugging Face datasets with dask\n\n\n\n\n\nUsing 🤗 datasets in combination with dask\n\n\n\n\n\nJun 20, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nUsing 🤗 datasets for image search\n\n\n\n\n\nUsing the 🤗 datasets to make an image search engine for British Library Book Illustrations\n\n\n\n\n\nJan 13, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nUsing the 🤗 Hub for model storage\n\n\n\n\n\nHow I’m planning to use the huggingface hub for storing flyswot models\n\n\n\n\n\nDec 30, 2021\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nflyswot\n\n\n\n\n\n\nglam\n\nflyswot\n\n\n\nAttempting to deploy machine learning in an existing workflow\n\n\n\n\n\nDec 22, 2021\n\n\n\n\n\n\n\n\n\n\n\n\nImage labeling vs classification models\n\n\n\n\n\nComparing the loss functions of label and classification models\n\n\n\n\n\nOct 12, 2020\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nHyperparameter Optimization for Transfer Learning\n\n\n\n\n\nOptimising Hyperparameters using optuna and fastai2\n\n\n\n\n\nJul 1, 2020\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nMulti-model metadata generation\n\n\n\n\n\nExperiment in combining text and tabular models to generate web archive metadata\n\n\n\n\n\nMay 3, 2020\n\n\nDaniel van Strien\n\n\n\n\n\nNo matching items"
+    "text": "Two agents, one prompt\n\n\nPi + Kimi K2.6 and Claude Code both fine-tuned a Jim Crow law classifier from a single sentence. The interesting gap wasn’t F1.\n\n\n\ncoding-agents\n\nhugging-face\n\nglam\n\ndatasets\n\n\n\nI gave two coding agents the same one-line prompt and watched what each decided to do. Both shipped working classifiers via hf jobs. The headline metrics were within 1.5pp — the interesting differences were everywhere else.\n\n\n\n\n\nMay 1, 2026\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nAI providers have millions of agent sessions. The first 1,589 are public.\n\n\nA first pass at 8,949 labelled messages from the only open coding-agent corpus we’ve got — and why sentiment is probably the wrong lens.\n\n\n\nai\n\ncoding-agents\n\nagent-traces\n\nopen-data\n\nhugging-face\n\n\n\nAnthropic, OpenAI, Cursor, and Windsurf sit on millions of private agent traces. The first public corpus has 33 datasets, 1,589 sessions, 8,949 labelled messages. Here’s what we found in it — and why the interesting data isn’t in the words.\n\n\n\n\n\nApr 20, 2026\n\n\nDaniel van Strien, Claude Opus 4.7\n\n\n\n\n\n\n\n\n\n\n\n\nRe-OCR Your Digitised Collections for ~$0.002/Page\n\n\n\n\n\n\nocr\n\nglam\n\nhugging-face\n\nuv-scripts\n\n\n\nA guide to re-processing digitised collections with open-source VLM-based OCR models.\n\n\n\n\n\nFeb 19, 2026\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nTrain on Massive Datasets Without Downloading with Hugging Face Streaming and Unsloth\n\n\n\n\n\n\nhuggingface\n\nunsloth\n\nstreaming-datasets\n\nfineweb\n\n\n\nStream datasets directly from Hugging Face Hub without downloading. Combine streaming with Unsloth for disk-free LLM training on Colab, Kaggle, or HF Jobs.\n\n\n\n\n\nJan 7, 2026\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nFine-tuning Vision-Language Models for Art History: Iconclass Classification with TRL and HF Jobs\n\n\n\n\n\n\nhuggingface\n\nuv-scripts\n\nvlm\n\nhf Jobs\n\nart-history\n\niconclass\n\n\n\nLearn how to fine-tune open-source VLMs like Qwen2.5-VL for specialized art history tasks using Iconclass metadata. This tutorial shows how to use TRL’s new VLM support with Hugging Face Jobs for cloud-based training - no local GPU required!\n\n\n\n\n\nSep 4, 2025\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nEfficient batch inference for LLMs with vLLM + UV Scripts on HF Jobs\n\n\n\n\n\n\nhuggingface\n\nuv-scripts\n\nvllm\n\nhf Jobs\n\n\n\nGenerate responses for thousands of dataset prompts using Qwen/Qwen3-30B-A3B-Instruct-2507 across 4 GPUs with automatic prompt filtering and tensor parallelism\n\n\n\n\n\nJul 30, 2025\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nWho Benefits? Rethinking Library Data in the Age of AI\n\n\n\n\n\n\nAI\n\nlibraries\n\ndatasets\n\nGLAM\n\ncommunity\n\n\n\nFrom data providers to AI partners: How libraries can collaborate with developers to build tools that improve collections, enhance discovery, and serve communities while contributing to responsible AI development.\n\n\n\n\n\nJun 9, 2025\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nEfficient Inference for ModernBERT Classifiers Using vLLM\n\n\n\n\n\n\nhuggingface\n\ndatasets\n\narxiv\n\nvllm\n\nmodernbert\n\n\n\nModern Inference for modern models. Using vLLM to scale ModernBERT based classifier models to clean and curate datasets\n\n\n\n\n\nApr 24, 2025\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nUsing QwQ to generate a reasoning dataset for structured data extraction\n\n\n\n\n\n\nhuggingface\n\ndatasets\n\nsynthetic-data\n\nqwq\n\nreasoning\n\n\n\nLearn how to use QwQ-32B to generate synthetic reasoning datasets for training smaller models on structured data extraction tasks\n\n\n\n\n\nMar 11, 2025\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nLog GRPO Completions to 🤗 Datasets\n\n\n\n\n\n\nhuggingface\n\ntrl\n\ndatasets\n\n\n\nLog GRPO training completions from trl to a 🤗 Dataset repo for easy analysis\n\n\n\n\n\nFeb 20, 2025\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nDistiling DeepSeek reasoning to ModernBERT classifiers\n\n\n\n\n\n\nhuggingface\n\ndatasets\n\narxiv\n\nsynthetic-data\n\ndeepseek\n\n\n\nHow can we use the reasoning ability of DeepSeek to generate synthetic labels for fine tuning a ModernBERT model?\n\n\n\n\n\nJan 29, 2025\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nHygge Data - Cozy Content Filtering for a finer Scandinavian FineWeb\n\n\n\n\n\n\npolars\n\nhuggingface\n\nfineweb\n\ndatasets\n\n\n\nTraining lightweight, disposable web scale data curation models for Scandinavian language texts using the FineWeb-c dataset\n\n\n\n\n\nJan 9, 2025\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nHow Fine is FineWeb2?\n\n\n\n\n\n\npolars\n\nhuggingface\n\nfineweb\n\n\n\nAnalysis of the FineWeb-C dataset\n\n\n\n\n\nJan 7, 2025\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nFiltering FineWeb2 using Polars\n\n\n\n\n\n\npolars\n\nhuggingface\n\n\n\nUsing Polars to filter the FineWeb2 dataset and other large Hugging Face datasets\n\n\n\n\n\nDec 30, 2024\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nRunning a Local Vision Language Model with LM Studio to sort out my screenshot mess\n\n\n\n\n\nHow I used a VLM to sort out my screenshot mess\n\n\n\n\n\nOct 23, 2024\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nUsing ColPali with Qdrant to index and search a UFO document dataset\n\n\n\n\n\nUsing Qdrant multivectors to index and search a UFO document dataset\n\n\n\n\n\nOct 2, 2024\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nGenerating a dataset of queries for training and fine-tuning ColPali models on a UFO dataset\n\n\n\n\n\nLearn how to generate custom ColPali dataset using an open VLM for multimodal retrieval model training and fine-tuning.\n\n\n\n\n\nSep 23, 2024\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nSynthetic dataset generation techniques: generating custom sentence similarity data\n\n\n\n\n\n\ndata\n\nsynthetic-data\n\n\n\nThis post is part of a series on synthetic data generation techniques. You may also want to check out Awesome Synthetic (text) datasets, where I will be collecting these posts.\n\n\n\n\n\nMay 23, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nSynthetic dataset generation techniques: Self-Instruct\n\n\n\n\n\n\ndata\n\nsynthetic-data\n\n\n\nThis post is part of a series on synthetic data generation techniques. You may also want to check out Awesome Synthetic (text) datasets, where I will be collecting these posts.\n\n\n\n\n\nMay 15, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nTracing Text Generation Inference calls\n\n\n\n\n\nHow to trace text generation inference calls with Langfuse.\n\n\n\n\n\nApr 5, 2024\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nExtracting Insights from Model Cards Using Open Large Language Models\n\n\n\n\n\n\nHugging Face\n\n\n\nWhat do people talk about in their model cards?\n\n\n\n\n\nNov 27, 2023\n\n\n\n\n\n\n\n\n\n\n\n\nHow to load a Hugging Face dataset into Qdrant?\n\n\n\n\n\nLoading a Hugging Face dataset into Qdrant is easy. This post shows how to do it.\n\n\n\n\n\nNov 8, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nHow to do groupby for Hugging Face datasets\n\n\n\n\n\nHow can you groupby in Hugging Face datasets?\n\n\n\n\n\nSep 18, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nExploring language metadata for datasets on the Hugging Face Hub\n\n\n\n\n\nUsing the huggingface_hub library to asses metadata on the hub\n\n\n\n\n\nJun 7, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nDynamically updating a Hugging Face hub organization README\n\n\n\n\n\nUsing the huggingface_hub library and Jinja to update a README dynamically\n\n\n\n\n\nMar 7, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nUsing Hugging Face AutoTrain to train an image classifier without writing any code.\n\n\n\n\n\n\nautotrain\n\n\n\nHow can we train useful machine learning models without writing code?\n\n\n\n\n\nFeb 22, 2023\n\n\n\n\n\n\n\n\n\n\n\n\nA (very brief) intro to exploring metadata on the Hugging Face Hub\n\n\n\n\n\nHow we can use the huggingface_hub library to explore metadata on the Hugging Face Hub.\n\n\n\n\n\nJan 16, 2023\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nLabel Studio x Hugging Face datasets hub\n\n\n\n\n\nUsing label studio and the Hugging Face datasets hub to iteratively annotate a dataset\n\n\n\n\n\nSep 7, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nTraining an object detection model using Hugging Face\n\n\n\n\n\nTraining a Detr object detection model using Hugging Face transformers and datasets\n\n\n\n\n\nAug 16, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nSearching for machine learning models using semantic search\n\n\n\n\n\nFinding models on the Hugging Face hub using semantic search\n\n\n\n\n\nJul 26, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nCombining Hugging Face datasets with dask\n\n\n\n\n\nUsing 🤗 datasets in combination with dask\n\n\n\n\n\nJun 20, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nUsing 🤗 datasets for image search\n\n\n\n\n\nUsing the 🤗 datasets to make an image search engine for British Library Book Illustrations\n\n\n\n\n\nJan 13, 2022\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nUsing the 🤗 Hub for model storage\n\n\n\n\n\nHow I’m planning to use the huggingface hub for storing flyswot models\n\n\n\n\n\nDec 30, 2021\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nflyswot\n\n\n\n\n\n\nglam\n\nflyswot\n\n\n\nAttempting to deploy machine learning in an existing workflow\n\n\n\n\n\nDec 22, 2021\n\n\n\n\n\n\n\n\n\n\n\n\nImage labeling vs classification models\n\n\n\n\n\nComparing the loss functions of label and classification models\n\n\n\n\n\nOct 12, 2020\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nHyperparameter Optimization for Transfer Learning\n\n\n\n\n\nOptimising Hyperparameters using optuna and fastai2\n\n\n\n\n\nJul 1, 2020\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nMulti-model metadata generation\n\n\n\n\n\nExperiment in combining text and tabular models to generate web archive metadata\n\n\n\n\n\nMay 3, 2020\n\n\nDaniel van Strien\n\n\n\n\n\nNo matching items"
   }
 ]
