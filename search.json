@@ -4,7 +4,7 @@
     "href": "slides.html",
     "title": "Slides",
     "section": "",
-    "text": "Finding Illustrations in Digitized Collections with a 2.5MB Browser Model\n\n\nIIIF Community Call\n\n\n\nIIIF\n\nGLAM\n\nmachine-learning\n\nsmall-models\n\n\n\nA browser-based tool for detecting illustrations in digitized cultural heritage collections using a tiny machine learning model that runs entirely client-side via IIIF.\n\n\n\n\n\nFeb 11, 2026\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nOpen Source AI for GLAMs\n\n\nFrom Using to Contributing (AI4LAM Fantastic Futures 2025 Workshop)\n\n\nAn introduction to open source AI for galleries, libraries, archives and museums - covering what makes AI open, how to run models, and how GLAMs can contribute back to the ecosystem.\n\n\n\n\n\nDec 3, 2025\n\n\nDaniel van Strien\n\n\n\n\n\nNo matching items"
+    "text": "Beyond the API\n\n\nOpen and local models for digital humanities and cultural heritage\n\n\n\nGLAM\n\nmachine-learning\n\nsmall-models\n\nopen-source\n\ndigital-humanities\n\n\n\nDHd Working Group on Applied Generative AI webinar — what ‘open’ means in AI, how to actually run open models, and what DH and cultural heritage practitioners can give back.\n\n\n\n\n\nMay 5, 2026\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nFinding Illustrations in Digitized Collections with a 2.5MB Browser Model\n\n\nIIIF Community Call\n\n\n\nIIIF\n\nGLAM\n\nmachine-learning\n\nsmall-models\n\n\n\nA browser-based tool for detecting illustrations in digitized cultural heritage collections using a tiny machine learning model that runs entirely client-side via IIIF.\n\n\n\n\n\nFeb 11, 2026\n\n\nDaniel van Strien\n\n\n\n\n\n\n\n\n\n\n\n\nOpen Source AI for GLAMs\n\n\nFrom Using to Contributing (AI4LAM Fantastic Futures 2025 Workshop)\n\n\nAn introduction to open source AI for galleries, libraries, archives and museums - covering what makes AI open, how to run models, and how GLAMs can contribute back to the ecosystem.\n\n\n\n\n\nDec 3, 2025\n\n\nDaniel van Strien\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "about.html",
@@ -938,6 +938,377 @@
     "text": "Tutorials\n\nJupyter book showing how to build an ML powered book genre classifier\nA (brief) history of advertising in US Newspapers using computer vision\n(Under review) Computer Vision for the Humanities: An Introduction to Deep Learning for Image Classification, Programming Historian lessons\n(Under development) Intro to AI for GLAM, Carpentries Lesson"
   },
   {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#hello",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#hello",
+    "title": "Beyond the API",
+    "section": "Hello",
+    "text": "Hello\n\nDaniel van Strien — Machine Learning Librarian @ Hugging Face\nBackground in libraries, archives, computational humanities\nCommunities: BigLAM, Small Models for GLAM"
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#the-default-answer",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#the-default-answer",
+    "title": "Beyond the API",
+    "section": "The default answer",
+    "text": "The default answer\nWhen someone asks: “What can we do with AI for our collection?”\n\nThe default answer in 2026 is still:\n\n\n\n“Let’s build a chatbot.”"
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#a-useful-analogy",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#a-useful-analogy",
+    "title": "Beyond the API",
+    "section": "A useful analogy",
+    "text": "A useful analogy\n\nA frontier model like GPT-4 is like a Ferrari. Obvious triumph of engineering, designed to win races. But it takes a special pit crew just to change the tires.\nA smaller specialised model is like a Honda Civic. Engineered to be affordable, reliable, extremely useful. And that’s why they’re absolutely everywhere.\n\n\n— Adapted from “Finally, a Replacement for BERT”\n\n\n\nIn 2026, our community has the tools to build its own."
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#a-question-for-the-next-year",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#a-question-for-the-next-year",
+    "title": "Beyond the API",
+    "section": "A question for the next year",
+    "text": "A question for the next year\n\nWhat infrastructure does our community want built — for ML and AI for and with DH and cultural heritage collections?"
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#what-i-want-you-to-leave-with",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#what-i-want-you-to-leave-with",
+    "title": "Beyond the API",
+    "section": "What I want you to leave with",
+    "text": "What I want you to leave with\n\nWhat “open” means — and why it matters for that question\nThree shapes of independence — local, portable, scalable\nA demo of what this looks like end-to-end\nThree places your work matters most — datasets, evaluations, models"
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#open-vs-closed-who-controls-the-artifact",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#open-vs-closed-who-controls-the-artifact",
+    "title": "Beyond the API",
+    "section": "Open vs closed: who controls the artifact?",
+    "text": "Open vs closed: who controls the artifact?\n\n\nOpen weights\n\nThe file is yours\nRun on your laptop, on your server, in the cloud\nInspect, modify, fine-tune\nThe vendor can disappear; the model can’t\n\n\nClosed weights\n\nAPI access only\nBlack box\nVendor controls availability, pricing, deprecation\nYour data leaves your infrastructure\n\n\n\nThere’s a stricter sense — “fully open” includes training code, data, and evaluation. Important, but a separate conversation. (Appendix.)"
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#why-this-matters-for-dh-and-cultural-heritage",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#why-this-matters-for-dh-and-cultural-heritage",
+    "title": "Beyond the API",
+    "section": "Why this matters for DH and cultural heritage",
+    "text": "Why this matters for DH and cultural heritage\n\n\nPrivacy — unpublished and sensitive material stays on your infrastructure\n\n\n\n\nLongevity — vendors deprecate; archives don’t. The artifact has to outlast the company.\n\n\n\n\nReproducibility — research depends on the model still being available, unchanged, in five years."
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#first-not-everything-is-an-llm",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#first-not-everything-is-an-llm",
+    "title": "Beyond the API",
+    "section": "First: not everything is an LLM",
+    "text": "First: not everything is an LLM\nMany DH/CH tasks don’t need a chat model:\n\nClassification — categorise documents, detect language, find a topic\nEmbeddings — semantic search, similarity, clustering\nVision — OCR, image classification, object detection in archive images\nStructured extraction — names, dates, places from historical text"
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#three-shapes-of-independence",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#three-shapes-of-independence",
+    "title": "Beyond the API",
+    "section": "Three shapes of independence",
+    "text": "Three shapes of independence\n\n\n\n\n\n\n\n\nShape\nWhat it looks like\nExample tools\n\n\n\n\nLocal\nModel file on your machine\nllama.cpp, transformers, MLX\n\n\nPortable\nOpenAI-compatible API, many providers\nHF Inference Providers, Together, Fireworks\n\n\nRent on-demand\nCloud GPU for one job\nhf jobs, vLLM for batch inference\n\n\n\n\nOpen ≠ local. Three shapes — different ways to not depend on one provider."
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#a-pattern-big-ai-little-ai",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#a-pattern-big-ai-little-ai",
+    "title": "Beyond the API",
+    "section": "A pattern: Big AI → Little AI",
+    "text": "A pattern: Big AI → Little AI\n\nUse a big general-purpose model to label a small sample\nTrain a tiny, fast classifier on those labels\nRun that classifier on millions of documents\n\n\n\nThis is what web-scale data curation looks like (FineWeb-Edu, WebOrganizer). It’s also what your archive looks like — scaled the same way."
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#what-you-can-find-on-hugging-face",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#what-you-can-find-on-hugging-face",
+    "title": "Beyond the API",
+    "section": "What you can find on Hugging Face",
+    "text": "What you can find on Hugging Face\n\nModels — over 2.8M, filterable by task, language, size, licence\nDatasets — nearly 1M, including DH/CH collections from BigLAM, Europeana, national libraries\nSpaces — interactive demos\nBuckets — storage built for AI teams: Xet deduplication, included CDN, no git overhead (huggingface.co/storage)\nPapers — with code, models, datasets attached\n\n\nThe Hub is the platform where the open AI community builds together — and where the durable artifacts get parked.\n\n\nLive walkthrough — switch to browser."
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#the-shape-of-the-problem",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#the-shape-of-the-problem",
+    "title": "Beyond the API",
+    "section": "The shape of the problem",
+    "text": "The shape of the problem\nToday’s example: classify historical legal text as discriminatory or not.\n\nSame shape, applied differently:\n\nTopic classification across a newspaper corpus\nSemantic search and similarity\nDocument type detection\nLanguage identification\nOCR triage\n\n\n\nAll variants of: assign a label to text."
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#why-not-just-call-a-frontier-api",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#why-not-just-call-a-frontier-api",
+    "title": "Beyond the API",
+    "section": "Why not just call a frontier API?",
+    "text": "Why not just call a frontier API?\nYou could send each document to a closed API. Works for prototyping.\n\nFor research infrastructure:\n\nCost — millions of records becomes real money\nAPI churn — the model behind the API changes; results stop reproducing\nReproducibility — your results need to re-run in 5 years\nScale — rate limits + per-request costs collapse at corpus size\n\n\n\nTrain a small classifier instead. Used to be hard. With data and agents, much less so."
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#todays-example-biglamon_the_books",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#todays-example-biglamon_the_books",
+    "title": "Beyond the API",
+    "section": "Today’s example: biglam/on_the_books",
+    "text": "Today’s example: biglam/on_the_books\n\nUNC Chapel Hill Libraries — On the Books: Jim Crow and Algorithms of Resistance\nLabelled NC session laws, 1866–1967\n1,785 chapter/section pairs, binary jim_crow / no_jim_crow\nSources: Pauli Murray’s States’ Laws on Race and Color + project experts"
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#the-prompt",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#the-prompt",
+    "title": "Beyond the API",
+    "section": "The prompt",
+    "text": "The prompt\n\nThe core ask is one sentence:\n\n“Fine-tune a model on biglam/on_the_books to identify Jim Crow laws.Train via hf jobs and push to my namespace.”\n\n\n\nNo notebook. No training script. Replace the dataset and the label, and it’s your task."
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#the-full-prompt-ill-paste",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#the-full-prompt-ill-paste",
+    "title": "Beyond the API",
+    "section": "The full prompt I’ll paste",
+    "text": "The full prompt I’ll paste\nFine-tune a model on biglam/on_the_books to identify Jim Crow laws.\nTrain via hf jobs and push the trained model to my namespace.\n\nRun `hf --help` to understand the Hub CLI and `hf jobs uv run --help`\nto understand how to submit uv scripts. You can use `uv run --with`\nto run small scripts for exploring the dataset.\n\nStart by exploring the dataset structure, then proceed to choose\nand fine-tune an appropriate model.\n\nPush the final model to davanstrien/dhd-demo.\n\nThe extra lines point the agent at the right docs and naming. The core task is still the first line."
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#live-demo",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#live-demo",
+    "title": "Beyond the API",
+    "section": "Live demo",
+    "text": "Live demo\n\nTrained from the same one-line prompt, different agents:\ndavanstrien/jim-crow-laws-claude-code Claude Code + Opus 4.7 (closed)\ndavanstrien/jim-crow-laws-pi-kimi Pi + Kimi K2.6 (open-weight)\nFull writeup: danielvanstrien.xyz/posts/2026/agent-race"
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#what-just-happened",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#what-just-happened",
+    "title": "Beyond the API",
+    "section": "What just happened",
+    "text": "What just happened\n\nA closed tool (Claude Code) made an open artifact\nTraining ran on rented compute — gone in 13 minutes\nThe model is now in my namespace, on my disk, on the Hub\nTomorrow the agent goes away — the model stays\nAnyone can reproduce, fine-tune, or build on it\n\n\nPlurality, not monoculture. Use the big general-purpose tools to craft the small, durable ones."
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#what-if-you-dont-have-labelled-data",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#what-if-you-dont-have-labelled-data",
+    "title": "Beyond the API",
+    "section": "What if you don’t have labelled data?",
+    "text": "What if you don’t have labelled data?\nA different bottleneck — same kind of solution.\n\n\nNLS index card detector\n\nSAM3 zero-shot on hf jobs (~31% accurate)\nCorrect errors (with agent-built tooling)\nTrain YOLO\nRepeat\n\n→ 99% mAP in three rounds, one afternoon.\n\n“The bottleneck was always collecting training data. This is becoming much less of a barrier.”\n→ uv-scripts/sam3"
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#three-places-your-work-matters",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#three-places-your-work-matters",
+    "title": "Beyond the API",
+    "section": "Three places your work matters",
+    "text": "Three places your work matters\n\n\nDatasets\nCurated, well-documented collections.\nDomain expertise.\nMultilingual / under-represented languages.\n\nEvaluations\nMove past “vibe checks”.\nDomain experts know what good output is.\nEdge cases models routinely miss.\n\nModels\nFine-tuned for your domain.\nOCR for historical scripts.\nDomain-specific embeddings."
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#datasets-as-infrastructure",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#datasets-as-infrastructure",
+    "title": "Beyond the API",
+    "section": "Datasets as infrastructure",
+    "text": "Datasets as infrastructure\n\nBack to the question we opened with.\n\n\nWe don’t need fancy AI infrastructure projects.\n\n\n\nWe need datasets."
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#examples-domain-specific-models",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#examples-domain-specific-models",
+    "title": "Beyond the API",
+    "section": "Examples: domain-specific models",
+    "text": "Examples: domain-specific models\n\n\nNLS index card detector\nYOLO26n, 99.1% mAP\nBuilt with the same Claude Code + hf jobs stack you just saw\n— the agent-built path\n\nYiddish OCR\n150k training lines → ~99% accuracy uplift → Mass digitisation now feasible\n— the community-curated path"
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#examples-open-datasets",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#examples-open-datasets",
+    "title": "Beyond the API",
+    "section": "Examples: open datasets",
+    "text": "Examples: open datasets\nEuropeana Newspapers — 4M+ documents, multiple languages\n→ Powers projects like German Commons (154B tokens of training data)\n\nFineWeb-C — 500+ contributors building multilingual training infrastructure together\n\n\nBeyond Words / Newspaper Navigator — 16M pages with visual annotations from Library of Congress"
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#evaluations-the-under-explored-opportunity",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#evaluations-the-under-explored-opportunity",
+    "title": "Beyond the API",
+    "section": "Evaluations: the under-explored opportunity",
+    "text": "Evaluations: the under-explored opportunity\nMost LLM benchmarks are:\n\nEnglish-centric\nWeb-data-flavoured\nNarrow (multiple choice, math)\n\n\nDH/CH benchmarks would test things models actually struggle with:\n\nMultilingual historical text\nOCR-noisy input\nDomain-specific entity recognition\nPeriod-appropriate language understanding"
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#thank-you",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#thank-you",
+    "title": "Beyond the API",
+    "section": "Thank you",
+    "text": "Thank you\n\nDaniel van Strien\ndavanstrien on Hugging Face linktr.ee/danielvanstrien daniel@huggingface.co\n\n\n\nQuestions?"
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#whats-in-a-model",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#whats-in-a-model",
+    "title": "Beyond the API",
+    "section": "What’s in a model?",
+    "text": "What’s in a model?\n\n\n\n\n\nflowchart LR\n    W[Weights&lt;br/&gt;Learned numbers] --&gt; M((Model))\n    C[Code&lt;br/&gt;Instructions] --&gt; M\n    M --&gt; T[Does tasks]\n\n\n\n\n\n\nThe weights are the “brain” — patterns learned from training data."
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#what-are-weights-concretely",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#what-are-weights-concretely",
+    "title": "Beyond the API",
+    "section": "What are weights, concretely?",
+    "text": "What are weights, concretely?\n\n\n\n\n\nflowchart TD\n    D[(Training Data&lt;br/&gt;Books, web, OCR'd archives)] --&gt; L[Learning Process]\n    L --&gt; W[Weights File&lt;br/&gt;.safetensors]\n    W --&gt; E[\"Billions of numbers:&lt;br/&gt;[0.023, -0.891, 0.442, ...]\"]\n\n\n\n\n\n\nThese numbers encode everything the model “knows”."
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#open-weights-open-source",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#open-weights-open-source",
+    "title": "Beyond the API",
+    "section": "“Open weights” ≠ “open source”",
+    "text": "“Open weights” ≠ “open source”\nTruly open source AI also includes:\n\nTraining code — how the model was built\nTraining data — what it learned from\nEvaluation — how performance was measured\n\n\nExamples of “fully” open models:\n\nOLMo (Allen AI) — fully open LLM\nSmolLM — small, efficient, fully open"
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#a-pay-per-token-serverless",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#a-pay-per-token-serverless",
+    "title": "Beyond the API",
+    "section": "(a) Pay per token / serverless",
+    "text": "(a) Pay per token / serverless\n\n\nPros\n\nMinimal setup\nNo hardware\nEasy model switching\nOften OpenAI-compatible API\n\n\nCons\n\nVendor dependency (lighter than closed APIs, but still)\nResults can vary across providers\nOngoing costs\nData leaves your infra"
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#b-local-hardware",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#b-local-hardware",
+    "title": "Beyond the API",
+    "section": "(b) Local hardware",
+    "text": "(b) Local hardware\n\n\nPros\n\nFull control\nData stays on your machine\nNo ongoing API costs\nWorks offline\n\n\nCons\n\nHardware limits model size\nYou manage updates\nSetup learning curve\nSlower for very large models"
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#c-rent-hardware-cloud",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#c-rent-hardware-cloud",
+    "title": "Beyond the API",
+    "section": "(c) Rent hardware (cloud)",
+    "text": "(c) Rent hardware (cloud)\n\n\nPros\n\nRun any model size\nScalable\nProduction-ready\nNo local setup\n\n\nCons\n\nCosts scale with usage\nCloud-skill required\nCold starts"
+  },
+  {
+    "objectID": "slides/dhd-webinar-2026-may-05/index.html#the-local-models-ecosystem",
+    "href": "slides/dhd-webinar-2026-may-05/index.html#the-local-models-ecosystem",
+    "title": "Beyond the API",
+    "section": "The local-models ecosystem",
+    "text": "The local-models ecosystem\n\n\n\n\n\nmindmap\n  root((Local model&lt;br/&gt;ecosystem))\n    Python Libraries\n      Transformers\n      Sentence Transformers\n      Diffusers\n      ONNX Runtime\n    JavaScript\n      Transformers.js\n    Inference Frameworks\n      llama.cpp\n        LM Studio\n        Ollama\n      MLX (Apple Silicon)\n        mlx-lm\n        mlx-vlm\n      vLLM\n      SgLang\n    Quantization\n      GGUF\n      AWQ\n      GPTQ\n    UIs\n      Open WebUI\n      Jan"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#what-is-open-source-ai",
+    "href": "slides/open-source-ai-glams.html#what-is-open-source-ai",
+    "title": "Open Source AI for GLAMs",
+    "section": "What is Open Source AI?",
+    "text": "What is Open Source AI?\n\nAI systems where key components are publicly accessible\nA spectrum: from “open weights” to fully open training pipelines\nGrowing ecosystem of models, tools, and communities\n\n\n\nOpen source AI isn’t binary - there’s a spectrum of openness\nWe’ll explore what “open” means in practice"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#the-chat-interface",
+    "href": "slides/open-source-ai-glams.html#the-chat-interface",
+    "title": "Open Source AI for GLAMs",
+    "section": "The Chat Interface?",
+    "text": "The Chat Interface?\n\n\n\nAs I already mentioned in my intro, Generative AI has become the dominant way of thinking about AI\nIn particular, the “chat interface” i.e. chat GPT, claude etc, are the dominant way in which many people (consciously) interact with AI\nthis sometimes leads to the default answer to “what can we do with AI” to be “How can we create a chat interface for our collection?”"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#the-default-answer",
+    "href": "slides/open-source-ai-glams.html#the-default-answer",
+    "title": "Open Source AI for GLAMs",
+    "section": "The Default Answer",
+    "text": "The Default Answer\n“Let’s build a chatbot for our collections!”\n\nBut is this the best starting point?"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#ai-ferrari-vs-honda-civic",
+    "href": "slides/open-source-ai-glams.html#ai-ferrari-vs-honda-civic",
+    "title": "Open Source AI for GLAMs",
+    "section": "AI: Ferrari vs Honda Civic",
+    "text": "AI: Ferrari vs Honda Civic\n\n“A frontier model like GPT-4 is like a Ferrari. It’s an obvious triumph of engineering, designed to win races. But it takes a special pit crew just to change the tires.\n\n\nIn contrast, a smaller specialized model is like a Honda Civic. It’s engineered to be affordable, reliable, and extremely useful. And that’s why they’re absolutely everywhere.”\n\n\n— Adapted from “Finally, a Replacement for BERT” https://huggingface.co/blog/modernbert"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#what-is-an-ai-model",
+    "href": "slides/open-source-ai-glams.html#what-is-an-ai-model",
+    "title": "Open Source AI for GLAMs",
+    "section": "What is an AI Model?",
+    "text": "What is an AI Model?\n\n\n\n\n\nflowchart LR\n    W[Weights&lt;br/&gt;Learned numbers] --&gt; M((Model))\n    C[Code&lt;br/&gt;Instructions] --&gt; M\n    M --&gt; T[Does tasks]\n\n\n\n\n\n\nThe weights are the “brain” - patterns learned from training data"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#what-are-weights",
+    "href": "slides/open-source-ai-glams.html#what-are-weights",
+    "title": "Open Source AI for GLAMs",
+    "section": "What Are Weights?",
+    "text": "What Are Weights?\n\n\n\n\n\nflowchart TD\n    D[(Training Data&lt;br/&gt;Books, websites, images)] --&gt; L[Learning Process]\n    L --&gt; W[Weights File&lt;br/&gt;.safetensors]\n    W --&gt; E[\"Billions of numbers:&lt;br/&gt;[0.023, -0.891, 0.442, ...]\"]\n\n\n\n\n\n\nThese numbers encode everything the model “knows”"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#open-vs-closed-weights",
+    "href": "slides/open-source-ai-glams.html#open-vs-closed-weights",
+    "title": "Open Source AI for GLAMs",
+    "section": "Open vs Closed Weights",
+    "text": "Open vs Closed Weights\n\n\nOpen Weights\n\n\n\n\n\nflowchart TD\n    O[Download weights] --&gt; R[Run anywhere]\n    R --&gt; I[Inspect & modify]\n\n\n\n\n\n\n\nClosed Weights\n\n\n\n\n\nflowchart TD\n    A[API only] --&gt; B[Black box]\n    B --&gt; V[Vendor controlled]"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#open-source-beyond-weights",
+    "href": "slides/open-source-ai-glams.html#open-source-beyond-weights",
+    "title": "Open Source AI for GLAMs",
+    "section": "Open Source (Beyond Weights)",
+    "text": "Open Source (Beyond Weights)\n“fully” open source AI includes:\n\nTraining code: How the model was built\nTraining data: What the model learned from\nEvaluation details: How performance was measured\n\nExamples of “fully” open models:\n\nOLMo - Allen AI’s fully open LLM\nSmolLM - Hugging Face’s small, efficient models"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#why-open",
+    "href": "slides/open-source-ai-glams.html#why-open",
+    "title": "Open Source AI for GLAMs",
+    "section": "Why Open?",
+    "text": "Why Open?\n\n\n\nChoice\n1M+ models vs ~100 closed APIs\n\n\nControl\nRun where you want, pin versions\n\n\nFlexibility\nFine-tune for your domain\n\n\nCost\nOften cheaper at scale\n\n\nPrivacy\nData never leaves your infra\n\n\nTransparency\nInspect model & training data"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#choosing-a-model",
+    "href": "slides/open-source-ai-glams.html#choosing-a-model",
+    "title": "Open Source AI for GLAMs",
+    "section": "Choosing a Model",
+    "text": "Choosing a Model\nAI/ML is more than LLMs!\nMany tasks don’t need a large language model:\n\nClassification: Categorize documents, detect languages\nEmbeddings: Semantic search, similarity matching\nVision: OCR, image classification, object detection\nStructured extraction: Named entities, dates, metadata\n\nFinding models: Hugging Face Hub - 1M+ open models, filterable by task, language, size"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#running-the-model",
+    "href": "slides/open-source-ai-glams.html#running-the-model",
+    "title": "Open Source AI for GLAMs",
+    "section": "Running the model",
+    "text": "Running the model\nOpen models != local models\nA few genres of inference for open models:\n\nPay per token via a hosted endpoint “serverless”\nRun the model on your own hardware (laptop, desktop, server)\nRent the hardware to run the model and pay per hour"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#tradeoffs",
+    "href": "slides/open-source-ai-glams.html#tradeoffs",
+    "title": "Open Source AI for GLAMs",
+    "section": "Tradeoffs",
+    "text": "Tradeoffs\n\n\n\nApproach\nSetup\nBest For\n\n\n\n\nPay per token\nMinimal\nPrototyping, low volume\n\n\nLocal hardware\nMedium\nPrivacy, offline use\n\n\nRent hardware\nHigher\nProduction, scale"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#pay-per-token-serverless",
+    "href": "slides/open-source-ai-glams.html#pay-per-token-serverless",
+    "title": "Open Source AI for GLAMs",
+    "section": "Pay Per Token (Serverless)",
+    "text": "Pay Per Token (Serverless)\nSetup: Minimal - use via OpenAI-compatible client\n\n\nPros\n\nQuick to start\nNo hardware needed\nCompetitive pricing\nEasy model switching\n\n\nCons\n\nVendor dependency\nResults can vary across providers\nOngoing costs\nData leaves your infrastructure"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#local-hardware",
+    "href": "slides/open-source-ai-glams.html#local-hardware",
+    "title": "Open Source AI for GLAMs",
+    "section": "Local Hardware",
+    "text": "Local Hardware\nSetup: Medium - install runtime + download model\n\n\nPros\n\nFull control\nData stays local\nNo ongoing costs\nWorks offline\n\n\nCons\n\nHardware limitations\nModel size constraints\nSetup/maintenance\nUpdates are manual"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#rent-hardware-dedicated",
+    "href": "slides/open-source-ai-glams.html#rent-hardware-dedicated",
+    "title": "Open Source AI for GLAMs",
+    "section": "Rent Hardware (Dedicated)",
+    "text": "Rent Hardware (Dedicated)\nSetup: Higher - configure cloud instance\n\n\nPros\n\nScalable resources\nRun any model size\nDedicated capacity\nProduction-ready\n\n\nCons\n\nCosts scale with usage\nInfrastructure complexity\nRequires DevOps skills\nCold start times"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#local-hosting",
+    "href": "slides/open-source-ai-glams.html#local-hosting",
+    "title": "Open Source AI for GLAMs",
+    "section": "Local hosting",
+    "text": "Local hosting\n\n\n\n\n\nmindmap\n  root((Local model ecosystem))\n    Python Libraries\n      Pytorch / Tensorflow / JAX\n      Transformers\n      Diffusers\n      Sentence Transformers\n      ONNX Runtime\n      Optimum\n    JavaScript\n      Transformers.js\n    Inference Frameworks\n      GPU Poor focused\n        llama.cpp\n          LM Studio\n          Ollama\n        MLX Apple Silicon\n          mlx-lm\n          mlx-vlm\n        ExLlamaV2\n        Jan\n      Enterprise Focused\n        vLLM\n        SgLang\n        Triton Inference Server\n    Quantization Formats\n      GGUF\n      GPTQ\n      AWQ\n    UIs\n      Gradio\n      Open WebUI"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#contributing-datasets",
+    "href": "slides/open-source-ai-glams.html#contributing-datasets",
+    "title": "Open Source AI for GLAMs",
+    "section": "Contributing: Datasets",
+    "text": "Contributing: Datasets\nGLAMs hold unique assets for AI training:\n\nCurated collections: High-quality, well-documented data\nDomain expertise: Historical texts, scientific literature, archival materials\nLinguistic diversity: Multilingual and underrepresented language resources\nRich metadata: Structured information often missing from web scrapes"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#contributing-evaluations",
+    "href": "slides/open-source-ai-glams.html#contributing-evaluations",
+    "title": "Open Source AI for GLAMs",
+    "section": "Contributing: Evaluations",
+    "text": "Contributing: Evaluations\nMove beyond “vibe checks” with domain expertise:\n\nTask benchmarks: Cataloging, transcription, metadata extraction\nQuality assessment: Expert evaluation of model outputs\nEdge cases: Cultural heritage contexts models often get wrong\nBias detection: Identifying gaps in historical & cultural knowledge"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#contributing-models",
+    "href": "slides/open-source-ai-glams.html#contributing-models",
+    "title": "Open Source AI for GLAMs",
+    "section": "Contributing: Models",
+    "text": "Contributing: Models\nShare trained models back to the community:\n\nFine-tuned models: Adapt general models to your domain (historical texts, scientific literature)\nSpecialized task models: OCR for historical typefaces, metadata extraction, document classification\nEmbedding models: Better semantic search using domain-specific vocabularies"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#thank-you",
+    "href": "slides/open-source-ai-glams.html#thank-you",
+    "title": "Open Source AI for GLAMs",
+    "section": "Thank You!",
+    "text": "Thank You!\nLet’s Connect\n\nFollow me on Hugging Face: huggingface.co/davanstrien\nsocials: https://linktr.ee/danielvanstrien"
+  },
+  {
+    "objectID": "slides/open-source-ai-glams.html#questions",
+    "href": "slides/open-source-ai-glams.html#questions",
+    "title": "Open Source AI for GLAMs",
+    "section": "Questions?",
+    "text": "Questions?"
+  },
+  {
     "objectID": "slides/open-source-ai-glams/index.html#what-is-open-source-ai",
     "href": "slides/open-source-ai-glams/index.html#what-is-open-source-ai",
     "title": "Open Source AI for GLAMs",
@@ -1087,153 +1458,6 @@
   {
     "objectID": "slides/open-source-ai-glams/index.html#questions",
     "href": "slides/open-source-ai-glams/index.html#questions",
-    "title": "Open Source AI for GLAMs",
-    "section": "Questions?",
-    "text": "Questions?"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#what-is-open-source-ai",
-    "href": "slides/open-source-ai-glams.html#what-is-open-source-ai",
-    "title": "Open Source AI for GLAMs",
-    "section": "What is Open Source AI?",
-    "text": "What is Open Source AI?\n\nAI systems where key components are publicly accessible\nA spectrum: from “open weights” to fully open training pipelines\nGrowing ecosystem of models, tools, and communities\n\n\n\nOpen source AI isn’t binary - there’s a spectrum of openness\nWe’ll explore what “open” means in practice"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#the-chat-interface",
-    "href": "slides/open-source-ai-glams.html#the-chat-interface",
-    "title": "Open Source AI for GLAMs",
-    "section": "The Chat Interface?",
-    "text": "The Chat Interface?\n\n\n\nAs I already mentioned in my intro, Generative AI has become the dominant way of thinking about AI\nIn particular, the “chat interface” i.e. chat GPT, claude etc, are the dominant way in which many people (consciously) interact with AI\nthis sometimes leads to the default answer to “what can we do with AI” to be “How can we create a chat interface for our collection?”"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#the-default-answer",
-    "href": "slides/open-source-ai-glams.html#the-default-answer",
-    "title": "Open Source AI for GLAMs",
-    "section": "The Default Answer",
-    "text": "The Default Answer\n“Let’s build a chatbot for our collections!”\n\nBut is this the best starting point?"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#ai-ferrari-vs-honda-civic",
-    "href": "slides/open-source-ai-glams.html#ai-ferrari-vs-honda-civic",
-    "title": "Open Source AI for GLAMs",
-    "section": "AI: Ferrari vs Honda Civic",
-    "text": "AI: Ferrari vs Honda Civic\n\n“A frontier model like GPT-4 is like a Ferrari. It’s an obvious triumph of engineering, designed to win races. But it takes a special pit crew just to change the tires.\n\n\nIn contrast, a smaller specialized model is like a Honda Civic. It’s engineered to be affordable, reliable, and extremely useful. And that’s why they’re absolutely everywhere.”\n\n\n— Adapted from “Finally, a Replacement for BERT” https://huggingface.co/blog/modernbert"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#what-is-an-ai-model",
-    "href": "slides/open-source-ai-glams.html#what-is-an-ai-model",
-    "title": "Open Source AI for GLAMs",
-    "section": "What is an AI Model?",
-    "text": "What is an AI Model?\n\n\n\n\n\nflowchart LR\n    W[Weights&lt;br/&gt;Learned numbers] --&gt; M((Model))\n    C[Code&lt;br/&gt;Instructions] --&gt; M\n    M --&gt; T[Does tasks]\n\n\n\n\n\n\nThe weights are the “brain” - patterns learned from training data"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#what-are-weights",
-    "href": "slides/open-source-ai-glams.html#what-are-weights",
-    "title": "Open Source AI for GLAMs",
-    "section": "What Are Weights?",
-    "text": "What Are Weights?\n\n\n\n\n\nflowchart TD\n    D[(Training Data&lt;br/&gt;Books, websites, images)] --&gt; L[Learning Process]\n    L --&gt; W[Weights File&lt;br/&gt;.safetensors]\n    W --&gt; E[\"Billions of numbers:&lt;br/&gt;[0.023, -0.891, 0.442, ...]\"]\n\n\n\n\n\n\nThese numbers encode everything the model “knows”"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#open-vs-closed-weights",
-    "href": "slides/open-source-ai-glams.html#open-vs-closed-weights",
-    "title": "Open Source AI for GLAMs",
-    "section": "Open vs Closed Weights",
-    "text": "Open vs Closed Weights\n\n\nOpen Weights\n\n\n\n\n\nflowchart TD\n    O[Download weights] --&gt; R[Run anywhere]\n    R --&gt; I[Inspect & modify]\n\n\n\n\n\n\n\nClosed Weights\n\n\n\n\n\nflowchart TD\n    A[API only] --&gt; B[Black box]\n    B --&gt; V[Vendor controlled]"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#open-source-beyond-weights",
-    "href": "slides/open-source-ai-glams.html#open-source-beyond-weights",
-    "title": "Open Source AI for GLAMs",
-    "section": "Open Source (Beyond Weights)",
-    "text": "Open Source (Beyond Weights)\n“fully” open source AI includes:\n\nTraining code: How the model was built\nTraining data: What the model learned from\nEvaluation details: How performance was measured\n\nExamples of “fully” open models:\n\nOLMo - Allen AI’s fully open LLM\nSmolLM - Hugging Face’s small, efficient models"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#why-open",
-    "href": "slides/open-source-ai-glams.html#why-open",
-    "title": "Open Source AI for GLAMs",
-    "section": "Why Open?",
-    "text": "Why Open?\n\n\n\nChoice\n1M+ models vs ~100 closed APIs\n\n\nControl\nRun where you want, pin versions\n\n\nFlexibility\nFine-tune for your domain\n\n\nCost\nOften cheaper at scale\n\n\nPrivacy\nData never leaves your infra\n\n\nTransparency\nInspect model & training data"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#choosing-a-model",
-    "href": "slides/open-source-ai-glams.html#choosing-a-model",
-    "title": "Open Source AI for GLAMs",
-    "section": "Choosing a Model",
-    "text": "Choosing a Model\nAI/ML is more than LLMs!\nMany tasks don’t need a large language model:\n\nClassification: Categorize documents, detect languages\nEmbeddings: Semantic search, similarity matching\nVision: OCR, image classification, object detection\nStructured extraction: Named entities, dates, metadata\n\nFinding models: Hugging Face Hub - 1M+ open models, filterable by task, language, size"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#running-the-model",
-    "href": "slides/open-source-ai-glams.html#running-the-model",
-    "title": "Open Source AI for GLAMs",
-    "section": "Running the model",
-    "text": "Running the model\nOpen models != local models\nA few genres of inference for open models:\n\nPay per token via a hosted endpoint “serverless”\nRun the model on your own hardware (laptop, desktop, server)\nRent the hardware to run the model and pay per hour"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#tradeoffs",
-    "href": "slides/open-source-ai-glams.html#tradeoffs",
-    "title": "Open Source AI for GLAMs",
-    "section": "Tradeoffs",
-    "text": "Tradeoffs\n\n\n\nApproach\nSetup\nBest For\n\n\n\n\nPay per token\nMinimal\nPrototyping, low volume\n\n\nLocal hardware\nMedium\nPrivacy, offline use\n\n\nRent hardware\nHigher\nProduction, scale"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#pay-per-token-serverless",
-    "href": "slides/open-source-ai-glams.html#pay-per-token-serverless",
-    "title": "Open Source AI for GLAMs",
-    "section": "Pay Per Token (Serverless)",
-    "text": "Pay Per Token (Serverless)\nSetup: Minimal - use via OpenAI-compatible client\n\n\nPros\n\nQuick to start\nNo hardware needed\nCompetitive pricing\nEasy model switching\n\n\nCons\n\nVendor dependency\nResults can vary across providers\nOngoing costs\nData leaves your infrastructure"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#local-hardware",
-    "href": "slides/open-source-ai-glams.html#local-hardware",
-    "title": "Open Source AI for GLAMs",
-    "section": "Local Hardware",
-    "text": "Local Hardware\nSetup: Medium - install runtime + download model\n\n\nPros\n\nFull control\nData stays local\nNo ongoing costs\nWorks offline\n\n\nCons\n\nHardware limitations\nModel size constraints\nSetup/maintenance\nUpdates are manual"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#rent-hardware-dedicated",
-    "href": "slides/open-source-ai-glams.html#rent-hardware-dedicated",
-    "title": "Open Source AI for GLAMs",
-    "section": "Rent Hardware (Dedicated)",
-    "text": "Rent Hardware (Dedicated)\nSetup: Higher - configure cloud instance\n\n\nPros\n\nScalable resources\nRun any model size\nDedicated capacity\nProduction-ready\n\n\nCons\n\nCosts scale with usage\nInfrastructure complexity\nRequires DevOps skills\nCold start times"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#local-hosting",
-    "href": "slides/open-source-ai-glams.html#local-hosting",
-    "title": "Open Source AI for GLAMs",
-    "section": "Local hosting",
-    "text": "Local hosting\n\n\n\n\n\nmindmap\n  root((Local model ecosystem))\n    Python Libraries\n      Pytorch / Tensorflow / JAX\n      Transformers\n      Diffusers\n      Sentence Transformers\n      ONNX Runtime\n      Optimum\n    JavaScript\n      Transformers.js\n    Inference Frameworks\n      GPU Poor focused\n        llama.cpp\n          LM Studio\n          Ollama\n        MLX Apple Silicon\n          mlx-lm\n          mlx-vlm\n        ExLlamaV2\n        Jan\n      Enterprise Focused\n        vLLM\n        SgLang\n        Triton Inference Server\n    Quantization Formats\n      GGUF\n      GPTQ\n      AWQ\n    UIs\n      Gradio\n      Open WebUI"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#contributing-datasets",
-    "href": "slides/open-source-ai-glams.html#contributing-datasets",
-    "title": "Open Source AI for GLAMs",
-    "section": "Contributing: Datasets",
-    "text": "Contributing: Datasets\nGLAMs hold unique assets for AI training:\n\nCurated collections: High-quality, well-documented data\nDomain expertise: Historical texts, scientific literature, archival materials\nLinguistic diversity: Multilingual and underrepresented language resources\nRich metadata: Structured information often missing from web scrapes"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#contributing-evaluations",
-    "href": "slides/open-source-ai-glams.html#contributing-evaluations",
-    "title": "Open Source AI for GLAMs",
-    "section": "Contributing: Evaluations",
-    "text": "Contributing: Evaluations\nMove beyond “vibe checks” with domain expertise:\n\nTask benchmarks: Cataloging, transcription, metadata extraction\nQuality assessment: Expert evaluation of model outputs\nEdge cases: Cultural heritage contexts models often get wrong\nBias detection: Identifying gaps in historical & cultural knowledge"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#contributing-models",
-    "href": "slides/open-source-ai-glams.html#contributing-models",
-    "title": "Open Source AI for GLAMs",
-    "section": "Contributing: Models",
-    "text": "Contributing: Models\nShare trained models back to the community:\n\nFine-tuned models: Adapt general models to your domain (historical texts, scientific literature)\nSpecialized task models: OCR for historical typefaces, metadata extraction, document classification\nEmbedding models: Better semantic search using domain-specific vocabularies"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#thank-you",
-    "href": "slides/open-source-ai-glams.html#thank-you",
-    "title": "Open Source AI for GLAMs",
-    "section": "Thank You!",
-    "text": "Thank You!\nLet’s Connect\n\nFollow me on Hugging Face: huggingface.co/davanstrien\nsocials: https://linktr.ee/danielvanstrien"
-  },
-  {
-    "objectID": "slides/open-source-ai-glams.html#questions",
-    "href": "slides/open-source-ai-glams.html#questions",
     "title": "Open Source AI for GLAMs",
     "section": "Questions?",
     "text": "Questions?"
