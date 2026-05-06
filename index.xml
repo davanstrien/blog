@@ -10,7 +10,379 @@
 <atom:link href="https://danielvanstrien.xyz/index.xml" rel="self" type="application/rss+xml"/>
 <description>Daniel van Strien&#39;s blog</description>
 <generator>quarto-1.9.37</generator>
-<lastBuildDate>Fri, 01 May 2026 00:00:00 GMT</lastBuildDate>
+<lastBuildDate>Wed, 06 May 2026 00:00:00 GMT</lastBuildDate>
+<item>
+  <title>All four agents tied at F1 ~0.95. The number was a mirage.</title>
+  <dc:creator>Daniel van Strien</dc:creator>
+  <link>https://danielvanstrien.xyz/posts/2026/agent-race-traces/</link>
+  <description><![CDATA[ 
+
+
+
+
+<p><a href="https://danielvanstrien.xyz/posts/2026/agent-race/">Last week</a> I gave two coding agents the same one-line prompt — fine-tune a classifier on <a href="https://huggingface.co/datasets/biglam/on_the_books"><code>biglam/on_the_books</code></a>, train via <code>hf jobs</code>, push to the Hub. Both shipped working models with F1 within 1.5pp.</p>
+<p>This week I added two more runs through the <a href="https://github.com/huggingface/ml-intern"><code>ml-intern</code></a> harness — one driven by Claude Opus 4.6, one by Kimi K2.6. The point of the follow-up wasn’t to add data; the original two-run race couldn’t tell harness from model effects apart, and a closer read of the dataset surfaced a structural issue the original missed. Four runs total, traces all public at <a href="https://huggingface.co/datasets/davanstrien/agent-race-traces"><code>davanstrien/agent-race-traces</code></a>.</p>
+<p>The 2×2:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Claude Opus 4.7</strong></th>
+<th><strong>Kimi K2.6</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Claude Code</strong></td>
+<td>F1 0.962</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td><strong>Pi</strong></td>
+<td>—</td>
+<td>F1 0.947</td>
+</tr>
+<tr class="odd">
+<td><strong>ml-intern</strong></td>
+<td>F1 0.949</td>
+<td>F1 0.947</td>
+</tr>
+</tbody>
+</table>
+<p>By the metric that nominally defines success on this task, they tied. Each run used a different random 80/20 split — so the 1.5pp spread is also within seed noise.</p>
+<section id="the-dataset-has-a-source-field" class="level2">
+<h2 class="anchored" data-anchor-id="the-dataset-has-a-source-field">The dataset has a <code>source</code> field</h2>
+<p><code>biglam/on_the_books</code> is 1,785 NC session laws (1866–1967), labelled binary for whether each section is a Jim Crow law. ~29% positive. It’s a merge of three different curators:</p>
+<div id="327d61e1" class="cell" data-execution_count="2">
+<div class="cell-output cell-output-display" data-execution_count="2">
+
+<style>
+  #altair-viz-c56bd4ca78e64958828be99eedf9e36a.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #altair-viz-c56bd4ca78e64958828be99eedf9e36a.vega-embed details,
+  #altair-viz-c56bd4ca78e64958828be99eedf9e36a.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="altair-viz-c56bd4ca78e64958828be99eedf9e36a"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-c56bd4ca78e64958828be99eedf9e36a") {
+      outputDiv = document.getElementById("altair-viz-c56bd4ca78e64958828be99eedf9e36a");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@6?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@6.1.0?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@7?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "6")
+        .then(() => maybeLoadScript("vega-lite", "6.1.0"))
+        .then(() => maybeLoadScript("vega-embed", "7"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"height": 160, "width": 680, "view": {"stroke": "transparent"}, "axis": {"labelFont": "-apple-system, system-ui, sans-serif", "titleFont": "-apple-system, system-ui, sans-serif", "labelFontSize": 11, "titleFontSize": 11, "titleColor": "#666", "labelColor": "#777", "gridColor": "#f2f2f2", "domainColor": "#ccc", "tickColor": "#ccc", "grid": true, "gridOpacity": 0.6}, "legend": {"labelFont": "-apple-system, system-ui, sans-serif", "titleFont": "-apple-system, system-ui, sans-serif", "labelFontSize": 11, "orient": "top", "offset": 0}, "title": "The dataset is a merge of three curators with very different prior probabilities", "layer": [{"mark": {"type": "bar", "cornerRadius": 2, "height": 22}, "encoding": {"color": {"field": "source", "legend": null, "scale": {"domain": ["paschal", "murray", "project experts"], "range": ["#c43d3d", "#d9844a", "#3a7ca5"]}, "type": "nominal"}, "tooltip": [{"field": "source", "title": "source", "type": "nominal"}, {"field": "n", "title": "rows", "type": "quantitative"}, {"field": "pct", "format": ".1f", "title": "% jim_crow", "type": "quantitative"}], "x": {"field": "pct", "scale": {"domain": [0, 105]}, "title": "% of rows labelled jim_crow=1", "type": "quantitative"}, "y": {"field": "label", "sort": ["paschal  (74 rows)", "murray  (38 rows)", "project experts  (1673 rows)"], "title": null, "type": "nominal"}}}, {"mark": {"type": "text", "align": "left", "color": "#333", "dx": 4, "fontSize": 11}, "encoding": {"text": {"field": "pct", "format": ".0f", "type": "quantitative"}, "x": {"field": "pct", "type": "quantitative"}, "y": {"field": "label", "sort": ["paschal  (74 rows)", "murray  (38 rows)", "project experts  (1673 rows)"], "type": "nominal"}}}], "data": {"name": "data-7608fb49822c851a1bd69f810bc97638"}, "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json", "datasets": {"data-7608fb49822c851a1bd69f810bc97638": [{"source": "paschal", "n": 74, "pct": 100.0, "label": "paschal  (74 rows)"}, {"source": "murray", "n": 38, "pct": 92.1, "label": "murray  (38 rows)"}, {"source": "project experts", "n": 1673, "pct": 24.1, "label": "project experts  (1673 rows)"}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+</div>
+<p><code>paschal</code> and <code>murray</code> are pre-existing curated lists of segregation laws — Pauli Murray’s landmark 1951 <em>States’ Laws on Race and Color</em>, and the Paschal compilation. They are <strong>100% and 92% positive by curatorial design</strong>, not by any signal the model could learn. <code>project experts</code> is the broader human-annotated sample with both classes.</p>
+<p>So <code>source</code> is correlated with the label <em>because of how the dataset was assembled</em>. The classic “label leak” framing isn’t quite right — none of the agents trained on <code>source</code> as a feature; all four took <code>section_text</code> only by default. But every agent’s reported F1 rests on a random 80/20 split, which puts paschal and murray rows in <em>both</em> the train and eval sets. That doesn’t test generalisation across sources — it tests memorisation within a single distribution.</p>
+</section>
+<section id="the-eval-the-agents-didnt-run" class="level2">
+<h2 class="anchored" data-anchor-id="the-eval-the-agents-didnt-run">The eval the agents didn’t run</h2>
+<p>To check whether the headline F1 numbers are honest, train and evaluate the same way the agents did, then again with a held-out source. A simple TF-IDF + logistic regression baseline is enough — the eval-methodology gap matters more than the model:</p>
+<div id="e4554ab6" class="cell" data-execution_count="3">
+<div class="cell-output cell-output-display" data-execution_count="3">
+
+<style>
+  #altair-viz-40dd3231d5a349e5a785e060eea6f4e4.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #altair-viz-40dd3231d5a349e5a785e060eea6f4e4.vega-embed details,
+  #altair-viz-40dd3231d5a349e5a785e060eea6f4e4.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="altair-viz-40dd3231d5a349e5a785e060eea6f4e4"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-40dd3231d5a349e5a785e060eea6f4e4") {
+      outputDiv = document.getElementById("altair-viz-40dd3231d5a349e5a785e060eea6f4e4");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@6?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@6.1.0?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@7?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "6")
+        .then(() => maybeLoadScript("vega-lite", "6.1.0"))
+        .then(() => maybeLoadScript("vega-embed", "7"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"height": 260, "width": 680, "view": {"stroke": "transparent"}, "axis": {"labelFont": "-apple-system, system-ui, sans-serif", "titleFont": "-apple-system, system-ui, sans-serif", "labelFontSize": 11, "titleFontSize": 11, "titleColor": "#666", "labelColor": "#777", "gridColor": "#f2f2f2", "domainColor": "#ccc", "tickColor": "#ccc", "grid": true, "gridOpacity": 0.6}, "legend": {"labelFont": "-apple-system, system-ui, sans-serif", "titleFont": "-apple-system, system-ui, sans-serif", "labelFontSize": 11, "orient": "top", "offset": 0}, "title": "Same baseline model, three eval methodologies \u2014 a 22 F1-point gap", "layer": [{"mark": {"type": "bar", "cornerRadius": 2, "width": 120}, "encoding": {"color": {"field": "color", "legend": null, "scale": null, "type": "nominal"}, "tooltip": [{"field": "setup", "title": "eval setup", "type": "nominal"}, {"field": "f1", "format": ".3f", "title": "F1", "type": "quantitative"}], "x": {"axis": {"labelAngle": 0, "labelFontSize": 10, "labelLimit": 180}, "field": "setup", "sort": ["Random 80/20 split\n(what the agents did)", "Train on project experts\n\u2192 eval on paschal + murray", "Train on paschal + murray\n\u2192 eval on project experts"], "title": null, "type": "nominal"}, "y": {"field": "f1", "scale": {"domain": [0, 1]}, "title": "F1 (held-out)", "type": "quantitative"}}}, {"mark": {"type": "text", "color": "#333", "dy": -8, "fontSize": 11}, "encoding": {"text": {"field": "f1", "format": ".2f", "type": "quantitative"}, "x": {"field": "setup", "sort": ["Random 80/20 split\n(what the agents did)", "Train on project experts\n\u2192 eval on paschal + murray", "Train on paschal + murray\n\u2192 eval on project experts"], "type": "nominal"}, "y": {"field": "f1", "type": "quantitative"}}}], "data": {"name": "data-d8904154c21769ba1137fec27dce1d96"}, "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json", "datasets": {"data-d8904154c21769ba1137fec27dce1d96": [{"setup": "Random 80/20 split\n(what the agents did)", "f1": 0.751, "color": "#3a7ca5"}, {"setup": "Train on project experts\n\u2192 eval on paschal + murray", "f1": 0.527, "color": "#d9844a"}, {"setup": "Train on paschal + murray\n\u2192 eval on project experts", "f1": 0.388, "color": "#c43d3d"}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+</div>
+<p>A <strong>22 F1-point gap</strong> between random and source-stratified eval, on the same baseline model. The strong model classes the agents picked (ModernBERT, RoBERTa, legal-BERT) will narrow this gap but won’t close it — the issue is the eval setup, not the architecture. None of the four agents reported a number that tells you whether their model would handle a new compilation of laws curated under a different process. They all reported the random-split number.</p>
+<p>This isn’t a bug in the dataset — <code>biglam/on_the_books</code> does what its README says. It’s a bug in how all four agents thought about the eval. They reported the metric they were given, not the metric the task actually needed.</p>
+</section>
+<section id="what-each-agent-did-notice" class="level2">
+<h2 class="anchored" data-anchor-id="what-each-agent-did-notice">What each agent did notice</h2>
+<p>Three of four agents trained on <code>section_text</code> only — by default — and dodged the worst of it. None of the four ran the source-stratified eval. Only one agent surfaced the issue at all:</p>
+<div id="1a8c1b33" class="cell" data-execution_count="4">
+<div class="cell-output cell-output-display" data-execution_count="4">
+
+<style>
+  #altair-viz-52bdf6c655504e99b077548e06659d9c.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #altair-viz-52bdf6c655504e99b077548e06659d9c.vega-embed details,
+  #altair-viz-52bdf6c655504e99b077548e06659d9c.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="altair-viz-52bdf6c655504e99b077548e06659d9c"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-52bdf6c655504e99b077548e06659d9c") {
+      outputDiv = document.getElementById("altair-viz-52bdf6c655504e99b077548e06659d9c");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@6?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@6.1.0?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@7?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "6")
+        .then(() => maybeLoadScript("vega-lite", "6.1.0"))
+        .then(() => maybeLoadScript("vega-embed", "7"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"height": 180, "width": 680, "view": {"stroke": "transparent"}, "axis": {"labelFont": "-apple-system, system-ui, sans-serif", "titleFont": "-apple-system, system-ui, sans-serif", "labelFontSize": 11, "titleFontSize": 11, "titleColor": "#666", "labelColor": "#777", "gridColor": "#f2f2f2", "domainColor": "#ccc", "tickColor": "#ccc", "grid": true, "gridOpacity": 0.6}, "legend": {"labelFont": "-apple-system, system-ui, sans-serif", "titleFont": "-apple-system, system-ui, sans-serif", "labelFontSize": 11, "orient": "top", "offset": 0}, "title": "What did each agent notice that wasn't asked for? (hover for evidence)", "layer": [{"mark": {"type": "rect", "stroke": "white", "strokeWidth": 2}, "encoding": {"color": {"field": "v", "legend": null, "scale": {"domain": [0, 0.5, 1], "range": ["#fbeeee", "#fde9c2", "#cae9d4"]}, "type": "quantitative"}, "tooltip": [{"field": "run", "title": "agent", "type": "nominal"}, {"field": "dim", "title": "dimension", "type": "nominal"}, {"field": "note", "title": "evidence", "type": "nominal"}], "x": {"axis": {"labelAngle": 0, "labelFontSize": 10, "orient": "top"}, "field": "run", "sort": ["Claude Code + Opus 4.7", "Pi + Kimi K2.6", "ml-intern + Opus 4.6", "ml-intern + Kimi K2.6"], "title": null, "type": "nominal"}, "y": {"axis": {"labelFontSize": 10, "labelLimit": 240}, "field": "dim", "sort": ["Computed per-source label breakdown", "Flagged it as a selection-bias risk", "Class-weighted loss for 29% positive", "Wrote model card with caveats (OCR, scope)"], "title": null, "type": "nominal"}}}, {"mark": {"type": "text", "fontSize": 11, "fontWeight": "bold"}, "encoding": {"color": {"field": "v", "legend": null, "scale": {"domain": [0, 0.5, 1], "range": ["#aa3333", "#a3722a", "#1f6638"]}, "type": "quantitative"}, "text": {"field": "label", "type": "nominal"}, "x": {"field": "run", "sort": ["Claude Code + Opus 4.7", "Pi + Kimi K2.6", "ml-intern + Opus 4.6", "ml-intern + Kimi K2.6"], "type": "nominal"}, "y": {"field": "dim", "sort": ["Computed per-source label breakdown", "Flagged it as a selection-bias risk", "Class-weighted loss for 29% positive", "Wrote model card with caveats (OCR, scope)"], "type": "nominal"}}}], "config": {"view": {"stroke": null}}, "data": {"name": "data-65841d5445cdddb3079a781f27ed8c10"}, "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json", "datasets": {"data-65841d5445cdddb3079a781f27ed8c10": [{"run": "Claude Code + Opus 4.7", "dim": "Computed per-source label breakdown", "v": 1.0, "label": "yes", "note": "Per-source breakdown computed during EDA"}, {"run": "Claude Code + Opus 4.7", "dim": "Flagged it as a selection-bias risk", "v": 1.0, "label": "yes", "note": "Documented in the model card"}, {"run": "Claude Code + Opus 4.7", "dim": "Class-weighted loss for 29% positive", "v": 1.0, "label": "yes", "note": "Custom WeightedTrainer with inverse-frequency weights"}, {"run": "Claude Code + Opus 4.7", "dim": "Wrote model card with caveats (OCR, scope)", "v": 1.0, "label": "yes", "note": "12 tags, OCR caveat, jurisdiction limits, scope caveat"}, {"run": "Pi + Kimi K2.6", "dim": "Computed per-source label breakdown", "v": 0.0, "label": "\u2014", "note": "Not in trace"}, {"run": "Pi + Kimi K2.6", "dim": "Flagged it as a selection-bias risk", "v": 0.0, "label": "\u2014", "note": "Not in trace"}, {"run": "Pi + Kimi K2.6", "dim": "Class-weighted loss for 29% positive", "v": 0.0, "label": "\u2014", "note": "Not in trace"}, {"run": "Pi + Kimi K2.6", "dim": "Wrote model card with caveats (OCR, scope)", "v": 0.0, "label": "\u2014", "note": "Not in trace"}, {"run": "ml-intern + Opus 4.6", "dim": "Computed per-source label breakdown", "v": 0.0, "label": "\u2014", "note": "Not in trace"}, {"run": "ml-intern + Opus 4.6", "dim": "Flagged it as a selection-bias risk", "v": 0.0, "label": "\u2014", "note": "Not in trace"}, {"run": "ml-intern + Opus 4.6", "dim": "Class-weighted loss for 29% positive", "v": 0.0, "label": "\u2014", "note": "Not in trace"}, {"run": "ml-intern + Opus 4.6", "dim": "Wrote model card with caveats (OCR, scope)", "v": 0.5, "label": "partial", "note": "Wrote a real card, but no OCR or scope caveats"}, {"run": "ml-intern + Kimi K2.6", "dim": "Computed per-source label breakdown", "v": 0.5, "label": "partial", "note": "Computed it, but didn't connect it to leak/eval risk"}, {"run": "ml-intern + Kimi K2.6", "dim": "Flagged it as a selection-bias risk", "v": 0.0, "label": "\u2014", "note": "Not in trace"}, {"run": "ml-intern + Kimi K2.6", "dim": "Class-weighted loss for 29% positive", "v": 0.0, "label": "\u2014", "note": "Not in trace"}, {"run": "ml-intern + Kimi K2.6", "dim": "Wrote model card with caveats (OCR, scope)", "v": 0.5, "label": "partial", "note": "Wrote a real card, but no OCR or scope caveats"}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+</div>
+<p>The wild bit: ml-intern + Kimi <em>computed the per-source breakdown</em> during EDA. The numbers (<code>paschal: 100.0%, murray: 92.1%</code>) were on its screen at event 26. It then trained, evaluated on a random split, pushed a card with metrics, and never mentioned the field. Claude Code computed the same breakdown and immediately wrote <code>source would leak the label (paschal is 100% positive, murray is 92% positive)</code> into its model card.</p>
+<p>Same data, same evidence, very different downstream outcomes.</p>
+</section>
+<section id="process-tells-four-different-stories" class="level2">
+<h2 class="anchored" data-anchor-id="process-tells-four-different-stories">Process tells four different stories</h2>
+<p>Outcome F1 was uniform. The traces are not:</p>
+<div id="8ce10f09" class="cell" data-execution_count="5">
+<div class="cell-output cell-output-display" data-execution_count="5">
+
+<style>
+  #altair-viz-9d810fca720f4bec87750199a91e73fa.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #altair-viz-9d810fca720f4bec87750199a91e73fa.vega-embed details,
+  #altair-viz-9d810fca720f4bec87750199a91e73fa.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="altair-viz-9d810fca720f4bec87750199a91e73fa"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-9d810fca720f4bec87750199a91e73fa") {
+      outputDiv = document.getElementById("altair-viz-9d810fca720f4bec87750199a91e73fa");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@6?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@6.1.0?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@7?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "6")
+        .then(() => maybeLoadScript("vega-lite", "6.1.0"))
+        .then(() => maybeLoadScript("vega-embed", "7"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"height": 260, "width": 680, "view": {"stroke": "transparent"}, "axis": {"labelFont": "-apple-system, system-ui, sans-serif", "titleFont": "-apple-system, system-ui, sans-serif", "labelFontSize": 11, "titleFontSize": 11, "titleColor": "#666", "labelColor": "#777", "gridColor": "#f2f2f2", "domainColor": "#ccc", "tickColor": "#ccc", "grid": true, "gridOpacity": 0.6}, "legend": {"labelFont": "-apple-system, system-ui, sans-serif", "titleFont": "-apple-system, system-ui, sans-serif", "labelFontSize": 11, "orient": "top", "offset": 0}, "title": "Tool-call shape per run (hover a segment for details)", "layer": [{"data": {"name": "data-531cbf3f172530fac67b2dc41d2313d7"}, "mark": {"type": "bar", "cornerRadius": 1, "width": 80}, "encoding": {"color": {"field": "category", "scale": {"domain": ["bash", "edit / write", "plan / task tools", "HF / research tools", "sleep / schedule", "other"], "range": ["#5b8c85", "#e8a87c", "#85586f", "#6f8ab7", "#c89b3c", "#bbbbbb"]}, "sort": ["bash", "edit / write", "plan / task tools", "HF / research tools", "sleep / schedule", "other"], "title": null, "type": "nominal"}, "order": {"field": "category", "sort": "ascending", "type": "nominal"}, "tooltip": [{"field": "run", "title": "agent", "type": "nominal"}, {"field": "category", "title": "category", "type": "nominal"}, {"field": "n", "title": "tool calls", "type": "quantitative"}], "x": {"axis": {"labelAngle": 0, "labelFontSize": 10}, "field": "run", "sort": ["Claude Code + Opus 4.7", "Pi + Kimi K2.6", "ml-intern + Opus 4.6", "ml-intern + Kimi K2.6"], "title": null, "type": "nominal"}, "y": {"field": "n", "title": "tool calls", "type": "quantitative"}}}, {"data": {"name": "data-8eaac4035a1acaa3c2b0550f1a3f7e06"}, "mark": {"type": "text", "color": "#333", "dy": -8, "fontSize": 11}, "encoding": {"text": {"field": "total", "type": "quantitative"}, "x": {"field": "run", "sort": ["Claude Code + Opus 4.7", "Pi + Kimi K2.6", "ml-intern + Opus 4.6", "ml-intern + Kimi K2.6"], "type": "nominal"}, "y": {"field": "total", "type": "quantitative"}}}], "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json", "datasets": {"data-531cbf3f172530fac67b2dc41d2313d7": [{"run": "Claude Code + Opus 4.7", "category": "bash", "n": 24}, {"run": "Claude Code + Opus 4.7", "category": "edit / write", "n": 3}, {"run": "Claude Code + Opus 4.7", "category": "plan / task tools", "n": 12}, {"run": "Claude Code + Opus 4.7", "category": "HF / research tools", "n": 4}, {"run": "Claude Code + Opus 4.7", "category": "sleep / schedule", "n": 2}, {"run": "Claude Code + Opus 4.7", "category": "other", "n": 0}, {"run": "Pi + Kimi K2.6", "category": "bash", "n": 29}, {"run": "Pi + Kimi K2.6", "category": "edit / write", "n": 4}, {"run": "Pi + Kimi K2.6", "category": "plan / task tools", "n": 0}, {"run": "Pi + Kimi K2.6", "category": "HF / research tools", "n": 0}, {"run": "Pi + Kimi K2.6", "category": "sleep / schedule", "n": 0}, {"run": "Pi + Kimi K2.6", "category": "other", "n": 0}, {"run": "ml-intern + Opus 4.6", "category": "bash", "n": 15}, {"run": "ml-intern + Opus 4.6", "category": "edit / write", "n": 1}, {"run": "ml-intern + Opus 4.6", "category": "plan / task tools", "n": 5}, {"run": "ml-intern + Opus 4.6", "category": "HF / research tools", "n": 4}, {"run": "ml-intern + Opus 4.6", "category": "sleep / schedule", "n": 0}, {"run": "ml-intern + Opus 4.6", "category": "other", "n": 1}, {"run": "ml-intern + Kimi K2.6", "category": "bash", "n": 47}, {"run": "ml-intern + Kimi K2.6", "category": "edit / write", "n": 7}, {"run": "ml-intern + Kimi K2.6", "category": "plan / task tools", "n": 4}, {"run": "ml-intern + Kimi K2.6", "category": "HF / research tools", "n": 6}, {"run": "ml-intern + Kimi K2.6", "category": "sleep / schedule", "n": 0}, {"run": "ml-intern + Kimi K2.6", "category": "other", "n": 3}], "data-8eaac4035a1acaa3c2b0550f1a3f7e06": [{"run": "Claude Code + Opus 4.7", "total": 45}, {"run": "Pi + Kimi K2.6", "total": 33}, {"run": "ml-intern + Kimi K2.6", "total": 67}, {"run": "ml-intern + Opus 4.6", "total": 26}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+</div>
+<ul>
+<li><strong>Pi + Kimi</strong> has the leanest tool palette (bash, edit, write only) and the most reactive failure mode: four progressive <code>transformers</code> API errors fixed iteratively (<code>KeyError: 'label'</code>, <code>evaluation_strategy</code> → <code>eval_strategy</code>, <code>tokenizer</code> → <code>processing_class</code>, <code>"model did not return a loss"</code>).</li>
+<li><strong>ml-intern + Kimi</strong> is the noisiest — 67 tool calls, five tracebacks, multiple <code>PATH</code> issues, two cancelled jobs, a write→edit→compile→bash debugging cycle, and the legal-BERT pick that didn’t justify itself against a 512-token context budget.</li>
+</ul>
+<p>The 2×2 partly isolates harness from model. <strong>Same model, different harness</strong> (Kimi in Pi vs ml-intern) burned iterations on different friction surfaces — <code>transformers</code> API drift in Pi, env plumbing in ml-intern. <strong>Same harness, different model</strong> (Opus 4.6 vs Kimi in ml-intern) split 54 vs 127 events for the same task, with Opus picking from data and Kimi browsing docs first. Both Kimi runs missed the eval-methodology issue. With N=4 these are gestures at attribution, not measurements — but tentatively: harness shapes process; model shapes proactive judgment, the <em>catching what wasn’t asked for</em> part.</p>
+</section>
+<section id="what-this-is-for" class="level2">
+<h2 class="anchored" data-anchor-id="what-this-is-for">What this is for</h2>
+<p><a href="https://danielvanstrien.xyz/posts/2026/agent-sentiment/">Last month</a> I argued that sentiment is a thin lens on agent traces and that behavioural patterns hold richer signal. F1 on a coding-agent eval is the same kind of thin lens — easy to read, hard to learn from, sometimes outright misleading. The signal is in the trace.</p>
+<p>If you’ve used a coding agent for an ML task recently — especially one that nearly worked or failed in an interesting way — the <a href="https://huggingface.co/changelog/agent-trace-viewer">agent-trace viewer</a> renders Claude Code, Codex, and Pi sessions directly from your local session directories. <code>hf upload your-username/your-traces ~/.claude/projects --repo-type dataset</code>. Tag it <code>format:agent-traces</code>. The next iteration of this kind of analysis can include yours.</p>
+
+
+</section>
+
+ ]]></description>
+  <category>coding-agents</category>
+  <category>hugging-face</category>
+  <category>agent-traces</category>
+  <category>glam</category>
+  <category>datasets</category>
+  <guid>https://danielvanstrien.xyz/posts/2026/agent-race-traces/</guid>
+  <pubDate>Wed, 06 May 2026 00:00:00 GMT</pubDate>
+  <media:content url="https://danielvanstrien.xyz/posts/2026/agent-race-traces/judgment-matrix.png" medium="image" type="image/png" height="58" width="144"/>
+</item>
 <item>
   <title>Two agents, one prompt</title>
   <dc:creator>Daniel van Strien</dc:creator>
@@ -25913,135 +26285,6 @@ Input: Hugging Face is a wonderful platform for machine learning developers.</co
   <category>synthetic-data</category>
   <guid>https://danielvanstrien.xyz/posts/plain-text/2024-05-15-self-instruct.html</guid>
   <pubDate>Wed, 15 May 2024 00:00:00 GMT</pubDate>
-</item>
-<item>
-  <title>Tracing Text Generation Inference calls</title>
-  <dc:creator>Daniel van Strien</dc:creator>
-  <link>https://danielvanstrien.xyz/posts/post-with-code/langfuse-tracing/Langfuse_+_HF_inference_endpoints.html</link>
-  <description><![CDATA[ 
-
-
-
-
-<div id="cell-1" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="be7ed8e0-ad25-4d97-88a8-799f85591f8f" data-execution_count="2">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">%</span>pip install openai langfuse <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">--</span>quiet</span></code></pre></div></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Note: you may need to restart the kernel to use updated packages.</code></pre>
-</div>
-</div>
-<pre><code>LANGFUSE_SECRET_KEY="sk-lf-..."
-LANGFUSE_PUBLIC_KEY="pk-lf-..."
-LANGFUSE_HOST="https://cloud.langfuse.com" # 🇪🇺 EU region</code></pre>
-<div id="cell-3" class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> google.colab <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> userdata</span>
-<span id="cb4-2"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> os</span></code></pre></div></div>
-</div>
-<div id="cell-4" class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1">os.environ[<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"LANGFUSE_SECRET_KEY"</span>] <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> userdata.get(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'LANGFUSE_SECRET_KEY'</span>)</span>
-<span id="cb5-2">os.environ[<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"LANGFUSE_PUBLIC_KEY"</span>] <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> userdata.get(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'LANGFUSE_PUBLIC_KEY'</span>)</span>
-<span id="cb5-3">HF_TOKEN <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> userdata.get(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'HF_TOKEN'</span>)</span></code></pre></div></div>
-</div>
-<div id="cell-6" class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> langfuse.decorators <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> observe</span>
-<span id="cb6-2"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> langfuse.openai <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> openai, OpenAI <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># OpenAI integration</span></span>
-<span id="cb6-3"></span>
-<span id="cb6-4"></span>
-<span id="cb6-5">client <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> OpenAI(</span>
-<span id="cb6-6">        base_url<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1/v1"</span>,</span>
-<span id="cb6-7">        api_key<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>HF_TOKEN,</span>
-<span id="cb6-8">    )</span></code></pre></div></div>
-</div>
-<div id="cell-7" class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1">chat_completion <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> client.chat.completions.create(</span>
-<span id="cb7-2">    model<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"tgi"</span>,</span>
-<span id="cb7-3">    messages<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>[</span>
-<span id="cb7-4">        {<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"role"</span>: <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"user"</span>, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"content"</span>: <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"What is Hugging Face?"</span>}</span>
-<span id="cb7-5">    ],</span>
-<span id="cb7-6">    stream<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">False</span></span>
-<span id="cb7-7">)</span></code></pre></div></div>
-</div>
-<div id="cell-8" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="9ecdea98-6c15-464c-e9c8-1425188b63fd">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1">chat_completion</span></code></pre></div></div>
-<div class="cell-output cell-output-display" data-execution_count="14">
-<pre><code>ChatCompletion(id='', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content=" Hugging Face is a technology company that specializes in natural language processing (NLP) and artificial intelligence (AI). The company is best known for its development of Transformers, an open-source library that provides a wide range of pre-trained models for various NLP tasks, such as text classification, question answering, and language translation.\n\nHugging Face's Transformers library has gained widespread popularity among developers and researchers due to its ease of use, flexibility, and", role='assistant', function_call=None, tool_calls=None))], created=1712314124, model='text-generation-inference/Mixtral-8x7B-Instruct-v0.1-medusa', object='text_completion', system_fingerprint='1.4.3-sha-e6bb3ff', usage=CompletionUsage(completion_tokens=100, prompt_tokens=15, total_tokens=115))</code></pre>
-</div>
-</div>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://danielvanstrien.xyz/posts/post-with-code/langfuse-tracing/langfuse.png" class="img-fluid figure-img"></p>
-<figcaption>Langfuse Trace</figcaption>
-</figure>
-</div>
-
-
-
- ]]></description>
-  <guid>https://danielvanstrien.xyz/posts/post-with-code/langfuse-tracing/Langfuse_+_HF_inference_endpoints.html</guid>
-  <pubDate>Fri, 05 Apr 2024 00:00:00 GMT</pubDate>
 </item>
 </channel>
 </rss>
