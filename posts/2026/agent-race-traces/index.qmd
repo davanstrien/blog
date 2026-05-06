@@ -1,0 +1,309 @@
+---
+title: "All four agents tied at F1 ~0.95. The number was a mirage."
+subtitle: "Three harnesses, two driver models, four runs. The traces show why an outcome metric on this dataset doesn't mean what the agents reported it means — and a 22-point F1 gap when you actually test for generalisation."
+date: "2026-05-06"
+author: "Daniel van Strien"
+categories: [coding-agents, hugging-face, agent-traces, glam, datasets]
+description: "Same one-line prompt, three harnesses, two driver models. The headline F1 tied within 1.5pp. A source-stratified eval the agents didn't run shows the headline number was hiding a 22 F1-point generalisation gap."
+image: judgment-matrix.png
+execute:
+  freeze: true
+format:
+  html:
+    toc: false
+    code-fold: true
+    code-summary: "show code"
+---
+
+```{python}
+#| echo: false
+import altair as alt
+import pandas as pd
+
+@alt.theme.register("tufte", enable=True)
+def tufte():
+    return alt.theme.ThemeConfig(
+        {"height": 240, "width": 680},
+        view={"stroke": "transparent"},
+        axis={
+            "labelFont": "-apple-system, system-ui, sans-serif",
+            "titleFont": "-apple-system, system-ui, sans-serif",
+            "labelFontSize": 11, "titleFontSize": 11,
+            "titleColor": "#666", "labelColor": "#777",
+            "gridColor": "#f2f2f2", "domainColor": "#ccc", "tickColor": "#ccc",
+            "grid": True, "gridOpacity": 0.6,
+        },
+        legend={
+            "labelFont": "-apple-system, system-ui, sans-serif",
+            "titleFont": "-apple-system, system-ui, sans-serif",
+            "labelFontSize": 11, "orient": "top", "offset": 0,
+        },
+        title={"font": "-apple-system, system-ui, sans-serif",
+               "fontSize": 12, "color": "#444", "anchor": "start"},
+    )
+
+RUN_ORDER = [
+    "Claude Code + Opus 4.7",
+    "Pi + Kimi K2.6",
+    "ml-intern + Opus 4.6",
+    "ml-intern + Kimi K2.6",
+]
+```
+
+[Last week](https://danielvanstrien.xyz/posts/2026/agent-race/) I gave two coding agents the same one-line prompt — fine-tune a classifier on [`biglam/on_the_books`](https://huggingface.co/datasets/biglam/on_the_books), train via `hf jobs`, push to the Hub. Both shipped working models with F1 within 1.5pp.
+
+This week I added two more runs through the [`ml-intern`](https://github.com/huggingface/ml-intern) harness — one driven by Claude Opus 4.6, one by Kimi K2.6. The point of the follow-up wasn't to add data; the original two-run race couldn't tell harness from model effects apart, and a closer read of the dataset surfaced a structural issue the original missed. Four runs total, traces all public at [`davanstrien/agent-race-traces`](https://huggingface.co/datasets/davanstrien/agent-race-traces).
+
+The 2×2:
+
+| | **Claude Opus 4.7** | **Kimi K2.6** |
+|---|---|---|
+| **Claude Code** | F1 0.962 | — |
+| **Pi** | — | F1 0.947 |
+| **ml-intern** | F1 0.949 | F1 0.947 |
+
+By the metric that nominally defines success on this task, they tied. Each run used a different random 80/20 split — so the 1.5pp spread is also within seed noise.
+
+## The dataset has a `source` field
+
+`biglam/on_the_books` is 1,785 NC session laws (1866–1967), labelled binary for whether each section is a Jim Crow law. ~29% positive. It's a merge of three different curators:
+
+```{python}
+#| echo: false
+sources = pd.DataFrame([
+    {"source": "paschal",         "n": 74,   "pct": 100.0},
+    {"source": "murray",          "n": 38,   "pct": 92.1},
+    {"source": "project experts", "n": 1673, "pct": 24.1},
+])
+sources["label"] = sources["source"] + "  (" + sources["n"].astype(str) + " rows)"
+
+color_scale = alt.Scale(
+    domain=["paschal", "murray", "project experts"],
+    range=["#c43d3d", "#d9844a", "#3a7ca5"],
+)
+
+base = alt.Chart(sources).mark_bar(height=22, cornerRadius=2).encode(
+    x=alt.X("pct:Q", title="% of rows labelled jim_crow=1",
+            scale=alt.Scale(domain=[0, 105])),
+    y=alt.Y("label:N", sort=["paschal  (74 rows)", "murray  (38 rows)", "project experts  (1673 rows)"],
+            title=None),
+    color=alt.Color("source:N", scale=color_scale, legend=None),
+    tooltip=[
+        alt.Tooltip("source:N", title="source"),
+        alt.Tooltip("n:Q", title="rows"),
+        alt.Tooltip("pct:Q", title="% jim_crow", format=".1f"),
+    ],
+)
+
+text = alt.Chart(sources).mark_text(align="left", dx=4, fontSize=11, color="#333").encode(
+    x="pct:Q",
+    y=alt.Y("label:N", sort=["paschal  (74 rows)", "murray  (38 rows)", "project experts  (1673 rows)"]),
+    text=alt.Text("pct:Q", format=".0f"),
+)
+
+(base + text).properties(
+    title="The dataset is a merge of three curators with very different prior probabilities",
+    height=160,
+)
+```
+
+`paschal` and `murray` are pre-existing curated lists of segregation laws — Pauli Murray's landmark 1951 *States' Laws on Race and Color*, and the Paschal compilation. They are **100% and 92% positive by curatorial design**, not by any signal the model could learn. `project experts` is the broader human-annotated sample with both classes.
+
+So `source` is correlated with the label *because of how the dataset was assembled*. The classic "label leak" framing isn't quite right — none of the agents trained on `source` as a feature; all four took `section_text` only by default. But every agent's reported F1 rests on a random 80/20 split, which puts paschal and murray rows in *both* the train and eval sets. That doesn't test generalisation across sources — it tests memorisation within a single distribution.
+
+## The eval the agents didn't run
+
+To check whether the headline F1 numbers are honest, train and evaluate the same way the agents did, then again with a held-out source. A simple TF-IDF + logistic regression baseline is enough — the eval-methodology gap matters more than the model:
+
+```{python}
+#| echo: false
+controlled = pd.DataFrame([
+    {"setup": "Random 80/20 split\n(what the agents did)",                 "f1": 0.751, "color": "#3a7ca5"},
+    {"setup": "Train on project experts\n→ eval on paschal + murray",       "f1": 0.527, "color": "#d9844a"},
+    {"setup": "Train on paschal + murray\n→ eval on project experts",       "f1": 0.388, "color": "#c43d3d"},
+])
+
+bars = alt.Chart(controlled).mark_bar(width=120, cornerRadius=2).encode(
+    x=alt.X("setup:N", title=None, sort=controlled["setup"].tolist(),
+            axis=alt.Axis(labelAngle=0, labelFontSize=10, labelLimit=180)),
+    y=alt.Y("f1:Q", title="F1 (held-out)", scale=alt.Scale(domain=[0, 1])),
+    color=alt.Color("color:N", scale=None, legend=None),
+    tooltip=[
+        alt.Tooltip("setup:N", title="eval setup"),
+        alt.Tooltip("f1:Q", title="F1", format=".3f"),
+    ],
+)
+
+labels = alt.Chart(controlled).mark_text(dy=-8, fontSize=11, color="#333").encode(
+    x=alt.X("setup:N", sort=controlled["setup"].tolist()),
+    y="f1:Q",
+    text=alt.Text("f1:Q", format=".2f"),
+)
+
+(bars + labels).properties(
+    title="Same baseline model, three eval methodologies — a 22 F1-point gap",
+    height=260,
+)
+```
+
+A **22 F1-point gap** between random and source-stratified eval, on the same baseline model. The strong model classes the agents picked (ModernBERT, RoBERTa, legal-BERT) will narrow this gap but won't close it — the issue is the eval setup, not the architecture. None of the four agents reported a number that tells you whether their model would handle a new compilation of laws curated under a different process. They all reported the random-split number.
+
+This isn't a bug in the dataset — `biglam/on_the_books` does what its README says. It's a bug in how all four agents thought about the eval. They reported the metric they were given, not the metric the task actually needed.
+
+## What each agent did notice
+
+Three of four agents trained on `section_text` only — by default — and dodged the worst of it. None of the four ran the source-stratified eval. Only one agent surfaced the issue at all:
+
+```{python}
+#| echo: false
+DIMS = [
+    "Computed per-source label breakdown",
+    "Flagged it as a selection-bias risk",
+    "Class-weighted loss for 29% positive",
+    "Wrote model card with caveats (OCR, scope)",
+]
+
+matrix = {
+    "Claude Code + Opus 4.7": [1, 1, 1, 1],
+    "Pi + Kimi K2.6":         [0, 0, 0, 0],
+    "ml-intern + Opus 4.6":   [0, 0, 0, 0.5],
+    "ml-intern + Kimi K2.6":  [0.5, 0, 0, 0.5],
+}
+notes = {
+    ("ml-intern + Kimi K2.6", DIMS[0]): "Computed it, but didn't connect it to leak/eval risk",
+    ("ml-intern + Opus 4.6",  DIMS[3]): "Wrote a real card, but no OCR or scope caveats",
+    ("ml-intern + Kimi K2.6", DIMS[3]): "Wrote a real card, but no OCR or scope caveats",
+    ("Claude Code + Opus 4.7", DIMS[0]): "Per-source breakdown computed during EDA",
+    ("Claude Code + Opus 4.7", DIMS[1]): "Documented in the model card",
+    ("Claude Code + Opus 4.7", DIMS[2]): "Custom WeightedTrainer with inverse-frequency weights",
+    ("Claude Code + Opus 4.7", DIMS[3]): "12 tags, OCR caveat, jurisdiction limits, scope caveat",
+}
+
+rows = []
+for run, vals in matrix.items():
+    for dim, v in zip(DIMS, vals):
+        rows.append({
+            "run": run, "dim": dim, "v": v,
+            "label": {0: "—", 0.5: "partial", 1: "yes"}[v],
+            "note": notes.get((run, dim), {0: "Not in trace", 0.5: "Partial — see tooltip", 1: "Done"}[v]),
+        })
+jdf = pd.DataFrame(rows)
+
+heat_color = alt.Scale(
+    domain=[0, 0.5, 1],
+    range=["#fbeeee", "#fde9c2", "#cae9d4"],
+)
+text_color = alt.Scale(
+    domain=[0, 0.5, 1],
+    range=["#aa3333", "#a3722a", "#1f6638"],
+)
+
+heat = alt.Chart(jdf).mark_rect(stroke="white", strokeWidth=2).encode(
+    x=alt.X("run:N", title=None, sort=RUN_ORDER, axis=alt.Axis(orient="top", labelAngle=0, labelFontSize=10)),
+    y=alt.Y("dim:N", title=None, sort=DIMS, axis=alt.Axis(labelFontSize=10, labelLimit=240)),
+    color=alt.Color("v:Q", scale=heat_color, legend=None),
+    tooltip=[
+        alt.Tooltip("run:N", title="agent"),
+        alt.Tooltip("dim:N", title="dimension"),
+        alt.Tooltip("note:N", title="evidence"),
+    ],
+)
+
+text = alt.Chart(jdf).mark_text(fontSize=11, fontWeight="bold").encode(
+    x=alt.X("run:N", sort=RUN_ORDER),
+    y=alt.Y("dim:N", sort=DIMS),
+    text="label:N",
+    color=alt.Color("v:Q", scale=text_color, legend=None),
+)
+
+(heat + text).properties(
+    title="What did each agent notice that wasn't asked for? (hover for evidence)",
+    height=180,
+).configure_view(stroke=None)
+```
+
+The wild bit: ml-intern + Kimi *computed the per-source breakdown* during EDA. The numbers (`paschal: 100.0%, murray: 92.1%`) were on its screen at event 26. It then trained, evaluated on a random split, pushed a card with metrics, and never mentioned the field. Claude Code computed the same breakdown and immediately wrote `source would leak the label (paschal is 100% positive, murray is 92% positive)` into its model card.
+
+Same data, same evidence, very different downstream outcomes.
+
+## Process tells four different stories
+
+Outcome F1 was uniform. The traces are not:
+
+```{python}
+#| echo: false
+tools = pd.DataFrame([
+    {"run": "Claude Code + Opus 4.7", "category": "bash",                "n": 24},
+    {"run": "Claude Code + Opus 4.7", "category": "edit / write",        "n": 3},
+    {"run": "Claude Code + Opus 4.7", "category": "plan / task tools",   "n": 12},
+    {"run": "Claude Code + Opus 4.7", "category": "HF / research tools", "n": 4},
+    {"run": "Claude Code + Opus 4.7", "category": "sleep / schedule",    "n": 2},
+    {"run": "Claude Code + Opus 4.7", "category": "other",               "n": 0},
+
+    {"run": "Pi + Kimi K2.6", "category": "bash",                "n": 29},
+    {"run": "Pi + Kimi K2.6", "category": "edit / write",        "n": 4},
+    {"run": "Pi + Kimi K2.6", "category": "plan / task tools",   "n": 0},
+    {"run": "Pi + Kimi K2.6", "category": "HF / research tools", "n": 0},
+    {"run": "Pi + Kimi K2.6", "category": "sleep / schedule",    "n": 0},
+    {"run": "Pi + Kimi K2.6", "category": "other",               "n": 0},
+
+    {"run": "ml-intern + Opus 4.6", "category": "bash",                "n": 15},
+    {"run": "ml-intern + Opus 4.6", "category": "edit / write",        "n": 1},
+    {"run": "ml-intern + Opus 4.6", "category": "plan / task tools",   "n": 5},
+    {"run": "ml-intern + Opus 4.6", "category": "HF / research tools", "n": 4},
+    {"run": "ml-intern + Opus 4.6", "category": "sleep / schedule",    "n": 0},
+    {"run": "ml-intern + Opus 4.6", "category": "other",               "n": 1},
+
+    {"run": "ml-intern + Kimi K2.6", "category": "bash",                "n": 47},
+    {"run": "ml-intern + Kimi K2.6", "category": "edit / write",        "n": 7},
+    {"run": "ml-intern + Kimi K2.6", "category": "plan / task tools",   "n": 4},
+    {"run": "ml-intern + Kimi K2.6", "category": "HF / research tools", "n": 6},
+    {"run": "ml-intern + Kimi K2.6", "category": "sleep / schedule",    "n": 0},
+    {"run": "ml-intern + Kimi K2.6", "category": "other",               "n": 3},
+])
+
+CATEGORY_ORDER = ["bash", "edit / write", "plan / task tools",
+                  "HF / research tools", "sleep / schedule", "other"]
+
+cat_color = alt.Scale(
+    domain=CATEGORY_ORDER,
+    range=["#5b8c85", "#e8a87c", "#85586f", "#6f8ab7", "#c89b3c", "#bbbbbb"],
+)
+
+totals = tools.groupby("run", as_index=False)["n"].sum().rename(columns={"n": "total"})
+
+stacked = alt.Chart(tools).mark_bar(width=80, cornerRadius=1).encode(
+    x=alt.X("run:N", title=None, sort=RUN_ORDER,
+            axis=alt.Axis(labelAngle=0, labelFontSize=10)),
+    y=alt.Y("n:Q", title="tool calls"),
+    color=alt.Color("category:N", scale=cat_color, sort=CATEGORY_ORDER, title=None),
+    order=alt.Order("category:N", sort="ascending"),
+    tooltip=[
+        alt.Tooltip("run:N", title="agent"),
+        alt.Tooltip("category:N", title="category"),
+        alt.Tooltip("n:Q", title="tool calls"),
+    ],
+)
+
+total_labels = alt.Chart(totals).mark_text(dy=-8, fontSize=11, color="#333").encode(
+    x=alt.X("run:N", sort=RUN_ORDER),
+    y="total:Q",
+    text="total:Q",
+)
+
+(stacked + total_labels).properties(
+    title="Tool-call shape per run (hover a segment for details)",
+    height=260,
+)
+```
+
+- **Pi + Kimi** has the leanest tool palette (bash, edit, write only) and the most reactive failure mode: four progressive `transformers` API errors fixed iteratively (`KeyError: 'label'`, `evaluation_strategy` → `eval_strategy`, `tokenizer` → `processing_class`, `"model did not return a loss"`).
+- **ml-intern + Kimi** is the noisiest — 67 tool calls, five tracebacks, multiple `PATH` issues, two cancelled jobs, a write→edit→compile→bash debugging cycle, and the legal-BERT pick that didn't justify itself against a 512-token context budget.
+
+The 2×2 partly isolates harness from model. **Same model, different harness** (Kimi in Pi vs ml-intern) burned iterations on different friction surfaces — `transformers` API drift in Pi, env plumbing in ml-intern. **Same harness, different model** (Opus 4.6 vs Kimi in ml-intern) split 54 vs 127 events for the same task, with Opus picking from data and Kimi browsing docs first. Both Kimi runs missed the eval-methodology issue. With N=4 these are gestures at attribution, not measurements — but tentatively: harness shapes process; model shapes proactive judgment, the *catching what wasn't asked for* part.
+
+## What this is for
+
+[Last month](https://danielvanstrien.xyz/posts/2026/agent-sentiment/) I argued that sentiment is a thin lens on agent traces and that behavioural patterns hold richer signal. F1 on a coding-agent eval is the same kind of thin lens — easy to read, hard to learn from, sometimes outright misleading. The signal is in the trace.
+
+If you've used a coding agent for an ML task recently — especially one that nearly worked or failed in an interesting way — the [agent-trace viewer](https://huggingface.co/changelog/agent-trace-viewer) renders Claude Code, Codex, and Pi sessions directly from your local session directories. `hf upload your-username/your-traces ~/.claude/projects --repo-type dataset`. Tag it `format:agent-traces`. The next iteration of this kind of analysis can include yours.
