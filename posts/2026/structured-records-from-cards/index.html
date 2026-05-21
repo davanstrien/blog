@@ -6,10 +6,11 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2023-02-22">
-<meta name="description" content="How can we train useful machine learning models without writing code?">
+<meta name="author" content="Daniel van Strien">
+<meta name="dcterms.date" content="2026-05-21">
+<meta name="description" content="Re-OCR made digitised catalogue cards searchable as text. But libraries need structured records they can ingest into their catalogues. NuExtract3 (4B, Apache-2.0) extracts schema-shaped JSON from card images in one command — here’s how it does, honestly.">
 
-<title>Using Hugging Face AutoTrain to train an image classifier without writing any code. – Daniel van Strien</title>
+<title>How to turn catalogue card images into structured JSON with a 4B open model – Daniel van Strien</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -181,26 +182,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Using Hugging Face AutoTrain to train an image classifier without writing any code.</h1>
+<h1 class="title">How to turn catalogue card images into structured JSON with a 4B open model</h1>
+<p class="subtitle lead">A 4B open model turns catalogue-card images into schema-shaped JSON — the kind of structured data that can be ingested back into a library system.</p>
   <div class="quarto-categories">
-    <div class="quarto-category">autotrain</div>
+    <div class="quarto-category">ocr</div>
+    <div class="quarto-category">glam</div>
+    <div class="quarto-category">hugging-face</div>
+    <div class="quarto-category">structured-extraction</div>
+    <div class="quarto-category">datasets</div>
   </div>
   </div>
 
 <div>
   <div class="description">
-    How can we train useful machine learning models without writing code?
+    Re-OCR made digitised catalogue cards searchable as text. But libraries need structured records they can ingest into their catalogues. NuExtract3 (4B, Apache-2.0) extracts schema-shaped JSON from card images in one command — here’s how it does, honestly.
   </div>
 </div>
 
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Daniel van Strien </p>
+          </div>
+  </div>
     
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">February 22, 2023</p>
+      <p class="date">May 21, 2026</p>
     </div>
   </div>
   
@@ -212,145 +224,93 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="introduction" class="level2">
-<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>There are many potential uses of computer vision in GLAM (Galleries, Libraries, Archives and Museums). These uses include:</p>
-<ul>
-<li>image similarity search, i.e., given an image, find similar images</li>
-<li>text search of images, i.e., given a text string “a picture of a dog eating an ice cream,” return relevant images</li>
-<li>page layout recognition, i.e., pull out semantically important parts of a document (articles, photos, titles, etc.)</li>
-<li>Optical Character Recognition (OCR)</li>
-</ul>
-<p>All of these use cases require some technical work to implement or use. Usually, they need some programming knowledge too. However, there are many tasks in GLAM where computer vision could be helpful to, requiring less technical work to implement. In particular, many uses of computer vision can be framed as an image classification task (putting images into categories).</p>
-<p>Last year, Kaspar Beelen, Melvin Wevers, Thomas Smits, Katherine McDonough, and I shared a two-part Programming Historian lesson, <a href="https://programminghistorian.org/en/lessons/computer-vision-deep-learning-pt1"><em>Computer Vision for the Humanities: An Introduction to Deep Learning for Image Classification</em></a>.</p>
-<p>This lesson aimed to provide an introduction to how computer vision can be leveraged to work with images ‘at scale’ – in particular for research applications. While we tried hard to make the lesson (particularly part one) accessible, there are still barriers to getting started:</p>
-<ul>
-<li>You need some Python knowledge: while we tried to keep the Python code simple (helped massively by the <a href="https://docs.fast.ai">fastai</a> library we use in the lesson), knowing how to code is still required. I couldn’t find a good citation for this, but most estimates for the number of people who know how to program are around 0.5-1% of the global population. Of this percentage, fewer will know Python.</li>
-<li>Need to have access to a GPU: whilst you can train deep learning models (the type of machine learning model introduced in our Programming Historian tutorial), it is a lot slower without them. However, setting up access to a GPU can be annoying. While ‘free’ access is possible, this can also come with constraints.</li>
-<li>The costs involved in training deep learning models can be hard to predict. You can usually get started for free, but often at some point, you need to invest some money in cloud computing. However, it can be difficult to know <em>before</em> you start training a model(s) how much it will cost.</li>
-</ul>
-<p>Beyond this, there is also a bigger question of how much energy you might want to invest in all of the above stuff involved in getting machine learning set up. This is especially true if you don’t want to become a machine learning engineer and want to do something practical with machine learning.</p>
-<section id="training-a-machine-learning-model-is-the-boring-part" class="level3">
-<h3 class="anchored" data-anchor-id="training-a-machine-learning-model-is-the-boring-part">Training a machine learning model is the boring part</h3>
-<p>Many machine learning engineers will grimace at the title of this section. However, many use cases of machine learning exist where an existing machine learning architecture will work well. Training a model is not what would benefit most from human intervention.</p>
-<p>For novel applications of machine learning or situations where you want to ensure a model is well suited to your domain, you may need to spend time creating training data. After training your model, there is also a step where you need to decide how to integrate machine learning into existing or new workflows. This is partially a technical question but often involves considerations beyond how I set up an API to serve my model.</p>
-<p>Hand-training models can eat up a lot of time. Sometimes this time might be warranted but other times you might wish you could make some of this process less hands-on.</p>
-</section>
-</section>
-<section id="can-we-approach-this-in-another-way" class="level2">
-<h2 class="anchored" data-anchor-id="can-we-approach-this-in-another-way">Can we approach this in another way?</h2>
-<p><a href="https://huggingface.co/autotrain">AutoTrain</a> is a tool that allow us to train machine learning models without needing to use Python, setup compute infrastructure or deal with unpredictable costs for training our models. In the rest of this blog post we’ll go through the steps to using AutoTrain for a semi-realistic computer vision problem.</p>
-<section id="the-dataset" class="level3">
-<h3 class="anchored" data-anchor-id="the-dataset">The dataset</h3>
-<p>For this project we’ll use a dataset created by the <a href="https://archive.org/">Internet Archive</a> as part of a request for help to judge a book by its cover. The <a href="http://blog.archive.org/2019/01/05/helping-us-judge-a-book-by-its-cover-software-help-request/">blog post</a> presents a use case for wanting to know if an image of a book cover is ‘useful’ or ‘not useful’. They provide some examples</p>
-<p>Useful image example:</p>
-<p><img src="https://blog.archive.org/wp-content/uploads/2019/01/bigbookofknowled0000farn-802x1024.jpg%22" class="img-fluid" alt="A picture of a the front cover of a book with rocks, and dinosaurs"> Not useful image example:</p>
+<p>A while back I <a href="../bpl-card-catalog/index.qmd">re-OCR’d Boston Public Library’s card catalogue</a>: 453,000 cards, $39, turning blurry decade-old OCR into clean, searchable text. That helps fix <em>search</em> but it didn’t fix the thing libraries actually need.</p>
+<p>A catalogue card isn’t really free text. It’s a structured record — a heading, a shelfmark, an author, a title, a date, an accession number laid out in a format a cataloguer designed. Libraries want that <strong>structure</strong> back, because structured fields are what can be put into their catalogue systems. Clean markdown is searchable; it isn’t ingestible.</p>
+<p>So the question is no longer “can we read the card?” It’s “can we turn the card into a <em>record</em>?”</p>
+<section id="schema-in-json-out" class="level2">
+<h2 class="anchored" data-anchor-id="schema-in-json-out">Schema in, JSON out</h2>
+<p><a href="https://huggingface.co/numind/NuExtract3">NuExtract3</a> (4B parameters, Apache-2.0) does exactly this. You hand it an image <strong>and a JSON template describing the fields you want</strong>, and it returns JSON matching that shape. No markdown to post-process — structured data directly.</p>
+<p>Here it is on a card from the National Library of Scotland’s Advocates Library manuscript index (<a href="https://huggingface.co/datasets/NationalLibraryOfScotland/nls-index-cards-object-detection">public dataset</a>):</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="http://blog.archive.org/wp-content/uploads/2019/01/10sermonspreache00donnuoft-626x1024.jpg" class="img-fluid figure-img"></p>
-<figcaption>A picture of a the front cover of a book which is blank</figcaption>
+<p><img src="nls-card-to-json.png" class="img-fluid figure-img" style="width:82.0%"></p>
+<figcaption>A scanned index card and the JSON NuExtract3 returned for it.</figcaption>
 </figure>
 </div>
-<p>Essentially the task is to decide whether an image of a digitized book cover is ‘useful’ or ‘not useful,’ i.e.&nbsp;whether showing this cover to Internet Archive users would give them useful information or not. The Internet Archive shared a <a href="https://archive.org/details/year-1923-not-very-useful-covers">dataset</a> along with this blog post which contains examples for each category.</p>
-<section id="what-type-of-machine-learning-task-is-this" class="level4">
-<h4 class="anchored" data-anchor-id="what-type-of-machine-learning-task-is-this">What type of machine learning task is this?</h4>
-<p>If we look at the dataset shared by the Internet Archive, we have a directory structure that looks like this:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">.</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> year-1923-not-very-useful-covers</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> year-1923-useful-covers</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>We have two folders containing images. Each folder contains examples of image belonging to the name of each folder. Essentially, we want a model that learns which image belongs in each folder (based on the examples) and can put new images into the correct folder/category. This is known as an image classification task (as was mentioned in the introduction). The Hugging Face tasks page for this gives an excellent overview: <a href="https://huggingface.co/tasks/image-classification">https://huggingface.co/tasks/image-classification</a></p>
+<p>The template is the interesting part. Its leaf values <em>declare the field types</em> — <code>verbatim-string</code> (extract exactly as written), <code>string</code> (allow light normalisation), arrays for repeating fields, enums for fixed choices. The model fills in the shape:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"image_type"</span><span class="fu">:</span> <span class="ot">[</span><span class="st">"index_card"</span><span class="ot">,</span> <span class="st">"verso"</span><span class="ot">,</span> <span class="st">"cover"</span><span class="ot">,</span> <span class="st">"blank"</span><span class="ot">,</span> <span class="st">"other"</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"heading"</span><span class="fu">:</span> <span class="st">"verbatim-string"</span><span class="fu">,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"heading_type"</span><span class="fu">:</span> <span class="ot">[</span><span class="st">"person"</span><span class="ot">,</span> <span class="st">"family"</span><span class="ot">,</span> <span class="st">"corporate"</span><span class="ot">,</span> <span class="st">"geographic"</span><span class="ot">,</span> <span class="st">"subject"</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"epithet"</span><span class="fu">:</span> <span class="st">"string"</span><span class="fu">,</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"entries"</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span><span class="dt">"ms_no"</span><span class="fu">:</span> <span class="st">"verbatim-string"</span><span class="fu">,</span> <span class="dt">"folios"</span><span class="fu">:</span> <span class="ot">[</span><span class="st">"verbatim-string"</span><span class="ot">]</span><span class="fu">,</span> <span class="dt">"description"</span><span class="fu">:</span> <span class="st">"string"</span><span class="fu">}</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>That schema is specific to <em>this</em> collection. A different card series wants a different shape — and you just write a different template. Here’s the one I used for BPL shelf-list cards:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"card_type"</span><span class="fu">:</span> <span class="ot">[</span><span class="st">"bibliographic"</span><span class="ot">,</span> <span class="st">"shelf_divider"</span><span class="ot">,</span> <span class="st">"other"</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"shelf_no"</span><span class="fu">:</span> <span class="st">"verbatim-string"</span><span class="fu">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"author"</span><span class="fu">:</span> <span class="st">"verbatim-string"</span><span class="fu">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"title"</span><span class="fu">:</span> <span class="st">"verbatim-string"</span><span class="fu">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"place_of_publication"</span><span class="fu">:</span> <span class="st">"verbatim-string"</span><span class="fu">,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"date"</span><span class="fu">:</span> <span class="st">"string"</span><span class="fu">,</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"accession_no"</span><span class="fu">:</span> <span class="st">"verbatim-string"</span><span class="fu">,</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"volumes"</span><span class="fu">:</span> <span class="st">"string"</span><span class="fu">,</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"additions"</span><span class="fu">:</span> <span class="st">"string"</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This matters for the ingest problem: the schema can be shaped to match what a particular catalogue expects, rather than forcing the library to adapt to the model’s output.</p>
 </section>
+<section id="one-command" class="level2">
+<h2 class="anchored" data-anchor-id="one-command">One command</h2>
+<p>The whole thing runs as a single command on Hugging Face Jobs — no GPU of your own, no setup — using the <a href="https://huggingface.co/datasets/uv-scripts/ocr"><code>nuextract3.py</code></a> UV script:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">hf</span> jobs uv run <span class="at">--flavor</span> a100-large <span class="dt">\</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">--image</span> vllm/vllm-openai:latest <span class="dt">\</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--python</span> /usr/bin/python3 <span class="dt">\</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">-e</span> PYTHONPATH=/usr/local/lib/python3.12/dist-packages <span class="dt">\</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">-s</span> HF_TOKEN <span class="dt">\</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    https://huggingface.co/datasets/uv-scripts/ocr/raw/main/nuextract3.py <span class="dt">\</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    my-cards my-records <span class="dt">\</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">--template</span> schema.json</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Point it at a dataset of card images, hand it a schema, get a dataset of structured records back.</p>
 </section>
-<section id="what-are-the-steps-involved" class="level3">
-<h3 class="anchored" data-anchor-id="what-are-the-steps-involved">What are the steps involved?</h3>
-<p>How do we go from the dataset we started with to a trained model that we can begin to explore? For this particular example, the steps are as follows:</p>
-<ul>
-<li>Download our data</li>
-<li>Prepare our data</li>
-<li>choose our autotrain task</li>
-<li>Upload our data to autotrain</li>
-<li>Train our models</li>
-<li>Evaluate our models</li>
-</ul>
-</section>
-<section id="download-our-data" class="level3">
-<h3 class="anchored" data-anchor-id="download-our-data">Download our data</h3>
-<p>This step will depend on where your data is and how it’s arranged, but in this example, we can download the dataset from the Internet Archive. Three folders are provided in this case covering useful/not-useful for 1923 and for the year 2000 useful. Since the types of cover will have changed a fair bit in this time period we’ll just download the folders for 1923.</p>
+<section id="a-live-demo" class="level2">
+<h2 class="anchored" data-anchor-id="a-live-demo">A live demo</h2>
+<p>I ran a sample of BPL shelf-list cards through it. The output is a browsable page — card image next to the extracted record:</p>
+<p><strong><a href="https://huggingface.co/spaces/davanstrien/bpl-shelf-list-extraction">→ Live demo: BPL shelf-list cards → structured records</a></strong></p>
+<p>A typical result, zero-shot:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://raw.githubusercontent.com/davanstrien/blog/master/images/_autotrain/ia_download_files.webp" class="img-fluid figure-img"></p>
-<figcaption>Screenshot of IA downloads</figcaption>
+<p><img src="bpl-card.jpg" class="img-fluid figure-img" style="width:62.0%"></p>
+<figcaption>A BPL shelf-list card.</figcaption>
 </figure>
 </div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"card_type"</span><span class="fu">:</span> <span class="st">"bibliographic"</span><span class="fu">,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"shelf_no"</span><span class="fu">:</span> <span class="st">"2110.21"</span><span class="fu">,</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"author"</span><span class="fu">:</span> <span class="st">"Barrois, J.B.J."</span><span class="fu">,</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"title"</span><span class="fu">:</span> <span class="st">"Lecture littérale des hiéroglyphes."</span><span class="fu">,</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"place_of_publication"</span><span class="fu">:</span> <span class="st">"Paris"</span><span class="fu">,</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"date"</span><span class="fu">:</span> <span class="st">"1853"</span><span class="fu">,</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"volumes"</span><span class="fu">:</span> <span class="st">"1"</span><span class="fu">,</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"accession_no"</span><span class="fu">:</span> <span class="st">"53270"</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The model also self-tags the shelf-<em>divider</em> cards (the printed 00–99 grids) so they can be filtered out — useful, because a real digitised collection is full of dividers, blanks and versos you don’t want to run an extractor over.</p>
 </section>
-<section id="preparing-our-data" class="level3">
-<h3 class="anchored" data-anchor-id="preparing-our-data">Preparing our data</h3>
-<p>There isn’t much prep we need to do for our data; however, we can provide data to AutoTrain in a few different ways for our image classification task. In this case we’ll use the imagefolder format. This is essentially what we have already (folders containing examples of the labels we’re interested in). We’ll create a top-level directory for our image data <code>cover</code>, which contains two subfolders with our example images.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://github.com/davanstrien/blog/blob/master/images/_autotrain/folders-screenshot.webp?raw=true" class="img-fluid figure-img"></p>
-<figcaption>Folder screenshot</figcaption>
-</figure>
-</div>
-<section id="resize-our-images-optional" class="level4">
-<h4 class="anchored" data-anchor-id="resize-our-images-optional">Resize our images (optional)</h4>
-<p>This step isn’t strictly necessary, but it’ll save time when uploading our dataset to AutoTrain. Most machine learning models expect training images to be relatively small (often 224x224 or 512x512 pixels). You can do this from the command line, but most operating systems have inbuilt tools for bulk resizing images, e.g., <a href="https://www.makeuseof.com/tag/batch-convert-resize-images-mac/">https://www.makeuseof.com/tag/batch-convert-resize-images-mac/</a></p>
+<section id="how-good-is-zero-shot-really" class="level2">
+<h2 class="anchored" data-anchor-id="how-good-is-zero-shot-really">How good is zero-shot, really?</h2>
+<p>Genuinely good — with caveats worth being honest about.</p>
+<p>On <a href="https://huggingface.co/datasets/biglam/doab-metadata-extraction">DOAB</a> (open-access books with MARC ground truth), NuExtract3 zero-shot off a single title-page image got <strong>100% title and 94% publisher</strong> on a 50-book sample. For comparison, general vision-language models on a similar born-digital metadata task scored roughly 77% (a 4B model) to 86% (a 35B model).</p>
+<p>The honest footnotes: that’s not a perfectly controlled head-to-head — the comparison points come from a <em>different</em> corpus, the title match credits a title with-or-without its subtitle, and the model was working from one page where the older baselines saw several. So: a strong directional signal that zero-shot structured extraction is now genuinely useful, not a benchmark trophy. On harder material — handwritten or heavily annotated cards — there’s real headroom, and the BPL demo above is unreviewed.</p>
 </section>
-</section>
-<section id="setup-autotrain" class="level3">
-<h3 class="anchored" data-anchor-id="setup-autotrain">Setup AutoTrain</h3>
-<p>From the <a href="https://ui.autotrain.huggingface.co/projects">projects page</a>, we can create a new project.</p>
-<p><img src="https://github.com/davanstrien/blog/blob/master/images/_autotrain/project-creation.webp?raw=true" class="img-fluid"></p>
-<p>Here we give our project a name and choose a task (image classification). We can also specify for AutoTrain to use a particular model. If you don’t have a solid reason to select a model you can leave this decision to AutoTrain 🤗.</p>
-<p>Once you’ve created your project, you’ll need to upload your data. There are different ways of doing this depending on the task. For image classification, we can use pre-arranged folders with a CSV/JSONL file with the labels or upload a dataset hosted on the Hugging Face hub.</p>
-<p><img src="https://github.com/davanstrien/blog/blob/master/images/_autotrain/data-upload.webp?raw=true" class="img-fluid"></p>
-<p>We already have an organized folder so we can upload data.</p>
-<p><img src="https://raw.githubusercontent.com/davanstrien/blog/master/images/_autotrain/data-upload-finder.webp" class="img-fluid"></p>
-<p>Once we’ve uploaded our images, we’ll need to wait for the data to be uploaded. How long this takes depends on your internet speed. We can now click on <code>Go to trainings</code>.</p>
-<p><img src="https://github.com/davanstrien/blog/blob/master/images/_autotrain/congratulations.webp?raw=true" class="img-fluid"></p>
-<p>Here you will see that AutoTrain is formatting your uploaded data.</p>
-<p><img src="https://github.com/davanstrien/blog/blob/master/images/_autotrain/data-prep.webp?raw=true" class="img-fluid"></p>
-<p>Once your data has been prepared, you can decide how many models you want AutoTrain to train for you. This decision depends on how much you want to spend on training your models and where you are in your project. If you are getting started and want to know how well a model may do, you may choose a lower number. If you want the best possible chance of getting the best-performing model, you could choose to train a more significant number of models.</p>
-<p><img src="https://github.com/davanstrien/blog/blob/master/images/_autotrain/model-training-selection.webp?raw=true" class="img-fluid"></p>
-<p>Once you are ready, you can smash the <code>start model training</code> button!🔥 The nice thing is that AutoTrain will ask you to confirm how much model training will cost. Once your models start training, a screen pops up with some randomly named models. Depending on the size of your dataset, it might take a bit longer to start seeing metrics for your model, but after a little while, you will begin to see scores (in this case, accuracy).</p>
-<p><img src="https://github.com/davanstrien/blog/blob/master/images/_autotrain/model-training-progress.webp?raw=true" class="img-fluid"></p>
-<p>As the models train, you will see some models overtake others in performance. If you are easily amused like me, you will treat this like a fun spectator sport.</p>
-<p><img src="https://github.com/davanstrien/blog/blob/master/images/_autotrain/model-training-progress-race.webp?raw=true" class="img-fluid"></p>
-<p>You also have a metrics overview tab for all the models you have trained. This makes it easy to sort by different metrics.</p>
-<p><img src="https://github.com/davanstrien/blog/blob/master/images/_autotrain/metrics-overview.webp?raw=true" class="img-fluid"></p>
-<p>Each of these models created by AutoTrain is a ‘real’ model hosted in a model repository on the Hugging Face hub. Some AutoTrain solutions hide away the actual artifacts and only allow you to interact with the models through their API. These models are available in the same way as any other model on the hub. By default, the models are made private, but you can decide to make the models openly available for others to use 🤗.</p>
-<p>You’ll also see in the screenshot that the models come with the outlines of a model card.</p>
-<p><img src="https://raw.githubusercontent.com/davanstrien/blog/master/images/_autotrain/metrics-overview.webp" class="img-fluid"></p>
-</section>
-</section>
-<section id="why-does-our-model-suck" class="level2">
-<h2 class="anchored" data-anchor-id="why-does-our-model-suck">Why does our model suck?</h2>
-<p>For this particular dataset, our models don’t do super well (around 92% accuracy). Why is this?</p>
-<section id="the-importance-of-training-data" class="level3">
-<h3 class="anchored" data-anchor-id="the-importance-of-training-data">The importance of training data</h3>
-<p>Start to dig into the training data examples provided. You’ll see that quite a few images might be reasonably classified as belonging to the other category. In particular, quite a few images of the not-useful folder are similar to those in the useful folder. This is going to make it hard for our model to learn what we’re after.</p>
-<p>This also shows the importance of focusing on data and not over-focusing on model training. In this case, fixing our data will likely yield much better results than messing around with how we train the models. Using a tool like AutoTrain can quickly help you spot these issues early on so you can iterate on your training data.</p>
-</section>
-<section id="how-can-we-fix-this" class="level3">
-<h3 class="anchored" data-anchor-id="how-can-we-fix-this">How can we fix this??</h3>
-<p>Move images between folders!!</p>
-<p>There are better ways, but spending 30 mins removing examples you don’t think the fit will make a big difference to the model performance. At some point, you are likely to want to use a proper annotation tool but to start with; you might be able to get quite far by using your operating systems file browser to re-arrange your training data.</p>
-<p>Below is an example from another similar dataset where we get models with 99% accuracy. All of this without writing a line of code! <img src="https://github.com/davanstrien/blog/blob/master/images/_autotrain/illustrations-model-overview.webp?raw=true" class="img-fluid"></p>
-</section>
-</section>
-<section id="what-can-i-do-with-this-model" class="level2">
-<h2 class="anchored" data-anchor-id="what-can-i-do-with-this-model">What can I do with this model?</h2>
-<p>There are various ways in which you can use the model you’ve created. How you want to use it depends largely on your use case. In a follow-up blog post I’ll suggest a few options for how you can continue on the no/low-code journey to creating and using ML tools customised to your needs and data 🤗.</p>
-<section id="show-me-the-models" class="level3">
-<h3 class="anchored" data-anchor-id="show-me-the-models">Show me the models!</h3>
-<p>You can find the best models shown above here:</p>
-<ul>
-<li><a href="">https://huggingface.co/davanstrien/autotrain-ia-useful-covers-3665397856</a></li>
-<li><a href="">https://huggingface.co/davanstrien/autotrain-encyclopaedia-illustrations-blog-post-3327992158</a></li>
-</ul>
+<section id="why-this-is-the-interesting-part" class="level2">
+<h2 class="anchored" data-anchor-id="why-this-is-the-interesting-part">Why this is the interesting part</h2>
+<p>Better OCR was the easy win. The harder, more valuable one is structured records: data a library can actually ingest, in a schema it controls. With a 4B open model and one command, that’s now within reach of any institution with a folder of card images — no ML team required.</p>
+<p>The realistic path isn’t “model spits out perfect MARC.” It’s: zero-shot first pass → a curator reviews a sample → iterate the schema → and, where it pays off, a small fine-tuned model for a specific collection. Card catalogues are a problem nearly every library and archive shares, which makes them a good candidate for building something reusable rather than one-off.</p>
+<hr>
+<p><em>Cards: Boston Public Library (public domain) and the National Library of Scotland Advocates Library (<a href="https://huggingface.co/datasets/NationalLibraryOfScotland/nls-index-cards-object-detection">public dataset</a>). Model: <a href="https://huggingface.co/numind/NuExtract3">numind/NuExtract3</a>. Script: <a href="https://huggingface.co/datasets/uv-scripts/ocr">uv-scripts/ocr</a>.</em></p>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->

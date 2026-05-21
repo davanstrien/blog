@@ -10,7 +10,409 @@
 <atom:link href="https://danielvanstrien.xyz/index.xml" rel="self" type="application/rss+xml"/>
 <description>Daniel van Strien&#39;s blog</description>
 <generator>quarto-1.9.37</generator>
-<lastBuildDate>Wed, 06 May 2026 00:00:00 GMT</lastBuildDate>
+<lastBuildDate>Thu, 21 May 2026 00:00:00 GMT</lastBuildDate>
+<item>
+  <title>How to turn catalogue card images into structured JSON with a 4B open model</title>
+  <dc:creator>Daniel van Strien</dc:creator>
+  <link>https://danielvanstrien.xyz/posts/2026/structured-records-from-cards/</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>A while back I <a href="../bpl-card-catalog/index.qmd">re-OCR’d Boston Public Library’s card catalogue</a>: 453,000 cards, $39, turning blurry decade-old OCR into clean, searchable text. That helps fix <em>search</em> but it didn’t fix the thing libraries actually need.</p>
+<p>A catalogue card isn’t really free text. It’s a structured record — a heading, a shelfmark, an author, a title, a date, an accession number laid out in a format a cataloguer designed. Libraries want that <strong>structure</strong> back, because structured fields are what can be put into their catalogue systems. Clean markdown is searchable; it isn’t ingestible.</p>
+<p>So the question is no longer “can we read the card?” It’s “can we turn the card into a <em>record</em>?”</p>
+<section id="schema-in-json-out" class="level2">
+<h2 class="anchored" data-anchor-id="schema-in-json-out">Schema in, JSON out</h2>
+<p><a href="https://huggingface.co/numind/NuExtract3">NuExtract3</a> (4B parameters, Apache-2.0) does exactly this. You hand it an image <strong>and a JSON template describing the fields you want</strong>, and it returns JSON matching that shape. No markdown to post-process — structured data directly.</p>
+<p>Here it is on a card from the National Library of Scotland’s Advocates Library manuscript index (<a href="https://huggingface.co/datasets/NationalLibraryOfScotland/nls-index-cards-object-detection">public dataset</a>):</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://danielvanstrien.xyz/posts/2026/structured-records-from-cards/nls-card-to-json.png" class="img-fluid figure-img" style="width:82.0%"></p>
+<figcaption>A scanned index card and the JSON NuExtract3 returned for it.</figcaption>
+</figure>
+</div>
+<p>The template is the interesting part. Its leaf values <em>declare the field types</em> — <code>verbatim-string</code> (extract exactly as written), <code>string</code> (allow light normalisation), arrays for repeating fields, enums for fixed choices. The model fills in the shape:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb1-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb1-2">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"image_type"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">[</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"index_card"</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">,</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"verso"</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">,</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"cover"</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">,</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"blank"</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">,</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"other"</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">]</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb1-3">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"heading"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"verbatim-string"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb1-4">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"heading_type"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">[</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"person"</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">,</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"family"</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">,</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"corporate"</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">,</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"geographic"</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">,</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"subject"</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">]</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb1-5">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"epithet"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"string"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb1-6">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"entries"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">[</span></span>
+<span id="cb1-7">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">{</span><span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"ms_no"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"verbatim-string"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"folios"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">[</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"verbatim-string"</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">]</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"description"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"string"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb1-8">  <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">]</span></span>
+<span id="cb1-9"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">}</span></span></code></pre></div></div>
+<p>That schema is specific to <em>this</em> collection. A different card series wants a different shape — and you just write a different template. Here’s the one I used for BPL shelf-list cards:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb2-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb2-2">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"card_type"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">[</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bibliographic"</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">,</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"shelf_divider"</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">,</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"other"</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">]</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb2-3">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"shelf_no"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"verbatim-string"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb2-4">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"author"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"verbatim-string"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb2-5">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"title"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"verbatim-string"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb2-6">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"place_of_publication"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"verbatim-string"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb2-7">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"date"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"string"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb2-8">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"accession_no"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"verbatim-string"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb2-9">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"volumes"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"string"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb2-10">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"additions"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"string"</span></span>
+<span id="cb2-11"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">}</span></span></code></pre></div></div>
+<p>This matters for the ingest problem: the schema can be shaped to match what a particular catalogue expects, rather than forcing the library to adapt to the model’s output.</p>
+</section>
+<section id="one-command" class="level2">
+<h2 class="anchored" data-anchor-id="one-command">One command</h2>
+<p>The whole thing runs as a single command on Hugging Face Jobs — no GPU of your own, no setup — using the <a href="https://huggingface.co/datasets/uv-scripts/ocr"><code>nuextract3.py</code></a> UV script:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">hf</span> jobs uv run <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--flavor</span> a100-large <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb3-2">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--image</span> vllm/vllm-openai:latest <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb3-3">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--python</span> /usr/bin/python3 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb3-4">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-e</span> PYTHONPATH=/usr/local/lib/python3.12/dist-packages <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb3-5">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-s</span> HF_TOKEN <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb3-6">    https://huggingface.co/datasets/uv-scripts/ocr/raw/main/nuextract3.py <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb3-7">    my-cards my-records <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb3-8">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--template</span> schema.json</span></code></pre></div></div>
+<p>Point it at a dataset of card images, hand it a schema, get a dataset of structured records back.</p>
+</section>
+<section id="a-live-demo" class="level2">
+<h2 class="anchored" data-anchor-id="a-live-demo">A live demo</h2>
+<p>I ran a sample of BPL shelf-list cards through it. The output is a browsable page — card image next to the extracted record:</p>
+<p><strong><a href="https://huggingface.co/spaces/davanstrien/bpl-shelf-list-extraction">→ Live demo: BPL shelf-list cards → structured records</a></strong></p>
+<p>A typical result, zero-shot:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://danielvanstrien.xyz/posts/2026/structured-records-from-cards/bpl-card.jpg" class="img-fluid figure-img" style="width:62.0%"></p>
+<figcaption>A BPL shelf-list card.</figcaption>
+</figure>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb4-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb4-2">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"card_type"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bibliographic"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb4-3">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"shelf_no"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"2110.21"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb4-4">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"author"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Barrois, J.B.J."</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb4-5">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"title"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Lecture littérale des hiéroglyphes."</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb4-6">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"place_of_publication"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Paris"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb4-7">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"date"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"1853"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb4-8">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"volumes"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"1"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb4-9">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"accession_no"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"53270"</span></span>
+<span id="cb4-10"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">}</span></span></code></pre></div></div>
+<p>The model also self-tags the shelf-<em>divider</em> cards (the printed 00–99 grids) so they can be filtered out — useful, because a real digitised collection is full of dividers, blanks and versos you don’t want to run an extractor over.</p>
+</section>
+<section id="how-good-is-zero-shot-really" class="level2">
+<h2 class="anchored" data-anchor-id="how-good-is-zero-shot-really">How good is zero-shot, really?</h2>
+<p>Genuinely good — with caveats worth being honest about.</p>
+<p>On <a href="https://huggingface.co/datasets/biglam/doab-metadata-extraction">DOAB</a> (open-access books with MARC ground truth), NuExtract3 zero-shot off a single title-page image got <strong>100% title and 94% publisher</strong> on a 50-book sample. For comparison, general vision-language models on a similar born-digital metadata task scored roughly 77% (a 4B model) to 86% (a 35B model).</p>
+<p>The honest footnotes: that’s not a perfectly controlled head-to-head — the comparison points come from a <em>different</em> corpus, the title match credits a title with-or-without its subtitle, and the model was working from one page where the older baselines saw several. So: a strong directional signal that zero-shot structured extraction is now genuinely useful, not a benchmark trophy. On harder material — handwritten or heavily annotated cards — there’s real headroom, and the BPL demo above is unreviewed.</p>
+</section>
+<section id="why-this-is-the-interesting-part" class="level2">
+<h2 class="anchored" data-anchor-id="why-this-is-the-interesting-part">Why this is the interesting part</h2>
+<p>Better OCR was the easy win. The harder, more valuable one is structured records: data a library can actually ingest, in a schema it controls. With a 4B open model and one command, that’s now within reach of any institution with a folder of card images — no ML team required.</p>
+<p>The realistic path isn’t “model spits out perfect MARC.” It’s: zero-shot first pass → a curator reviews a sample → iterate the schema → and, where it pays off, a small fine-tuned model for a specific collection. Card catalogues are a problem nearly every library and archive shares, which makes them a good candidate for building something reusable rather than one-off.</p>
+<hr>
+<p><em>Cards: Boston Public Library (public domain) and the National Library of Scotland Advocates Library (<a href="https://huggingface.co/datasets/NationalLibraryOfScotland/nls-index-cards-object-detection">public dataset</a>). Model: <a href="https://huggingface.co/numind/NuExtract3">numind/NuExtract3</a>. Script: <a href="https://huggingface.co/datasets/uv-scripts/ocr">uv-scripts/ocr</a>.</em></p>
+
+
+</section>
+
+ ]]></description>
+  <category>ocr</category>
+  <category>glam</category>
+  <category>hugging-face</category>
+  <category>structured-extraction</category>
+  <category>datasets</category>
+  <guid>https://danielvanstrien.xyz/posts/2026/structured-records-from-cards/</guid>
+  <pubDate>Thu, 21 May 2026 00:00:00 GMT</pubDate>
+  <media:content url="https://danielvanstrien.xyz/posts/2026/structured-records-from-cards/nls-card-to-json.png" medium="image" type="image/png" height="180" width="144"/>
+</item>
 <item>
   <title>All four agents tied at F1 ~0.95. The number was a mirage.</title>
   <dc:creator>Daniel van Strien</dc:creator>
@@ -26052,239 +26454,6 @@ font-style: inherit;">"</span>)</span></code></pre></div></div>
   <category>synthetic-data</category>
   <guid>https://danielvanstrien.xyz/posts/plain-text/synthetic-data-generation/2024-05-03-synethic-data-1.html</guid>
   <pubDate>Thu, 23 May 2024 00:00:00 GMT</pubDate>
-</item>
-<item>
-  <title>Synthetic dataset generation techniques: Self-Instruct</title>
-  <link>https://danielvanstrien.xyz/posts/plain-text/2024-05-15-self-instruct.html</link>
-  <description><![CDATA[ 
-
-
-
-
-<p><em>This post is part of a series on synthetic data generation techniques. You may also want to check out <a href="https://github.com/davanstrien/awesome-synthetic-datasets">Awesome Synthetic (text) datasets</a>, where I will be collecting these posts.</em></p>
-<p>For training an LLM to be better at following instructions or functioning as a chat model, you usually want a dataset with some combination of instructions and responses. Since creating this data by hand can be very time-consuming, more people are using LLMs to generate this data.</p>
-<p>In its simplest form, you could create synthetic instruction following datasets using an LLM to generate responses to handwritten prompts/instructions. However, for many applications, there are a considerable number of prompts you may want to have in your final datasets. Creating all this data by hand will be challenging while ensuring its diversity. There are various ways in which you can try to remove this bottleneck.</p>
-<p>In this blog post, I’ll discuss the technique outlined in the paper <a href="https://huggingface.co/papers/2212.10560">SELF-INSTRUCT: Aligning Language Models with Self-Generated Instructions</a>, which, as the paper’s title suggests, aims to overcome the need to generate instructions by hand.</p>
-<blockquote class="blockquote">
-<p>Self-Instruct is a framework that helps language models improve their ability to follow natural language instructions. It does this by using the model’s own generations to create a large collection of instructional data. With Self-Instruct, it is possible to improve the instruction-following capabilities of language models without relying on extensive manual annotation. <a href="https://github.com/yizhongw/self-instruct?tab=readme-ov-file#introduction">source</a></p>
-</blockquote>
-<p>The paper outlines a pipeline that bootstraps from an initial seed dataset of instructions to a larger dataset of synthetically generated instructions. <img src="https://github.com/yizhongw/self-instruct/raw/main/docs/pipeline.JPG" class="img-fluid" alt="Pipeline Diagram"></p>
-<p>The authors include steps for generating instructions and a filtering step to clean up the data in the paper. Since our goal is to focus on the core technique of a particular paper, we’ll focus only on the instruction generation part. This step can also be combined with other approaches to data filtering that have been introduced since this paper was published (or your own custom filters).</p>
-<section id="instruction-generation" class="level2">
-<h2 class="anchored" data-anchor-id="instruction-generation">Instruction Generation</h2>
-<p>Returning to our original challenge: how do we generate instructions without writing them all by hand? As you can see in the diagram above, the steps involve sampling from the original seeds, filtering the seed tasks to see if they are classification tasks or not, and then generating the new instructions. After the new instructions are generated, they are filtered and added to the task pool. In this way, you can keep creating new instructions from your initial seed tasks and growing the seed task pool. Using the data filtering steps aims to ensure you still have diversity in the prompts and avoid adding very repetitive instructions to your dataset.</p>
-<section id="what-does-this-look-like-in-practice" class="level3">
-<h3 class="anchored" data-anchor-id="what-does-this-look-like-in-practice">What does this look like in practice?</h3>
-<p>Let’s take a look at an example from the 175 initial seeds task dataset:</p>
-<pre><code>{"id": "seed_task_0",
-"name": "breakfast_suggestion",
-"instruction": "Is there anything I can eat for a breakfast that doesn't include eggs, yet includes protein, and has roughly 700-1000 calories?",
-"instances": [{"input": "", "output": "Yes, you can have 1 oatmeal banana protein shake and 4 strips of bacon. The oatmeal banana protein shake may contain 1/2 cup oatmeal, 60 grams whey protein powder, 1/2 medium banana, 1tbsp flaxseed oil and 1/2 cup watter, totalling about 550 calories. The 4 strips of bacon contains about 200 calories."}],
-"is_classification": false}</code></pre>
-<p>As you can see, this row contains fairly standard instructions, such as “Is there anything…”, some responses (i.e., the instances field), and a label indicating if it’s a classification task. The paper outlines two main approaches to generating new instructions from this data. If an instruction is a classification task, one prompting approach is used; if it’s a standard generation task, another prompt is used. Let’s start with how the extra nonclassification task instructions prompt looks:</p>
-<pre><code>&gt; Come up with a series of tasks:
-&gt;
-&gt; Task 1: {instruction for existing task 1}
-&gt; Task 2: {instruction for existing task 2}
-&gt; Task 3: {instruction for existing task 3}
-&gt; Task 4: {instruction for existing task 4}
-&gt; Task 5: {instruction for existing task 5}
-&gt; Task 6: {instruction for existing task 6}
-&gt; Task 7: {instruction for existing task 7}
-&gt; Task 8: {instruction for existing task 8}
-&gt; Task 9:</code></pre>
-<p>As you can see, the prompt gives the llm some examples of tasks and encourages the model to generate new instructions. A crucial detail to note is in the original paper; the authors used GPT3 rather than an instruction-tuned/chat model. Since this is not an instruction-tuned model, a prompt that gives a few examples in a structured format can often be better for guiding the model toward a useful set of generations.</p>
-<p>We can see what this process looks like in practice (using <code>huggingface_hub</code> and the BigScience Bloom model in place of the GPT-3):</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> huggingface_hub <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> InferenceClient</span>
-<span id="cb3-2"></span>
-<span id="cb3-3">client <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> InferenceClient(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'bigscience/bloom'</span>)</span>
-<span id="cb3-4"></span>
-<span id="cb3-5"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">def</span> encode_prompt(prompt_instructions, classification<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">False</span>):</span>
-<span id="cb3-6">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">"""Encode multiple prompt instructions into a single string."""</span></span>
-<span id="cb3-7">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">if</span> classification:</span>
-<span id="cb3-8">        prompt <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Come up with a series of classification tasks. Try to specify the possible output labels when possible.</span><span class="ch" style="color: #20794D;
-background-color: null;
-font-style: inherit;">\n</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"</span></span>
-<span id="cb3-9">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">else</span>:</span>
-<span id="cb3-10">        prompt <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Come up with a series of tasks:</span><span class="ch" style="color: #20794D;
-background-color: null;
-font-style: inherit;">\n</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"</span></span>
-<span id="cb3-11">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">for</span> idx, instruction <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">in</span> <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">enumerate</span>(prompt_instructions):</span>
-<span id="cb3-12">        instruction <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> re.sub(<span class="vs" style="color: #20794D;
-background-color: null;
-font-style: inherit;">r"</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">\s</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span><span class="vs" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"</span>, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">" "</span>, instruction).strip().rstrip(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">":"</span>)</span>
-<span id="cb3-13">        prompt <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+=</span> <span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">f"</span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span>idx<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">. </span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span>instruction<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span><span class="ch" style="color: #20794D;
-background-color: null;
-font-style: inherit;">\n</span><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"</span></span>
-<span id="cb3-14">    prompt <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+=</span> <span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">f"</span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span><span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">len</span>(prompt_instructions) <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">."</span></span>
-<span id="cb3-15">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">return</span> prompt</span>
-<span id="cb3-16"></span>
-<span id="cb3-17">prompt <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> encode_prompt(dataset[<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'instruction'</span>]) <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">#</span></span></code></pre></div></div>
-<p>For a non-classification task, this produces a prompt which looks like this:</p>
-<pre><code>Come up with a series of tasks:
-1. Is there anything I can eat for a breakfast that doesn't include eggs, yet includes protein, and has roughly 700-1000 calories?
-2. What is the relation between the given pairs?
-3. Generate a one-sentence description for each of the following people.
-4. Describe a situation in which the given stereotype can harm you.
-5. Generate an appropriate subjective title for the following email
-6. How do you answer this question in a job interview?
-7. Brainstorm a list of possible New Year's resolutions.
-8. Explain the following idiom to me, and try to give me some examples.
-9.</code></pre>
-<p>We can then pass this prompt to an LLM.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1">client.text_generation(prompt, return_full_text<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">False</span>, temperature<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0.7</span>, max_new_tokens<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">512</span>)</span>
-<span id="cb5-2"><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&gt;&gt;&gt;</span>  Think of a time when you were incredibly confident, <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">and</span> explain why.\n10. What <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">is</span> the difference between a real <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">and</span> normal friend?</span></code></pre></div></div>
-<p>We can see the LLM responds with new instructions (we also get some extra text from the LLM). If we wanted to use this in practice, we could do more work to optimize the generation parameters (temperature, etc.).</p>
-<p>The process and prompts for the text classification tasks are slightly different. To try to avoid the LLM just responding with the label token, they put the label first and then show the text that generated that label i.e.&nbsp;something like this:</p>
-<pre><code>Instruction: Find out if the given text is positive about the company discussed.
-Class Label: Positive
-Input: Hugging Face is a wonderful platform for machine learning developers.</code></pre>
-<p><strong>note</strong>you can find a notebook with these examples <a href="https://github.com/davanstrien/awesome-synthetic-datasets/blob/main/techniques/self_instruct/SelfInstruct.ipynb">here</a>.</p>
-</section>
-</section>
-<section id="using-self-instruct" class="level2">
-<h2 class="anchored" data-anchor-id="using-self-instruct">Using Self Instruct</h2>
-<p>This paper has had&nbsp;a very big&nbsp;impact&nbsp;both&nbsp;in academic research (over 1,000 <a href="https://www.semanticscholar.org/paper/Self-Instruct%3A-Aligning-Language-Models-with-Wang-Kordi/e65b346d442e9962a4276dc1c1af2956d9d5f1eb#citing-papers">citations</a> and in&nbsp;the practical adoption of the method&nbsp;by the community (you can find some datasets citing the method <a href="https://huggingface.co/datasets?other=arxiv:2212.10560">here</a>.</p>
-<p>There are several implementations of the Self Instruct method:</p>
-<ul>
-<li>Official GitHub repository: <a href="https://github.com/yizhongw/self-instruct">https://github.com/yizhongw/self-instruct</a></li>
-<li><a href="https://distilabel.argilla.io/latest/reference/distilabel/steps/tasks/#distilabel.steps.tasks.SelfInstruct">Distilabel implementation</a></li>
-<li><a href="https://github.com/jondurbin/airoboros">airoboros</a>: a modified version of self instruct.</li>
-</ul>
-<p>In practice, most uses of this approach have moved away from strictly following the prompts/approach outlined in the paper. Since the quality of open and closed-source instruction following models has significantly improved since his paper was published, it often makes more sense to use this to prompt a model to generate new instructions more directly.</p>
-<p>While the exact approach outlined in the paper is often adapted, the paper is still helpful for better understanding how to approach synthetic data generation.</p>
-
-
-</section>
-
- ]]></description>
-  <category>data</category>
-  <category>synthetic-data</category>
-  <guid>https://danielvanstrien.xyz/posts/plain-text/2024-05-15-self-instruct.html</guid>
-  <pubDate>Wed, 15 May 2024 00:00:00 GMT</pubDate>
 </item>
 </channel>
 </rss>
