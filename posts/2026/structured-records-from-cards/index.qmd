@@ -6,7 +6,6 @@ author: "Daniel van Strien"
 categories: [ocr, glam, hugging-face, structured-extraction, datasets]
 description: "Re-OCR made digitised catalogue cards searchable as text. But libraries need structured records they can ingest into their catalogues. NuExtract3 (4B, Apache-2.0) extracts schema-shaped JSON from card images in one command — here's how it does, honestly."
 image: nls-card-to-json.png
-draft: true
 format:
   html:
     toc: false
