@@ -1,0 +1,95 @@
+---
+title: "Filtering 1 TB of FineWeb-Edu for $2.40 using Buckets and Jobs"
+date: "2026-06-02"
+categories: [hugging-face, data-engineering, polars, duckdb, jobs]
+description: "A quick look at using Hugging Face Jobs + Storage Buckets to filter a big dataset — DuckDB does the heavy scan, Polars picks up the result, a bucket is the handoff. ~1 TB filtered for about $2.40."
+image: "pipeline.png"
+draft: false
+execute:
+  eval: false
+---
+
+I filtered ~1 TB of [FineWeb-Edu](https://huggingface.co/datasets/HuggingFaceFW/fineweb-edu) down to its high-quality, long-context core for about **$2.40** — no cluster, no download, one command on [Hugging Face Jobs](https://huggingface.co/docs/huggingface_hub/guides/cli#hf-jobs).
+
+Here's the quick version of how, because it's a pattern you (or your agent) can reuse for almost any "filter a big dataset" job.
+
+## The idea
+
+The trick is a [Hugging Face Storage Bucket](https://huggingface.co/docs/hub/storage-buckets): S3-like, mutable storage on the Hub that any tool can read and write. That lets each stage of a pipeline use whichever engine fits and hand off through the bucket:
+
+- **DuckDB** does the heavy, out-of-core scan + filter of the ~1 TB and writes the result to the bucket.
+- **Polars** — the dataframe tool I reach for — reads that working set back and explores it.
+
+Both run on Jobs: serverless compute, pay by the minute, nothing to set up.
+
+## A small example
+
+DuckDB reads the dataset straight off the Hub, filters as it goes, and writes the matching rows to a bucket:
+
+```python
+import duckdb
+con = duckdb.connect()
+con.sql("INSTALL httpfs; LOAD httpfs;")
+con.sql("""
+  COPY (
+    SELECT id, dump, score, token_count, text
+    FROM read_parquet('hf://datasets/HuggingFaceFW/fineweb-edu/sample/350BT/*.parquet')
+    WHERE int_score >= 4 AND token_count >= 4000 AND language_score >= 0.95
+  ) TO 'filtered.parquet' (FORMAT parquet)
+""")
+
+# push the result to a bucket
+from huggingface_hub import HfApi
+HfApi().batch_bucket_files("me/work", add=[("filtered.parquet", "hq/filtered.parquet")])
+```
+
+Then Polars picks the working set back up from the bucket and you iterate — group, count, slice, whatever:
+
+```python
+import polars as pl
+import polars_hf as plhf  # tiny plugin: adds hf://buckets support to Polars
+
+(
+    plhf.scan_bucket("hf://buckets/me/work/hq/filtered.parquet")
+    .group_by("dump")
+    .agg(pl.len().alias("docs"), pl.col("token_count").sum().alias("tokens"))
+    .collect()
+)
+```
+
+The whole thing is one Job — a uv script with inline dependencies, no environment to manage:
+
+```bash
+hf jobs uv run pipeline.py --secrets HF_TOKEN --flavor cpu-performance
+```
+
+## What you get
+
+| | |
+| --- | --- |
+| In | ~946 GiB / ~339 M rows of FineWeb-Edu |
+| Out | 607,190 high-quality long-context docs (4.81 B tokens) |
+| Time / cost | ~73 min, **~$2.40**, one Job, no standing infra |
+
+The filtered slice is public if you want to poke at it: [davanstrien/fineweb-edu-long-hq-350bt](https://huggingface.co/buckets/davanstrien/fineweb-edu-long-hq-350bt) — a bucket with the parquet and a README (which buckets render, so it doubles as the dataset card).
+
+And the 1 TB scan happens **once**. After that the slice lives in the bucket, so every follow-up question is a one-second Polars query — not another terabyte scan.
+
+## The agent angle
+
+This whole pipeline was built and run by an agent on Jobs. I pointed it at the problem; it wrote the DuckDB and Polars scripts, launched them, read the logs, and iterated — with the bucket as the shared scratch space between attempts.
+
+That's the real point. An agent doesn't need one library that does everything. It reaches for whatever fits each step, as long as there's a consistent place to put the data in between. On the Hub, that place is a bucket — and Jobs is the compute.
+
+## Try it
+
+Hand your agent (or yourself) the building blocks and let it work out the rest:
+
+```bash
+hf jobs uv run --help     # run any uv script on Hugging Face compute
+hf buckets --help         # mutable, S3-like storage on the Hub
+```
+
+Docs: [Jobs](https://huggingface.co/docs/huggingface_hub/guides/cli#hf-jobs) · [Storage Buckets](https://huggingface.co/docs/hub/storage-buckets). The Polars bucket plugin (alpha, a stopgap until native support lands) is [`polars-hf`](https://github.com/davanstrien/polars-hf).
+
+If you try the pattern on your own pipeline, I'd love to hear how it goes.
