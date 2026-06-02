@@ -6,11 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Daniel van Strien">
-<meta name="dcterms.date" content="2026-05-01">
-<meta name="description" content="I gave two coding agents the same one-line prompt and watched what each decided to do. Both shipped working classifiers via hf jobs. The headline metrics were within 1.5pp — the interesting differences were everywhere else.">
+<meta name="dcterms.date" content="2026-06-02">
+<meta name="description" content="A quick look at using Hugging Face Jobs + Storage Buckets to filter a big dataset — DuckDB does the heavy scan, Polars picks up the result, a bucket is the handoff. ~1 TB filtered for about $2.40.">
 
-<title>Two agents, one prompt – Daniel van Strien</title>
+<title>Filtering 1 TB of FineWeb-Edu for $2.40 using Buckets and Jobs – Daniel van Strien</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -25,6 +24,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -147,36 +181,30 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Two agents, one prompt</h1>
-<p class="subtitle lead">Pi + Kimi K2.6 and Claude Code both fine-tuned a Jim Crow law classifier from a single sentence. The interesting gap wasn’t F1.</p>
+<h1 class="title">Filtering 1 TB of FineWeb-Edu for $2.40 using Buckets and Jobs</h1>
   <div class="quarto-categories">
-    <div class="quarto-category">coding-agents</div>
     <div class="quarto-category">hugging-face</div>
-    <div class="quarto-category">glam</div>
-    <div class="quarto-category">datasets</div>
+    <div class="quarto-category">data-engineering</div>
+    <div class="quarto-category">polars</div>
+    <div class="quarto-category">duckdb</div>
+    <div class="quarto-category">jobs</div>
   </div>
   </div>
 
 <div>
   <div class="description">
-    I gave two coding agents the same one-line prompt and watched what each decided to do. Both shipped working classifiers via hf jobs. The headline metrics were within 1.5pp — the interesting differences were everywhere else.
+    A quick look at using Hugging Face Jobs + Storage Buckets to filter a big dataset — DuckDB does the heavy scan, Polars picks up the result, a bucket is the handoff. ~1 TB filtered for about $2.40.
   </div>
 </div>
 
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Daniel van Strien </p>
-          </div>
-  </div>
     
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">May 1, 2026</p>
+      <p class="date">June 2, 2026</p>
     </div>
   </div>
   
@@ -188,173 +216,80 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>Agents are getting more and more capable of training models. This means domain experts can have agents fine tune models for them without needing to write code themselves. But how do different agents approach the same task? Do they make the same choices? How good are the models they produce?</p>
-<p>I gave two coding agents the same one-line task and watched what each one decided to do.</p>
-<p>The task: fine-tune a model on <a href="https://huggingface.co/datasets/biglam/on_the_books"><code>biglam/on_the_books</code></a> — UNC Chapel Hill Libraries’ labelled training set from <em>On the Books: Jim Crow and Algorithms of Resistance</em> — and push the trained classifier to the Hub. Train via <a href="https://huggingface.co/docs/huggingface_hub/guides/cli#hf-jobs"><code>hf jobs</code></a>.</p>
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>Preview the dataset
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<iframe src="https://huggingface.co/datasets/biglam/on_the_books/embed/viewer/default/train" frameborder="0" width="100%" height="560px">
-</iframe>
-</div>
-</div>
-</div>
-<p>One agent was <a href="https://pi.dev/">Pi</a> running on <a href="https://huggingface.co/moonshotai/Kimi-K2.6">Kimi K2.6</a> (open weights, via API). The other was Claude Code on Opus 4.7. Same prompt, parallel runs, ~13 minutes each.</p>
-<section id="the-prompt" class="level2">
-<h2 class="anchored" data-anchor-id="the-prompt">The prompt</h2>
-<pre><code>Fine-tune a model on biglam/on_the_books to identify Jim Crow laws.
-Train via hf jobs and push the trained model to my namespace.
-
-Run `hf --help` to understand the Hub CLI and `hf jobs uv run --help`
-to understand how to submit uv scripts. You can use `uv run --with`
-to run small scripts for exploring the dataset.
-
-Start by exploring the dataset structure, then proceed to choose
-and fine-tune an appropriate model.
-
-Push the final model to davanstrien/&lt;repo-name&gt;.</code></pre>
+<p>I filtered ~1 TB of <a href="https://huggingface.co/datasets/HuggingFaceFW/fineweb-edu">FineWeb-Edu</a> down to its high-quality, long-context core for about <strong>$2.40</strong> — no cluster, no download, one command on <a href="https://huggingface.co/docs/huggingface_hub/guides/cli#hf-jobs">Hugging Face Jobs</a>.</p>
+<p>Here’s the quick version of how, because it’s a pattern you (or your agent) can reuse for almost any “filter a big dataset” job.</p>
+<section id="the-idea" class="level2">
+<h2 class="anchored" data-anchor-id="the-idea">The idea</h2>
+<p>The trick is a <a href="https://huggingface.co/docs/hub/storage-buckets">Hugging Face Storage Bucket</a>: S3-like, mutable storage on the Hub that any tool can read and write. That lets each stage of a pipeline use whichever engine fits and hand off through the bucket:</p>
+<ul>
+<li><strong>DuckDB</strong> does the heavy, out-of-core scan + filter of the ~1 TB and writes the result to the bucket.</li>
+<li><strong>Polars</strong> — the dataframe tool I reach for — reads that working set back and explores it.</li>
+</ul>
+<p>Both run on Jobs: serverless compute, pay by the minute, nothing to set up.</p>
 </section>
-<section id="the-race" class="level2">
-<h2 class="anchored" data-anchor-id="the-race">The race</h2>
-<video controls="" width="100%" preload="metadata" poster="thumbnail.png">
-<source src="https://huggingface.co/buckets/davanstrien/blog-assets/resolve/agent-race.mp4?download=true" type="video/mp4">
-<p>Your browser doesn’t support embedded video. <a href="https://huggingface.co/buckets/davanstrien/blog-assets/resolve/agent-race.mp4?download=true">Download the recording</a>. </p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The two terminals are running side-by-side: Claude Code on the left, Pi+Kimi on the right. Both call <code>hf</code> directly, both submit <code>hf jobs uv run</code>, both push to the Hub when training finishes.</p>
-</div>
-</div>
-</video></section>
-<section id="what-each-one-shipped" class="level2">
-<h2 class="anchored" data-anchor-id="what-each-one-shipped">What each one shipped</h2>
-<p>Both produced working binary classifiers. The headline numbers are close:</p>
+<section id="a-small-example" class="level2">
+<h2 class="anchored" data-anchor-id="a-small-example">A small example</h2>
+<p>DuckDB reads the dataset straight off the Hub, filters as it goes, and writes the matching rows to a bucket:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> duckdb</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>con <span class="op">=</span> duckdb.<span class="ex">connect</span>()</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>con.sql(<span class="st">"INSTALL httpfs; LOAD httpfs;"</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>con.sql(<span class="st">"""</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="st">  COPY (</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="st">    SELECT id, dump, score, token_count, text</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="st">    FROM read_parquet('hf://datasets/HuggingFaceFW/fineweb-edu/sample/350BT/*.parquet')</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="st">    WHERE int_score &gt;= 4 AND token_count &gt;= 4000 AND language_score &gt;= 0.95</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="st">  ) TO 'filtered.parquet' (FORMAT parquet)</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># push the result to a bucket</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> HfApi</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>HfApi().batch_bucket_files(<span class="st">"me/work"</span>, add<span class="op">=</span>[(<span class="st">"filtered.parquet"</span>, <span class="st">"hq/filtered.parquet"</span>)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Then Polars picks the working set back up from the bucket and you iterate — group, count, slice, whatever:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars_hf <span class="im">as</span> plhf  <span class="co"># tiny plugin: adds hf://buckets support to Polars</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>(</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    plhf.scan_bucket(<span class="st">"hf://buckets/me/work/hq/filtered.parquet"</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"dump"</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    .agg(pl.<span class="bu">len</span>().alias(<span class="st">"docs"</span>), pl.col(<span class="st">"token_count"</span>).<span class="bu">sum</span>().alias(<span class="st">"tokens"</span>))</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The whole thing is one Job — a uv script with inline dependencies, no environment to manage:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">hf</span> jobs uv run pipeline.py <span class="at">--secrets</span> HF_TOKEN <span class="at">--flavor</span> cpu-performance</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="what-you-get" class="level2">
+<h2 class="anchored" data-anchor-id="what-you-get">What you get</h2>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th></th>
-<th><strong>Claude Code (Opus 4.7)</strong></th>
-<th><strong>Pi + Kimi K2.6</strong></th>
-</tr>
-</thead>
 <tbody>
 <tr class="odd">
-<td>Base model</td>
-<td><strong>ModernBERT-base</strong> (8K context)</td>
-<td>RoBERTa-base</td>
+<td>In</td>
+<td>~946 GiB / ~339 M rows of FineWeb-Edu</td>
 </tr>
 <tr class="even">
-<td>Wall-clock</td>
-<td>~13 min</td>
-<td>~13 min</td>
+<td>Out</td>
+<td>607,190 high-quality long-context docs (4.81 B tokens)</td>
 </tr>
 <tr class="odd">
-<td>F1 (jim_crow)</td>
-<td>0.962</td>
-<td>0.947</td>
-</tr>
-<tr class="even">
-<td>Accuracy</td>
-<td>0.978</td>
-<td>(not reported)</td>
-</tr>
-<tr class="odd">
-<td>Hardware</td>
-<td>L4 via <code>hf jobs</code></td>
-<td>L4 via <code>hf jobs</code></td>
-</tr>
-<tr class="even">
-<td>Class imbalance handling</td>
-<td>inverse-frequency weighted loss</td>
-<td>not addressed</td>
-</tr>
-<tr class="odd">
-<td>Model card</td>
-<td>full (use, limits, ethics, hparams, citation)</td>
-<td>auto-generated <code>Trainer</code> placeholder</td>
-</tr>
-<tr class="even">
-<td>Domain tags</td>
-<td>7</td>
-<td>0</td>
+<td>Time / cost</td>
+<td>~73 min, <strong>~$2.40</strong>, one Job, no standing infra</td>
 </tr>
 </tbody>
 </table>
-<ul>
-<li>Claude’s model: <a href="https://huggingface.co/davanstrien/jim-crow-laws-claude-code"><code>davanstrien/jim-crow-laws-claude-code</code></a></li>
-<li>Pi+Kimi’s model: <a href="https://huggingface.co/davanstrien/jim-crow-laws-pi-kimi"><code>davanstrien/jim-crow-laws-pi-kimi</code></a></li>
-</ul>
+<p>The filtered slice is public if you want to poke at it: <a href="https://huggingface.co/buckets/davanstrien/fineweb-edu-long-hq-350bt">davanstrien/fineweb-edu-long-hq-350bt</a> — a bucket with the parquet and a README (which buckets render, so it doubles as the dataset card).</p>
+<p>And the 1 TB scan happens <strong>once</strong>. After that the slice lives in the bucket, so every follow-up question is a one-second Polars query — not another terabyte scan.</p>
 </section>
-<section id="the-interesting-bit" class="level2">
-<h2 class="anchored" data-anchor-id="the-interesting-bit">The interesting bit</h2>
-<p>The F1 gap is real but small. What’s more striking is what each agent <em>decided</em> to do beyond producing weights:</p>
-<ul>
-<li><strong>Base model choice.</strong> Claude Code picked ModernBERT — the obvious 2025 choice for legal text given its 8K context window. Pi+Kimi went with RoBERTa-base. Both produce viable classifiers; only one of those is a current decision.</li>
-<li><strong>The label-leak gotcha.</strong> The dataset’s <code>source</code> field is 100% positive for <code>paschal</code> and 92% positive for <code>murray</code> — using it as a feature would leak the label. Claude noticed this in the dataset card and explicitly excluded <code>source</code>. Pi+Kimi didn’t mention it.</li>
-<li><strong>Class imbalance.</strong> ~29% of the data is positive. Claude added inverse-frequency class weights to the loss; Pi+Kimi trained with default cross-entropy.</li>
-<li><strong>The model card.</strong> Claude wrote a full card with intended use, limitations, OCR-noise caveats, ethical framing carried over from the dataset, full hyperparameters, per-epoch metrics, and a citation back to the <em>On the Books</em> project. Pi+Kimi shipped the auto-generated <code>Trainer</code> template with three “More information needed” placeholders.</li>
-<li><strong>Discoverability.</strong> Claude added seven domain tags (<code>legal</code>, <code>glam</code>, <code>jim-crow</code>, <code>north-carolina</code>, <code>history</code>, etc.). Pi+Kimi added zero. One of these models is findable by an archivist; the other isn’t.</li>
-</ul>
+<section id="the-agent-angle" class="level2">
+<h2 class="anchored" data-anchor-id="the-agent-angle">The agent angle</h2>
+<p>This whole pipeline was built and run by an agent on Jobs. I pointed it at the problem; it wrote the DuckDB and Polars scripts, launched them, read the logs, and iterated — with the bucket as the shared scratch space between attempts.</p>
+<p>That’s the real point. An agent doesn’t need one library that does everything. It reaches for whatever fits each step, as long as there’s a consistent place to put the data in between. On the Hub, that place is a bucket — and Jobs is the compute.</p>
 </section>
-<section id="what-this-means" class="level2">
-<h2 class="anchored" data-anchor-id="what-this-means">What this means</h2>
-<p>Agents are able to produce working models with minimal prompting and no code. Using <a href="https://huggingface.co/docs/huggingface_hub/guides/cli#hf-jobs">Hugging Face Jobs</a> means you don’t need local GPU access or ML expertise to get a model trained and pushed to the Hub. One of the reasons in the past people didn’t bother training task and domain-specific models was the friction of setting up training pipelines; agents + hf jobs are changing that.</p>
-<p>IMO the biggest gap is still datasets (sorry broken record). In my experience agents still struggle when working with domain specific data “from scratch” but likely with some hand holding from a domain expert the process from unlablled data -&gt; labelled dataset -&gt; trained model can be done with agents by a domain expert who is not an ML engineer.</p>
-</section>
-<section id="browse-the-agent-traces" class="level2">
-<h2 class="anchored" data-anchor-id="browse-the-agent-traces">Browse the agent traces</h2>
-<p>Both agents’ full session traces are on the Hub using the new <a href="https://huggingface.co/changelog/agent-trace-viewer">agent trace viewer</a>. You can step through each turn, tool call, and model response:</p>
-<iframe src="https://huggingface.co/datasets/davanstrien/agent-race-traces/embed/viewer/default/train" frameborder="0" width="100%" height="560px">
-</iframe>
-<p>Direct links to each session file:</p>
-<ul>
-<li>Claude Code: <a href="https://huggingface.co/datasets/davanstrien/agent-race-traces/blob/main/claude-code.jsonl"><code>claude-code.jsonl</code></a></li>
-<li>Pi + Kimi: <a href="https://huggingface.co/datasets/davanstrien/agent-race-traces/blob/main/pi-kimi.jsonl"><code>pi-kimi.jsonl</code></a></li>
-</ul>
-</section>
-<section id="reproduce-inspect" class="level2">
-<h2 class="anchored" data-anchor-id="reproduce-inspect">Reproduce / inspect</h2>
-<ul>
-<li>Dataset: <a href="https://huggingface.co/datasets/biglam/on_the_books"><code>biglam/on_the_books</code></a></li>
-<li>Claude Code’s training script: <a href="claude-workspace/train_jim_crow.py"><code>claude-workspace/train_jim_crow.py</code></a></li>
-<li>Pi+Kimi’s training script: <a href="pi-workspace/train.py"><code>pi-workspace/train.py</code></a></li>
-<li>Claude’s model: <a href="https://huggingface.co/davanstrien/jim-crow-laws-claude-code"><code>davanstrien/jim-crow-laws-claude-code</code></a></li>
-<li>Pi+Kimi’s model: <a href="https://huggingface.co/davanstrien/jim-crow-laws-pi-kimi"><code>davanstrien/jim-crow-laws-pi-kimi</code></a></li>
-<li>Agent traces: <a href="https://huggingface.co/datasets/davanstrien/agent-race-traces"><code>davanstrien/agent-race-traces</code></a></li>
-</ul>
-</section>
-<section id="try-it-yourself" class="level2">
-<h2 class="anchored" data-anchor-id="try-it-yourself">Try it yourself</h2>
-<ul>
-<li><strong><a href="https://huggingface.co/docs/huggingface_hub/guides/cli#hf-jobs">HF Jobs</a></strong> — launch GPU training from the CLI without managing infrastructure</li>
-<li><strong><a href="https://huggingface.co/changelog/agent-trace-viewer">Agent trace viewer</a></strong> — host and browse coding-agent sessions on the Hub</li>
-</ul>
-</section>
-<section id="caveats" class="level2">
-<h2 class="anchored" data-anchor-id="caveats">Caveats</h2>
-<p>N=1, single dataset, single prompt, single run per agent. Run-to-run variance from random seeds and agent non-determinism would shift the numbers within a few points either way. Don’t read this as a benchmark — read it as a snapshot of what each agent <em>chose to do</em> given the same minimal brief. A fairer comparison would repeat both runs across multiple datasets and seeds, and would also try frontier-open (e.g.&nbsp;Claude Code on Kimi K2.6) and open-frontier (Pi on Opus 4.7) crosses to disentangle agent-vs-model effects.</p>
-<p>Credit to the <em><a href="https://onthebooks.lib.unc.edu/">On the Books</a></em> project at UNC Chapel Hill Libraries for the underlying data and the <em>algorithms of resistance</em> framing.</p>
+<section id="try-it" class="level2">
+<h2 class="anchored" data-anchor-id="try-it">Try it</h2>
+<p>Hand your agent (or yourself) the building blocks and let it work out the rest:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">hf</span> jobs uv run <span class="at">--help</span>     <span class="co"># run any uv script on Hugging Face compute</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">hf</span> buckets <span class="at">--help</span>         <span class="co"># mutable, S3-like storage on the Hub</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Docs: <a href="https://huggingface.co/docs/huggingface_hub/guides/cli#hf-jobs">Jobs</a> · <a href="https://huggingface.co/docs/hub/storage-buckets">Storage Buckets</a>. The Polars bucket plugin (alpha, a stopgap until native support lands) is <a href="https://github.com/davanstrien/polars-hf"><code>polars-hf</code></a>.</p>
+<p>If you try the pattern on your own pipeline, I’d love to hear how it goes.</p>
 
 
 </section>

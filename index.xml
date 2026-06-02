@@ -9,8 +9,182 @@
 <link>https://danielvanstrien.xyz/</link>
 <atom:link href="https://danielvanstrien.xyz/index.xml" rel="self" type="application/rss+xml"/>
 <description>Daniel van Strien&#39;s blog</description>
-<generator>quarto-1.9.37</generator>
-<lastBuildDate>Thu, 21 May 2026 00:00:00 GMT</lastBuildDate>
+<generator>quarto-1.9.38</generator>
+<lastBuildDate>Tue, 02 Jun 2026 00:00:00 GMT</lastBuildDate>
+<item>
+  <title>Filtering 1 TB of FineWeb-Edu for $2.40 using Buckets and Jobs</title>
+  <link>https://danielvanstrien.xyz/posts/2026/buckets-data-backend/</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>I filtered ~1 TB of <a href="https://huggingface.co/datasets/HuggingFaceFW/fineweb-edu">FineWeb-Edu</a> down to its high-quality, long-context core for about <strong>$2.40</strong> — no cluster, no download, one command on <a href="https://huggingface.co/docs/huggingface_hub/guides/cli#hf-jobs">Hugging Face Jobs</a>.</p>
+<p>Here’s the quick version of how, because it’s a pattern you (or your agent) can reuse for almost any “filter a big dataset” job.</p>
+<section id="the-idea" class="level2">
+<h2 class="anchored" data-anchor-id="the-idea">The idea</h2>
+<p>The trick is a <a href="https://huggingface.co/docs/hub/storage-buckets">Hugging Face Storage Bucket</a>: S3-like, mutable storage on the Hub that any tool can read and write. That lets each stage of a pipeline use whichever engine fits and hand off through the bucket:</p>
+<ul>
+<li><strong>DuckDB</strong> does the heavy, out-of-core scan + filter of the ~1 TB and writes the result to the bucket.</li>
+<li><strong>Polars</strong> — the dataframe tool I reach for — reads that working set back and explores it.</li>
+</ul>
+<p>Both run on Jobs: serverless compute, pay by the minute, nothing to set up.</p>
+</section>
+<section id="a-small-example" class="level2">
+<h2 class="anchored" data-anchor-id="a-small-example">A small example</h2>
+<p>DuckDB reads the dataset straight off the Hub, filters as it goes, and writes the matching rows to a bucket:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> duckdb</span>
+<span id="cb1-2">con <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> duckdb.<span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">connect</span>()</span>
+<span id="cb1-3">con.sql(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"INSTALL httpfs; LOAD httpfs;"</span>)</span>
+<span id="cb1-4">con.sql(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb1-5"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">  COPY (</span></span>
+<span id="cb1-6"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    SELECT id, dump, score, token_count, text</span></span>
+<span id="cb1-7"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    FROM read_parquet('hf://datasets/HuggingFaceFW/fineweb-edu/sample/350BT/*.parquet')</span></span>
+<span id="cb1-8"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    WHERE int_score &gt;= 4 AND token_count &gt;= 4000 AND language_score &gt;= 0.95</span></span>
+<span id="cb1-9"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">  ) TO 'filtered.parquet' (FORMAT parquet)</span></span>
+<span id="cb1-10"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"""</span>)</span>
+<span id="cb1-11"></span>
+<span id="cb1-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># push the result to a bucket</span></span>
+<span id="cb1-13"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> huggingface_hub <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> HfApi</span>
+<span id="cb1-14">HfApi().batch_bucket_files(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"me/work"</span>, add<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"filtered.parquet"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"hq/filtered.parquet"</span>)])</span></code></pre></div></div>
+<p>Then Polars picks the working set back up from the bucket and you iterate — group, count, slice, whatever:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> polars <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> pl</span>
+<span id="cb2-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> polars_hf <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> plhf  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># tiny plugin: adds hf://buckets support to Polars</span></span>
+<span id="cb2-3"></span>
+<span id="cb2-4">(</span>
+<span id="cb2-5">    plhf.scan_bucket(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"hf://buckets/me/work/hq/filtered.parquet"</span>)</span>
+<span id="cb2-6">    .group_by(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"dump"</span>)</span>
+<span id="cb2-7">    .agg(pl.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">len</span>().alias(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"docs"</span>), pl.col(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"token_count"</span>).<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sum</span>().alias(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"tokens"</span>))</span>
+<span id="cb2-8">    .collect()</span>
+<span id="cb2-9">)</span></code></pre></div></div>
+<p>The whole thing is one Job — a uv script with inline dependencies, no environment to manage:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">hf</span> jobs uv run pipeline.py <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--secrets</span> HF_TOKEN <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--flavor</span> cpu-performance</span></code></pre></div></div>
+</section>
+<section id="what-you-get" class="level2">
+<h2 class="anchored" data-anchor-id="what-you-get">What you get</h2>
+<table class="caption-top table">
+<tbody>
+<tr class="odd">
+<td>In</td>
+<td>~946 GiB / ~339 M rows of FineWeb-Edu</td>
+</tr>
+<tr class="even">
+<td>Out</td>
+<td>607,190 high-quality long-context docs (4.81 B tokens)</td>
+</tr>
+<tr class="odd">
+<td>Time / cost</td>
+<td>~73 min, <strong>~$2.40</strong>, one Job, no standing infra</td>
+</tr>
+</tbody>
+</table>
+<p>The filtered slice is public if you want to poke at it: <a href="https://huggingface.co/buckets/davanstrien/fineweb-edu-long-hq-350bt">davanstrien/fineweb-edu-long-hq-350bt</a> — a bucket with the parquet and a README (which buckets render, so it doubles as the dataset card).</p>
+<p>And the 1 TB scan happens <strong>once</strong>. After that the slice lives in the bucket, so every follow-up question is a one-second Polars query — not another terabyte scan.</p>
+</section>
+<section id="the-agent-angle" class="level2">
+<h2 class="anchored" data-anchor-id="the-agent-angle">The agent angle</h2>
+<p>This whole pipeline was built and run by an agent on Jobs. I pointed it at the problem; it wrote the DuckDB and Polars scripts, launched them, read the logs, and iterated — with the bucket as the shared scratch space between attempts.</p>
+<p>That’s the real point. An agent doesn’t need one library that does everything. It reaches for whatever fits each step, as long as there’s a consistent place to put the data in between. On the Hub, that place is a bucket — and Jobs is the compute.</p>
+</section>
+<section id="try-it" class="level2">
+<h2 class="anchored" data-anchor-id="try-it">Try it</h2>
+<p>Hand your agent (or yourself) the building blocks and let it work out the rest:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">hf</span> jobs uv run <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--help</span>     <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># run any uv script on Hugging Face compute</span></span>
+<span id="cb4-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">hf</span> buckets <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--help</span>         <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># mutable, S3-like storage on the Hub</span></span></code></pre></div></div>
+<p>Docs: <a href="https://huggingface.co/docs/huggingface_hub/guides/cli#hf-jobs">Jobs</a> · <a href="https://huggingface.co/docs/hub/storage-buckets">Storage Buckets</a>. The Polars bucket plugin (alpha, a stopgap until native support lands) is <a href="https://github.com/davanstrien/polars-hf"><code>polars-hf</code></a>.</p>
+<p>If you try the pattern on your own pipeline, I’d love to hear how it goes.</p>
+
+
+</section>
+
+ ]]></description>
+  <category>hugging-face</category>
+  <category>data-engineering</category>
+  <category>polars</category>
+  <category>duckdb</category>
+  <category>jobs</category>
+  <guid>https://danielvanstrien.xyz/posts/2026/buckets-data-backend/</guid>
+  <pubDate>Tue, 02 Jun 2026 00:00:00 GMT</pubDate>
+  <media:content url="https://danielvanstrien.xyz/posts/2026/buckets-data-backend/pipeline.png" medium="image" type="image/png" height="80" width="144"/>
+</item>
 <item>
   <title>How to turn catalogue card images into structured JSON with a 4B open model</title>
   <dc:creator>Daniel van Strien</dc:creator>
@@ -25999,461 +26173,6 @@ font-style: inherit;">"</span>)</span></code></pre></div></div>
   <guid>https://danielvanstrien.xyz/posts/post-with-code/colpali/2024-09-23-generate_colpali_dataset.html</guid>
   <pubDate>Mon, 23 Sep 2024 00:00:00 GMT</pubDate>
   <media:content url="https://danielvanstrien.xyz/posts/post-with-code/colpali/cJkPlaOVIju5yR7TaO0fD.png" medium="image" type="image/png" height="216" width="144"/>
-</item>
-<item>
-  <title>Synthetic dataset generation techniques: generating custom sentence similarity data</title>
-  <link>https://danielvanstrien.xyz/posts/plain-text/synthetic-data-generation/2024-05-03-synethic-data-1.html</link>
-  <description><![CDATA[ 
-
-
-
-
-<p><em>This post is part of a series on synthetic data generation techniques. You may also want to check out <a href="https://github.com/davanstrien/awesome-synthetic-datasets">Awesome Synthetic (text) datasets</a>, where I will be collecting these posts.</em></p>
-<p>One of the most exciting use cases for LLMs is generating synthetic datasets that can be used to train non-LLM models. In the past, gathering enough data was one of the most significant barriers to training task-specific models, such as text classification models. LLMs can potentially help in this area.</p>
-<section id="creating-data-for-training-and-fine-tuning-embedding-models-using-llms" class="level2">
-<h2 class="anchored" data-anchor-id="creating-data-for-training-and-fine-tuning-embedding-models-using-llms">Creating data for training and fine-tuning embedding models using LLMs?</h2>
-<p>One area where synthetic data can be compelling is generating data for training sentence similarity models.</p>
-<blockquote class="blockquote">
-<p>Sentence Similarity is the task of determining how similar two texts are. Sentence similarity models convert input texts into vectors (embeddings) that capture semantic information and calculate how close (similar) they are between them. This task is particularly useful for information retrieval and clustering/grouping. <a href="https://huggingface.co/tasks/sentence-similarity">source</a></p>
-</blockquote>
-<p>Whilst some strong open embedding models can be used for sentence similarity tasks, there are times when additional data for fine-tuning a model might be helpful:</p>
-<ul>
-<li>When working in a domain where generic models don’t work well.</li>
-<li>When you want to optimize a model for a particular use, i.e.&nbsp;retrieval vs classification</li>
-<li>Scaling, scaling, scaling: you want to train a general embedding model and need more data.</li>
-</ul>
-<p>For the latter example, LLMs are useful not only because they allow you to scale the amount of data but also because they allow you to control what data you have in your training data. Many embedding models use some weak supervision of data found “in the wild”. While using this data allows the model to learn how to model similarity, there is also quite a lot of noise in this data. A recent paper <a href="https://huggingface.co/papers/2401.00368"><em>Improving Text Embeddings with Large Language Models</em></a> showed generating data that aimed to be diverse to the kinds of data an embedding model would work with reducing the amount of data needed compared to using a much larger but noisier weakly labeled dataset.</p>
-</section>
-<section id="what-is-similar" class="level2">
-<h2 class="anchored" data-anchor-id="what-is-similar">What is similar</h2>
-<p>One frustration I’ve sometimes had when people discuss sentence similarity as a task is that what “similarity” means is usually pretty poorly defined (sorry, this is my humanities training rearing its head). This is one of the reasons why I really like the paper <a href="https://arxiv.org/html/2305.12517v3">Description-Based Text Similarity</a>. In this papers the authors describe one of the issues with existing approaches:</p>
-<blockquote class="blockquote">
-<p>The notion of similarity…is not explicitly defined but rather learned from vast datasets containing pairs of texts labeled as similar, often mixing various different kinds of similarity (Kaster et al., 2021; Opitz &amp; Frank, 2022). This makes them sub-optimal for information seeking queries, as it is hard to control or predict the results of a given similarity-based query. What is a good query representation and similarity definition for a semantic-search use case?</p>
-</blockquote>
-<p>The approach they take in their paper is to use an LLM to generate new query sentences which aim to be “abstract descriptions of sentences” which can be trained alongside their instantiations. To make it more clear here are some examples they produce in the paper:</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://cdn-uploads.huggingface.co/production/uploads/60107b385ac3e86b3ea4fc34/hf8ZT_hJfKoy8TyUEX-vw.png" class="img-fluid figure-img"></p>
-<figcaption>image/png</figcaption>
-</figure>
-</div>
-</section>
-<section id="generating-custom-sentence-similarity-data" class="level2">
-<h2 class="anchored" data-anchor-id="generating-custom-sentence-similarity-data">Generating custom sentence similarity data</h2>
-<p>While this paper is focused on the task of generating ‘abstract’ queries for sentences the approach can be adapted to other more targeted similarity datasets. In the rest of this post I will briefly give some examples of how you can generate this kind of data (the full notebook in the Awesome Synthetic Datasets repo has the full code).</p>
-<section id="using-inference-endpoints-via-the-huggingface_hub-library." class="level3">
-<h3 class="anchored" data-anchor-id="using-inference-endpoints-via-the-huggingface_hub-library.">Using Inference Endpoints via the huggingface_hub library.</h3>
-<p>In the paper the authors use GPT3.5 from OpenAI. In this post we’ll switch that out with an open model <a href="https://huggingface.co/meta-llama/Meta-Llama-3-70B-Instruct">meta-llama/Meta-Llama-3-70B-Instruct</a> which we’ll call via the <code>huggingface_hub</code> library.</p>
-<p>First we can import the required libraries:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> huggingface_hub <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> get_token</span>
-<span id="cb1-2"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> huggingface_hub <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> InferenceClient</span></code></pre></div></div>
-<p>We can then use <code>InferenceClient</code> to specify which model we want to use.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1">client <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> InferenceClient(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"meta-llama/Meta-Llama-3-70B-Instruct"</span>, token<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>get_token())</span></code></pre></div></div>
-</section>
-<section id="the-prompts" class="level3">
-<h3 class="anchored" data-anchor-id="the-prompts">The prompts</h3>
-<p>For generating the descriptions of Wikipedia this prompt is used:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1">wiki_prompt <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">f"""</span></span>
-<span id="cb3-2"><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Let's write abstract descriptions of sentences. Example:</span></span>
-<span id="cb3-3"><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Sentence: Pilate's role in the events leading to the crucifixion lent themselves to melodrama , even tragedy , and Pilate often has a role in medieval mystery plays .</span></span>
-<span id="cb3-4"><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Description: A description of a historical religious figure's involvement in a significant event and its later portrayal in art.</span></span>
-<span id="cb3-5"><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Note: Descriptions can differ in the level of abstraction, granularity and the part of the sentence they focus on. Some descriptions need to be abstract, while others should be concrete and detailed.</span></span>
-<span id="cb3-6"><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">For the following sentence, write up 5 good and stand-alone, independent descriptions and 5 bad descriptions (which may be related, but are clearly wrong). Output a json file with keys 'good', 'bad'.</span></span>
-<span id="cb3-7"><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Sentence: </span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span>sentence<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb3-8"><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Start your answer with a curly bracket.</span></span>
-<span id="cb3-9"><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"""</span></span></code></pre></div></div>
-<p>Let’s generate some sentences using this prompt. We’ll use this sentence as an example:</p>
-<blockquote class="blockquote">
-<p>“In Greek mythology, Achilles ( ) or Achilleus () was a hero of the Trojan War who was known as being the greatest of all the Greek warriors. A central character in Homer’s Iliad, he was the son of the Nereid Thetis and Peleus, king of Phthia and famous Argonaut. Achilles was raised in Phthia along his childhood companion Patroclus and received his education by the centaur Chiron. In the Iliad, he is presented as the commander of the mythical tribe of the Myrmidons.”</p>
-</blockquote>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1">resp <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> client.text_generation(wiki_prompt.<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">format</span>(sentence<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>sentence))</span>
-<span id="cb4-2"><span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">print</span>(resp)</span></code></pre></div></div>
-<pre><code>{
-"good": [
-"A description of a mythological figure's background and characteristics",
-"A summary of a legendary hero's life and exploits",
-"A passage about a character from ancient Greek literature",
-"A biographical sketch of a famous warrior from mythology",
-"A description of a central character in a famous epic poem"
-],
-"bad": [
-"A description of a real person's life",
-"A summary of a historical event",
-"A passage about a character from a novel",
-"A biographical sketch of a king",
-"A</code></pre>
-<p>We can see that we have roughly what’s requests in the prompt but let’s try and load this as JSON:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> json</span>
-<span id="cb6-2"></span>
-<span id="cb6-3">json.loads(resp)</span></code></pre></div></div>
-<pre><code>---------------------------------------------------------------------------
-
-JSONDecodeError                           Traceback (most recent call last)
-
-Cell In[82], line 3
-      1 import json
-----&gt; 3 json.loads(resp)
-
-
-File ~/.pyenv/versions/3.11.1/lib/python3.11/json/__init__.py:346, in loads(s, cls, object_hook, parse_float, parse_int, parse_constant, object_pairs_hook, **kw)
-    341     s = s.decode(detect_encoding(s), 'surrogatepass')
-    343 if (cls is None and object_hook is None and
-    344         parse_int is None and parse_float is None and
-    345         parse_constant is None and object_pairs_hook is None and not kw):
---&gt; 346     return _default_decoder.decode(s)
-    347 if cls is None:
-    348     cls = JSONDecoder
-
-
-File ~/.pyenv/versions/3.11.1/lib/python3.11/json/decoder.py:337, in JSONDecoder.decode(self, s, _w)
-    332 def decode(self, s, _w=WHITESPACE.match):
-    333     """Return the Python representation of ``s`` (a ``str`` instance
-    334     containing a JSON document).
-    335
-    336     """
---&gt; 337     obj, end = self.raw_decode(s, idx=_w(s, 0).end())
-    338     end = _w(s, end).end()
-    339     if end != len(s):
-
-
-File ~/.pyenv/versions/3.11.1/lib/python3.11/json/decoder.py:353, in JSONDecoder.raw_decode(self, s, idx)
-    344 """Decode a JSON document from ``s`` (a ``str`` beginning with
-    345 a JSON document) and return a 2-tuple of the Python
-    346 representation and the index in ``s`` where the document ended.
-   (...)
-    350
-    351 """
-    352 try:
---&gt; 353     obj, end = self.scan_once(s, idx)
-    354 except StopIteration as err:
-    355     raise JSONDecodeError("Expecting value", s, err.value) from None
-
-
-JSONDecodeError: Unterminated string starting at: line 14 column 1 (char 489)</code></pre>
-</section>
-</section>
-<section id="structured-generation" class="level2">
-<h2 class="anchored" data-anchor-id="structured-generation">Structured Generation</h2>
-<p>One way we could help the model generate valid JSON is to increase the number of tokens. However, we can also use another approach, Structured Text Generation. This can be used to constrain the model’s output to a more specific format.</p>
-<p>We can use Structured Text Generation via Inference API models which are hosted using <a href="https://huggingface.co/docs/text-generation-inference/index">Text Generation Inference</a>. We won’t discuss how this works under the hood in this post (see https://huggingface.co/docs/text-generation-inference/conceptual/guidance for a nice guide on this). We’ll instead focus on how we can use this to improve the results we’re getting from our open LLM.</p>
-<p>When doing structured text generation we use something known as a “grammar” to specify what we want our output to look like. There are various ways of creating these but one way is to use a <a href="https://docs.pydantic.dev/latest/">Pydantic</a> model. <a href="https://docs.pydantic.dev/latest/">Pydantic</a> is a very heavily used data validation library for Python which can be used to validate data fits a certain format. This library was originally designed more for validating data coming via APIs etc but can also be very useful in the context of LLMs.</p>
-<p>A simple way to define our data is to create a model called <code>Sentences</code> and specify that we want two attributes, <code>good</code> and <code>bad</code>. Each attribute should be a list of strings. You’ll notice that in this example, these are specified via standard Python types.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> pydantic <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> BaseModel</span>
-<span id="cb8-2"></span>
-<span id="cb8-3"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">class</span> Sentences(BaseModel):</span>
-<span id="cb8-4">    good: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">list</span>[<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span>]</span>
-<span id="cb8-5">    bad: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">list</span>[<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span>]</span></code></pre></div></div>
-<p>To use this model via the <code>huggingface_hub</code> library we need to pass it as a JSON Schema. Let’s see what the schema for this model looks like:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1">schema <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> Sentences.model_json_schema()</span>
-<span id="cb9-2">schema</span></code></pre></div></div>
-<pre><code>{'properties': {'good': {'items': {'type': 'string'},
-   'title': 'Good',
-   'type': 'array'},
-  'bad': {'items': {'type': 'string'}, 'title': 'Bad', 'type': 'array'}},
- 'required': ['good', 'bad'],
- 'title': 'Sentences',
- 'type': 'object'}</code></pre>
-<p>We can pass this schema to the <code>text_generation</code> method for our client.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1">resp <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> client.text_generation(</span>
-<span id="cb11-2">    wiki_prompt.<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">format</span>(sentence<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>sentence),</span>
-<span id="cb11-3">    grammar<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>{<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"type"</span>: <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"json"</span>, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"value"</span>: Sentences.model_json_schema()},</span>
-<span id="cb11-4">    max_new_tokens<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">2000</span>,</span>
-<span id="cb11-5">)</span></code></pre></div></div>
-<p>We can see that we can now load our response into a valid JSON object</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1">json.loads(resp)</span></code></pre></div></div>
-<pre><code>{'bad': ["Achilles' biography",
-  'A description of a person',
-  'A passage about a book',
-  'A story about a king',
-  'A summary of a myth'],
- 'good': ["A description of a mythological figure's background and character in ancient Greek literature",
-  'A characterization of a legendary warrior in Greek mythology',
-  'A summary of the early life and education of a hero in ancient Greek mythology',
-  'A description of a central character in a famous epic poem',
-  "A portrayal of a mythological hero's family and upbringing"]}</code></pre>
-<section id="more-control" class="level3">
-<h3 class="anchored" data-anchor-id="more-control">More control</h3>
-<p>The focus here isn’t to dig into structured generation in great detail but you can add more control to your generations. For example, we might think that the <code>bad</code> examples generated above are too short. We can use <code>StringConstraints</code> to specify a minimum length for these strings.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> pydantic.types <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> Annotated, StringConstraints</span>
-<span id="cb14-2"></span>
-<span id="cb14-3"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">class</span> Sentences(BaseModel):</span>
-<span id="cb14-4">    good: Annotated[<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">list</span>[<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span>], StringConstraints(min_length<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">30</span>)]</span>
-<span id="cb14-5">    bad: Annotated[<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">list</span>[<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span>], StringConstraints(min_length<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">30</span>)]</span></code></pre></div></div>
-<p>Finally, we could also specify how many generations we want. The original prompt specified a max of five examples for good and bad. We can add this constraint to our model.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> pydantic.types <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> Annotated, StringConstraints</span>
-<span id="cb15-2"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> pydantic <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> Field</span>
-<span id="cb15-3"></span>
-<span id="cb15-4"></span>
-<span id="cb15-5"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">class</span> Sentences(BaseModel):</span>
-<span id="cb15-6">    good: Annotated[</span>
-<span id="cb15-7">        <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">list</span>[<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span>],</span>
-<span id="cb15-8">        Field(</span>
-<span id="cb15-9">            max_items<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">5</span>,</span>
-<span id="cb15-10">            item_type<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>StringConstraints(</span>
-<span id="cb15-11">                min_length<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">30</span>,</span>
-<span id="cb15-12">            ),</span>
-<span id="cb15-13">        ),</span>
-<span id="cb15-14">    ]</span>
-<span id="cb15-15">    bad: Annotated[</span>
-<span id="cb15-16">        <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">list</span>[<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span>],</span>
-<span id="cb15-17">        Field(</span>
-<span id="cb15-18">            max_items<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">5</span>,</span>
-<span id="cb15-19">            item_type<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>StringConstraints(</span>
-<span id="cb15-20">                min_length<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">30</span>,</span>
-<span id="cb15-21">            ),</span>
-<span id="cb15-22">        ),</span>
-<span id="cb15-23">    ]</span></code></pre></div></div>
-</section>
-</section>
-<section id="abstract-descriptions" class="level2">
-<h2 class="anchored" data-anchor-id="abstract-descriptions">Abstract descriptions</h2>
-<p>One extra step the authors of the paper take is to use the descriptions generated by the first prompt along with a second prompt focused on generating a more abstract representation of the sentence. We’ll quickly see one example of what this looks like using one of our examples:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1">prompt_abstract <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Sentence: in spite of excellent pediatric health care , several educational problems could be noted in this tertiary pediatric center .</span><span class="ch" style="color: #20794D;
-background-color: null;
-font-style: inherit;">\n</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Description: Despite having advanced healthcare resources, certain deficiencies in education were identified at a medical center that serves children.</span><span class="ch" style="color: #20794D;
-background-color: null;
-font-style: inherit;">\n</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">A very abstract description: The provision of care at a specialized medical center was not optimal in one particular area, despite the presence of advanced resources.</span><span class="ch" style="color: #20794D;
-background-color: null;
-font-style: inherit;">\n</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Sentence: </span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{sentence}</span><span class="ch" style="color: #20794D;
-background-color: null;
-font-style: inherit;">\n</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Description: </span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{description}</span><span class="ch" style="color: #20794D;
-background-color: null;
-font-style: inherit;">\n</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">A very abstract description:"</span></span></code></pre></div></div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">def</span> generate_abstract_description(sentence, description):</span>
-<span id="cb17-2">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">return</span> client.text_generation(</span>
-<span id="cb17-3">        prompt_abstract.<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">format</span>(sentence<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>sentence, description<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>description),</span>
-<span id="cb17-4">    )</span></code></pre></div></div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1">description <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>json.loads(resp).get(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'good'</span>)[<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span>]</span></code></pre></div></div>
-<p>Our original sentence and description look like this</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">f"Sentence: </span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span>sentence<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span><span class="ch" style="color: #20794D;
-background-color: null;
-font-style: inherit;">\n</span><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Description: </span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span>description<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span><span class="ch" style="color: #20794D;
-background-color: null;
-font-style: inherit;">\n</span><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"</span>)</span></code></pre></div></div>
-<pre><code>Sentence: In Greek mythology, Achilles ( ) or Achilleus () was a hero of the Trojan War who was known as being the greatest of all the Greek warriors. A central character in Homer's Iliad, he was the son of the Nereid Thetis and Peleus, king of Phthia and famous Argonaut. Achilles was raised in Phthia along his childhood companion Patroclus and received his education by the centaur Chiron. In the Iliad, he is presented as the commander of the mythical tribe of the Myrmidons.
-Description: A characterization of a legendary hero in a famous epic poem</code></pre>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">f"Abstract version: </span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span>generate_abstract_description(sentence, description)<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"</span>)</span></code></pre></div></div>
-<pre><code>Abstract version:  A figure from ancient mythology is described in terms of their family, upbringing, and role in a famous story.</code></pre>
-</section>
-<section id="conclusion" class="level2">
-<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-<p>Whilst there would still be some details to take care of if you want to scale up the generation of this kind of data, the above example hopefully shows how an open LLM can be used to generate more tailored data for training similarity models. Whilst the prompts here are borrowed from the paper, they could, of course, be adapted to focus on generating other kinds of similarity data.</p>
-
-
-</section>
-
- ]]></description>
-  <category>data</category>
-  <category>synthetic-data</category>
-  <guid>https://danielvanstrien.xyz/posts/plain-text/synthetic-data-generation/2024-05-03-synethic-data-1.html</guid>
-  <pubDate>Thu, 23 May 2024 00:00:00 GMT</pubDate>
 </item>
 </channel>
 </rss>
