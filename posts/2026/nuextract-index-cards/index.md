@@ -2,7 +2,7 @@
 title: "One small model, many card catalogues"
 subtitle: "A 4B open model, fine-tuned to read archival index cards across collections — French and English handwritten death records, manuscript catalogues, and schemas it has never seen. Matching an 8B at half the size, for about $45."
 date: "2026-06-10"
-author: "Danielvan Strien"
+author: "Daniel van Strien"
 categories:
   [
     ocr,
@@ -50,7 +50,7 @@ VLM based OCR models have got much better in the past year or so but there are m
 }
 ```
 
-Everything below is about making that one trick much better on a specific collection — and keeping it good atworking on collections it has never seen.
+Everything below is about making that one trick much better on a specific collection — and keeping it good at working on collections it has never seen.
 :::
 
 A while back I showed that a 4B open model, [NuExtract-3](https://huggingface.co/numind/NuExtract3), could turn [catalogue-card images into structured JSON](../structured-records-from-cards/index.qmd) zero-shot — hand it an image and a schema, get a record back.
@@ -59,7 +59,7 @@ In that post I suggested the model is a very strong zero-shot model for a _first
 
 This post picks up on this topic. The question I wanted to answer: **can one cheap, open 4B model be fine-tuned to read _many_ different card collections very well — each with its own schema — without becoming a brittle specialist?** And if so, does it stay useful on collections it was never trained on?
 
-The short version: **yes, and more than I expected.** One model now reads French _and_ English handwritten death records, English manuscript-catalogue cards, follows schemas it has never seen, and on the single most important field **beats the 8B model that generated some of its training labels** — all for about **$45** of compute, entirely on [Hugging Face Jobs](https://huggingface.co/docs/hub/jobs) (this compute inlcludes a lot of me trying weird experiments so to just do the fine-tuning and evaluation would be way cheaper.)
+The short version: **yes, and more than I expected.** One model now reads French _and_ English handwritten death records, English manuscript-catalogue cards, follows schemas it has never seen, and on the single most important field **beats the 8B model that generated some of its training labels** — all for about **$45** of compute, entirely on [Hugging Face Jobs](https://huggingface.co/docs/hub/jobs) (this compute includes a lot of me trying weird experiments so to just do the fine-tuning and evaluation would be way cheaper.)
 
 ## The collections
 
@@ -102,14 +102,14 @@ The interesting question is whether you can fold _several_ collections into **on
 
 | collection               | metric    | single-collection | **one generalist model** | external reference    |
 | ------------------------ | --------- | ----------------- | ------------------------ | --------------------- |
-| Teklia (FR deaths)       | field-F1  | 0.895             | **0.887**                | —                     |
+| Teklia (FR deaths)       | field-F1  | 0.889             | **0.878**                | —                     |
 | NLS (manuscripts)        | retrieval | —                 | **0.726**                | Qwen3-VL-8B 0.760     |
 | NLS (manuscripts)        | ms_no F1  | —                 | **0.952**                | Qwen3-VL-8B **0.886** |
 | Southborough (EN deaths) | macro-F1  | —                 | **0.750**¹               | new collection        |
 
-¹ The Southborough test set is **agent-labelled, not human-verified** (a Claude agent read each card carefully) — so 0.750 is _relative to those labels_, not gold ground truth. Teklia and NLS numbers _are_ against human-grade ground truth.
+¹ The Southborough test set is **agent-labelled, not human-verified** (a Claude agent read each card carefully) and small (**12 cards**) — so 0.750 is _relative to those labels_, not gold ground truth. Teklia and NLS numbers _are_ against human-grade ground truth.
 
-Two things stand out. First, **adding collections is free**: Teklia held at 0.887 (vs 0.895 trained alone). Second — and this is the one that surprised me — on the **manuscript-number field**, the most important field for actually _finding_ a manuscript, the **4B model scores 0.952**, beating the **Qwen3-VL-8B (0.886)** whose outputs I used as part of its training labels. The student beats the teacher. This is a known effect in distillation (a smaller model trained on a stronger model's outputs can exceed it through format-regularisation), and a good reason to prefer the smaller model.
+Two things stand out. First, **adding collections is nearly free**: Teklia held at 0.878 (vs 0.889 trained alone). Second — and this is the one that surprised me — on the **manuscript-number field**, the most important field for actually _finding_ a manuscript, the **4B model scores 0.952**, beating the **Qwen3-VL-8B (0.886)** whose outputs I used as part of its training labels. The student beats the teacher. This is a known effect in distillation (a smaller model trained on a stronger model's outputs can exceed it through format-regularisation), and a good reason to prefer the smaller model.
 
 So: one open 4B model reads **French and English handwritten death records and English manuscript cards**, each under its own schema, on a par with an 8B at half the size.
 
@@ -120,7 +120,7 @@ This is the property that makes it a _generalist_ and not three specialists in a
 | on the UNSEEN Rubenstein schema (30 cards) | parseable JSON | schema-conformance | field coverage |
 | ------------------------------------------ | -------------- | ------------------ | -------------- |
 | base NuExtract-3                           | 0.733          | 1.000              | 0.632          |
-| **fine-tuned generalist**                  | **1.000**      | 1.000              | **0.697**      |
+| **fine-tuned generalist**                  | **1.000**      | 1.000              | **0.667**      |
 
 The fine-tuned model produces **100% parseable, fully schema-conforming JSON on a schema it has never seen — more reliably than the base model**.[^parse] Fine-tuning didn't narrow it; it _hardened_ its general schema-following. (More on why I was worried it wouldn't, below.)
 
@@ -166,7 +166,7 @@ Your agent can help with many of these steps!
 
 - Two of the three training collections use **silver labels**, which caps quality on free-text fields (names, places) and can bake in the labeller's conventions.
 - **Handwriting** is still where it struggles: place names and long free-text fields are the weakest.
-- Test sets are **small** (58–103 cards) — read single numbers as directional.
+- Test sets are **small** (12–103 cards) — read single numbers as directional.
 - It's a **first-pass extractor with human review**, not unattended ground truth.
 
 ## Why this points somewhere bigger
