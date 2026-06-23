@@ -1,0 +1,22 @@
+{
+  "model": "davanstrien/nuextract3-cards-generalist-v2",
+  "collection": "nls",
+  "prompt_mode": "generic",
+  "thinking": false,
+  "n_cards": 103,
+  "timestamp": "2026-06-10T06:41:30.922344+00:00",
+  "json_extracted": 1.0,
+  "heading_fuzzy": 0.4563106796116505,
+  "heading_type_exact": 0.9805825242718447,
+  "epithet_fuzzy": 0.6504854368932039,
+  "has_corrections_exact": 0.8446601941747572,
+  "ms_no_f1": 0.9521497919556172,
+  "ms_no_recall": 0.9805825242718447,
+  "ms_no_precision": 0.9399676375404531,
+  "folios_f1": 0.5448900887215727,
+  "description_fuzzy": 0.8262367082755432,
+  "entry_count_exact": 0.883495145631068,
+  "accuracy": 0.13592233009708737,
+  "retrieval_score": 0.7263750880611144,
+  "parse_error_rate": 0.0
+}

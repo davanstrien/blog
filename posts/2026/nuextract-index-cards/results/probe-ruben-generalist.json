@@ -1,0 +1,12 @@
+{
+  "model": "davanstrien/nuextract3-cards-generalist",
+  "dataset": "davanstrien/rubenstein-probe-input",
+  "prompt_mode": "generic",
+  "n": 30,
+  "schema_keys": 11,
+  "parse_rate": 1.0,
+  "key_conformance": 1.0,
+  "mean_field_coverage": 0.696969696969697,
+  "mean_hallucinated_keys": 0,
+  "timestamp": "2026-06-09T19:47:38.240159+00:00"
+}

@@ -1,0 +1,14 @@
+{
+  "collection": "nls",
+  "model": "Qwen/Qwen3-VL-8B-Instruct",
+  "source": "their preds, my scorer",
+  "n": 103,
+  "retrieval_score": 0.7604479008431851,
+  "ms_no_f1": 0.8858067498844198,
+  "ms_no_recall": 0.9223300970873787,
+  "heading_fuzzy": 0.46601941747572817,
+  "heading_type_exact": 0.9805825242718447,
+  "epithet_fuzzy": 0.7378640776699029,
+  "folios_f1": 0.804158686128173,
+  "accuracy": 0.1941747572815534
+}

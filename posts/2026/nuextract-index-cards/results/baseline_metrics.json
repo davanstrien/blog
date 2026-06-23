@@ -1,0 +1,115 @@
+{
+  "model": "numind/NuExtract3",
+  "thinking": false,
+  "n_cards": 58,
+  "exact_micro": {
+    "precision": 0.24619289340101522,
+    "recall": 0.244640605296343,
+    "f1": 0.2454142947501581,
+    "tp": 194,
+    "fp": 594,
+    "fn": 599
+  },
+  "exact_macro_f1": 0.24115897932657968,
+  "typed_macro_f1": 0.3046595784132656,
+  "routing_accuracy": 0.723404255319149,
+  "parse_error_rate": 0.0,
+  "by_field_f1": {
+    "__extra__": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "année": {
+      "precision": 0.7142857142857143,
+      "recall": 0.9210526315789473,
+      "f1": 0.8045977011494253
+    },
+    "date_de_décès": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "date_de_naissance": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "filiation": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "jour": {
+      "precision": 0.7346938775510204,
+      "recall": 0.9473684210526315,
+      "f1": 0.8275862068965517
+    },
+    "lieu_de_décès": {
+      "precision": 0.2,
+      "recall": 0.16666666666666666,
+      "f1": 0.1818181818181818
+    },
+    "lieu_de_naissance": {
+      "precision": 0.05555555555555555,
+      "recall": 0.05128205128205128,
+      "f1": 0.05333333333333333
+    },
+    "lieu_de_vie": {
+      "precision": 0.16666666666666666,
+      "recall": 0.25,
+      "f1": 0.2
+    },
+    "mois": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "nom": {
+      "precision": 0.07482993197278912,
+      "recall": 0.06875,
+      "f1": 0.07166123778501629
+    },
+    "observations": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "paroisse": {
+      "precision": 0.038461538461538464,
+      "recall": 0.125,
+      "f1": 0.058823529411764705
+    },
+    "profession": {
+      "precision": 0.2127659574468085,
+      "recall": 0.16393442622950818,
+      "f1": 0.18518518518518517
+    },
+    "prénom": {
+      "precision": 0.3284671532846715,
+      "recall": 0.25,
+      "f1": 0.28391167192429023
+    },
+    "sexe": {
+      "precision": 0.4166666666666667,
+      "recall": 0.7142857142857143,
+      "f1": 0.5263157894736842
+    },
+    "statut": {
+      "precision": 0.17647058823529413,
+      "recall": 0.07317073170731707,
+      "f1": 0.10344827586206896
+    },
+    "type_acte": {
+      "precision": 0.723404255319149,
+      "recall": 0.5862068965517241,
+      "f1": 0.6476190476190475
+    },
+    "âge": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    }
+  },
+  "scorer": "key-accent-insensitive (v0.2)"
+}

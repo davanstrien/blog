@@ -1,0 +1,12 @@
+{
+  "model": "numind/NuExtract3",
+  "dataset": "davanstrien/rubenstein-probe-input",
+  "prompt_mode": "generic",
+  "n": 30,
+  "schema_keys": 11,
+  "parse_rate": 0.7333333333333333,
+  "key_conformance": 1.0,
+  "mean_field_coverage": 0.6322314049586777,
+  "mean_hallucinated_keys": 0,
+  "timestamp": "2026-06-09T19:50:30.878093+00:00"
+}

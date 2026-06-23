@@ -1,0 +1,38 @@
+{
+  "model": "davanstrien/nuextract3-cards-generalist",
+  "collection": "teklia",
+  "prompt_mode": "generic",
+  "thinking": true,
+  "n_cards": 58,
+  "timestamp": "2026-06-09T19:48:15.528028+00:00",
+  "exact_micro": {
+    "precision": 0.818639798488665,
+    "recall": 0.819672131147541,
+    "f1": 0.8191556395715186
+  },
+  "exact_macro_f1": 0.804828610745537,
+  "typed_macro_f1": 0.8486346358753082,
+  "routing_accuracy": 0.9482758620689655,
+  "parse_error_rate": 0.0,
+  "by_field_f1": {
+    "__extra__": 0.0,
+    "année": 0.918918918918919,
+    "date_de_décès": 0.7058823529411765,
+    "date_de_naissance": 0.7555555555555555,
+    "filiation": 0.6829268292682926,
+    "jour": 0.918918918918919,
+    "lieu_de_décès": 0.1818181818181818,
+    "lieu_de_naissance": 0.49382716049382713,
+    "lieu_de_vie": 0.3333333333333333,
+    "mois": 0.918918918918919,
+    "nom": 0.8173374613003095,
+    "observations": 0.4444444444444444,
+    "paroisse": 0.5882352941176471,
+    "profession": 0.8925619834710743,
+    "prénom": 0.8406593406593408,
+    "sexe": 0.8571428571428571,
+    "statut": 0.8571428571428572,
+    "type_acte": 0.9482758620689655,
+    "âge": 0.9375
+  }
+}

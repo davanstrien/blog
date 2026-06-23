@@ -1,0 +1,12 @@
+{
+  "card_type": ["specimen_card", "divider", "blank", "other"],
+  "scientific_name": "verbatim-string",
+  "collector": "verbatim-string",
+  "locality": "string",
+  "habitat": "string",
+  "date": "string",
+  "collection_number": "verbatim-string",
+  "received_from": "string",
+  "received_date": "string",
+  "notes": "string"
+}

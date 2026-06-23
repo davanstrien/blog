@@ -1,0 +1,13 @@
+{
+  "card_type": ["catalog_card", "see_reference", "blank", "other"],
+  "heading": "verbatim-string",
+  "title": "string",
+  "dates": "string",
+  "extent": "string",
+  "summary": "string",
+  "subject_headings": ["string"],
+  "see_reference": "string",
+  "control_number": "verbatim-string",
+  "catalog_date": "string",
+  "notes": "string"
+}
