@@ -17,7 +17,7 @@ categories:
     jobs,
   ]
 image: card-to-json.png
-draft: true
+draft: false
 execute:
   eval: false
 format:
