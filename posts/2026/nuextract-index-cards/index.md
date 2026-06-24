@@ -1,7 +1,8 @@
 ---
-title: "One small model, many card catalogues"
-subtitle: "A 4B open model, fine-tuned to read archival index cards across collections — French and English handwritten death records, manuscript catalogues, and schemas it has never seen. Matching an 8B at half the size, for about $45."
-date: "2026-06-10"
+title: "Is fine-tuning small models worth it? Structured extraction from index cards"
+subtitle: "Fine-tuning one open 4B model to read several archival card collections, each with its own schema — and still follow schemas it has never seen."
+description: "Can a small, open model, fine-tuned cheaply, match a bigger one on a real extraction task and stay general? A test on archival index cards across several collections, for about $45."
+date: "2026-06-24"
 author: "Daniel van Strien"
 categories:
   [
@@ -11,7 +12,8 @@ categories:
     vlm,
     nuextract,
     index-cards,
-    hugging-face,
+    fine-tuning,
+    huggingface,
     jobs,
   ]
 image: card-to-json.png
@@ -24,9 +26,17 @@ format:
     code-summary: "show code"
 ---
 
-> **Draft for review.** Numbers are from held-out test sets; small test sets are flagged as such. Model + open datasets staged, not yet released.
+> **tl;dr**: You can fine tune a small specialised information extraction model to work even better with a specific domain (archival index cards) and still have it generalise to unseen schemas. The model is cheap to train, and the bottleneck is labelled data, not model size. A shared corpus of labelled cards across institutions could unlock a strong, open 4B model that any library can point at its card drawers.
 
-::: {.callout-note}
+## Is it worth fine tuning small models still?
+
+In 2026 the default answer to many tasks is to reach for a big frontier model. There are many who say "fine tuning is dead". On the other hand, there has been growing interest in small models that can be deployed locally. [Gemma 4](https://huggingface.co/blog/gemma4), for example, has been very popular for providing models that can be run on device across accessible hardware.
+Whilst smaller models are getting more and more capable I think there is an area where they are still massively under explored, what I am calling "task-generalist" models (better name welcome!). These are models that are small and work on a specific targeted task i.e. information extraction from document images, but still general purpose i.e. aren't fine tuned to a specific set of labels.
+
+This class of model is small enough to deploy locally and scale to very large collections but is general purpose enough that they may work out of the box for many tasks and domains. They also however offer the scope for fine tuning.
+
+And because the base model already understands the *task* (turning a document image into JSON), fine-tuning it for your own material means adapting it, not training from scratch — which keeps it cheap. So the question isn't whether to reach for a frontier model. It's whether you can take one of these small, open, task-generalist models, fine-tune it on a few real collections, and get something that reads your material better without turning it into a narrow specialist. And whether it's cheap enough that a small team, or one person with an agent, can do it. This post tests that on a shared but unglamorous problem: archival index cards.
+
 
 ## OCR or structured extraction?
 
@@ -50,16 +60,11 @@ VLM based OCR models have got much better in the past year or so but there are m
 }
 ```
 
-Everything below is about making that one trick much better on a specific collection — and keeping it good at working on collections it has never seen.
-:::
+Everything below is about making that work better on a specific type of data (index cards) — and keeping it good at working on collections it has never seen.
 
-A while back I showed that a 4B open model, [NuExtract-3](https://huggingface.co/numind/NuExtract3), could turn [catalogue-card images into structured JSON](../structured-records-from-cards/index.qmd) zero-shot — hand it an image and a schema, get a record back.
-
-In that post I suggested the model is a very strong zero-shot model for a _first pass_ (and may be good enough in many cases) but the real win would **a small model fine-tuned for a specific collection**.
+A while back I showed that NuExtract-3 could turn [catalogue-card images into structured JSON](../structured-records-from-cards/index.qmd) zero-shot. In that post I suggested the model is a very strong zero-shot model for a _first pass_ (and may be good enough in many cases) but the real win would be **a small model fine-tuned for a specific collection**.
 
 This post picks up on this topic. The question I wanted to answer: **can one cheap, open 4B model be fine-tuned to read _many_ different card collections very well — each with its own schema — without becoming a brittle specialist?** And if so, does it stay useful on collections it was never trained on?
-
-The short version: **yes, and more than I expected.** One model now reads French _and_ English handwritten death records, English manuscript-catalogue cards, follows schemas it has never seen, and on the single most important field **beats the 8B model that generated some of its training labels** — all for about **$45** of compute, entirely on [Hugging Face Jobs](https://huggingface.co/docs/hub/jobs) (this compute includes a lot of me trying weird experiments so to just do the fine-tuning and evaluation would be way cheaper.)
 
 ## The collections
 
@@ -96,7 +101,7 @@ Start with the hardest collection — Teklia's French handwriting. Zero-shot NuE
 
 That jump — **0.24 → 0.89** is the pitch for small fine-tuned models. The model learns the routing, the role structure, and (easy to miss) the collection's _surface conventions_: how it writes dates, month names, and abbreviations. On the French cards that means the period's own shorthand — old forms like `Xbre` for _décembre_, or a surname written first in capitals — exactly the kind of detail a zero-shot model has to guess at and a fine-tuned one simply learns. Cheaply, on one consistent card series, you go from "interesting demo" to "genuinely usable first pass."
 
-## One model, many schemas — for free
+## One model, many schemas (for free?) 
 
 The interesting question is whether you can fold _several_ collections into **one** model without it forgetting the others. It seems you can. Training a single model on all three collections at once:
 
@@ -111,7 +116,7 @@ The interesting question is whether you can fold _several_ collections into **on
 
 Two things stand out. First, **adding collections is nearly free**: Teklia held at 0.878 (vs 0.889 trained alone). Second — and this is the one that surprised me — on the **manuscript-number field**, the most important field for actually _finding_ a manuscript, the **4B model scores 0.952**, beating the **Qwen3-VL-8B (0.886)** whose outputs I used as part of its training labels. The student beats the teacher. This is a known effect in distillation (a smaller model trained on a stronger model's outputs can exceed it through format-regularisation), and a good reason to prefer the smaller model.
 
-So: one open 4B model reads **French and English handwritten death records and English manuscript cards**, each under its own schema, on a par with an 8B at half the size.
+So: one open 4B model reads **French and English handwritten death records and English manuscript cards**, each under its own schema, on a par with an 8B at half the size — and from here the bottleneck is **labelled data, not model size**, which is exactly the kind of thing institutions could pool. (More on that below.)
 
 ## Does it still follow schemas it's never seen?
 
@@ -122,25 +127,23 @@ This is the property that makes it a _generalist_ and not three specialists in a
 | base NuExtract-3                           | 0.733          | 1.000              | 0.632          |
 | **fine-tuned generalist**                  | **1.000**      | 1.000              | **0.667**      |
 
-The fine-tuned model produces **100% parseable, fully schema-conforming JSON on a schema it has never seen — more reliably than the base model**.[^parse] Fine-tuning didn't narrow it; it _hardened_ its general schema-following. (More on why I was worried it wouldn't, below.)
+The fine-tuned model produces **100% parseable, fully schema-conforming JSON on a schema it has never seen — more reliably than the base model**.[^parse] At least on this collection, fine-tuning didn't narrow its schema-following; if anything it hardened it.
 
-## Two things I expected to go wrong
+This was the result I was most worried about going in. NuExtract-3's whole value is that it follows _arbitrary_ schemas; fine-tune it hard on three collections and you might expect a 3-schema specialist that's forgotten the rest. That didn't happen here — but I'd be careful not to over-read it: this is **one** held-out collection, and still index cards. So the honest claim is a narrow one — _for index-card-style schemas, at least_, fine-tuning didn't cost the generality I was worried about, and may even have helped. LoRA (touching 0.7% of parameters) plus the diversity of several collections probably acts as its own regulariser. The one casualty was _reasoning mode_: the SFT data carried no reasoning traces, so the model stopped producing them. Keeping it would mean labelling reasoning traces for the training cards, and for a first-pass extractor that extra effort probably isn't worth it.
 
 I want to be honest about what didn't work, because the failures are quite instructive.
 
-### Why GRPO doesn't help here
+::: {.callout-note collapse="true"}
+## Why GRPO doesn't help here
 
 The plan originally included reinforcement learning (GRPO) with a typed reward, because that's how NuExtract itself was trained (SFT then RL). For me it didn't work, and I tried hard to make it. I am not confident I couldn't get it to work but in the end the effort is better spent on more and better data (usual story!).
 
 A practical note for anyone outside an ML team: GRPO is finicky — the temperature window, the reward shaping, and the truncation failures all have to line up, and it's easy to spend real compute on fixing things when SFT is far more forgiving and more intuitive. If you're adapting a model to your own cards, start with SFT and reach for RL only with a specific reason and the budget to debug it.
-
-### Did fine-tuning destroy the base model's generality?
-
-A fair worry: NuExtract-3's value is that it follows _arbitrary_ schemas (it was trained on a huge diversity of them). Fine-tune it hard on three collections and you might get a 3-schema specialist that's forgotten the rest. I measured it — that's the unseen-Rubenstein result above — and the answer was the opposite of the fear: the fine-tuned model follows unseen schemas **better** than the base. LoRA (touching 0.7% of parameters) plus the diversity of multiple collections acts as its own regulariser. The one casualty was _reasoning mode_: the SFT data carried no reasoning traces, so the model stopped producing them. Keeping it would mean labelling reasoning traces for the training cards, and for a first-pass extractor that extra effort probably isn't worth it.
+:::
 
 ## How it was built (and what it cost)
 
-The recipe is deliberately boring and cheap, which is the point:
+The recipe is deliberately boring and cheap which makes it something that I think non ML people (especially the help of agents) can reasonaby starting working on.
 
 1. **Silver labels, then SFT.** For collections without ground truth, a stronger model (Qwen3-VL-8B) drafts labels _from the card image_ (the OCR on these scans is unusable), validated against the one collection where I _do_ have expert truth. Where careful labels were needed, a Claude agent labelled and flagged its own uncertainty — the same draft-then-review loop that made the original ground truth. The agent labelling its own training data is, increasingly, just how this works.
 2. **LoRA SFT** on `numind/NuExtract3` — rank 16, a few hundred steps, minutes per run.
@@ -171,7 +174,11 @@ Your agent can help with many of these steps!
 
 ## Why this points somewhere bigger
 
-The result that matters most for libraries and archives: **adding a collection made the model better at collections it had never seen.**. This suggests that a shared effort to label cards across institutions can be mutually beneficial. It means each institution that contributes a labelled card collection doesn't just get a model for _their_ cards — they make the shared model better at _everyone's_ cards, including ones nobody has labelled yet.
+Two things matter more than any single number here. The first is almost boring: fine-tuning a small model for this is practical. A few hundred labelled cards, about ten minutes, a couple of dollars, no ML team. The modelling isn't the hard part. The second follows from it: if training is this cheap and the model already generalises, then what limits how good these models get is labelled data, not model size.
+
+It's worth being clear about what that labelling actually involves, because "more labelled data" sounds heavier than it is. In practice it isn't hand-keying thousands of cards. It's closer to this: define a sensible schema for a card type, run NuExtract-3 over a sample, and do a quick yes/no pass on what comes back, keeping the records that are right. Correcting the near-misses helps, but even training only on the ones you accepted moves the model. That's review work, not transcription from scratch.
+
+The result that matters most for libraries and archives: **adding a collection made the model better at collections it had never seen.** This suggests that a shared effort to label cards across institutions can be mutually beneficial. It means each institution that contributes a labelled card collection doesn't just get a model for _their_ cards — they make the shared model better at _everyone's_ cards, including ones nobody has labelled yet.
 
 Card catalogues are a problem almost every GLAM institution has, in slightly different shapes. The evidence here — cheap per-collection adaptation, positive cross-collection transfer, a 4B model that holds its own against an 8B, and a labelling loop that doesn't require hand-cataloguing everything — suggests a **collaborative index-card ground-truth corpus could unlock one strong, open, 4B model that any library can point at its card drawers**, with no ML team required.
 
