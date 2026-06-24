@@ -10,7 +10,393 @@
 <atom:link href="https://danielvanstrien.xyz/index.xml" rel="self" type="application/rss+xml"/>
 <description>Daniel van Strien&#39;s blog</description>
 <generator>quarto-1.9.38</generator>
-<lastBuildDate>Tue, 02 Jun 2026 00:00:00 GMT</lastBuildDate>
+<lastBuildDate>Wed, 24 Jun 2026 00:00:00 GMT</lastBuildDate>
+<item>
+  <title>Is fine-tuning small models worth it? Structured extraction from index cards</title>
+  <dc:creator>Daniel van Strien</dc:creator>
+  <link>https://danielvanstrien.xyz/posts/2026/nuextract-index-cards/</link>
+  <description><![CDATA[ 
+
+
+
+
+<blockquote class="blockquote">
+<p><strong>tl;dr</strong>: You can fine tune a small specialised information extraction model to work even better with a specific domain (archival index cards) and still have it generalise to unseen schemas. The model is cheap to train, and the bottleneck is labelled data, not model size. A shared corpus of labelled cards across institutions could unlock a strong, open 4B model that any library can point at its card drawers.</p>
+</blockquote>
+<section id="is-it-worth-fine-tuning-small-models-still" class="level2">
+<h2 class="anchored" data-anchor-id="is-it-worth-fine-tuning-small-models-still">Is it worth fine tuning small models still?</h2>
+<p>In 2026 the default answer to many tasks is to reach for a big frontier model. There are many who say “fine tuning is dead”. On the other hand, there has been growing interest in small models that can be deployed locally. <a href="https://huggingface.co/blog/gemma4">Gemma 4</a>, for example, has been very popular for providing models that can be run on device across accessible hardware. Whilst smaller models are getting more and more capable I think there is an area where they are still massively under explored, what I am calling “task-generalist” models (better name welcome!). These are models that are small and work on a specific targeted task i.e.&nbsp;information extraction from document images, but still general purpose i.e.&nbsp;aren’t fine tuned to a specific set of labels.</p>
+<p>This class of model is small enough to deploy locally and scale to very large collections but is general purpose enough that they may work out of the box for many tasks and domains. They also however offer the scope for fine tuning.</p>
+<p>And because the base model already understands the <em>task</em> (turning a document image into JSON), fine-tuning it for your own material means adapting it, not training from scratch — which keeps it cheap. So the question isn’t whether to reach for a frontier model. It’s whether you can take one of these small, open, task-generalist models, fine-tune it on a few real collections, and get something that reads your material better without turning it into a narrow specialist. And whether it’s cheap enough that a small team, or one person with an agent, can do it. This post tests that on a shared but unglamorous problem: archival index cards.</p>
+</section>
+<section id="ocr-or-structured-extraction" class="level2">
+<h2 class="anchored" data-anchor-id="ocr-or-structured-extraction">OCR or structured extraction?</h2>
+<p>VLM based OCR models have got much better in the past year or so but there are many cases where you actually want some structured data from a document stored as an image (i.e.&nbsp;non machine readable). This use case is relevant in many domains. In the GLAM (Galleries, Libraries, Archives, Museums) sector, many collections are stored as images of index cards. Many of these are still not in other systems and the only source of this information is the card itself. The same is true in other domains, for example in natural history collections where specimen cards are still used to store information about a specimen. In these cases, you want to extract structured data from the card image, not just the text.</p>
+</section>
+<section id="nuextract-3" class="level2">
+<h2 class="anchored" data-anchor-id="nuextract-3">NuExtract-3</h2>
+<p><a href="https://huggingface.co/numind/NuExtract3">NuExtract-3</a> takes an <strong>image</strong> plus a <strong>schema</strong> (the list of fields you want) and hands back <strong>JSON</strong> — no bounding boxes, no layout rules, no separate OCR step. Here is one card and the record that comes back:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://danielvanstrien.xyz/posts/2026/nuextract-index-cards/silverplus/pilot/south_000.jpg" class="img-fluid figure-img" style="width:60.0%"></p>
+<figcaption>A Southborough death card (public domain)</figcaption>
+</figure>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb1-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb1-2">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"name"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Abercrombie, John"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb1-3">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"date_of_death"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"June 19, 1927"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb1-4">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"cause_of_death"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Coronary sclerosis"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb1-5">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"age"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"70 yrs. - 18 days"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb1-6">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"occupation"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Baker"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb1-7">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"birthplace"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Glasgow, Scotland"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb1-8">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"place_of_burial"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Everett, Mass."</span></span>
+<span id="cb1-9"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">}</span></span></code></pre></div></div>
+<p>Everything below is about making that work better on a specific type of data (index cards) — and keeping it good at working on collections it has never seen.</p>
+<p>A while back I showed that NuExtract-3 could turn <a href="../../../posts/2026/structured-records-from-cards/index.html">catalogue-card images into structured JSON</a> zero-shot. In that post I suggested the model is a very strong zero-shot model for a <em>first pass</em> (and may be good enough in many cases) but the real win would be <strong>a small model fine-tuned for a specific collection</strong>.</p>
+<p>This post picks up on this topic. The question I wanted to answer: <strong>can one cheap, open 4B model be fine-tuned to read <em>many</em> different card collections very well — each with its own schema — without becoming a brittle specialist?</strong> And if so, does it stay useful on collections it was never trained on?</p>
+</section>
+<section id="the-collections" class="level2">
+<h2 class="anchored" data-anchor-id="the-collections">The collections</h2>
+<p>I trained and evaluated on three real archival collections, deliberately chosen to be <em>different</em> from each other — different institutions, languages, layouts, and record types:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>collection</th>
+<th>what it is</th>
+<th>language</th>
+<th>ground truth</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="https://huggingface.co/datasets/Teklia/DAI-CReTDHI-IndexCards-KIE">Teklia DAI-CReTDHI</a></td>
+<td>vital-records index cards, Archives of Tours</td>
+<td>French, handwritten</td>
+<td>expert (MIT)</td>
+</tr>
+<tr class="even">
+<td>NLS Advocates Library</td>
+<td>manuscript-catalogue cards</td>
+<td>English, typed/handwritten</td>
+<td>cataloguer-reviewed</td>
+</tr>
+<tr class="odd">
+<td><a href="https://huggingface.co/datasets/biglam/index-cards-southborough-vital-records">Southborough vital records</a></td>
+<td>town-clerk death cards (MA)</td>
+<td>English, handwritten</td>
+<td>silver (model-labelled)</td>
+</tr>
+</tbody>
+</table>
+<p>Plus a fourth, the <a href="https://huggingface.co/datasets/biglam/rubenstein-manuscript-catalog">Duke Rubenstein manuscript catalogue</a>, held out entirely i.e.&nbsp;<em>never trained on</em> to test whether the model follows a schema it wasn’t trained on before (and if we broke the zero shot generality of the base model).</p>
+<p>Three of the four, side by side — different institutions, languages, and layouts:</p>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://danielvanstrien.xyz/posts/2026/nuextract-index-cards/teklia_sample.jpg" class="img-fluid figure-img"></p>
+<figcaption>Teklia — French, handwritten (Tours)</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://danielvanstrien.xyz/posts/2026/nuextract-index-cards/silverplus/pilot/south_000.jpg" class="img-fluid figure-img"></p>
+<figcaption>Southborough — English, handwritten (MA)</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://danielvanstrien.xyz/posts/2026/nuextract-index-cards/rubenstein_sample.jpg" class="img-fluid figure-img"></p>
+<figcaption>Rubenstein — English manuscript catalogue (Duke)</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>Each collection wants a <em>different shape</em> of record. A death card has <code>name / date_of_death / cause / age / birthplace</code>; a manuscript card has <code>heading / heading_type / entries[ms_no, folios, ...]</code>. The model is told the schema at inference and fills it in — the same template mechanism NuExtract-3 ships with, just made better at <em>these</em> materials.</p>
+</section>
+<section id="what-domain-adaptation-buys-you" class="level2">
+<h2 class="anchored" data-anchor-id="what-domain-adaptation-buys-you">What domain adaptation buys you</h2>
+<p>Start with the hardest collection — Teklia’s French handwriting. Zero-shot NuExtract-3 scores <strong>0.24</strong> field-F1.<sup>1</sup> After LoRA fine-tuning on ~430 cards (about 10 minutes, ~$2):</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Teklia (French handwritten deaths)</th>
+<th>field-F1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>NuExtract-3 zero-shot</td>
+<td>0.24</td>
+</tr>
+<tr class="even">
+<td><strong>+ fine-tuning</strong></td>
+<td><strong>0.89</strong></td>
+</tr>
+</tbody>
+</table>
+<p>That jump — <strong>0.24 → 0.89</strong> is the pitch for small fine-tuned models. The model learns the routing, the role structure, and (easy to miss) the collection’s <em>surface conventions</em>: how it writes dates, month names, and abbreviations. On the French cards that means the period’s own shorthand — old forms like <code>Xbre</code> for <em>décembre</em>, or a surname written first in capitals — exactly the kind of detail a zero-shot model has to guess at and a fine-tuned one simply learns. Cheaply, on one consistent card series, you go from “interesting demo” to “genuinely usable first pass.”</p>
+</section>
+<section id="one-model-many-schemas-for-free" class="level2">
+<h2 class="anchored" data-anchor-id="one-model-many-schemas-for-free">One model, many schemas (for free?)</h2>
+<p>The interesting question is whether you can fold <em>several</em> collections into <strong>one</strong> model without it forgetting the others. It seems you can. Training a single model on all three collections at once:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 9%">
+<col style="width: 17%">
+<col style="width: 25%">
+<col style="width: 22%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>collection</th>
+<th>metric</th>
+<th>single-collection</th>
+<th><strong>one generalist model</strong></th>
+<th>external reference</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Teklia (FR deaths)</td>
+<td>field-F1</td>
+<td>0.889</td>
+<td><strong>0.878</strong></td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>NLS (manuscripts)</td>
+<td>retrieval</td>
+<td>—</td>
+<td><strong>0.726</strong></td>
+<td>Qwen3-VL-8B 0.760</td>
+</tr>
+<tr class="odd">
+<td>NLS (manuscripts)</td>
+<td>ms_no F1</td>
+<td>—</td>
+<td><strong>0.952</strong></td>
+<td>Qwen3-VL-8B <strong>0.886</strong></td>
+</tr>
+<tr class="even">
+<td>Southborough (EN deaths)</td>
+<td>macro-F1</td>
+<td>—</td>
+<td><strong>0.750</strong>¹</td>
+<td>new collection</td>
+</tr>
+</tbody>
+</table>
+<p>¹ The Southborough test set is <strong>agent-labelled, not human-verified</strong> (a Claude agent read each card carefully) and small (<strong>12 cards</strong>) — so 0.750 is <em>relative to those labels</em>, not gold ground truth. Teklia and NLS numbers <em>are</em> against human-grade ground truth.</p>
+<p>Two things stand out. First, <strong>adding collections is nearly free</strong>: Teklia held at 0.878 (vs 0.889 trained alone). Second — and this is the one that surprised me — on the <strong>manuscript-number field</strong>, the most important field for actually <em>finding</em> a manuscript, the <strong>4B model scores 0.952</strong>, beating the <strong>Qwen3-VL-8B (0.886)</strong> whose outputs I used as part of its training labels. The student beats the teacher. This is a known effect in distillation (a smaller model trained on a stronger model’s outputs can exceed it through format-regularisation), and a good reason to prefer the smaller model.</p>
+<p>So: one open 4B model reads <strong>French and English handwritten death records and English manuscript cards</strong>, each under its own schema, on a par with an 8B at half the size — and from here the bottleneck is <strong>labelled data, not model size</strong>, which is exactly the kind of thing institutions could pool. (More on that below.)</p>
+</section>
+<section id="does-it-still-follow-schemas-its-never-seen" class="level2">
+<h2 class="anchored" data-anchor-id="does-it-still-follow-schemas-its-never-seen">Does it still follow schemas it’s never seen?</h2>
+<p>This is the property that makes it a <em>generalist</em> and not three specialists in a trenchcoat. If a new library hands it a new schema, does it work? I tested on the held-out Rubenstein catalogue — a collection and schema the model <strong>never trained on</strong>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 47%">
+<col style="width: 15%">
+<col style="width: 20%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>on the UNSEEN Rubenstein schema (30 cards)</th>
+<th>parseable JSON</th>
+<th>schema-conformance</th>
+<th>field coverage</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>base NuExtract-3</td>
+<td>0.733</td>
+<td>1.000</td>
+<td>0.632</td>
+</tr>
+<tr class="even">
+<td><strong>fine-tuned generalist</strong></td>
+<td><strong>1.000</strong></td>
+<td>1.000</td>
+<td><strong>0.667</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The fine-tuned model produces <strong>100% parseable, fully schema-conforming JSON on a schema it has never seen — more reliably than the base model</strong>.<sup>2</sup> At least on this collection, fine-tuning didn’t narrow its schema-following; if anything it hardened it.</p>
+<p>This was the result I was most worried about going in. NuExtract-3’s whole value is that it follows <em>arbitrary</em> schemas; fine-tune it hard on three collections and you might expect a 3-schema specialist that’s forgotten the rest. That didn’t happen here — but I’d be careful not to over-read it: this is <strong>one</strong> held-out collection, and still index cards. So the honest claim is a narrow one — <em>for index-card-style schemas, at least</em>, fine-tuning didn’t cost the generality I was worried about, and may even have helped. LoRA (touching 0.7% of parameters) plus the diversity of several collections probably acts as its own regulariser. The one casualty was <em>reasoning mode</em>: the SFT data carried no reasoning traces, so the model stopped producing them. Keeping it would mean labelling reasoning traces for the training cards, and for a first-pass extractor that extra effort probably isn’t worth it.</p>
+<p>I want to be honest about what didn’t work, because the failures are quite instructive.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Why GRPO doesn’t help here
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The plan originally included reinforcement learning (GRPO) with a typed reward, because that’s how NuExtract itself was trained (SFT then RL). For me it didn’t work, and I tried hard to make it. I am not confident I couldn’t get it to work but in the end the effort is better spent on more and better data (usual story!).</p>
+<p>A practical note for anyone outside an ML team: GRPO is finicky — the temperature window, the reward shaping, and the truncation failures all have to line up, and it’s easy to spend real compute on fixing things when SFT is far more forgiving and more intuitive. If you’re adapting a model to your own cards, start with SFT and reach for RL only with a specific reason and the budget to debug it.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="how-it-was-built-and-what-it-cost" class="level2">
+<h2 class="anchored" data-anchor-id="how-it-was-built-and-what-it-cost">How it was built (and what it cost)</h2>
+<p>The recipe is deliberately boring and cheap which makes it something that I think non ML people (especially the help of agents) can reasonaby starting working on.</p>
+<ol type="1">
+<li><strong>Silver labels, then SFT.</strong> For collections without ground truth, a stronger model (Qwen3-VL-8B) drafts labels <em>from the card image</em> (the OCR on these scans is unusable), validated against the one collection where I <em>do</em> have expert truth. Where careful labels were needed, a Claude agent labelled and flagged its own uncertainty — the same draft-then-review loop that made the original ground truth. The agent labelling its own training data is, increasingly, just how this works.</li>
+<li><strong>LoRA SFT</strong> on <code>numind/NuExtract3</code> — rank 16, a few hundred steps, minutes per run.</li>
+<li><strong>Everything on <a href="https://huggingface.co/docs/hub/jobs">Hugging Face Jobs</a></strong> — no local GPU. Detached jobs, a private bucket for the rollout/eval artifacts, Trackio for the curves. Total spend across <em>every</em> experiment in this post — baselines, three trained models, four GRPO attempts, a dozen evals, the forgetting probes — was about <strong>$45</strong>.</li>
+</ol>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Want to try this on your own cards?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Step by step:</p>
+<ol type="1">
+<li><strong>Pin the schema first.</strong> Decide the fields you actually want before touching a model.</li>
+<li><strong>Test NuExtract-3 zero-shot</strong> on a handful of cards. If it’s already roughly right, you are most of the way there.</li>
+<li><strong>Build a small SFT set from the model’s own outputs.</strong> Run it over your cards, accept or reject each record, and train only on the ones you accepted. No separate labelling tool, no hand-cataloguing.</li>
+<li><strong>Bring in a stronger model only for the fields zero-shot can’t manage</strong>, to draft silver labels you still spot-check.</li>
+<li><strong>Skip GRPO and DPO.</strong> They are more complex, easier to get wrong, and (as above) didn’t help here. SFT is the cheap path.</li>
+</ol>
+<p>Your agent can help with many of these steps!</p>
+</div>
+</div>
+</section>
+<section id="the-honest-caveats" class="level2">
+<h2 class="anchored" data-anchor-id="the-honest-caveats">The honest caveats</h2>
+<ul>
+<li>Two of the three training collections use <strong>silver labels</strong>, which caps quality on free-text fields (names, places) and can bake in the labeller’s conventions.</li>
+<li><strong>Handwriting</strong> is still where it struggles: place names and long free-text fields are the weakest.</li>
+<li>Test sets are <strong>small</strong> (12–103 cards) — read single numbers as directional.</li>
+<li>It’s a <strong>first-pass extractor with human review</strong>, not unattended ground truth.</li>
+</ul>
+</section>
+<section id="why-this-points-somewhere-bigger" class="level2">
+<h2 class="anchored" data-anchor-id="why-this-points-somewhere-bigger">Why this points somewhere bigger</h2>
+<p>Two things matter more than any single number here. The first is almost boring: fine-tuning a small model for this is practical. A few hundred labelled cards, about ten minutes, a couple of dollars, no ML team. The modelling isn’t the hard part. The second follows from it: if training is this cheap and the model already generalises, then what limits how good these models get is labelled data, not model size.</p>
+<p>It’s worth being clear about what that labelling actually involves, because “more labelled data” sounds heavier than it is. In practice it isn’t hand-keying thousands of cards. It’s closer to this: define a sensible schema for a card type, run NuExtract-3 over a sample, and do a quick yes/no pass on what comes back, keeping the records that are right. Correcting the near-misses helps, but even training only on the ones you accepted moves the model. That’s review work, not transcription from scratch.</p>
+<p>The result that matters most for libraries and archives: <strong>adding a collection made the model better at collections it had never seen.</strong> This suggests that a shared effort to label cards across institutions can be mutually beneficial. It means each institution that contributes a labelled card collection doesn’t just get a model for <em>their</em> cards — they make the shared model better at <em>everyone’s</em> cards, including ones nobody has labelled yet.</p>
+<p>Card catalogues are a problem almost every GLAM institution has, in slightly different shapes. The evidence here — cheap per-collection adaptation, positive cross-collection transfer, a 4B model that holds its own against an 8B, and a labelling loop that doesn’t require hand-cataloguing everything — suggests a <strong>collaborative index-card ground-truth corpus could unlock one strong, open, 4B model that any library can point at its card drawers</strong>, with no ML team required.</p>
+<p>And it isn’t only libraries. Index cards are a shared format across the sciences too: herbaria, natural-history collections, and research archives hold millions of specimen and observation cards carrying the same kind of structured data — taxon, collector, locality, date. Below are a few herbarium cards from <a href="https://huggingface.co/datasets/biglam/index-cards-harvard-botany-metropolitan-flora">Harvard’s Metropolitan Flora</a>, an entirely different domain the model was never trained on, in exactly the same drawer-of-cards shape:</p>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<p><img src="https://danielvanstrien.xyz/posts/2026/nuextract-index-cards/silverplus/pilot/botany_000.jpg" class="img-fluid"></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<p><img src="https://danielvanstrien.xyz/posts/2026/nuextract-index-cards/silverplus/pilot/botany_001.jpg" class="img-fluid"></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<p><img src="https://danielvanstrien.xyz/posts/2026/nuextract-index-cards/silverplus/pilot/botany_002.jpg" class="img-fluid"></p>
+</div>
+</div>
+</div>
+<p>If you have a collection of card images — catalogue cards, accession registers, vital records, specimen cards — I’d love to fold it in. That’s the next step: not a bigger model, a broader corpus. The easiest way to reach me is to open a discussion on the model’s <a href="https://huggingface.co/small-models-for-glam/index-card-extractor-4b-v0.1/discussions">Community tab</a>, or find me on Hugging Face as <a href="https://huggingface.co/davanstrien"><span class="citation" data-cites="davanstrien">@davanstrien</span></a>.</p>
+<p>Thanks to the <a href="https://numind.ai">NuMind</a> team for NuExtract-3, and for the pointers and feedback along the way.</p>
+<p><em>Base model: <a href="https://huggingface.co/numind/NuExtract3">numind/NuExtract3</a> (Apache-2.0). Data: Teklia DAI-CReTDHI (MIT), NLS Advocates Library (manuscript cards; data release pending), Southborough vital records and Rubenstein manuscript catalogue (public domain / CC0, via <a href="https://huggingface.co/biglam">biglam</a>). The <a href="https://github.com/davanstrien/davanstrien.github.io/tree/main/posts/2026/nuextract-index-cards">full pipeline — training, scoring, schemas, and eval results</a> is in this post’s GitHub folder.</em></p>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p><em>Field-F1</em> scores extraction the way a cataloguer might: for each card it matches the predicted <code>(field, value)</code> pairs against the reference by exact string match — per person on the card — and takes the F1 (harmonic mean of precision and recall) across fields. Free-text fields like names and places are the hardest, because they demand the exact string, not just the right idea. (Implementation: <code>kie_score.py</code> in the repo.)↩︎</p></li>
+<li id="fn2"><p>“Parseable JSON” here means the output loads as a non-empty JSON object (<code>parse_rate</code> in the probe). Both models are run in <em>generic</em> prompt mode — the schema handed over as plain instruction text rather than NuExtract-3’s native template — so base and fine-tuned are compared on equal footing on a schema neither was set up for. In that mode the base model returned unparseable output on 8 of 30 unseen cards; the fine-tuned model on none. With n=30, read this as directional.↩︎</p></li>
+</ol>
+</section></div> ]]></description>
+  <category>ocr</category>
+  <category>glam</category>
+  <category>structured-extraction</category>
+  <category>vlm</category>
+  <category>nuextract</category>
+  <category>index-cards</category>
+  <category>fine-tuning</category>
+  <category>huggingface</category>
+  <category>jobs</category>
+  <guid>https://danielvanstrien.xyz/posts/2026/nuextract-index-cards/</guid>
+  <pubDate>Wed, 24 Jun 2026 00:00:00 GMT</pubDate>
+  <media:content url="https://danielvanstrien.xyz/posts/2026/nuextract-index-cards/card-to-json.png" medium="image" type="image/png" height="213" width="144"/>
+</item>
 <item>
   <title>Filtering 1 TB of FineWeb-Edu for $2.40 using Buckets and Jobs</title>
   <link>https://danielvanstrien.xyz/posts/2026/buckets-data-backend/</link>
@@ -11720,7 +12106,7 @@ font-style: inherit;">"language_code"</span>).unique().collect().to_series().to_
 <h2 class="anchored" data-anchor-id="can-we-train-a-model-to-work-with-a-subset-of-languages">Can we train a model to work with a subset of languages?</h2>
 <p>So far we have 18 languages in the dataset. Currently over a 100 languages have some level of annotation so eventually we hope the community will create a dataset for ma ne model per language.</p>
 <p>Claude gave me the following visual for languages groups in this dataset (which isn’t super accurate but gives a rough idea of the language families represented in the dataset).</p>
-<div id="fig-languages" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Color-coded grid visualization of 20 languages organized by 8 language families (Indo-European, Sino-Tibetan, Austronesian, Uralic, Turkic, Austro-Asiatic, Afroasiatic, Indo-Aryan) and their subgroups, with language codes shown in monospace font" data-fig-cap="Language families represented in the FineWeb-C dataset">
+<div id="fig-languages" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-cap="Language families represented in the FineWeb-C dataset" alt="Color-coded grid visualization of 20 languages organized by 8 language families (Indo-European, Sino-Tibetan, Austronesian, Uralic, Turkic, Austro-Asiatic, Afroasiatic, Indo-Aryan) and their subgroups, with language codes shown in monospace font">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-languages-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="https://danielvanstrien.xyz/posts/2025/FineWeb-c/assets/language-families-names.svg" class="img-fluid figure-img" data-fig-cap="Language families represented in the FineWeb-C dataset" alt="Color-coded grid visualization of 20 languages organized by 8 language families (Indo-European, Sino-Tibetan, Austronesian, Uralic, Turkic, Austro-Asiatic, Afroasiatic, Indo-Aryan) and their subgroups, with language codes shown in monospace font">
@@ -23725,2454 +24111,6 @@ font-style: inherit;">"image"</span>])</span></code></pre></div></div>
   <guid>https://danielvanstrien.xyz/posts/post-with-code/colpali-qdrant/2024-10-02_using_colpali_with_qdrant.html</guid>
   <pubDate>Wed, 02 Oct 2024 00:00:00 GMT</pubDate>
   <media:content url="https://danielvanstrien.xyz/posts/post-with-code/colpali-qdrant/truth.png" medium="image" type="image/png" height="31" width="144"/>
-</item>
-<item>
-  <title>Generating a dataset of queries for training and fine-tuning ColPali models on a UFO dataset</title>
-  <dc:creator>Daniel van Strien</dc:creator>
-  <link>https://danielvanstrien.xyz/posts/post-with-code/colpali/2024-09-23-generate_colpali_dataset.html</link>
-  <description><![CDATA[ 
-
-
-
-
-<p><a href="https://colab.research.google.com/github/davanstrien/blog/blob/main/posts/post-with-code/colpali/2024-09-23-generate_colpali_dataset.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid"></a></p>
-<p><strong>updates</strong></p>
-<ul>
-<li>You can find a follow up blog post on <a href="https://danielvanstrien.xyz/posts/post-with-code/colpali-qdrant/2024-10-02_using_colpali_with_qdrant.html">using ColPali with Qdrant</a> which covers how to use the fine-tuned ColPali model with the Qdrant vector database to implement a multimodal retrieval pipeline.</li>
-</ul>
-<section id="introduction-to-colpali" class="level2">
-<h2 class="anchored" data-anchor-id="introduction-to-colpali">Introduction to ColPali</h2>
-<p>tl;dr this blog post covers how to generate a dataset for training/fine-tuning ColPali models an open VLM to generate queries. You can find the dataset produced by this approach <a href="https://huggingface.co/datasets/davanstrien/ufo-ColPali">here</a>.</p>
-<p>ColPali is a new multimodal approach to retrieval which aims to replace existing document retrievers which often rely on an OCR step with an end-to-end multimodal approach. This approach also aims to take into account the visual content and layout of the documents, in addition to the textual content. Looking at an example of a document:</p>
-<p><img src="https://danielvanstrien.xyz/posts/post-with-code/colpali/doc.png" class="img-fluid"></p>
-<p>we could rely only on the text, but the page also has a table which could be relevant for retrieving the most useful document either for direct use or in a RAG pipeline. In many documents we will find that pages don’t just contain images but also other rich sources of visual information that could be relevant for retrieval.</p>
-</section>
-<section id="how-copali-works" class="level2">
-<h2 class="anchored" data-anchor-id="how-copali-works">How CoPali works?</h2>
-<p>ColPali is a document retrieval model that leverages a Vision Language Model (VLM) to understand and retrieve documents based on their visual content. The key steps are:</p>
-<ul>
-<li>Document Encoding: ColPali takes document pages as images and processes them through a VLM (specifically, PaliGemma-3B) to generate embeddings for each image patch.</li>
-<li>Query Encoding: User queries are encoded using the same VLM’s text processing capabilities.</li>
-<li>Late Interaction: Instead of comparing a single vector per document, ColPali uses a “late interaction” mechanism that compares each query token embedding to all document patch embeddings.</li>
-</ul>
-<p>Scoring: The relevance score between a query and a document is computed by summing the maximum similarities between each query token and all document patches.</p>
-<p>This approach allows ColPali to understand both textual and visual elements in documents, enabling more comprehensive and accurate retrieval compared to traditional text-only methods. It eliminates the need for complex document parsing pipelines, as it works directly with document images.</p>
-<p>Whilst, late interaction methods have some additional computational costs, for many documents with rich visual content there is also a high potential processing cost in the document parsing pipeline — and this pipeline can also be rather brittle.</p>
-<section id="the-training-data-for-colpali" class="level3">
-<h3 class="anchored" data-anchor-id="the-training-data-for-colpali">The training data for ColPali</h3>
-<p>Let’s take a look at what the training data looks like for training ColPali.</p>
-<iframe src="https://huggingface.co/datasets/vidore/colpali_train_set/embed/viewer/default/train" frameborder="0" width="100%" height="560px">
-</iframe>
-<p>You’ll see that each row contains a bunch of metadata about the source of the document and other information but the key parts for the actual training of the model are the image and the queries pairs. When training ColPali we want a dataset of images with queries that relate to the image. This will allow the model to learn how queries are related to the images. To help the model learn it can also be helpful to have negative examples.</p>
-<p>Let’s take a closer look at a few examples from the data before we jump into generating our own.</p>
-<p>For this notebook I’m using <code>uv</code> to manage Python installs because I find it to be a lot quicker but you can use <code>pip</code> if you prefer.</p>
-<div id="cell-5" class="cell" data-execution_count="1">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">%</span>pip install uv</span></code></pre></div></div>
-<div class="cell-output cell-output-stdout">
-<div class="ansi-escaped-output">
-<pre>Collecting uv
-
-  Downloading uv-0.4.15-py3-none-macosx_11_0_arm64.whl.metadata (11 kB)
-
-Downloading uv-0.4.15-py3-none-macosx_11_0_arm64.whl (10.9 MB)
-
-   <span style="color:rgb(114,156,31)">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">10.9/10.9 MB</span> <span class="ansi-red-fg">22.7 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>1m22.2 MB/s eta <span class="ansi-cyan-fg">0:00:01</span>
-
-Installing collected packages: uv
-
-Successfully installed uv-0.4.15
-
-Note: you may need to restart the kernel to use updated packages.
-</pre>
-</div>
-</div>
-</div>
-<div id="cell-6" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="17fc22ef-46e9-4008-d83f-02dfba8d3051" data-execution_count="2">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">!</span>uv pip install accelerate qwen<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span>vl<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span>utils torchvision torch datasets huggingface_hub[hf_transfer] polars <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">--</span>system</span>
-<span id="cb2-2"><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">!</span>uv pip install git<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span>https:<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">//</span>github.com<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">/</span>huggingface<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">/</span>transformers.git  <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">--</span>system</span></code></pre></div></div>
-<div class="cell-output cell-output-stdout">
-<div class="ansi-escaped-output">
-<pre>Audited <span style="font-weight:bold;opacity:0.7">6 packages</span> in 11ms
-
-Resolved <span style="font-weight:bold;opacity:0.7">54 packages</span> in 230ms                                        
-
-Audited <span style="font-weight:bold;opacity:0.7">54 packages</span> in 0.08ms
-</pre>
-</div>
-</div>
-</div>
-<div id="cell-7" class="cell" data-execution_count="3">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">!</span>uv pip install flash<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span>attn <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">--</span>no<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span>build<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span>isolation <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">--</span>system</span></code></pre></div></div>
-<div class="cell-output cell-output-stdout">
-<div class="ansi-escaped-output">
-<pre>Audited <span style="font-weight:bold;opacity:0.7">1 package</span> in 6ms
-</pre>
-</div>
-</div>
-</div>
-<p>We can take a look at a few examples from the data using Polars.</p>
-<div id="cell-9" class="cell" data-execution_count="3">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> polars <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">as</span> pl</span>
-<span id="cb4-2"></span>
-<span id="cb4-3">splits <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> {<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"train"</span>: <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"data/train-*.parquet"</span>, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"test"</span>: <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"data/test-00000-of-00001.parquet"</span>}</span>
-<span id="cb4-4">df <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> pl.scan_parquet(</span>
-<span id="cb4-5">    <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"hf://datasets/vidore/colpali_train_set/"</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> splits[<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"train"</span>],</span>
-<span id="cb4-6">)</span></code></pre></div></div>
-</div>
-<p>Let’s see what columns we have in the dataset.</p>
-<div id="cell-11" class="cell" data-execution_count="18">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1">df.columns</span></code></pre></div></div>
-<div class="cell-output cell-output-display" data-execution_count="18">
-<pre><code>['image',
- 'image_filename',
- 'query',
- 'answer',
- 'source',
- 'options',
- 'page',
- 'model',
- 'prompt',
- 'answer_type']</code></pre>
-</div>
-</div>
-<p>Since we’re shortly going to turn to how we can generate our own queries, let’s take a look at a few examples from the data. We’ll filter to focus on the <code>pdf</code> source, since these are the ones created by the authors of ColPali (the other sources are from existing datasets).</p>
-<div id="cell-13" class="cell" data-execution_count="16">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1">filtered_df <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> (</span>
-<span id="cb7-2">    df.<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">filter</span>(pl.col(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"source"</span>).<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span>.contains(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"pdf"</span>)).select([<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"query"</span>]).head(<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">10</span>).collect()</span>
-<span id="cb7-3">)</span>
-<span id="cb7-4">query_list <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> filtered_df[<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"query"</span>].to_list()</span>
-<span id="cb7-5">query_list</span></code></pre></div></div>
-<div class="cell-output cell-output-display" data-execution_count="16">
-<pre><code>['What is the duration of the course mentioned in the image?',
- 'What is the primary purpose of the PTC in lithium batteries?',
- 'How is the baseline CO2 emissions calculated for affected EGUs in the low load natural gas-fired or oil-fired subcategories?',
- 'What are some suggestions Liberty Medical Group should consider to improve their accounts receivable turnover and days sales in receivables ratios?',
- 'What measures will the Secretary determine to assess the quality of care furnished by the ACO?',
- 'How is the CT kerma index measured?',
- 'What is the difference between hindsight and foresight according to the passage?',
- 'How are the vapor jets arranged during the transitional and film boiling regimes?',
- 'What types of batteries are covered by the European Union Batteries Directive?',
- 'What are some factors to consider for CAES facility development in different parts of New York?']</code></pre>
-</div>
-</div>
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Tip
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>One thing you might notice about these queries is that many of them are more focused on “questions” about documents rather than traditional search queries. We’ll shortly see the prompting approach used to generate these queries but we might already want to consider, depending on our use case, whether we want to generate more “search”-like queries or more “question”-like queries.</p>
-</div>
-</div>
-</section>
-</section>
-<section id="creating-queries-from-documents" class="level2">
-<h2 class="anchored" data-anchor-id="creating-queries-from-documents">Creating queries from documents</h2>
-<p>For the data using in ColPali, part of the dataset was sourced from existing document question answering datasets. Another component was generated using Claude 3.0 Sonnet with the following prompt:</p>
-<div id="cell-16" class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1">prompt <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"""</span></span>
-<span id="cb9-2"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">You are an assistant specialized in Multimodal RAG tasks.</span></span>
-<span id="cb9-3"></span>
-<span id="cb9-4"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">The task is the following: given an image from a pdf page, you will have to generate questions that can be asked by a user to retrieve information from a large documentary corpus.</span></span>
-<span id="cb9-5"></span>
-<span id="cb9-6"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">The question should be relevant to the page, and should not be too specific or too general. The question should be about the subject of the page, and the answer needs to be found in the page.</span></span>
-<span id="cb9-7"></span>
-<span id="cb9-8"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Remember that the question is asked by a user to get some information from a large documentary corpus that contains multimodal data. Generate a question that could be asked by a user without knowing the existence and the content of the corpus.</span></span>
-<span id="cb9-9"></span>
-<span id="cb9-10"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Generate as well the answer to the question, which should be found in the page. And the format of the answer should be a list of words answering the question.</span></span>
-<span id="cb9-11"></span>
-<span id="cb9-12"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Generate at most THREE pairs of questions and answers per page in a dictionary with the following format, answer ONLY this dictionary NOTHING ELSE:</span></span>
-<span id="cb9-13"></span>
-<span id="cb9-14"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb9-15"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    "questions": [</span></span>
-<span id="cb9-16"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        {</span></span>
-<span id="cb9-17"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">            "question": "XXXXXX",</span></span>
-<span id="cb9-18"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">            "answer": ["YYYYYY"]</span></span>
-<span id="cb9-19"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        },</span></span>
-<span id="cb9-20"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        {</span></span>
-<span id="cb9-21"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">            "question": "XXXXXX",</span></span>
-<span id="cb9-22"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">            "answer": ["YYYYYY"]</span></span>
-<span id="cb9-23"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        },</span></span>
-<span id="cb9-24"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        {</span></span>
-<span id="cb9-25"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">            "question": "XXXXXX",</span></span>
-<span id="cb9-26"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">            "answer": ["YYYYYY"]</span></span>
-<span id="cb9-27"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        }</span></span>
-<span id="cb9-28"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    ]</span></span>
-<span id="cb9-29"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb9-30"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">where XXXXXX is the question and ['YYYYYY'] is the corresponding list of answers that could be as long as needed.</span></span>
-<span id="cb9-31"></span>
-<span id="cb9-32"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Note: If there are no questions to ask about the page, return an empty list. Focus on making relevant questions concerning the page.</span></span>
-<span id="cb9-33"></span>
-<span id="cb9-34"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Here is the page:"""</span></span></code></pre></div></div>
-</div>
-<p>As you can see this prompt is focused on generating questions that are relevant to the page and that could be asked by a user and answered by the document. One thing I noticed from the queries generated with this prompt is that I think some of the generated queries strayed a bit from the prompts request to not assume the user knew the content of the document. Some of the questions were quite specific and it seemed like they were tailored to the particular page they were generated from.</p>
-<p>Whilst out of the box performance of ColPali is likely to be good for many domains and use cases it it likely that fine tuning ColPali on domain specific data will lead to improved performance. We’ll now turn to how we can generate our own queries for ColPali.</p>
-</section>
-<section id="ufo-colpali-creating-a-domain-specific-dataset" class="level2">
-<h2 class="anchored" data-anchor-id="ufo-colpali-creating-a-domain-specific-dataset">UFO ColPali: creating a domain specific dataset</h2>
-<p>Let’s now turn to how we could approach generating our own query image pairs for training — or more likely fine tuning — a ColPali model on domain specific data.</p>
-<p>To make the example slightly more interesting we’ll stray away from using an existing document dataset and use a UFO dateset which has been sourced from an Internet Archive <a href="https://archive.org/details/ufonewsletters">Collection of UFO newsletters</a>. This dataset was created from a sample of PDFs from this collection which were then split into single page images using the <a href="https://huggingface.co/spaces/Dataset-Creation-Tools/pdf-to-page-images-dataset">pdf-to-page-images-dataset</a> Hugging Face Space. If you have a collection of PDFs related to your domain you could also use this Space to quickly create a dataset for your use case.</p>
-<div id="cell-19" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:67,&quot;referenced_widgets&quot;:[&quot;ba203de4c19b43babdec20a66c31c659&quot;,&quot;aead883f733b44e5ac8fa77b71a5e867&quot;,&quot;bc40683096c64618984a9f0f00439003&quot;,&quot;2ee27dde4e9e40df9df1e75f4c2c6593&quot;,&quot;6aeb527891d74d6ab0df02f4ce6f4548&quot;,&quot;b7c9b63418314b1db445680dbd045372&quot;,&quot;788850f17ebd4a6a8f20687ad6bd9c0e&quot;,&quot;28e069db020443f384c73cb245f65b54&quot;,&quot;7a782d19a21c4924a284ee20c673cb2e&quot;,&quot;8e79441ecebd4572a34e61fdc75282c8&quot;,&quot;c59c74c422f54586a598a651711739c1&quot;]}}" data-outputid="7d9282e5-2c9b-4894-d480-e916ae940681">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> os</span>
-<span id="cb10-2"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> datasets <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> load_dataset</span></code></pre></div></div>
-</div>
-<p>If you are running on a machine with quite a fast connection, the following environment variable may increase the speed of the model and dataset downloads.</p>
-<div id="cell-21" class="cell" data-execution_count="2">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1">os.environ[<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"HF_HUB_ENABLE_HF_TRANSFER"</span>] <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"1"</span></span></code></pre></div></div>
-</div>
-<p>Let’s start by loading the UFO dataset and taking a look at a few examples.</p>
-<div id="cell-23" class="cell" data-execution_count="3">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1">ds <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> load_dataset(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"davanstrien/ufo"</span>, split<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"train"</span>)</span></code></pre></div></div>
-<div class="cell-output cell-output-display">
-<script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"53bf7962827a4f6988385597615e47ee","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
-</script>
-</div>
-</div>
-<p>Let’s see what a row looks like</p>
-<div id="cell-25" class="cell" data-execution_count="4">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1">ds[<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>]</span></code></pre></div></div>
-<div class="cell-output cell-output-display" data-execution_count="4">
-<pre><code>{'image': &lt;PIL.JpegImagePlugin.JpegImageFile image mode=RGB size=596x842&gt;}</code></pre>
-</div>
-</div>
-<p>and look at an example document</p>
-<div id="cell-27" class="cell" data-execution_count="5">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1">ds[<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">3</span>][<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"image"</span>]</span></code></pre></div></div>
-<div class="cell-output cell-output-display" data-execution_count="5">
-<div>
-<figure class="figure">
-<p><img src="https://danielvanstrien.xyz/posts/post-with-code/colpali/2024-09-23-generate_colpali_dataset_files/figure-html/cell-13-output-1.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>We can see that the dataset currently just contains images which map to a single page of a document. We can also see from the example document that the document does contain some visual elements which could be relevant for retrieval.</p>
-<p>What we need to train or fine tune ColPali is at least one query for each of our the document images in our dataset.</p>
-</section>
-<section id="using-qwen2-vl-to-generate-queries" class="level2">
-<h2 class="anchored" data-anchor-id="using-qwen2-vl-to-generate-queries">Using Qwen2-VL to generate queries</h2>
-<p>Whilst the original ColPali paper used the Claude 3.0 Sonnet model to generate queries for the UFO dataset, we’ll use the Qwen2-VL model to generate queries for our UFO dataset. Specifcally we’ll use the 7B variant of the model (<a href="https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct">Qwen/Qwen2-VL-7B-Instruct</a>). This is an open VLLM (Apache 2.0 licensed) Vision Language Model which has shown strong performance on a variety of vision and language tasks. Whilst the model won’t run on a standard T4 Google Colab instance we can run the model either on a L4 or an A100 GPU on Google Colab or you can use the Hugging Face Jupyter Spaces <a href="https://huggingface.co/spaces/SpacesExamples/jupyterlab?duplicate=true">template</a> to run the model on an L40s as I did.</p>
-<p>To start let’s load the model and get a sense of how we can use it. We’ll do this through the Transformers library. It’s also possible to run the model using the vLLM library but since we’re only focusing on generating a relatively small number of queries this extra set up probably isn’t worth it in this case (I’d be interested to hear in the comments if you try it out and how it goes).</p>
-<p>To start we’ll load the model. We’ll use <code>flash_attention_2</code> which should help a bit with the performance and memory usage of the model.</p>
-<div id="cell-31" class="cell" data-execution_count="6">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> transformers <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor</span>
-<span id="cb16-2"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> qwen_vl_utils <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> process_vision_info</span>
-<span id="cb16-3"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> torch</span>
-<span id="cb16-4"></span>
-<span id="cb16-5">model <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> Qwen2VLForConditionalGeneration.from_pretrained(</span>
-<span id="cb16-6">    <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Qwen/Qwen2-VL-7B-Instruct"</span>,</span>
-<span id="cb16-7">    torch_dtype<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>torch.bfloat16,</span>
-<span id="cb16-8">    attn_implementation<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"flash_attention_2"</span>,</span>
-<span id="cb16-9">    device_map<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"auto"</span>,</span>
-<span id="cb16-10">)</span></code></pre></div></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Unrecognized keys in `rope_scaling` for 'rope_type'='default': {'mrope_section'}
-You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
-`Qwen2VLRotaryEmbedding` can now be fully parameterized by passing the model config through the `config` argument. All other arguments will be removed in v4.46</code></pre>
-</div>
-<div class="cell-output cell-output-display">
-<script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"e46643d6608f466f9137cb8ad76cbc63","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
-</script>
-</div>
-</div>
-<p>We next define the processor. This is the component that will help us prepare the inputs for the model.</p>
-<div id="cell-33" class="cell" data-execution_count="7">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># default processer</span></span>
-<span id="cb18-2">processor <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> AutoProcessor.from_pretrained(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Qwen/Qwen2-VL-7B-Instruct"</span>)</span></code></pre></div></div>
-</div>
-<p>As with many more recent models, we can use a chat template to help us prepare the inputs for the model. Here is the example from the Qwen2-VL-7B-Instruct model card.</p>
-<div id="cell-35" class="cell" data-execution_count="2">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1">messages <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> [</span>
-<span id="cb19-2">    {</span>
-<span id="cb19-3">        <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"role"</span>: <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"user"</span>,</span>
-<span id="cb19-4">        <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"content"</span>: [</span>
-<span id="cb19-5">            {</span>
-<span id="cb19-6">                <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"type"</span>: <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"image"</span>,</span>
-<span id="cb19-7">                <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"image"</span>: <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg"</span>,</span>
-<span id="cb19-8">            },</span>
-<span id="cb19-9">            {<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"type"</span>: <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"text"</span>, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"text"</span>: <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Describe this image."</span>},</span>
-<span id="cb19-10">        ],</span>
-<span id="cb19-11">    }</span>
-<span id="cb19-12">]</span></code></pre></div></div>
-</div>
-<p>We can now pass this to the processor to get the inputs ready for the model. You’ll see here we first pass in the messages to the <code>apply_chat_template</code> method of the processor and then use the <code>process_vision_info</code> helper function which comes from the <code>qwen_vl_utils</code> library to prepare images and videos (which are not relevant here).</p>
-<div id="cell-37" class="cell" data-execution_count="8">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1">text <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> processor.apply_chat_template(</span>
-<span id="cb20-2">    messages, tokenize<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">False</span>, add_generation_prompt<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">True</span></span>
-<span id="cb20-3">)</span>
-<span id="cb20-4">image_inputs, video_inputs <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> process_vision_info(messages)</span></code></pre></div></div>
-</div>
-<p>If we take a look at the <code>text</code> we can see that the processor has applied a chat template to the messages.</p>
-<div id="cell-39" class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1">text</span></code></pre></div></div>
-</div>
-<p>We now pass the text, image and video inputs (in this case <code>None</code>) to the processor and prepare the inputs for the model.</p>
-<div id="cell-41" class="cell" data-execution_count="10">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1">inputs <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> processor(</span>
-<span id="cb22-2">    text<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>[text],</span>
-<span id="cb22-3">    images<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>image_inputs,</span>
-<span id="cb22-4">    videos<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>video_inputs,</span>
-<span id="cb22-5">    padding<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">True</span>,</span>
-<span id="cb22-6">    return_tensors<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"pt"</span>,</span>
-<span id="cb22-7">)</span>
-<span id="cb22-8">inputs <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> inputs.to(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"cuda"</span>)</span></code></pre></div></div>
-</div>
-<p>we can see what this input looks like</p>
-<div id="cell-43" class="cell" data-execution_count="11">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1">inputs</span></code></pre></div></div>
-<div class="cell-output cell-output-display" data-execution_count="11">
-<pre><code>{'input_ids': tensor([[151644,   8948,    198,  ..., 151644,  77091,    198]],
-       device='cuda:0'), 'attention_mask': tensor([[1, 1, 1,  ..., 1, 1, 1]], device='cuda:0'), 'pixel_values': tensor([[ 0.8501,  0.8501,  0.8647,  ...,  1.3922,  1.3922,  1.3922],
-        [ 0.9376,  0.9376,  0.9376,  ...,  1.4491,  1.4491,  1.4491],
-        [ 0.9084,  0.9376,  0.9376,  ...,  1.4065,  1.4207,  1.4207],
-        ...,
-        [-0.1280, -0.1280, -0.1426,  ..., -0.2431, -0.2715, -0.3000],
-        [-0.3324, -0.3324, -0.3032,  ..., -0.3000, -0.2715, -0.2857],
-        [-0.3762, -0.4054, -0.4054,  ..., -0.4279, -0.4422, -0.4564]],
-       device='cuda:0'), 'image_grid_thw': tensor([[  1,  98, 146]], device='cuda:0')}</code></pre>
-</div>
-</div>
-<p>Now the inputs are ready to pass to the model. BTW, all of this inference code is copied straight from the Qwen2-VL-7B-Instruct model card on Hugging Face. There are a few things we might want to tweak but the basic examples are pretty much all we need for our use case.</p>
-<div id="cell-45" class="cell" data-execution_count="12">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1">generated_ids <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> model.generate(<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">**</span>inputs, max_new_tokens<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">200</span>)</span>
-<span id="cb25-2">generated_ids_trimmed <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> [</span>
-<span id="cb25-3">    out_ids[<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">len</span>(in_ids) :] <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">for</span> in_ids, out_ids <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">in</span> <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">zip</span>(inputs.input_ids, generated_ids)</span>
-<span id="cb25-4">]</span>
-<span id="cb25-5">output_text <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> processor.batch_decode(</span>
-<span id="cb25-6">    generated_ids_trimmed, skip_special_tokens<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">True</span>, clean_up_tokenization_spaces<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">False</span></span>
-<span id="cb25-7">)</span>
-<span id="cb25-8">output_text</span></code></pre></div></div>
-<div class="cell-output cell-output-display" data-execution_count="12">
-<pre><code>["The image depicts a serene beach scene with a woman and her dog enjoying a moment together. The woman is sitting on the sandy beach, facing the ocean, and appears to be engaging in a playful activity with her dog. She is wearing a plaid shirt and dark pants, and her hair is long and dark. The dog, which is a large breed, possibly a Labrador Retriever, is sitting in front of her, wearing a harness. The dog is extending its front paw towards the woman's hand, as if they are giving each other a high-five. The woman is smiling, indicating a joyful interaction.\n\nThe beach is relatively empty, with gentle waves lapping at the shore. The sky is clear, and the sun is low on the horizon, casting a warm, golden light over the scene. The lighting suggests that the photo was taken either in the early morning or late afternoon, creating a peaceful and tranquil atmosphere. The sand is smooth and lightly textured, typical of a well-m"]</code></pre>
-</div>
-</div>
-</section>
-<section id="building-colpali-queries" class="level2">
-<h2 class="anchored" data-anchor-id="building-colpali-queries">Building Colpali queries</h2>
-<p>We now have a sense of how to generate responses using both a text and image input using the Qwen2-VL-7B-Instruct model. We’ll now use this model to generate queries for our UFO dataset. To start, let’s see how the prompt from the paper looks. The only thing we modified from the original prompt was to ask for JSON output rather than dictionaries since this model seemed to work better with this approach in my (somewhat limited) testing.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1">prompt <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"""</span></span>
-<span id="cb27-2"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">You are an assistant specialized in Multimodal RAG tasks.</span></span>
-<span id="cb27-3"></span>
-<span id="cb27-4"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">The task is the following: given an image from a pdf page, you will have to generate questions that can be asked by a user to retrieve information from a large documentary corpus.</span></span>
-<span id="cb27-5"></span>
-<span id="cb27-6"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">The question should be relevant to the page, and should not be too specific or too general. The question should be about the subject of the page, and the answer needs to be found in the page.</span></span>
-<span id="cb27-7"></span>
-<span id="cb27-8"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Remember that the question is asked by a user to get some information from a large documentary corpus that contains multimodal data. Generate a question that could be asked by a user without knowing the existence and the content of the corpus.</span></span>
-<span id="cb27-9"></span>
-<span id="cb27-10"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Generate as well the answer to the question, which should be found in the page. And the format of the answer should be a list of words answering the question.</span></span>
-<span id="cb27-11"></span>
-<span id="cb27-12"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Generate at most THREE pairs of questions and answers per page as JSON with the following format, answer ONLY using JSON, NOTHING ELSE:</span></span>
-<span id="cb27-13"></span>
-<span id="cb27-14"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb27-15"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    "questions": [</span></span>
-<span id="cb27-16"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        {</span></span>
-<span id="cb27-17"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">            "question": "XXXXXX",</span></span>
-<span id="cb27-18"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">            "answer": ["YYYYYY"]</span></span>
-<span id="cb27-19"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        },</span></span>
-<span id="cb27-20"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        {</span></span>
-<span id="cb27-21"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">            "question": "XXXXXX",</span></span>
-<span id="cb27-22"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">            "answer": ["YYYYYY"]</span></span>
-<span id="cb27-23"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        },</span></span>
-<span id="cb27-24"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        {</span></span>
-<span id="cb27-25"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">            "question": "XXXXXX",</span></span>
-<span id="cb27-26"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">            "answer": ["YYYYYY"]</span></span>
-<span id="cb27-27"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        }</span></span>
-<span id="cb27-28"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    ]</span></span>
-<span id="cb27-29"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb27-30"></span>
-<span id="cb27-31"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">where XXXXXX is the question and ['YYYYYY'] is the corresponding list of answers that could be as long as needed.</span></span>
-<span id="cb27-32"></span>
-<span id="cb27-33"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Note: If there are no questions to ask about the page, return an empty list. Focus on making relevant questions concerning the page.</span></span>
-<span id="cb27-34"></span>
-<span id="cb27-35"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Here is the page:</span></span>
-<span id="cb27-36"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"""</span></span></code></pre></div></div>
-<p>We’ll copy and paste all of the previous code to generate a response from the model for an example from our UFO dataset. We’ll wrap this in a function once we’ve got a better sense of what we’re looking for.</p>
-<div id="cell-49" class="cell" data-execution_count="21">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1">messages <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> [</span>
-<span id="cb28-2">    {</span>
-<span id="cb28-3">        <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"role"</span>: <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"user"</span>,</span>
-<span id="cb28-4">        <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"content"</span>: [</span>
-<span id="cb28-5">            {</span>
-<span id="cb28-6">                <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"type"</span>: <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"image"</span>,</span>
-<span id="cb28-7">                <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"image"</span>: ds[<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>][<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"image"</span>],</span>
-<span id="cb28-8">            },</span>
-<span id="cb28-9">            {<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"type"</span>: <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"text"</span>, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"text"</span>: prompt},</span>
-<span id="cb28-10">        ],</span>
-<span id="cb28-11">    }</span>
-<span id="cb28-12">]</span></code></pre></div></div>
-</div>
-<div id="cell-50" class="cell" data-execution_count="22">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1">text <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> processor.apply_chat_template(</span>
-<span id="cb29-2">    messages, tokenize<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">False</span>, add_generation_prompt<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">True</span></span>
-<span id="cb29-3">)</span>
-<span id="cb29-4">image_inputs, video_inputs <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> process_vision_info(messages)</span>
-<span id="cb29-5">inputs <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> processor(</span>
-<span id="cb29-6">    text<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>[text],</span>
-<span id="cb29-7">    images<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>image_inputs,</span>
-<span id="cb29-8">    videos<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>video_inputs,</span>
-<span id="cb29-9">    padding<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">True</span>,</span>
-<span id="cb29-10">    return_tensors<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"pt"</span>,</span>
-<span id="cb29-11">)</span>
-<span id="cb29-12">inputs <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> inputs.to(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"cuda"</span>)</span></code></pre></div></div>
-</div>
-<div id="cell-51" class="cell" data-execution_count="23">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1">generated_ids <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> model.generate(<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">**</span>inputs, max_new_tokens<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">200</span>)</span>
-<span id="cb30-2">generated_ids_trimmed <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> [</span>
-<span id="cb30-3">    out_ids[<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">len</span>(in_ids) :] <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">for</span> in_ids, out_ids <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">in</span> <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">zip</span>(inputs.input_ids, generated_ids)</span>
-<span id="cb30-4">]</span>
-<span id="cb30-5">output_text <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> processor.batch_decode(</span>
-<span id="cb30-6">    generated_ids_trimmed, skip_special_tokens<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">True</span>, clean_up_tokenization_spaces<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">False</span></span>
-<span id="cb30-7">)</span>
-<span id="cb30-8">output_text</span></code></pre></div></div>
-<div class="cell-output cell-output-display" data-execution_count="23">
-<pre><code>['{\n    "questions": [\n        {\n            "question": "What is the main subject of the page?",\n            "answer": ["astronomy", "space exploration", "New York Times"]\n        },\n        {\n            "question": "What is the significance of the Sun newspaper in the context of the page?",\n            "answer": ["published a report attributed to an astronomer", "founded by Sir John Herschel", "published a report on the discovery of a race of singing aliens"]\n        },\n        {\n            "question": "What is the main event mentioned in the page?",\n            "answer": ["discovery of singing aliens on the Moon"]\n        }\n    ]\n}']</code></pre>
-</div>
-</div>
-<p>You’ll see we get some responses like this <code>"What is the main event mentioned in the page?"</code> which is a bit too specific and tailored to the particular page. There are a few reasons this might be happening but the first thing we should play around with is changing the prompt.</p>
-<section id="validating-the-responses" class="level3">
-<h3 class="anchored" data-anchor-id="validating-the-responses">Validating the responses</h3>
-<p>One of the big challenges you can have in generating synthetic data at scale is ensuring that you get valid responses that you can use in downstream tasks for training without having to do a lot of manual verification. Let’s see if we can load the response as valid JSON</p>
-<div id="cell-54" class="cell" data-execution_count="24">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> json</span></code></pre></div></div>
-</div>
-<div id="cell-55" class="cell" data-execution_count="25">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1">json.loads(output_text[<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>])</span></code></pre></div></div>
-<div class="cell-output cell-output-display" data-execution_count="25">
-<pre><code>{'questions': [{'question': 'What is the main subject of the page?',
-   'answer': ['astronomy', 'space exploration', 'New York Times']},
-  {'question': 'What is the significance of the Sun newspaper in the context of the page?',
-   'answer': ['published a report attributed to an astronomer',
-    'founded by Sir John Herschel',
-    'published a report on the discovery of a race of singing aliens']},
-  {'question': 'What is the main event mentioned in the page?',
-   'answer': ['discovery of singing aliens on the Moon']}]}</code></pre>
-</div>
-</div>
-<div id="cell-56" class="cell" data-execution_count="26">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">print</span>(output_text[<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>])</span></code></pre></div></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>{
-    "questions": [
-        {
-            "question": "What is the main subject of the page?",
-            "answer": ["astronomy", "space exploration", "New York Times"]
-        },
-        {
-            "question": "What is the significance of the Sun newspaper in the context of the page?",
-            "answer": ["published a report attributed to an astronomer", "founded by Sir John Herschel", "published a report on the discovery of a race of singing aliens"]
-        },
-        {
-            "question": "What is the main event mentioned in the page?",
-            "answer": ["discovery of singing aliens on the Moon"]
-        }
-    ]
-}</code></pre>
-</div>
-</div>
-<p>Having a valid JSON is a good start but in many synthetic data generation tasks, people are increasingly using Pydantic to ensure outputs are valid in other ways. Let’s take a look at a rewritten prompt I created for generating queries. In this prompt we ask the VLLM model to generate 3 different types of retrieval queries:</p>
-<div id="cell-58" class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1">prompt <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"""You are an AI assistant specialized in document retrieval tasks. Given an image of a document page, your task is to generate retrieval queries that someone might use to find this document in a large corpus.</span></span>
-<span id="cb37-2"></span>
-<span id="cb37-3"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Please generate 3 different types of retrieval queries:</span></span>
-<span id="cb37-4"></span>
-<span id="cb37-5"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">1. A broad topical query: This should cover the main subject of the document.</span></span>
-<span id="cb37-6"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">2. A specific detail query: This should focus on a particular fact, figure, or point made in the document.</span></span>
-<span id="cb37-7"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">3. A visual element query: This should reference a chart, graph, image, or other visual component in the document, if present.</span></span>
-<span id="cb37-8"></span>
-<span id="cb37-9"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Important guidelines:</span></span>
-<span id="cb37-10"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">- Ensure the queries are relevant for retrieval tasks, not just describing the page content.</span></span>
-<span id="cb37-11"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">- Frame the queries as if someone is searching for this document, not asking questions about its content.</span></span>
-<span id="cb37-12"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">- Make the queries diverse and representative of different search strategies.</span></span>
-<span id="cb37-13"></span>
-<span id="cb37-14"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">For each query, also provide a brief explanation of why this query would be effective in retrieving this document.</span></span>
-<span id="cb37-15"></span>
-<span id="cb37-16"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Format your response as a JSON object with the following structure:</span></span>
-<span id="cb37-17"></span>
-<span id="cb37-18"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb37-19"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "broad_topical_query": "Your query here",</span></span>
-<span id="cb37-20"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "broad_topical_explanation": "Brief explanation",</span></span>
-<span id="cb37-21"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "specific_detail_query": "Your query here",</span></span>
-<span id="cb37-22"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "specific_detail_explanation": "Brief explanation",</span></span>
-<span id="cb37-23"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "visual_element_query": "Your query here",</span></span>
-<span id="cb37-24"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "visual_element_explanation": "Brief explanation"</span></span>
-<span id="cb37-25"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb37-26"></span>
-<span id="cb37-27"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">If there are no relevant visual elements, replace the third query with another specific detail query.</span></span>
-<span id="cb37-28"></span>
-<span id="cb37-29"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Here is the document image to analyze:</span></span>
-<span id="cb37-30"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">&lt;image&gt;</span></span>
-<span id="cb37-31"></span>
-<span id="cb37-32"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Generate the queries based on this image and provide the response in the specified JSON format."""</span></span></code></pre></div></div>
-</div>
-<p>We ask the model for JSON output, we can represent this using a simple Pydantic model.</p>
-<div id="cell-60" class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> pydantic <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> BaseModel</span>
-<span id="cb38-2"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> typing <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> Tuple</span>
-<span id="cb38-3"></span>
-<span id="cb38-4"></span>
-<span id="cb38-5"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">class</span> GeneralRetrievalQuery(BaseModel):</span>
-<span id="cb38-6">    broad_topical_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb38-7">    broad_topical_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb38-8">    specific_detail_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb38-9">    specific_detail_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb38-10">    visual_element_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb38-11">    visual_element_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span></code></pre></div></div>
-</div>
-<p>We could add additional constraints to our Pydantic model for example we could set a minimum and maximum length for the queries and answers. We’ll get back to this at the end of the post but for now we can make a start with this simpler approach.</p>
-<p>We’ll now wrap this in a function to generate a response from the model using our Pydantic model.</p>
-</section>
-</section>
-<section id="an-update-retrieval-focused-prompt" class="level2">
-<h2 class="anchored" data-anchor-id="an-update-retrieval-focused-prompt">An update retrieval focused prompt</h2>
-<div id="cell-63" class="cell" data-execution_count="5">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">def</span> get_retrieval_prompt(prompt_name: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span>) <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-&gt;</span> Tuple[<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span>, GeneralRetrievalQuery]:</span>
-<span id="cb39-2">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">if</span> prompt_name <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">!=</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"general"</span>:</span>
-<span id="cb39-3">        <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">raise</span> <span class="pp" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">ValueError</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Only 'general' prompt is available in this version"</span>)</span>
-<span id="cb39-4"></span>
-<span id="cb39-5">    prompt <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"""You are an AI assistant specialized in document retrieval tasks. Given an image of a document page, your task is to generate retrieval queries that someone might use to find this document in a large corpus.</span></span>
-<span id="cb39-6"></span>
-<span id="cb39-7"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Please generate 3 different types of retrieval queries:</span></span>
-<span id="cb39-8"></span>
-<span id="cb39-9"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">1. A broad topical query: This should cover the main subject of the document.</span></span>
-<span id="cb39-10"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">2. A specific detail query: This should focus on a particular fact, figure, or point made in the document.</span></span>
-<span id="cb39-11"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">3. A visual element query: This should reference a chart, graph, image, or other visual component in the document, if present.</span></span>
-<span id="cb39-12"></span>
-<span id="cb39-13"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Important guidelines:</span></span>
-<span id="cb39-14"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">- Ensure the queries are relevant for retrieval tasks, not just describing the page content.</span></span>
-<span id="cb39-15"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">- Frame the queries as if someone is searching for this document, not asking questions about its content.</span></span>
-<span id="cb39-16"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">- Make the queries diverse and representative of different search strategies.</span></span>
-<span id="cb39-17"></span>
-<span id="cb39-18"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">For each query, also provide a brief explanation of why this query would be effective in retrieving this document.</span></span>
-<span id="cb39-19"></span>
-<span id="cb39-20"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Format your response as a JSON object with the following structure:</span></span>
-<span id="cb39-21"></span>
-<span id="cb39-22"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb39-23"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "broad_topical_query": "Your query here",</span></span>
-<span id="cb39-24"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "broad_topical_explanation": "Brief explanation",</span></span>
-<span id="cb39-25"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "specific_detail_query": "Your query here",</span></span>
-<span id="cb39-26"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "specific_detail_explanation": "Brief explanation",</span></span>
-<span id="cb39-27"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "visual_element_query": "Your query here",</span></span>
-<span id="cb39-28"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "visual_element_explanation": "Brief explanation"</span></span>
-<span id="cb39-29"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb39-30"></span>
-<span id="cb39-31"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">If there are no relevant visual elements, replace the third query with another specific detail query.</span></span>
-<span id="cb39-32"></span>
-<span id="cb39-33"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Here is the document image to analyze:</span></span>
-<span id="cb39-34"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">&lt;image&gt;</span></span>
-<span id="cb39-35"></span>
-<span id="cb39-36"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Generate the queries based on this image and provide the response in the specified JSON format."""</span></span>
-<span id="cb39-37"></span>
-<span id="cb39-38">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">return</span> prompt, GeneralRetrievalQuery</span>
-<span id="cb39-39"></span>
-<span id="cb39-40"></span>
-<span id="cb39-41"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Example usage:</span></span>
-<span id="cb39-42">prompt_name <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"general"</span></span>
-<span id="cb39-43">prompt, pydantic_model <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> get_retrieval_prompt(prompt_name)</span>
-<span id="cb39-44"><span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">f"Prompt for '</span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span>prompt_name<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">':"</span>)</span>
-<span id="cb39-45"><span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">print</span>(prompt)</span>
-<span id="cb39-46"><span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">f"</span><span class="ch" style="color: #20794D;
-background-color: null;
-font-style: inherit;">\n</span><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Pydantic model for this prompt: </span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span>pydantic_model<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"</span>)</span></code></pre></div></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Prompt for 'general':
-You are an AI assistant specialized in document retrieval tasks. Given an image of a document page, your task is to generate retrieval queries that someone might use to find this document in a large corpus.
-
-Please generate 3 different types of retrieval queries:
-
-1. A broad topical query: This should cover the main subject of the document.
-2. A specific detail query: This should focus on a particular fact, figure, or point made in the document.
-3. A visual element query: This should reference a chart, graph, image, or other visual component in the document, if present.
-
-Important guidelines:
-- Ensure the queries are relevant for retrieval tasks, not just describing the page content.
-- Frame the queries as if someone is searching for this document, not asking questions about its content.
-- Make the queries diverse and representative of different search strategies.
-
-For each query, also provide a brief explanation of why this query would be effective in retrieving this document.
-
-Format your response as a JSON object with the following structure:
-
-{
-  "broad_topical_query": "Your query here",
-  "broad_topical_explanation": "Brief explanation",
-  "specific_detail_query": "Your query here",
-  "specific_detail_explanation": "Brief explanation",
-  "visual_element_query": "Your query here",
-  "visual_element_explanation": "Brief explanation"
-}
-
-If there are no relevant visual elements, replace the third query with another specific detail query.
-
-Here is the document image to analyze:
-&lt;image&gt;
-
-Generate the queries based on this image and provide the response in the specified JSON format.
-
-Pydantic model for this prompt: &lt;class '__main__.GeneralRetrievalQuery'&gt;</code></pre>
-</div>
-</div>
-<p>We’ll now also wrap this in a function to generate a response from the model using our Pydantic model. We could probably do a bit more refactoring here but this will do for now.</p>
-<div id="cell-65" class="cell" data-execution_count="50">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">def</span> generate_response(prompt, image):</span>
-<span id="cb41-2">    messages <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> [</span>
-<span id="cb41-3">        {</span>
-<span id="cb41-4">            <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"role"</span>: <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"user"</span>,</span>
-<span id="cb41-5">            <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"content"</span>: [</span>
-<span id="cb41-6">                {</span>
-<span id="cb41-7">                    <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"type"</span>: <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"image"</span>,</span>
-<span id="cb41-8">                    <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"image"</span>: image,</span>
-<span id="cb41-9">                },</span>
-<span id="cb41-10">                {<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"type"</span>: <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"text"</span>, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"text"</span>: prompt},</span>
-<span id="cb41-11">            ],</span>
-<span id="cb41-12">        }</span>
-<span id="cb41-13">    ]</span>
-<span id="cb41-14"></span>
-<span id="cb41-15">    text <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> processor.apply_chat_template(</span>
-<span id="cb41-16">        messages, tokenize<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">False</span>, add_generation_prompt<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">True</span></span>
-<span id="cb41-17">    )</span>
-<span id="cb41-18"></span>
-<span id="cb41-19">    image_inputs, video_inputs <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> process_vision_info(messages)</span>
-<span id="cb41-20"></span>
-<span id="cb41-21">    inputs <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> processor(</span>
-<span id="cb41-22">        text<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>[text],</span>
-<span id="cb41-23">        images<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>image_inputs,</span>
-<span id="cb41-24">        videos<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>video_inputs,</span>
-<span id="cb41-25">        padding<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">True</span>,</span>
-<span id="cb41-26">        return_tensors<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"pt"</span>,</span>
-<span id="cb41-27">    )</span>
-<span id="cb41-28">    inputs <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> inputs.to(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"cuda"</span>)</span>
-<span id="cb41-29"></span>
-<span id="cb41-30">    generated_ids <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> model.generate(<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">**</span>inputs, max_new_tokens<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">200</span>)</span>
-<span id="cb41-31">    generated_ids_trimmed <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> [</span>
-<span id="cb41-32">        out_ids[<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">len</span>(in_ids) :]</span>
-<span id="cb41-33">        <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">for</span> in_ids, out_ids <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">in</span> <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">zip</span>(inputs.input_ids, generated_ids)</span>
-<span id="cb41-34">    ]</span>
-<span id="cb41-35"></span>
-<span id="cb41-36">    output_text <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> processor.batch_decode(</span>
-<span id="cb41-37">        generated_ids_trimmed,</span>
-<span id="cb41-38">        skip_special_tokens<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">True</span>,</span>
-<span id="cb41-39">        clean_up_tokenization_spaces<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">False</span>,</span>
-<span id="cb41-40">    )</span>
-<span id="cb41-41"></span>
-<span id="cb41-42">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">return</span> output_text</span></code></pre></div></div>
-</div>
-<p>Let’s now generate a response from the model for an example image from our UFO dataset.</p>
-<div id="cell-67" class="cell" data-execution_count="51">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1">generate_response(prompt, ds[<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">2</span>][<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"image"</span>])</span></code></pre></div></div>
-<div class="cell-output cell-output-display" data-execution_count="51">
-<pre><code>['{\n  "broad_topical_query": "Document discussing the possibility of a cameraman going on the record in the future",\n  "broad_topical_explanation": "This query focuses on the main topic of the document, which is the discussion about the cameraman\'s potential to go on the record.",\n  "specific_detail_query": "Document mentioning Ray Santilli and his attempts to persuade the cameraman",\n  "specific_detail_explanation": "This query targets a specific detail in the document, which is Ray Santilli\'s efforts to contact the cameraman.",\n  "visual_element_query": "Document containing images of a damaged leg and an alien\'s foot",\n  "visual_element_explanation": "This query refers to the visual elements present in the document, which are images of a damaged leg and an alien\'s foot."\n}']</code></pre>
-</div>
-</div>
-<p>We can see the model is doing a reasonable job of generating queries.</p>
-<pre><code>['{\n  "broad_topical_query": "Document discussing the possibility of a cameraman going on the record in the future",\n  "broad_topical_explanation": "This query focuses on the main topic of the document, which is the discussion about the cameraman\'s potential to go on the record.",\n  "specific_detail_query": "Document mentioning Ray Santilli and his attempts to persuade the cameraman",\n  "specific_detail_explanation": "This query targets a specific detail in the document, which is Ray Santilli\'s efforts to contact the cameraman.",\n  "visual_element_query": "Document containing images of a damaged leg and an alien\'s foot",\n  "visual_element_explanation": "This query refers to the visual elements present in the document, which are images of a damaged leg and an alien\'s foot."\n}']</code></pre>
-<pre class="tip"><code>One thing I have found in my experiments with generating synthetic data is that adding a request for an "explanation" from the model sometimes seems to help improve the quality of the generated data. I assume this is already noted somewhere in the literature (if not I'll call this `explain then generate`!). This seems to particularly helpful when generating more complex queries. Having the explanation can also give you a sense of how the model "understands" the task. This obviously comes with the donwside that it takes longer to generate the data and more tokens are required but it often seems worth trying. </code></pre>
-</section>
-<section id="generating-the-full-dataset" class="level2">
-<h2 class="anchored" data-anchor-id="generating-the-full-dataset">Generating the full dataset</h2>
-<p>As we play with the prompts and refine the queries we will often iterate quite quickly on a few examples. Once we’re reasonably confident in the queries we can generate a larger dataset to see how well our prompts work across a larger set of examples.</p>
-<div id="cell-72" class="cell" data-execution_count="84">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1">ds</span></code></pre></div></div>
-<div class="cell-output cell-output-display" data-execution_count="84">
-<pre><code>Dataset({
-    features: ['image'],
-    num_rows: 212
-})</code></pre>
-</div>
-</div>
-<div id="cell-73" class="cell" data-execution_count="53">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1">sample <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> ds.take(<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">100</span>)</span></code></pre></div></div>
-</div>
-<p>To generate our full dataset we just wrap our previous code in a loop and run it for all the examples in our dataset. We add a very broad exception handler to catch any errors and continue with the next example. This is obviously not production code but it’s good enough to get started with. If we scale to a much bigger dataset we might want to add some more robust error handling.</p>
-<div id="cell-75" class="cell" data-execution_count="54">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> tqdm.auto <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> tqdm</span>
-<span id="cb49-2"></span>
-<span id="cb49-3">responses <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> []</span>
-<span id="cb49-4"><span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">for</span> row <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">in</span> tqdm(sample):</span>
-<span id="cb49-5">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">try</span>:</span>
-<span id="cb49-6">        resp <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> generate_response(prompt, row[<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"image"</span>])</span>
-<span id="cb49-7">        responses.append(resp)</span>
-<span id="cb49-8">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">except</span> <span class="pp" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">Exception</span> <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">as</span> e:</span>
-<span id="cb49-9">        responses.append(<span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">None</span>)</span></code></pre></div></div>
-<div class="cell-output cell-output-display">
-<script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"627ce7504864425cbbc6f2282dbd5132","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
-</script>
-</div>
-</div>
-<div id="cell-76" class="cell" data-execution_count="55">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1">responses[<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>]</span></code></pre></div></div>
-<div class="cell-output cell-output-display" data-execution_count="55">
-<pre><code>['{\n  "broad_topical_query": "Document about the Sun and its influence on life",\n  "broad_topical_explanation": "This query focuses on the main subject of the document, which is the Sun and its impact on life.",\n  "specific_detail_query": "New York Times article on the Sun",\n  "specific_detail_explanation": "This query targets a specific detail mentioned in the document, which is the New York Times article on the Sun.",\n  "visual_element_query": "Document with a black and white image",\n  "visual_element_explanation": "This query refers to the visual element present in the document, which is a black and white image."\n}']</code></pre>
-</div>
-</div>
-<p>We can see how many errors we have in our dataset.</p>
-<div id="cell-78" class="cell" data-execution_count="56">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">len</span>([r <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">for</span> r <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">in</span> responses <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">if</span> r <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">is</span> <span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">None</span>])</span></code></pre></div></div>
-<div class="cell-output cell-output-display" data-execution_count="56">
-<pre><code>0</code></pre>
-</div>
-</div>
-<p>No bad generations!</p>
-<p>We can also look at the first response to see what it looks like.</p>
-<div id="cell-81" class="cell" data-execution_count="58">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1">responses[<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>][<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>]</span></code></pre></div></div>
-<div class="cell-output cell-output-display" data-execution_count="58">
-<pre><code>'{\n  "broad_topical_query": "Document about the Sun and its influence on life",\n  "broad_topical_explanation": "This query focuses on the main subject of the document, which is the Sun and its impact on life.",\n  "specific_detail_query": "New York Times article on the Sun",\n  "specific_detail_explanation": "This query targets a specific detail mentioned in the document, which is the New York Times article on the Sun.",\n  "visual_element_query": "Document with a black and white image",\n  "visual_element_explanation": "This query refers to the visual element present in the document, which is a black and white image."\n}'</code></pre>
-</div>
-</div>
-<p>Let’s see if we can parse this into a JSON object.</p>
-<div id="cell-83" class="cell" data-execution_count="59">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1">json.loads(responses[<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>][<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>])</span></code></pre></div></div>
-<div class="cell-output cell-output-display" data-execution_count="59">
-<pre><code>{'broad_topical_query': 'Document about the Sun and its influence on life',
- 'broad_topical_explanation': 'This query focuses on the main subject of the document, which is the Sun and its impact on life.',
- 'specific_detail_query': 'New York Times article on the Sun',
- 'specific_detail_explanation': 'This query targets a specific detail mentioned in the document, which is the New York Times article on the Sun.',
- 'visual_element_query': 'Document with a black and white image',
- 'visual_element_explanation': 'This query refers to the visual element present in the document, which is a black and white image.'}</code></pre>
-</div>
-</div>
-<p>first example seems to work, now let’s add this to our dataset and see how many we can parse.</p>
-<div id="cell-85" class="cell" data-execution_count="61">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1">sample <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> sample.add_column(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"raw_queries"</span>, responses)</span></code></pre></div></div>
-</div>
-<div id="cell-86" class="cell" data-execution_count="62">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1">sample</span></code></pre></div></div>
-<div class="cell-output cell-output-display" data-execution_count="62">
-<pre><code>Dataset({
-    features: ['image', 'raw_queries'],
-    num_rows: 100
-})</code></pre>
-</div>
-</div>
-<p>To deal with bad generations we’ll create just fill out these column with <code>None</code> values. We can grab all the required keys from the valid first response.</p>
-<div id="cell-88" class="cell" data-execution_count="71">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb61" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1">keys <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">list</span>(json.loads(responses[<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>][<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>]).keys())</span>
-<span id="cb61-2">keys</span></code></pre></div></div>
-<div class="cell-output cell-output-display" data-execution_count="71">
-<pre><code>['broad_topical_query',
- 'broad_topical_explanation',
- 'specific_detail_query',
- 'specific_detail_explanation',
- 'visual_element_query',
- 'visual_element_explanation']</code></pre>
-</div>
-</div>
-<p>and do something like this to fill out this row</p>
-<div id="cell-90" class="cell" data-execution_count="73">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb63" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1">{k: <span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">None</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">for</span> k <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">in</span> keys}</span></code></pre></div></div>
-<div class="cell-output cell-output-display" data-execution_count="73">
-<pre><code>{'broad_topical_query': None,
- 'broad_topical_explanation': None,
- 'specific_detail_query': None,
- 'specific_detail_explanation': None,
- 'visual_element_query': None,
- 'visual_element_explanation': None}</code></pre>
-</div>
-</div>
-<p>We create a function to extract the data from the raw queries and parse them into a JSON object.</p>
-<div id="cell-92" class="cell" data-execution_count="74">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">def</span> extract_data(row):</span>
-<span id="cb65-2">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">try</span>:</span>
-<span id="cb65-3">        data <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> json.loads(row[<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"raw_queries"</span>][<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>])</span>
-<span id="cb65-4">        data[<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"parsed_into_json"</span>] <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">True</span></span>
-<span id="cb65-5">        <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">return</span> data</span>
-<span id="cb65-6">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">except</span> <span class="pp" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">Exception</span>:</span>
-<span id="cb65-7">        data <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> {k: <span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">None</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">for</span> k <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">in</span> keys}</span>
-<span id="cb65-8">        data[<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"parsed_into_json"</span>] <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">False</span></span>
-<span id="cb65-9">        <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">return</span> data</span></code></pre></div></div>
-</div>
-<p>We can now use the <code>map</code> method to apply this function to our dataset.</p>
-<div id="cell-94" class="cell" data-execution_count="76">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1">parsed_ds <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> sample.<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">map</span>(extract_data)</span></code></pre></div></div>
-</div>
-<p>We can then see how many we’ve successfully parsed.</p>
-<div id="cell-96" class="cell" data-execution_count="79">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb67" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb67-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> collections <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> Counter</span>
-<span id="cb67-2"></span>
-<span id="cb67-3">Counter(parsed_ds[<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"parsed_into_json"</span>])</span></code></pre></div></div>
-<div class="cell-output cell-output-display" data-execution_count="79">
-<pre><code>Counter({True: 95, False: 5})</code></pre>
-</div>
-</div>
-<p>So in this case 5% of the responses were not parseable. This isn’t too bad and we might be able to live with this.</p>
-</section>
-<section id="pushing-to-the-hub" class="level2">
-<h2 class="anchored" data-anchor-id="pushing-to-the-hub">Pushing to the Hub</h2>
-<p>We can now push this dataset to the Hugging Face Hub. This will also allow us to view the dataset in the Dataset Viewer. This can often be a very nice way of quickly checking through examples in a dataset to see how the quality looks.</p>
-<p>If you are not authenticated you can use the <code>login</code> function to authenticate with the Hub.</p>
-<div id="cell-100" class="cell" data-execution_count="80">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb69" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> huggingface_hub <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> login</span></code></pre></div></div>
-</div>
-<div id="cell-101" class="cell" data-execution_count="81">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb70" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb70-1">login()</span></code></pre></div></div>
-<div class="cell-output cell-output-display">
-<script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"bd4de41610614d4b83669c1cb8064e02","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
-</script>
-</div>
-</div>
-<div id="cell-102" class="cell" data-execution_count="82">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb71" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb71-1">parsed_ds.push_to_hub(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"davanstrien/ufo-ColPali"</span>)</span></code></pre></div></div>
-<div class="cell-output cell-output-display">
-<script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"6fedd93a30f34aebb0207d2f3ca8c52c","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
-</script>
-</div>
-<div class="cell-output cell-output-display">
-<script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"c4d1a1f443fe4b17976f7590434312d4","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
-</script>
-</div>
-<div class="cell-output cell-output-display">
-<script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"b08b902c59d447798473df4d5e1eeec1","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
-</script>
-</div>
-<div class="cell-output cell-output-display" data-execution_count="82">
-<pre><code>CommitInfo(commit_url='https://huggingface.co/datasets/davanstrien/ufo-ColPali/commit/c50c8e42cd01d2dde17ef64e66ea1b826c0ca4ec', commit_message='Upload dataset', commit_description='', oid='c50c8e42cd01d2dde17ef64e66ea1b826c0ca4ec', pr_url=None, repo_url=RepoUrl('https://huggingface.co/datasets/davanstrien/ufo-ColPali', endpoint='https://huggingface.co', repo_type='dataset', repo_id='davanstrien/ufo-ColPali'), pr_revision=None, pr_num=None)</code></pre>
-</div>
-</div>
-<p>Here is what the dataset looks like in the Hugging Face Hub. You’ll see there are actually more than a 100 examples since I did a larger generation of data since doing the first batch of a 100. You can be your own judge but my sense it that the queries are looking pretty good already.</p>
-<iframe src="https://huggingface.co/datasets/davanstrien/ufo-ColPali/embed/viewer/default/train" frameborder="0" width="100%" height="560px">
-</iframe>
-</section>
-<section id="conclusion-improvements-and-next-steps" class="level2">
-<h2 class="anchored" data-anchor-id="conclusion-improvements-and-next-steps">Conclusion, improvements and next steps</h2>
-<p>There are a few improvements that we could make to this process.</p>
-<section id="structured-generation" class="level3">
-<h3 class="anchored" data-anchor-id="structured-generation">Structured Generation</h3>
-<p>One of the first things I think would be worth exploring further is using structured generation to improve the quality of the generated queries. This would allow us to properly use the Pydantic models to constrain the outputs. The <code>Outlines</code> library has functionality for doing this with for <a href="https://dottxt-ai.github.io/outlines/reference/models/transformers_vision/">VLMs</a>. Once I am more satisified with the quality of the queries I’ll come back to this.</p>
-</section>
-<section id="more-diverse-queries" class="level3">
-<h3 class="anchored" data-anchor-id="more-diverse-queries">More diverse queries</h3>
-<p>I focused on generating a single type of query for each example in the UFO dataset. I think for a dataset of this size it would be worth taking a more diverse set of generations. Below you can see an apendix with a few options for these kinds of queries.</p>
-</section>
-<section id="next-steps" class="level3">
-<h3 class="anchored" data-anchor-id="next-steps">Next Steps</h3>
-<p>I am keen to test this approach with a few more domains and also work on the actual fine-tuning of ColPali models.</p>
-</section>
-</section>
-<section id="appendix-more-diverse-queries" class="level2">
-<h2 class="anchored" data-anchor-id="appendix-more-diverse-queries">Appendix more diverse queries</h2>
-<p>Here are a few more examples of prompts I am experimenting with.</p>
-<div id="cell-107" class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb73" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb73-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> pydantic <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> BaseModel</span>
-<span id="cb73-2"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> typing <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> List, Optional, Tuple, Union</span>
-<span id="cb73-3"></span>
-<span id="cb73-4"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Pydantic models for each prompt type</span></span>
-<span id="cb73-5"></span>
-<span id="cb73-6"></span>
-<span id="cb73-7"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">class</span> GeneralRetrievalQuery(BaseModel):</span>
-<span id="cb73-8">    broad_topical_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-9">    broad_topical_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-10">    specific_detail_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-11">    specific_detail_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-12">    visual_element_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-13">    visual_element_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-14"></span>
-<span id="cb73-15"></span>
-<span id="cb73-16"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">class</span> MultiDocumentComparisonQuery(BaseModel):</span>
-<span id="cb73-17">    comparison_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-18">    comparison_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-19">    corroboration_contradiction_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-20">    corroboration_contradiction_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-21"></span>
-<span id="cb73-22"></span>
-<span id="cb73-23"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">class</span> DomainSpecificQuery(BaseModel):</span>
-<span id="cb73-24">    identified_domain: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-25">    domain_specific_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-26">    domain_specific_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-27">    data_findings_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-28">    data_findings_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-29">    applications_implications_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-30">    applications_implications_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-31"></span>
-<span id="cb73-32"></span>
-<span id="cb73-33"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">class</span> VisualElementFocusQuery(BaseModel):</span>
-<span id="cb73-34">    similar_visual_element_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-35">    similar_visual_element_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-36">    text_visual_combination_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-37">    text_visual_combination_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-38">    visual_content_understanding_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-39">    visual_content_understanding_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-40"></span>
-<span id="cb73-41"></span>
-<span id="cb73-42"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">class</span> TemporalMetadataQuery(BaseModel):</span>
-<span id="cb73-43">    temporal_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-44">    temporal_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-45">    topic_metadata_combination_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-46">    topic_metadata_combination_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-47">    update_related_document_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-48">    update_related_document_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-49"></span>
-<span id="cb73-50"></span>
-<span id="cb73-51"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">class</span> DifficultyAmbiguityQuery(BaseModel):</span>
-<span id="cb73-52">    simple_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-53">    simple_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-54">    complex_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-55">    complex_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-56">    ambiguous_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-57">    ambiguous_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-58"></span>
-<span id="cb73-59"></span>
-<span id="cb73-60"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">class</span> MultilingualMultimodalQuery(BaseModel):</span>
-<span id="cb73-61">    multilingual_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-62">    multilingual_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-63">    multimodal_combination_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-64">    multimodal_combination_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-65">    text_visual_understanding_query: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-66">    text_visual_understanding_explanation: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span></span>
-<span id="cb73-67"></span>
-<span id="cb73-68"></span>
-<span id="cb73-69"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">def</span> get_retrieval_prompt(</span>
-<span id="cb73-70">    prompt_name: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span>,</span>
-<span id="cb73-71">) <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-&gt;</span> Tuple[</span>
-<span id="cb73-72">    <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span>,</span>
-<span id="cb73-73">    Union[</span>
-<span id="cb73-74">        GeneralRetrievalQuery,</span>
-<span id="cb73-75">        MultiDocumentComparisonQuery,</span>
-<span id="cb73-76">        DomainSpecificQuery,</span>
-<span id="cb73-77">        VisualElementFocusQuery,</span>
-<span id="cb73-78">        TemporalMetadataQuery,</span>
-<span id="cb73-79">        DifficultyAmbiguityQuery,</span>
-<span id="cb73-80">        MultilingualMultimodalQuery,</span>
-<span id="cb73-81">    ],</span>
-<span id="cb73-82">]:</span>
-<span id="cb73-83">    prompts <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> {</span>
-<span id="cb73-84">        <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"general"</span>: (</span>
-<span id="cb73-85">            <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"""You are an AI assistant specialized in document retrieval tasks. Given an image of a document page, your task is to generate retrieval queries that someone might use to find this document in a large corpus.</span></span>
-<span id="cb73-86"></span>
-<span id="cb73-87"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Please generate 3 different types of retrieval queries:</span></span>
-<span id="cb73-88"></span>
-<span id="cb73-89"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">1. A broad topical query: This should cover the main subject of the document.</span></span>
-<span id="cb73-90"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">2. A specific detail query: This should focus on a particular fact, figure, or point made in the document.</span></span>
-<span id="cb73-91"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">3. A visual element query: This should reference a chart, graph, image, or other visual component in the document, if present.</span></span>
-<span id="cb73-92"></span>
-<span id="cb73-93"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Important guidelines:</span></span>
-<span id="cb73-94"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">- Ensure the queries are relevant for retrieval tasks, not just describing the page content.</span></span>
-<span id="cb73-95"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">- Frame the queries as if someone is searching for this document, not asking questions about its content.</span></span>
-<span id="cb73-96"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">- Make the queries diverse and representative of different search strategies.</span></span>
-<span id="cb73-97"></span>
-<span id="cb73-98"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">For each query, also provide a brief explanation of why this query would be effective in retrieving this document.</span></span>
-<span id="cb73-99"></span>
-<span id="cb73-100"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Format your response as a JSON object with the following structure:</span></span>
-<span id="cb73-101"></span>
-<span id="cb73-102"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb73-103"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "broad_topical_query": "Your query here",</span></span>
-<span id="cb73-104"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "broad_topical_explanation": "Brief explanation",</span></span>
-<span id="cb73-105"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "specific_detail_query": "Your query here",</span></span>
-<span id="cb73-106"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "specific_detail_explanation": "Brief explanation",</span></span>
-<span id="cb73-107"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "visual_element_query": "Your query here",</span></span>
-<span id="cb73-108"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "visual_element_explanation": "Brief explanation"</span></span>
-<span id="cb73-109"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb73-110"></span>
-<span id="cb73-111"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">If there are no relevant visual elements, replace the third query with another specific detail query.</span></span>
-<span id="cb73-112"></span>
-<span id="cb73-113"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Here is the document image to analyze:</span></span>
-<span id="cb73-114"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">&lt;image&gt;</span></span>
-<span id="cb73-115"></span>
-<span id="cb73-116"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Generate the queries based on this image and provide the response in the specified JSON format."""</span>,</span>
-<span id="cb73-117">            GeneralRetrievalQuery,</span>
-<span id="cb73-118">        ),</span>
-<span id="cb73-119">        <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"comparison"</span>: (</span>
-<span id="cb73-120">            <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"""Imagine this document page is part of a larger corpus. Your task is to generate retrieval queries that would require comparing this document with others in the corpus.</span></span>
-<span id="cb73-121"></span>
-<span id="cb73-122"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Please generate 2 retrieval queries:</span></span>
-<span id="cb73-123"></span>
-<span id="cb73-124"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">1. A query comparing this document's topic with a related subject</span></span>
-<span id="cb73-125"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">2. A query seeking documents that contradict or support the main point of this page</span></span>
-<span id="cb73-126"></span>
-<span id="cb73-127"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">For each query, provide a brief explanation of how it encourages document comparison and why it would be effective for retrieval.</span></span>
-<span id="cb73-128"></span>
-<span id="cb73-129"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Format your response as a JSON object with the following structure:</span></span>
-<span id="cb73-130"></span>
-<span id="cb73-131"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb73-132"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "comparison_query": "Your query here",</span></span>
-<span id="cb73-133"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "comparison_explanation": "Brief explanation",</span></span>
-<span id="cb73-134"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "corroboration_contradiction_query": "Your query here",</span></span>
-<span id="cb73-135"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "corroboration_contradiction_explanation": "Brief explanation"</span></span>
-<span id="cb73-136"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb73-137"></span>
-<span id="cb73-138"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Here is the document image to analyze:</span></span>
-<span id="cb73-139"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">&lt;image&gt;</span></span>
-<span id="cb73-140"></span>
-<span id="cb73-141"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Generate the queries based on this image and provide the response in the specified JSON format."""</span>,</span>
-<span id="cb73-142">            MultiDocumentComparisonQuery,</span>
-<span id="cb73-143">        ),</span>
-<span id="cb73-144">        <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"domain"</span>: (</span>
-<span id="cb73-145">            <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"""Your task is to create retrieval queries that a professional in the document's domain might use to find this document in a large corpus.</span></span>
-<span id="cb73-146"></span>
-<span id="cb73-147"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">First, identify the domain of the document (e.g., scientific, financial, legal, medical, technical).</span></span>
-<span id="cb73-148"></span>
-<span id="cb73-149"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Then, generate 3 retrieval queries:</span></span>
-<span id="cb73-150"></span>
-<span id="cb73-151"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">1. A query using domain-specific terminology</span></span>
-<span id="cb73-152"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">2. A query seeking specific data or findings presented in the document</span></span>
-<span id="cb73-153"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">3. A query related to the document's potential applications or implications</span></span>
-<span id="cb73-154"></span>
-<span id="cb73-155"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">For each query, provide a brief explanation of its relevance to the domain and why it would be effective for retrieval.</span></span>
-<span id="cb73-156"></span>
-<span id="cb73-157"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Format your response as a JSON object with the following structure:</span></span>
-<span id="cb73-158"></span>
-<span id="cb73-159"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb73-160"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "identified_domain": "Domain name",</span></span>
-<span id="cb73-161"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "domain_specific_query": "Your query here",</span></span>
-<span id="cb73-162"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "domain_specific_explanation": "Brief explanation",</span></span>
-<span id="cb73-163"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "data_findings_query": "Your query here",</span></span>
-<span id="cb73-164"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "data_findings_explanation": "Brief explanation",</span></span>
-<span id="cb73-165"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "applications_implications_query": "Your query here",</span></span>
-<span id="cb73-166"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "applications_implications_explanation": "Brief explanation"</span></span>
-<span id="cb73-167"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb73-168"></span>
-<span id="cb73-169"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Here is the document image to analyze:</span></span>
-<span id="cb73-170"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">&lt;image&gt;</span></span>
-<span id="cb73-171"></span>
-<span id="cb73-172"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Generate the queries based on this image and provide the response in the specified JSON format."""</span>,</span>
-<span id="cb73-173">            DomainSpecificQuery,</span>
-<span id="cb73-174">        ),</span>
-<span id="cb73-175">        <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"visual"</span>: (</span>
-<span id="cb73-176">            <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"""Your task is to generate retrieval queries focusing on the visual elements in this document page (charts, tables, images, diagrams).</span></span>
-<span id="cb73-177"></span>
-<span id="cb73-178"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Please generate 3 retrieval queries:</span></span>
-<span id="cb73-179"></span>
-<span id="cb73-180"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">1. A query specifically asking for documents with similar visual elements</span></span>
-<span id="cb73-181"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">2. A query combining textual and visual information</span></span>
-<span id="cb73-182"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">3. A query that would require understanding the content of the visual element to retrieve this document</span></span>
-<span id="cb73-183"></span>
-<span id="cb73-184"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">For each query, provide a brief explanation of how it incorporates visual elements and why it would be effective for retrieval.</span></span>
-<span id="cb73-185"></span>
-<span id="cb73-186"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Format your response as a JSON object with the following structure:</span></span>
-<span id="cb73-187"></span>
-<span id="cb73-188"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb73-189"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "similar_visual_element_query": "Your query here",</span></span>
-<span id="cb73-190"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "similar_visual_element_explanation": "Brief explanation",</span></span>
-<span id="cb73-191"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "text_visual_combination_query": "Your query here",</span></span>
-<span id="cb73-192"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "text_visual_combination_explanation": "Brief explanation",</span></span>
-<span id="cb73-193"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "visual_content_understanding_query": "Your query here",</span></span>
-<span id="cb73-194"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "visual_content_understanding_explanation": "Brief explanation"</span></span>
-<span id="cb73-195"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb73-196"></span>
-<span id="cb73-197"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">If the document lacks significant visual elements, explain this and generate alternative queries focusing on the document's structure or layout.</span></span>
-<span id="cb73-198"></span>
-<span id="cb73-199"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Here is the document image to analyze:</span></span>
-<span id="cb73-200"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">&lt;image&gt;</span></span>
-<span id="cb73-201"></span>
-<span id="cb73-202"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Generate the queries based on this image and provide the response in the specified JSON format."""</span>,</span>
-<span id="cb73-203">            VisualElementFocusQuery,</span>
-<span id="cb73-204">        ),</span>
-<span id="cb73-205">        <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"temporal"</span>: (</span>
-<span id="cb73-206">            <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"""Assuming this document is part of a large, diverse corpus, your task is to generate retrieval queries that incorporate metadata or temporal aspects.</span></span>
-<span id="cb73-207"></span>
-<span id="cb73-208"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Please generate 3 retrieval queries:</span></span>
-<span id="cb73-209"></span>
-<span id="cb73-210"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">1. A query specifying a likely time frame for this document</span></span>
-<span id="cb73-211"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">2. A query combining topical information with a metadata element (e.g., author, publication type)</span></span>
-<span id="cb73-212"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">3. A query seeking updated or related documents on the same topic</span></span>
-<span id="cb73-213"></span>
-<span id="cb73-214"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">For each query, provide a brief explanation of how it uses temporal or metadata information and why it would be effective for retrieval.</span></span>
-<span id="cb73-215"></span>
-<span id="cb73-216"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Format your response as a JSON object with the following structure:</span></span>
-<span id="cb73-217"></span>
-<span id="cb73-218"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb73-219"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "temporal_query": "Your query here",</span></span>
-<span id="cb73-220"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "temporal_explanation": "Brief explanation",</span></span>
-<span id="cb73-221"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "topic_metadata_combination_query": "Your query here",</span></span>
-<span id="cb73-222"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "topic_metadata_combination_explanation": "Brief explanation",</span></span>
-<span id="cb73-223"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "update_related_document_query": "Your query here",</span></span>
-<span id="cb73-224"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "update_related_document_explanation": "Brief explanation"</span></span>
-<span id="cb73-225"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb73-226"></span>
-<span id="cb73-227"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Here is the document image to analyze:</span></span>
-<span id="cb73-228"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">&lt;image&gt;</span></span>
-<span id="cb73-229"></span>
-<span id="cb73-230"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Generate the queries based on this image and provide the response in the specified JSON format."""</span>,</span>
-<span id="cb73-231">            TemporalMetadataQuery,</span>
-<span id="cb73-232">        ),</span>
-<span id="cb73-233">        <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"difficulty"</span>: (</span>
-<span id="cb73-234">            <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"""Your task is to create retrieval queries for this document at different levels of complexity and ambiguity.</span></span>
-<span id="cb73-235"></span>
-<span id="cb73-236"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Please generate 3 retrieval queries:</span></span>
-<span id="cb73-237"></span>
-<span id="cb73-238"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">1. A simple, straightforward query</span></span>
-<span id="cb73-239"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">2. A complex query requiring understanding of multiple aspects of the document</span></span>
-<span id="cb73-240"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">3. An ambiguous query that could retrieve this document among others</span></span>
-<span id="cb73-241"></span>
-<span id="cb73-242"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">For each query, provide a brief explanation of its complexity level or ambiguity and why it would be effective or challenging for retrieval.</span></span>
-<span id="cb73-243"></span>
-<span id="cb73-244"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Format your response as a JSON object with the following structure:</span></span>
-<span id="cb73-245"></span>
-<span id="cb73-246"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb73-247"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "simple_query": "Your query here",</span></span>
-<span id="cb73-248"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "simple_explanation": "Brief explanation",</span></span>
-<span id="cb73-249"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "complex_query": "Your query here",</span></span>
-<span id="cb73-250"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "complex_explanation": "Brief explanation",</span></span>
-<span id="cb73-251"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "ambiguous_query": "Your query here",</span></span>
-<span id="cb73-252"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "ambiguous_explanation": "Brief explanation"</span></span>
-<span id="cb73-253"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb73-254"></span>
-<span id="cb73-255"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Here is the document image to analyze:</span></span>
-<span id="cb73-256"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">&lt;image&gt;</span></span>
-<span id="cb73-257"></span>
-<span id="cb73-258"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Generate the queries based on this image and provide the response in the specified JSON format."""</span>,</span>
-<span id="cb73-259">            DifficultyAmbiguityQuery,</span>
-<span id="cb73-260">        ),</span>
-<span id="cb73-261">        <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"multilingual"</span>: (</span>
-<span id="cb73-262">            <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"""Your task is to generate retrieval queries considering potential multilingual and multi-modal aspects of the document.</span></span>
-<span id="cb73-263"></span>
-<span id="cb73-264"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Please generate 3 retrieval queries:</span></span>
-<span id="cb73-265"></span>
-<span id="cb73-266"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">1. A query in a different language (if applicable) that would retrieve this document</span></span>
-<span id="cb73-267"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">2. A query combining textual and non-textual elements</span></span>
-<span id="cb73-268"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">3. A query that requires understanding both the text and visual elements to retrieve this document accurately</span></span>
-<span id="cb73-269"></span>
-<span id="cb73-270"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">For each query, provide a brief explanation of its multilingual or multi-modal nature and why it would be effective for retrieval.</span></span>
-<span id="cb73-271"></span>
-<span id="cb73-272"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Format your response as a JSON object with the following structure:</span></span>
-<span id="cb73-273"></span>
-<span id="cb73-274"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb73-275"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "multilingual_query": "Your query here",</span></span>
-<span id="cb73-276"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "multilingual_explanation": "Brief explanation",</span></span>
-<span id="cb73-277"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "multimodal_combination_query": "Your query here",</span></span>
-<span id="cb73-278"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "multimodal_combination_explanation": "Brief explanation",</span></span>
-<span id="cb73-279"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "text_visual_understanding_query": "Your query here",</span></span>
-<span id="cb73-280"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">  "text_visual_understanding_explanation": "Brief explanation"</span></span>
-<span id="cb73-281"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb73-282"></span>
-<span id="cb73-283"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">If the document is not suitable for multilingual queries, explain why and provide an alternative query.</span></span>
-<span id="cb73-284"></span>
-<span id="cb73-285"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Here is the document image to analyze:</span></span>
-<span id="cb73-286"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">&lt;image&gt;</span></span>
-<span id="cb73-287"></span>
-<span id="cb73-288"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Generate the queries based on this image and provide the response in the specified JSON format."""</span>,</span>
-<span id="cb73-289">            MultilingualMultimodalQuery,</span>
-<span id="cb73-290">        ),</span>
-<span id="cb73-291">    }</span>
-<span id="cb73-292"></span>
-<span id="cb73-293">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">if</span> prompt_name <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">not</span> <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">in</span> prompts:</span>
-<span id="cb73-294">        <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">raise</span> <span class="pp" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">ValueError</span>(</span>
-<span id="cb73-295">            <span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">f"Invalid prompt name. Choose from: </span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">', '</span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>join(prompts.keys())<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"</span></span>
-<span id="cb73-296">        )</span>
-<span id="cb73-297"></span>
-<span id="cb73-298">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">return</span> prompts[prompt_name]</span>
-<span id="cb73-299"></span>
-<span id="cb73-300"></span>
-<span id="cb73-301"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Example usage:</span></span>
-<span id="cb73-302">prompt_name <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"general"</span>  <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># You can change this to any of the available prompt names</span></span>
-<span id="cb73-303">prompt, pydantic_model <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> get_retrieval_prompt(prompt_name)</span>
-<span id="cb73-304"><span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">f"Prompt for '</span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span>prompt_name<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">':"</span>)</span>
-<span id="cb73-305"><span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">print</span>(prompt)</span>
-<span id="cb73-306"><span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">f"</span><span class="ch" style="color: #20794D;
-background-color: null;
-font-style: inherit;">\n</span><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">Pydantic model for this prompt: </span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span>pydantic_model<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"</span>)</span></code></pre></div></div>
-</div>
-
-
-</section>
-
- ]]></description>
-  <guid>https://danielvanstrien.xyz/posts/post-with-code/colpali/2024-09-23-generate_colpali_dataset.html</guid>
-  <pubDate>Mon, 23 Sep 2024 00:00:00 GMT</pubDate>
-  <media:content url="https://danielvanstrien.xyz/posts/post-with-code/colpali/cJkPlaOVIju5yR7TaO0fD.png" medium="image" type="image/png" height="216" width="144"/>
 </item>
 </channel>
 </rss>

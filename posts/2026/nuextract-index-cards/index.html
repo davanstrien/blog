@@ -1,2 +1,942 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"></html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Daniel van Strien">
+<meta name="dcterms.date" content="2026-06-24">
+<meta name="description" content="Can a small, open model, fine-tuned cheaply, match a bigger one on a real extraction task and stay general? A test on archival index cards across several collections, for about $45.">
+
+<title>Is fine-tuning small models worth it? Structured extraction from index cards – Daniel van Strien</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../icons/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-bba5ebae505b5c03f3f0d8040a416a6b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script defer="" src="https://cloud.umami.is/script.js" data-website-id="85cb27d6-dbf9-43d7-97d0-be4e6724de7a"></script>
+<meta name="msvalidate.01" content="4246174F24A3CB7C9CBEAA94E1FF8E84">
+<meta name="google-site-verification" content="C7WoFOEuA4Msbvvk-kgDd_C6VGphZTp3awy_acXjZYU">
+
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Daniel van Strien</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://danielvanstrien.xyz/ai-patterns-for-glam/"> 
+<span class="menu-text">AI Patterns for GLAM</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../slides.html"> 
+<span class="menu-text">Slides</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../pages/memes/index.qmd"> 
+<span class="menu-text">Memes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text">GitHub</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../index.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Is fine-tuning small models worth it? Structured extraction from index cards</h1>
+<p class="subtitle lead">Fine-tuning one open 4B model to read several archival card collections, each with its own schema — and still follow schemas it has never seen.</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">ocr</div>
+    <div class="quarto-category">glam</div>
+    <div class="quarto-category">structured-extraction</div>
+    <div class="quarto-category">vlm</div>
+    <div class="quarto-category">nuextract</div>
+    <div class="quarto-category">index-cards</div>
+    <div class="quarto-category">fine-tuning</div>
+    <div class="quarto-category">huggingface</div>
+    <div class="quarto-category">jobs</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Can a small, open model, fine-tuned cheaply, match a bigger one on a real extraction task and stay general? A test on archival index cards across several collections, for about $45.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Daniel van Strien </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 24, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<blockquote class="blockquote">
+<p><strong>tl;dr</strong>: You can fine tune a small specialised information extraction model to work even better with a specific domain (archival index cards) and still have it generalise to unseen schemas. The model is cheap to train, and the bottleneck is labelled data, not model size. A shared corpus of labelled cards across institutions could unlock a strong, open 4B model that any library can point at its card drawers.</p>
+</blockquote>
+<section id="is-it-worth-fine-tuning-small-models-still" class="level2">
+<h2 class="anchored" data-anchor-id="is-it-worth-fine-tuning-small-models-still">Is it worth fine tuning small models still?</h2>
+<p>In 2026 the default answer to many tasks is to reach for a big frontier model. There are many who say “fine tuning is dead”. On the other hand, there has been growing interest in small models that can be deployed locally. <a href="https://huggingface.co/blog/gemma4">Gemma 4</a>, for example, has been very popular for providing models that can be run on device across accessible hardware. Whilst smaller models are getting more and more capable I think there is an area where they are still massively under explored, what I am calling “task-generalist” models (better name welcome!). These are models that are small and work on a specific targeted task i.e.&nbsp;information extraction from document images, but still general purpose i.e.&nbsp;aren’t fine tuned to a specific set of labels.</p>
+<p>This class of model is small enough to deploy locally and scale to very large collections but is general purpose enough that they may work out of the box for many tasks and domains. They also however offer the scope for fine tuning.</p>
+<p>And because the base model already understands the <em>task</em> (turning a document image into JSON), fine-tuning it for your own material means adapting it, not training from scratch — which keeps it cheap. So the question isn’t whether to reach for a frontier model. It’s whether you can take one of these small, open, task-generalist models, fine-tune it on a few real collections, and get something that reads your material better without turning it into a narrow specialist. And whether it’s cheap enough that a small team, or one person with an agent, can do it. This post tests that on a shared but unglamorous problem: archival index cards.</p>
+</section>
+<section id="ocr-or-structured-extraction" class="level2">
+<h2 class="anchored" data-anchor-id="ocr-or-structured-extraction">OCR or structured extraction?</h2>
+<p>VLM based OCR models have got much better in the past year or so but there are many cases where you actually want some structured data from a document stored as an image (i.e.&nbsp;non machine readable). This use case is relevant in many domains. In the GLAM (Galleries, Libraries, Archives, Museums) sector, many collections are stored as images of index cards. Many of these are still not in other systems and the only source of this information is the card itself. The same is true in other domains, for example in natural history collections where specimen cards are still used to store information about a specimen. In these cases, you want to extract structured data from the card image, not just the text.</p>
+</section>
+<section id="nuextract-3" class="level2">
+<h2 class="anchored" data-anchor-id="nuextract-3">NuExtract-3</h2>
+<p><a href="https://huggingface.co/numind/NuExtract3">NuExtract-3</a> takes an <strong>image</strong> plus a <strong>schema</strong> (the list of fields you want) and hands back <strong>JSON</strong> — no bounding boxes, no layout rules, no separate OCR step. Here is one card and the record that comes back:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="silverplus/pilot/south_000.jpg" class="img-fluid figure-img" style="width:60.0%"></p>
+<figcaption>A Southborough death card (public domain)</figcaption>
+</figure>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"name"</span><span class="fu">:</span> <span class="st">"Abercrombie, John"</span><span class="fu">,</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"date_of_death"</span><span class="fu">:</span> <span class="st">"June 19, 1927"</span><span class="fu">,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"cause_of_death"</span><span class="fu">:</span> <span class="st">"Coronary sclerosis"</span><span class="fu">,</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"age"</span><span class="fu">:</span> <span class="st">"70 yrs. - 18 days"</span><span class="fu">,</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"occupation"</span><span class="fu">:</span> <span class="st">"Baker"</span><span class="fu">,</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"birthplace"</span><span class="fu">:</span> <span class="st">"Glasgow, Scotland"</span><span class="fu">,</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"place_of_burial"</span><span class="fu">:</span> <span class="st">"Everett, Mass."</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Everything below is about making that work better on a specific type of data (index cards) — and keeping it good at working on collections it has never seen.</p>
+<p>A while back I showed that NuExtract-3 could turn <a href="../../../posts/2026/structured-records-from-cards/index.html">catalogue-card images into structured JSON</a> zero-shot. In that post I suggested the model is a very strong zero-shot model for a <em>first pass</em> (and may be good enough in many cases) but the real win would be <strong>a small model fine-tuned for a specific collection</strong>.</p>
+<p>This post picks up on this topic. The question I wanted to answer: <strong>can one cheap, open 4B model be fine-tuned to read <em>many</em> different card collections very well — each with its own schema — without becoming a brittle specialist?</strong> And if so, does it stay useful on collections it was never trained on?</p>
+</section>
+<section id="the-collections" class="level2">
+<h2 class="anchored" data-anchor-id="the-collections">The collections</h2>
+<p>I trained and evaluated on three real archival collections, deliberately chosen to be <em>different</em> from each other — different institutions, languages, layouts, and record types:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>collection</th>
+<th>what it is</th>
+<th>language</th>
+<th>ground truth</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="https://huggingface.co/datasets/Teklia/DAI-CReTDHI-IndexCards-KIE">Teklia DAI-CReTDHI</a></td>
+<td>vital-records index cards, Archives of Tours</td>
+<td>French, handwritten</td>
+<td>expert (MIT)</td>
+</tr>
+<tr class="even">
+<td>NLS Advocates Library</td>
+<td>manuscript-catalogue cards</td>
+<td>English, typed/handwritten</td>
+<td>cataloguer-reviewed</td>
+</tr>
+<tr class="odd">
+<td><a href="https://huggingface.co/datasets/biglam/index-cards-southborough-vital-records">Southborough vital records</a></td>
+<td>town-clerk death cards (MA)</td>
+<td>English, handwritten</td>
+<td>silver (model-labelled)</td>
+</tr>
+</tbody>
+</table>
+<p>Plus a fourth, the <a href="https://huggingface.co/datasets/biglam/rubenstein-manuscript-catalog">Duke Rubenstein manuscript catalogue</a>, held out entirely i.e.&nbsp;<em>never trained on</em> to test whether the model follows a schema it wasn’t trained on before (and if we broke the zero shot generality of the base model).</p>
+<p>Three of the four, side by side — different institutions, languages, and layouts:</p>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="teklia_sample.jpg" class="img-fluid figure-img"></p>
+<figcaption>Teklia — French, handwritten (Tours)</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="silverplus/pilot/south_000.jpg" class="img-fluid figure-img"></p>
+<figcaption>Southborough — English, handwritten (MA)</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="rubenstein_sample.jpg" class="img-fluid figure-img"></p>
+<figcaption>Rubenstein — English manuscript catalogue (Duke)</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>Each collection wants a <em>different shape</em> of record. A death card has <code>name / date_of_death / cause / age / birthplace</code>; a manuscript card has <code>heading / heading_type / entries[ms_no, folios, ...]</code>. The model is told the schema at inference and fills it in — the same template mechanism NuExtract-3 ships with, just made better at <em>these</em> materials.</p>
+</section>
+<section id="what-domain-adaptation-buys-you" class="level2">
+<h2 class="anchored" data-anchor-id="what-domain-adaptation-buys-you">What domain adaptation buys you</h2>
+<p>Start with the hardest collection — Teklia’s French handwriting. Zero-shot NuExtract-3 scores <strong>0.24</strong> field-F1.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> After LoRA fine-tuning on ~430 cards (about 10 minutes, ~$2):</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Teklia (French handwritten deaths)</th>
+<th>field-F1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>NuExtract-3 zero-shot</td>
+<td>0.24</td>
+</tr>
+<tr class="even">
+<td><strong>+ fine-tuning</strong></td>
+<td><strong>0.89</strong></td>
+</tr>
+</tbody>
+</table>
+<p>That jump — <strong>0.24 → 0.89</strong> is the pitch for small fine-tuned models. The model learns the routing, the role structure, and (easy to miss) the collection’s <em>surface conventions</em>: how it writes dates, month names, and abbreviations. On the French cards that means the period’s own shorthand — old forms like <code>Xbre</code> for <em>décembre</em>, or a surname written first in capitals — exactly the kind of detail a zero-shot model has to guess at and a fine-tuned one simply learns. Cheaply, on one consistent card series, you go from “interesting demo” to “genuinely usable first pass.”</p>
+</section>
+<section id="one-model-many-schemas-for-free" class="level2">
+<h2 class="anchored" data-anchor-id="one-model-many-schemas-for-free">One model, many schemas (for free?)</h2>
+<p>The interesting question is whether you can fold <em>several</em> collections into <strong>one</strong> model without it forgetting the others. It seems you can. Training a single model on all three collections at once:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 9%">
+<col style="width: 17%">
+<col style="width: 25%">
+<col style="width: 22%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>collection</th>
+<th>metric</th>
+<th>single-collection</th>
+<th><strong>one generalist model</strong></th>
+<th>external reference</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Teklia (FR deaths)</td>
+<td>field-F1</td>
+<td>0.889</td>
+<td><strong>0.878</strong></td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>NLS (manuscripts)</td>
+<td>retrieval</td>
+<td>—</td>
+<td><strong>0.726</strong></td>
+<td>Qwen3-VL-8B 0.760</td>
+</tr>
+<tr class="odd">
+<td>NLS (manuscripts)</td>
+<td>ms_no F1</td>
+<td>—</td>
+<td><strong>0.952</strong></td>
+<td>Qwen3-VL-8B <strong>0.886</strong></td>
+</tr>
+<tr class="even">
+<td>Southborough (EN deaths)</td>
+<td>macro-F1</td>
+<td>—</td>
+<td><strong>0.750</strong>¹</td>
+<td>new collection</td>
+</tr>
+</tbody>
+</table>
+<p>¹ The Southborough test set is <strong>agent-labelled, not human-verified</strong> (a Claude agent read each card carefully) and small (<strong>12 cards</strong>) — so 0.750 is <em>relative to those labels</em>, not gold ground truth. Teklia and NLS numbers <em>are</em> against human-grade ground truth.</p>
+<p>Two things stand out. First, <strong>adding collections is nearly free</strong>: Teklia held at 0.878 (vs 0.889 trained alone). Second — and this is the one that surprised me — on the <strong>manuscript-number field</strong>, the most important field for actually <em>finding</em> a manuscript, the <strong>4B model scores 0.952</strong>, beating the <strong>Qwen3-VL-8B (0.886)</strong> whose outputs I used as part of its training labels. The student beats the teacher. This is a known effect in distillation (a smaller model trained on a stronger model’s outputs can exceed it through format-regularisation), and a good reason to prefer the smaller model.</p>
+<p>So: one open 4B model reads <strong>French and English handwritten death records and English manuscript cards</strong>, each under its own schema, on a par with an 8B at half the size — and from here the bottleneck is <strong>labelled data, not model size</strong>, which is exactly the kind of thing institutions could pool. (More on that below.)</p>
+</section>
+<section id="does-it-still-follow-schemas-its-never-seen" class="level2">
+<h2 class="anchored" data-anchor-id="does-it-still-follow-schemas-its-never-seen">Does it still follow schemas it’s never seen?</h2>
+<p>This is the property that makes it a <em>generalist</em> and not three specialists in a trenchcoat. If a new library hands it a new schema, does it work? I tested on the held-out Rubenstein catalogue — a collection and schema the model <strong>never trained on</strong>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 47%">
+<col style="width: 15%">
+<col style="width: 20%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>on the UNSEEN Rubenstein schema (30 cards)</th>
+<th>parseable JSON</th>
+<th>schema-conformance</th>
+<th>field coverage</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>base NuExtract-3</td>
+<td>0.733</td>
+<td>1.000</td>
+<td>0.632</td>
+</tr>
+<tr class="even">
+<td><strong>fine-tuned generalist</strong></td>
+<td><strong>1.000</strong></td>
+<td>1.000</td>
+<td><strong>0.667</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The fine-tuned model produces <strong>100% parseable, fully schema-conforming JSON on a schema it has never seen — more reliably than the base model</strong>.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> At least on this collection, fine-tuning didn’t narrow its schema-following; if anything it hardened it.</p>
+<p>This was the result I was most worried about going in. NuExtract-3’s whole value is that it follows <em>arbitrary</em> schemas; fine-tune it hard on three collections and you might expect a 3-schema specialist that’s forgotten the rest. That didn’t happen here — but I’d be careful not to over-read it: this is <strong>one</strong> held-out collection, and still index cards. So the honest claim is a narrow one — <em>for index-card-style schemas, at least</em>, fine-tuning didn’t cost the generality I was worried about, and may even have helped. LoRA (touching 0.7% of parameters) plus the diversity of several collections probably acts as its own regulariser. The one casualty was <em>reasoning mode</em>: the SFT data carried no reasoning traces, so the model stopped producing them. Keeping it would mean labelling reasoning traces for the training cards, and for a first-pass extractor that extra effort probably isn’t worth it.</p>
+<p>I want to be honest about what didn’t work, because the failures are quite instructive.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Why GRPO doesn’t help here
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The plan originally included reinforcement learning (GRPO) with a typed reward, because that’s how NuExtract itself was trained (SFT then RL). For me it didn’t work, and I tried hard to make it. I am not confident I couldn’t get it to work but in the end the effort is better spent on more and better data (usual story!).</p>
+<p>A practical note for anyone outside an ML team: GRPO is finicky — the temperature window, the reward shaping, and the truncation failures all have to line up, and it’s easy to spend real compute on fixing things when SFT is far more forgiving and more intuitive. If you’re adapting a model to your own cards, start with SFT and reach for RL only with a specific reason and the budget to debug it.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="how-it-was-built-and-what-it-cost" class="level2">
+<h2 class="anchored" data-anchor-id="how-it-was-built-and-what-it-cost">How it was built (and what it cost)</h2>
+<p>The recipe is deliberately boring and cheap which makes it something that I think non ML people (especially the help of agents) can reasonaby starting working on.</p>
+<ol type="1">
+<li><strong>Silver labels, then SFT.</strong> For collections without ground truth, a stronger model (Qwen3-VL-8B) drafts labels <em>from the card image</em> (the OCR on these scans is unusable), validated against the one collection where I <em>do</em> have expert truth. Where careful labels were needed, a Claude agent labelled and flagged its own uncertainty — the same draft-then-review loop that made the original ground truth. The agent labelling its own training data is, increasingly, just how this works.</li>
+<li><strong>LoRA SFT</strong> on <code>numind/NuExtract3</code> — rank 16, a few hundred steps, minutes per run.</li>
+<li><strong>Everything on <a href="https://huggingface.co/docs/hub/jobs">Hugging Face Jobs</a></strong> — no local GPU. Detached jobs, a private bucket for the rollout/eval artifacts, Trackio for the curves. Total spend across <em>every</em> experiment in this post — baselines, three trained models, four GRPO attempts, a dozen evals, the forgetting probes — was about <strong>$45</strong>.</li>
+</ol>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Want to try this on your own cards?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Step by step:</p>
+<ol type="1">
+<li><strong>Pin the schema first.</strong> Decide the fields you actually want before touching a model.</li>
+<li><strong>Test NuExtract-3 zero-shot</strong> on a handful of cards. If it’s already roughly right, you are most of the way there.</li>
+<li><strong>Build a small SFT set from the model’s own outputs.</strong> Run it over your cards, accept or reject each record, and train only on the ones you accepted. No separate labelling tool, no hand-cataloguing.</li>
+<li><strong>Bring in a stronger model only for the fields zero-shot can’t manage</strong>, to draft silver labels you still spot-check.</li>
+<li><strong>Skip GRPO and DPO.</strong> They are more complex, easier to get wrong, and (as above) didn’t help here. SFT is the cheap path.</li>
+</ol>
+<p>Your agent can help with many of these steps!</p>
+</div>
+</div>
+</section>
+<section id="the-honest-caveats" class="level2">
+<h2 class="anchored" data-anchor-id="the-honest-caveats">The honest caveats</h2>
+<ul>
+<li>Two of the three training collections use <strong>silver labels</strong>, which caps quality on free-text fields (names, places) and can bake in the labeller’s conventions.</li>
+<li><strong>Handwriting</strong> is still where it struggles: place names and long free-text fields are the weakest.</li>
+<li>Test sets are <strong>small</strong> (12–103 cards) — read single numbers as directional.</li>
+<li>It’s a <strong>first-pass extractor with human review</strong>, not unattended ground truth.</li>
+</ul>
+</section>
+<section id="why-this-points-somewhere-bigger" class="level2">
+<h2 class="anchored" data-anchor-id="why-this-points-somewhere-bigger">Why this points somewhere bigger</h2>
+<p>Two things matter more than any single number here. The first is almost boring: fine-tuning a small model for this is practical. A few hundred labelled cards, about ten minutes, a couple of dollars, no ML team. The modelling isn’t the hard part. The second follows from it: if training is this cheap and the model already generalises, then what limits how good these models get is labelled data, not model size.</p>
+<p>It’s worth being clear about what that labelling actually involves, because “more labelled data” sounds heavier than it is. In practice it isn’t hand-keying thousands of cards. It’s closer to this: define a sensible schema for a card type, run NuExtract-3 over a sample, and do a quick yes/no pass on what comes back, keeping the records that are right. Correcting the near-misses helps, but even training only on the ones you accepted moves the model. That’s review work, not transcription from scratch.</p>
+<p>The result that matters most for libraries and archives: <strong>adding a collection made the model better at collections it had never seen.</strong> This suggests that a shared effort to label cards across institutions can be mutually beneficial. It means each institution that contributes a labelled card collection doesn’t just get a model for <em>their</em> cards — they make the shared model better at <em>everyone’s</em> cards, including ones nobody has labelled yet.</p>
+<p>Card catalogues are a problem almost every GLAM institution has, in slightly different shapes. The evidence here — cheap per-collection adaptation, positive cross-collection transfer, a 4B model that holds its own against an 8B, and a labelling loop that doesn’t require hand-cataloguing everything — suggests a <strong>collaborative index-card ground-truth corpus could unlock one strong, open, 4B model that any library can point at its card drawers</strong>, with no ML team required.</p>
+<p>And it isn’t only libraries. Index cards are a shared format across the sciences too: herbaria, natural-history collections, and research archives hold millions of specimen and observation cards carrying the same kind of structured data — taxon, collector, locality, date. Below are a few herbarium cards from <a href="https://huggingface.co/datasets/biglam/index-cards-harvard-botany-metropolitan-flora">Harvard’s Metropolitan Flora</a>, an entirely different domain the model was never trained on, in exactly the same drawer-of-cards shape:</p>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<p><img src="silverplus/pilot/botany_000.jpg" class="img-fluid"></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<p><img src="silverplus/pilot/botany_001.jpg" class="img-fluid"></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<p><img src="silverplus/pilot/botany_002.jpg" class="img-fluid"></p>
+</div>
+</div>
+</div>
+<p>If you have a collection of card images — catalogue cards, accession registers, vital records, specimen cards — I’d love to fold it in. That’s the next step: not a bigger model, a broader corpus. The easiest way to reach me is to open a discussion on the model’s <a href="https://huggingface.co/small-models-for-glam/index-card-extractor-4b-v0.1/discussions">Community tab</a>, or find me on Hugging Face as <a href="https://huggingface.co/davanstrien"><span class="citation" data-cites="davanstrien">@davanstrien</span></a>.</p>
+<p>Thanks to the <a href="https://numind.ai">NuMind</a> team for NuExtract-3, and for the pointers and feedback along the way.</p>
+<p><em>Base model: <a href="https://huggingface.co/numind/NuExtract3">numind/NuExtract3</a> (Apache-2.0). Data: Teklia DAI-CReTDHI (MIT), NLS Advocates Library (manuscript cards; data release pending), Southborough vital records and Rubenstein manuscript catalogue (public domain / CC0, via <a href="https://huggingface.co/biglam">biglam</a>). The <a href="https://github.com/davanstrien/davanstrien.github.io/tree/main/posts/2026/nuextract-index-cards">full pipeline — training, scoring, schemas, and eval results</a> is in this post’s GitHub folder.</em></p>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p><em>Field-F1</em> scores extraction the way a cataloguer might: for each card it matches the predicted <code>(field, value)</code> pairs against the reference by exact string match — per person on the card — and takes the F1 (harmonic mean of precision and recall) across fields. Free-text fields like names and places are the hardest, because they demand the exact string, not just the right idea. (Implementation: <code>kie_score.py</code> in the repo.)<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>“Parseable JSON” here means the output loads as a non-empty JSON object (<code>parse_rate</code> in the probe). Both models are run in <em>generic</em> prompt mode — the schema handed over as plain instruction text rather than NuExtract-3’s native template — so base and fine-tuned are compared on equal footing on a schema neither was set up for. In that mode the base model returned unparseable output on 8 of 30 unseen cards; the fine-tuned model on none. With n=30, read this as directional.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/danielvanstrien\.xyz");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
