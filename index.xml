@@ -110,6 +110,7 @@ font-style: inherit;">"Everett, Mass."</span></span>
 background-color: null;
 font-style: inherit;">}</span></span></code></pre></div></div>
 <p>Everything below is about making that work better on a specific type of data (index cards) — and keeping it good at working on collections it has never seen.</p>
+<p><strong><a href="https://huggingface.co/spaces/small-models-for-glam/index-card-extractor">→ Live demo: index cards → structured records</a></strong></p>
 <p>A while back I showed that NuExtract-3 could turn <a href="../../../posts/2026/structured-records-from-cards/index.html">catalogue-card images into structured JSON</a> zero-shot. In that post I suggested the model is a very strong zero-shot model for a <em>first pass</em> (and may be good enough in many cases) but the real win would be <strong>a small model fine-tuned for a specific collection</strong>.</p>
 <p>This post picks up on this topic. The question I wanted to answer: <strong>can one cheap, open 4B model be fine-tuned to read <em>many</em> different card collections very well — each with its own schema — without becoming a brittle specialist?</strong> And if so, does it stay useful on collections it was never trained on?</p>
 </section>
@@ -12106,7 +12107,7 @@ font-style: inherit;">"language_code"</span>).unique().collect().to_series().to_
 <h2 class="anchored" data-anchor-id="can-we-train-a-model-to-work-with-a-subset-of-languages">Can we train a model to work with a subset of languages?</h2>
 <p>So far we have 18 languages in the dataset. Currently over a 100 languages have some level of annotation so eventually we hope the community will create a dataset for ma ne model per language.</p>
 <p>Claude gave me the following visual for languages groups in this dataset (which isn’t super accurate but gives a rough idea of the language families represented in the dataset).</p>
-<div id="fig-languages" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Color-coded grid visualization of 20 languages organized by 8 language families (Indo-European, Sino-Tibetan, Austronesian, Uralic, Turkic, Austro-Asiatic, Afroasiatic, Indo-Aryan) and their subgroups, with language codes shown in monospace font" data-fig-cap="Language families represented in the FineWeb-C dataset">
+<div id="fig-languages" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-cap="Language families represented in the FineWeb-C dataset" alt="Color-coded grid visualization of 20 languages organized by 8 language families (Indo-European, Sino-Tibetan, Austronesian, Uralic, Turkic, Austro-Asiatic, Afroasiatic, Indo-Aryan) and their subgroups, with language codes shown in monospace font">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-languages-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="https://danielvanstrien.xyz/posts/2025/FineWeb-c/assets/language-families-names.svg" class="img-fluid figure-img" data-fig-cap="Language families represented in the FineWeb-C dataset" alt="Color-coded grid visualization of 20 languages organized by 8 language families (Indo-European, Sino-Tibetan, Austronesian, Uralic, Turkic, Austro-Asiatic, Afroasiatic, Indo-Aryan) and their subgroups, with language codes shown in monospace font">

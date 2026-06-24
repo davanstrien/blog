@@ -260,6 +260,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"place_of_burial"</span><span class="fu">:</span> <span class="st">"Everett, Mass."</span></span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Everything below is about making that work better on a specific type of data (index cards) — and keeping it good at working on collections it has never seen.</p>
+<p><strong><a href="https://huggingface.co/spaces/small-models-for-glam/index-card-extractor">→ Live demo: index cards → structured records</a></strong></p>
 <p>A while back I showed that NuExtract-3 could turn <a href="../../../posts/2026/structured-records-from-cards/index.html">catalogue-card images into structured JSON</a> zero-shot. In that post I suggested the model is a very strong zero-shot model for a <em>first pass</em> (and may be good enough in many cases) but the real win would be <strong>a small model fine-tuned for a specific collection</strong>.</p>
 <p>This post picks up on this topic. The question I wanted to answer: <strong>can one cheap, open 4B model be fine-tuned to read <em>many</em> different card collections very well — each with its own schema — without becoming a brittle specialist?</strong> And if so, does it stay useful on collections it was never trained on?</p>
 </section>
