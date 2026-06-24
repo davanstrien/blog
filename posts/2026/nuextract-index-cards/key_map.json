@@ -1,0 +1,352 @@
+{
+  "type_acte": [
+    "",
+    "",
+    "type_acte"
+  ],
+  "année": [
+    "",
+    "",
+    "année"
+  ],
+  "mois": [
+    "",
+    "",
+    "mois"
+  ],
+  "jour": [
+    "",
+    "",
+    "jour"
+  ],
+  "paroisse": [
+    "",
+    "",
+    "paroisse"
+  ],
+  "observations": [
+    "",
+    "",
+    "observations"
+  ],
+  "filiation": [
+    "",
+    "",
+    "filiation"
+  ],
+  "enfant_prénom": [
+    "enfant",
+    "",
+    "prénom"
+  ],
+  "enfant_date_de_naissance": [
+    "enfant",
+    "",
+    "date_de_naissance"
+  ],
+  "enfant_lieu_de_naissance": [
+    "enfant",
+    "",
+    "lieu_de_naissance"
+  ],
+  "enfant_date_de_décès": [
+    "enfant",
+    "",
+    "date_de_décès"
+  ],
+  "enfant_lieu_de_décès": [
+    "enfant",
+    "",
+    "lieu_de_décès"
+  ],
+  "défunt_nom": [
+    "défunt",
+    "",
+    "nom"
+  ],
+  "défunt_prénom": [
+    "défunt",
+    "",
+    "prénom"
+  ],
+  "défunt_sexe": [
+    "défunt",
+    "",
+    "sexe"
+  ],
+  "défunt_âge": [
+    "défunt",
+    "",
+    "âge"
+  ],
+  "défunt_profession": [
+    "défunt",
+    "",
+    "profession"
+  ],
+  "défunt_lieu_de_vie": [
+    "défunt",
+    "",
+    "lieu_de_vie"
+  ],
+  "défunt_date_de_naissance": [
+    "défunt",
+    "",
+    "date_de_naissance"
+  ],
+  "défunt_lieu_de_naissance": [
+    "défunt",
+    "",
+    "lieu_de_naissance"
+  ],
+  "défunt_statut": [
+    "défunt",
+    "",
+    "statut"
+  ],
+  "marié_nom": [
+    "marié",
+    "",
+    "nom"
+  ],
+  "marié_prénom": [
+    "marié",
+    "",
+    "prénom"
+  ],
+  "marié_âge": [
+    "marié",
+    "",
+    "âge"
+  ],
+  "marié_profession": [
+    "marié",
+    "",
+    "profession"
+  ],
+  "marié_lieu_de_vie": [
+    "marié",
+    "",
+    "lieu_de_vie"
+  ],
+  "marié_date_de_naissance": [
+    "marié",
+    "",
+    "date_de_naissance"
+  ],
+  "marié_lieu_de_naissance": [
+    "marié",
+    "",
+    "lieu_de_naissance"
+  ],
+  "marié_statut": [
+    "marié",
+    "",
+    "statut"
+  ],
+  "mariée_nom": [
+    "mariée",
+    "",
+    "nom"
+  ],
+  "mariée_prénom": [
+    "mariée",
+    "",
+    "prénom"
+  ],
+  "mariée_âge": [
+    "mariée",
+    "",
+    "âge"
+  ],
+  "mariée_profession": [
+    "mariée",
+    "",
+    "profession"
+  ],
+  "mariée_lieu_de_vie": [
+    "mariée",
+    "",
+    "lieu_de_vie"
+  ],
+  "mariée_date_de_naissance": [
+    "mariée",
+    "",
+    "date_de_naissance"
+  ],
+  "mariée_lieu_de_naissance": [
+    "mariée",
+    "",
+    "lieu_de_naissance"
+  ],
+  "mariée_statut": [
+    "mariée",
+    "",
+    "statut"
+  ],
+  "père_défunt_nom": [
+    "père",
+    "défunt",
+    "nom"
+  ],
+  "père_défunt_prénom": [
+    "père",
+    "défunt",
+    "prénom"
+  ],
+  "père_défunt_profession": [
+    "père",
+    "défunt",
+    "profession"
+  ],
+  "père_défunt_statut": [
+    "père",
+    "défunt",
+    "statut"
+  ],
+  "père_enfant_nom": [
+    "père",
+    "enfant",
+    "nom"
+  ],
+  "père_enfant_prénom": [
+    "père",
+    "enfant",
+    "prénom"
+  ],
+  "père_enfant_profession": [
+    "père",
+    "enfant",
+    "profession"
+  ],
+  "père_enfant_lieu_de_naissance": [
+    "père",
+    "enfant",
+    "lieu_de_naissance"
+  ],
+  "père_marié_nom": [
+    "père",
+    "marié",
+    "nom"
+  ],
+  "père_marié_prénom": [
+    "père",
+    "marié",
+    "prénom"
+  ],
+  "père_marié_profession": [
+    "père",
+    "marié",
+    "profession"
+  ],
+  "père_marié_statut": [
+    "père",
+    "marié",
+    "statut"
+  ],
+  "père_mariée_nom": [
+    "père",
+    "mariée",
+    "nom"
+  ],
+  "père_mariée_prénom": [
+    "père",
+    "mariée",
+    "prénom"
+  ],
+  "père_mariée_profession": [
+    "père",
+    "mariée",
+    "profession"
+  ],
+  "père_mariée_statut": [
+    "père",
+    "mariée",
+    "statut"
+  ],
+  "mère_défunt_nom": [
+    "mère",
+    "défunt",
+    "nom"
+  ],
+  "mère_défunt_prénom": [
+    "mère",
+    "défunt",
+    "prénom"
+  ],
+  "mère_défunt_profession": [
+    "mère",
+    "défunt",
+    "profession"
+  ],
+  "mère_défunt_statut": [
+    "mère",
+    "défunt",
+    "statut"
+  ],
+  "mère_enfant_nom": [
+    "mère",
+    "enfant",
+    "nom"
+  ],
+  "mère_enfant_prénom": [
+    "mère",
+    "enfant",
+    "prénom"
+  ],
+  "mère_enfant_âge": [
+    "mère",
+    "enfant",
+    "âge"
+  ],
+  "mère_enfant_profession": [
+    "mère",
+    "enfant",
+    "profession"
+  ],
+  "mère_enfant_lieu_de_naissance": [
+    "mère",
+    "enfant",
+    "lieu_de_naissance"
+  ],
+  "mère_marié_nom": [
+    "mère",
+    "marié",
+    "nom"
+  ],
+  "mère_marié_prénom": [
+    "mère",
+    "marié",
+    "prénom"
+  ],
+  "mère_marié_profession": [
+    "mère",
+    "marié",
+    "profession"
+  ],
+  "mère_marié_statut": [
+    "mère",
+    "marié",
+    "statut"
+  ],
+  "mère_mariée_nom": [
+    "mère",
+    "mariée",
+    "nom"
+  ],
+  "mère_mariée_prénom": [
+    "mère",
+    "mariée",
+    "prénom"
+  ],
+  "mère_mariée_profession": [
+    "mère",
+    "mariée",
+    "profession"
+  ],
+  "mère_mariée_statut": [
+    "mère",
+    "mariée",
+    "statut"
+  ]
+}

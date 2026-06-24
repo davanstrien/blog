@@ -1,0 +1,12 @@
+{
+  "model": "davanstrien/nuextract3-cards-generalist-v2",
+  "collection": "flat",
+  "prompt_mode": "generic",
+  "thinking": false,
+  "n_cards": 12,
+  "timestamp": "2026-06-10T06:41:14.181757+00:00",
+  "macro_f1": 0.7499216139730523,
+  "macro_precision": 0.7650755815655074,
+  "macro_recall": 0.7632979832463694,
+  "parse_error_rate": 0.0
+}

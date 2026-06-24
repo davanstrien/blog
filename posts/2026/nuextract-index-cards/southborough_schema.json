@@ -1,0 +1,18 @@
+{
+  "card_type": ["death_record", "veteran_record", "index_divider", "blank", "other"],
+  "name": "verbatim-string",
+  "date_of_death": "string",
+  "residence": "string",
+  "place_of_death": "string",
+  "place_of_burial": "string",
+  "sex": ["M", "F"],
+  "color": "string",
+  "condition": "string",
+  "cause_of_death": "string",
+  "age": "string",
+  "occupation": "string",
+  "birthplace": "string",
+  "volume": "string",
+  "page": "string",
+  "notes": "string"
+}
