@@ -62,6 +62,8 @@ VLM based OCR models have got much better in the past year or so but there are m
 
 Everything below is about making that work better on a specific type of data (index cards) — and keeping it good at working on collections it has never seen.
 
+**[→ Live demo: index cards → structured records](https://huggingface.co/spaces/small-models-for-glam/index-card-extractor)**
+
 A while back I showed that NuExtract-3 could turn [catalogue-card images into structured JSON](../structured-records-from-cards/index.qmd) zero-shot. In that post I suggested the model is a very strong zero-shot model for a _first pass_ (and may be good enough in many cases) but the real win would be **a small model fine-tuned for a specific collection**.
 
 This post picks up on this topic. The question I wanted to answer: **can one cheap, open 4B model be fine-tuned to read _many_ different card collections very well — each with its own schema — without becoming a brittle specialist?** And if so, does it stay useful on collections it was never trained on?
