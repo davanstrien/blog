@@ -1,7 +1,7 @@
 ---
 title: "Filtering 1 TB of FineWeb-Edu for $2.40 using Buckets and Jobs"
 date: "2026-06-02"
-categories: [hugging-face, data-engineering, polars, duckdb, jobs]
+categories: [huggingface, data-engineering, polars, duckdb, jobs]
 description: "A quick look at using Hugging Face Jobs + Storage Buckets to filter a big dataset — DuckDB does the heavy scan, Polars picks up the result, a bucket is the handoff. ~1 TB filtered for about $2.40."
 image: "pipeline.png"
 draft: false
