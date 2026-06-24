@@ -562,7 +562,7 @@ font-style: inherit;"># mutable, S3-like storage on the Hub</span></span></code>
 </section>
 
  ]]></description>
-  <category>hugging-face</category>
+  <category>huggingface</category>
   <category>data-engineering</category>
   <category>polars</category>
   <category>duckdb</category>
@@ -966,7 +966,7 @@ font-style: inherit;">}</span></span></code></pre></div></div>
  ]]></description>
   <category>ocr</category>
   <category>glam</category>
-  <category>hugging-face</category>
+  <category>huggingface</category>
   <category>structured-extraction</category>
   <category>datasets</category>
   <guid>https://danielvanstrien.xyz/posts/2026/structured-records-from-cards/</guid>
@@ -1337,7 +1337,7 @@ font-style: inherit;">}</span></span></code></pre></div></div>
 
  ]]></description>
   <category>coding-agents</category>
-  <category>hugging-face</category>
+  <category>huggingface</category>
   <category>agent-traces</category>
   <category>glam</category>
   <category>datasets</category>
@@ -2117,7 +2117,7 @@ Domain rules:
   <category>coding-agents</category>
   <category>agent-traces</category>
   <category>open-data</category>
-  <category>hugging-face</category>
+  <category>huggingface</category>
   <guid>https://danielvanstrien.xyz/posts/2026/agent-sentiment/</guid>
   <pubDate>Mon, 20 Apr 2026 00:00:00 GMT</pubDate>
 </item>
@@ -2432,7 +2432,7 @@ font-style: inherit;">"your-username/your-collection"</span>)</span></code></pre
  ]]></description>
   <category>ocr</category>
   <category>glam</category>
-  <category>hugging-face</category>
+  <category>huggingface</category>
   <category>uv-scripts</category>
   <guid>https://danielvanstrien.xyz/posts/2026/re-ocr-collections/</guid>
   <pubDate>Thu, 19 Feb 2026 00:00:00 GMT</pubDate>
@@ -12106,7 +12106,7 @@ font-style: inherit;">"language_code"</span>).unique().collect().to_series().to_
 <h2 class="anchored" data-anchor-id="can-we-train-a-model-to-work-with-a-subset-of-languages">Can we train a model to work with a subset of languages?</h2>
 <p>So far we have 18 languages in the dataset. Currently over a 100 languages have some level of annotation so eventually we hope the community will create a dataset for ma ne model per language.</p>
 <p>Claude gave me the following visual for languages groups in this dataset (which isn’t super accurate but gives a rough idea of the language families represented in the dataset).</p>
-<div id="fig-languages" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-cap="Language families represented in the FineWeb-C dataset" alt="Color-coded grid visualization of 20 languages organized by 8 language families (Indo-European, Sino-Tibetan, Austronesian, Uralic, Turkic, Austro-Asiatic, Afroasiatic, Indo-Aryan) and their subgroups, with language codes shown in monospace font">
+<div id="fig-languages" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Color-coded grid visualization of 20 languages organized by 8 language families (Indo-European, Sino-Tibetan, Austronesian, Uralic, Turkic, Austro-Asiatic, Afroasiatic, Indo-Aryan) and their subgroups, with language codes shown in monospace font" data-fig-cap="Language families represented in the FineWeb-C dataset">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-languages-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="https://danielvanstrien.xyz/posts/2025/FineWeb-c/assets/language-families-names.svg" class="img-fluid figure-img" data-fig-cap="Language families represented in the FineWeb-C dataset" alt="Color-coded grid visualization of 20 languages organized by 8 language families (Indo-European, Sino-Tibetan, Austronesian, Uralic, Turkic, Austro-Asiatic, Afroasiatic, Indo-Aryan) and their subgroups, with language codes shown in monospace font">
