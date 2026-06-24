@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<link href="../../icons/favicon.ico" rel="icon">
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/tabby.min.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.9.38">
+
+  <meta name="author" content="Daniel van Strien">
+  <meta name="dcterms.date" content="2026-06-26">
+  <title>Daniel van Strien – Infrastructure is the friends you made along the way</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="../../site_libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="../../site_libs/revealjs/dist/reveal.css">
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="../../site_libs/revealjs/dist/theme/quarto-2ff4717e0e232a757d3a318a1fe553d8.css">
+  <link href="../../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="../../site_libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="../../site_libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="../../site_libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" class="quarto-title-block center">
+  <h1 class="title">Infrastructure is the friends you made along the way</h1>
+  <p class="subtitle">Why collaboration and shared data matter more than servers</p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+Daniel van Strien 
+</div>
+        <p class="quarto-title-affiliation">
+            Hugging Face — Machine Learning Librarian
+          </p>
+    </div>
+</div>
+
+  <p class="date">2026-06-26</p>
+</section>
+<section id="section" class="slide level2" data-background-image="images/bus-meme.jpg" data-background-size="contain" data-background-color="#111111">
+<h2></h2>
+<aside class="notes">
+<p>Open on the meme. It’s the whole talk in one image: not building your own infrastructure can feel like despair or like freedom, depending on how you frame it. Get the laugh, then say “let me make the case for the guy on the right.”</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="hello" class="slide level2">
+<h2>Hello</h2>
+<ul>
+<li><strong>Daniel van Strien</strong> — Machine Learning Librarian @ Hugging Face</li>
+<li>Background in libraries, archives, computational humanities</li>
+<li>Communities: <a href="https://huggingface.co/biglam">BigLAM</a>, <a href="https://huggingface.co/small-models-for-glam">Small Models for GLAM</a></li>
+</ul>
+<aside class="notes">
+<p>20 seconds. I work on making the Hub a good home for cultural heritage data. HF is a sponsor here, but this is not a sales pitch, and the argument lands on community, not platform.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section>
+<section id="there-is-technical-infrastructure" class="title-slide slide level1 center" data-background-color="#34495E">
+<h1>There <em>is</em> technical infrastructure</h1>
+
+</section>
+<section id="and-you-mostly-dont-have-to-build-it" class="slide level2">
+<h2>And you mostly don’t have to build it</h2>
+<p>Most of this already exists:</p>
+<ul>
+<li><strong>Storage</strong> for very large datasets (Xet, Buckets)</li>
+<li><strong>Compute</strong> you rent by the minute (Jobs)</li>
+<li><strong>Hosting and a viewer</strong> for data anyone can browse</li>
+</ul>
+<div class="fragment">
+<p>Lots of options: commercial cloud, the European Cloud for Heritage Open Science, the data space for Cultural Heritage, the Hub.</p>
+<aside class="notes">
+<p>Acknowledge the obvious reading of “infrastructure” first: servers, storage, compute. It exists. The session brief names some of these. That’s the easy part.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="so-what-should-a-glam-lab-actually-build" class="slide level2 smaller">
+<h2>So what should a GLAM lab actually build?</h2>
+<p>Building infrastructure is hard. <strong>Maintaining</strong> it is harder.</p>
+<div class="fragment">
+<p>Is it worth building your own platform to host 100 TB datasets?</p>
+</div>
+<div class="fragment">
+<p>Where does <em>your</em> effort actually add something no one else will?</p>
+</div>
+<div class="fragment">
+<p>Preservation might be the exception, where keeping your own copy matters. For most things, use what already exists.</p>
+<aside class="notes">
+<p>Pose this as a real question to the room, not a conclusion. I’m not saying never build. Preservation is the case where control is the point. But a small lab rebuilding a storage backend, a compute scheduler, or a 100 TB hosting platform is spending its scarcest resource on the least differentiated thing. Ask the room where their effort actually adds something unique.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section></section>
+<section>
+<section id="but-dont-depend-on-commercial-platforms" class="title-slide slide level1 center" data-background-color="#34495E">
+<h1>“But — don’t depend on commercial platforms”</h1>
+
+</section>
+<section id="the-objection-i-expect-from-this-room" class="slide level2 smaller">
+<h2>The objection I expect from this room</h2>
+<div class="fragment">
+<p>My honest answer: <strong>government-funded is not a safe bet in 2026 either.</strong></p>
+</div>
+<div class="fragment">
+<blockquote>
+<p>The <a href="https://www.datarescueproject.org/">Data Rescue Project</a> exists to preserve public data at risk of disappearing.</p>
+</blockquote>
+<div style="text-align: center;">
+<p><strong>Why does it need to exist?</strong></p>
+</div>
+</div>
+<div class="fragment">
+<ul>
+<li>Where the funding comes from doesn’t guarantee it will last</li>
+<li>Commercial and public infrastructure can both disappear</li>
+</ul>
+<aside class="notes">
+<p>Name the objection directly. This audience is rightly wary of lock-in. Rather than assert a specific claim, point at the Data Rescue Project: a volunteer effort preserving at-risk public and government data (health, climate, historical records), working with the Internet Archive and universities. Let the room answer “why does it need to exist?” themselves. “Commercial = risky, government = safe” doesn’t hold; we have just watched public infrastructure become precarious.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="what-actually-keeps-things-safe" class="slide level2 smaller">
+<h2>What actually keeps things safe</h2>
+<p><strong>LOCKSS</strong> — Lots Of Copies Keep Stuff Safe.</p>
+<div class="fragment">
+<p>What actually helps:</p>
+<ul>
+<li><strong>Open formats</strong> (Parquet, ALTO/IIIF, not a vendor’s database)</li>
+<li><strong>Portability</strong>, so your tools run anywhere</li>
+<li><strong>Many copies</strong>: your repo, the Hub, a partner, local disk</li>
+</ul>
+</div>
+<div class="fragment">
+<p>Use good infrastructure, but don’t rely on only one. Commercial or public.</p>
+<aside class="notes">
+<p>This is the reframe. The question isn’t “which host do I trust forever”, because there is no such host. The question is “if any one host vanishes tomorrow, can I move?” Open formats plus many copies make the host swappable. That’s the actual sustainability strategy.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="a-note-agents-are-becoming-infrastructure-too" class="slide level2">
+<h2>A note: agents are becoming infrastructure too</h2>
+<p>The way we build is changing too.</p>
+<div class="fragment">
+<p>AI agents can now do a lot of the building work themselves.</p>
+</div>
+<div class="fragment">
+<p>So the hard part isn’t really the building. It’s having the data, and the people who know how to make it.</p>
+<aside class="notes">
+<p>Keep this brief, 20 seconds. Just flag it. It connects to the next section: if building is getting cheaper, the scarce thing isn’t the servers or the code, it’s the data and the people who know how to make it.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section></section>
+<section>
+<section id="infrastructure-isnt-just-servers" class="title-slide slide level1 center" data-background-color="#34495E">
+<h1>Infrastructure isn’t just servers</h1>
+
+</section>
+<section id="my-actual-argument" class="slide level2">
+<h2>My actual argument</h2>
+<p><strong>Collaboration and shared datasets, for evaluation and for training, are infrastructure.</strong></p>
+<div class="fragment">
+<p>They have a <strong>long tail of plausible benefit</strong>: you can’t predict who will reuse them, or how.</p>
+</div>
+<div class="fragment">
+<p>So fund and maintain them like anything else you depend on.</p>
+<aside class="notes">
+<p>This is the heart of the talk. A shared, well-documented dataset or benchmark keeps paying off for years, in ways the people who built it never anticipated. That is what “infrastructure” means. We just don’t usually count it.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="you-never-know-what-it-will-be-used-for" class="slide level2 smaller">
+<h2>You never know what it will be used for</h2>
+<p>In 2022 I put <strong>~25 million pages</strong> of digitised British Library books on the Hub, through BigLAM.</p>
+<div class="fragment">
+<p>Four years later, someone trained a <strong>Victorian chatbot</strong> from scratch on them.</p>
+</div>
+<div class="fragment">
+<p>The Europeana Newspapers dataset turned up inside <strong>German Commons</strong>, a 154-billion-token German-language dataset.</p>
+</div>
+<div class="fragment">
+<p>Put data somewhere people can find it, and they build things you never imagined.</p>
+<aside class="notes">
+<p>The concrete proof of the “long tail”. These are real, public, and mine: the BL books upload was one of my first HF PRs, and the Victorian-chatbot reuse came four years later (Ethan Mollick shared it; ~13k impressions on the post). The Europeana → German Commons example shows the same thing at national-corpus scale. I could not have predicted either. That unpredictability is the whole point: discoverability is the bottleneck, not the data.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="mr.-chatterbox-built-from-those-books" class="slide level2 smaller">
+<h2>Mr.&nbsp;Chatterbox, built from those books</h2>
+
+<img data-src="images/mr-chatterbox.png" class="quarto-figure quarto-figure-center r-stretch" style="width:74.0%"><p><a href="https://huggingface.co/spaces/tventurella/mr_chatterbox">huggingface.co/spaces/tventurella/mr_chatterbox</a></p>
+<aside class="notes">
+<p>The payoff: a real, running Hugging Face Space, a language model trained from scratch on ~28,000 Victorian British Library texts (1837–1899). I did not build this; someone found the data and made it. That’s the long tail, live.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="how-do-you-know-a-model-is-working" class="slide level2">
+<h2>How do you know a model is working?</h2>
+<p>For libraries, this is mostly an open question.</p>
+<div class="fragment">
+<p>Does this OCR model read 18th-century print? Handwriting? Gaelic? Your catalogue cards?</p>
+</div>
+<div class="fragment">
+<p>There’s usually <strong>no benchmark</strong> that tells you. Shared <strong>evaluation sets</strong> for real collections are themselves infrastructure.</p>
+<aside class="notes">
+<p>The missing picture I most want to land. Everyone asks “which model should we use?”, but libraries have almost no way to answer “is it any good on OUR material?” Generic benchmarks don’t cover early-modern print, handwriting, minority languages, or card catalogues. Building shared eval sets for real collections is unglamorous and high value, and it is exactly what collaboration can produce.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="fineweb-the-pattern-in-public" class="slide level2">
+<h2>FineWeb: the pattern, in public</h2>
+
+<img data-src="images/fineweb-hero.png" class="quarto-figure quarto-figure-center r-stretch" style="width:60.0%"><p>A <strong>15-trillion-token</strong> open dataset. What made it good was <strong>evaluation</strong>: train small models, run benchmarks, keep what helps. Open data, open recipe, open evals.</p>
+<aside class="notes">
+<p>FineWeb is the public proof that a big shared dataset — with the recipe and the evaluations open — becomes infrastructure others build on. Tie back to the eval slide: they didn’t guess at quality, they measured it.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="finebooks-the-same-bet-for-libraries" class="slide level2 smaller">
+<h2>FineBooks: the same bet for libraries</h2>
+<p>A FineWeb-style effort for digitised library collections. Still early.</p>
+<blockquote>
+<p>Not one big corpus, but a <strong>series of reusable artifacts</strong>: tools libraries can run, example datasets, small models. The corpus emerges from <strong>adoption</strong>, not central control.</p>
+</blockquote>
+<div class="fragment">
+<p>Already doable: re-OCR’d <em>Britannica</em> (1771), 2,724 pages, for <strong>~$5</strong>.</p>
+<p><a href="https://danielvanstrien.xyz/posts/2025/who-benefits-rethinking-library-data-ai/libraries-as-training-data.html#finebooks-a-concrete-starting-point">Libraries as training data</a></p>
+<aside class="notes">
+<p>Keep FineBooks vague — it’s an idea / work in progress, not a product to demo today. The Britannica number is public and shows the approach is cheap and real. The quote is from my own blog.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="it-already-works" class="slide level2">
+<h2>It already works</h2>
+<p>This already happens:</p>
+<ul>
+<li><strong>FineWeb-C</strong> — 500+ contributors, 58,000+ annotations, <strong>122 languages</strong></li>
+<li><strong>BigLAM</strong> — 55+ institutions</li>
+<li><strong>Data is Better Together</strong> · reasoning-dataset competition (150+)</li>
+</ul>
+<div class="fragment">
+<p>With shared data and shared benchmarks, labs can choose tools based on evidence.</p>
+<aside class="notes">
+<p>These are real numbers from real community efforts. When you make the dataset the shared thing, lots of small institutions can each contribute a little and all benefit a lot. That’s the multiplier no single lab’s budget can buy.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="you-learn-to-build-not-just-use" class="slide level2">
+<h2>You learn to build, not just use</h2>
+<p>Building a shared dataset teaches you how AI actually works.</p>
+<div class="fragment">
+<p>For GLAM labs, that understanding matters more and more.</p>
+</div>
+<div class="fragment">
+<p>And it stays with your staff, even when funding or platforms change.</p>
+<aside class="notes">
+<p>The act of building is capacity-building. A lab that has co-built a training or eval dataset understands data quality, model limits, and provenance in a way that using a chatbot never delivers. That know-how survives funding cuts and platform changes.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section></section>
+<section>
+<section id="so" class="title-slide slide level1 center" data-background-color="#34495E">
+<h1>So</h1>
+
+</section>
+<section id="where-to-put-your-effort" class="slide level2">
+<h2>Where to put your effort</h2>
+<ul>
+<li>Rent servers, storage and compute. Keep your data <strong>portable</strong></li>
+<li>Build <strong>shared data and benchmarks</strong> together</li>
+<li>The lasting part is the <strong>people and what they learn</strong></li>
+</ul>
+<div class="fragment">
+<div style="font-size: 1.4em; text-align: center;">
+<p>Infrastructure is the friends you made along the way.</p>
+</div>
+</div>
+<div class="fragment">
+<p>Pick one dataset or benchmark, and build it with another institution.</p>
+<aside class="notes">
+<p>Land the silly title as the real conclusion. Close on the concrete ask: pick one shared dataset or benchmark and build it with someone. That’s the most durable infrastructure investment a resource-limited lab can make. (Plenty here to feed the session’s discussion and the blog write-up.)</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="thank-you" class="slide level2">
+<h2>Thank you</h2>
+<ul>
+<li>These slides: <em>danielvanstrien.xyz/slides/glam-labs-futures-2026</em></li>
+<li><a href="https://huggingface.co/biglam">BigLAM</a> · <a href="https://huggingface.co/small-models-for-glam">Small Models for GLAM</a></li>
+<li><a href="https://danielvanstrien.xyz/posts/2025/who-benefits-rethinking-library-data-ai/libraries-as-training-data.html">Libraries as training data</a></li>
+</ul>
+<p><strong>Daniel van Strien</strong> · Machine Learning Librarian, Hugging Face</p>
+<aside class="notes">
+<p>Stop on time. Hand to the insight-gathering or the next talk.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+
+
+</section></section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<p><img src="https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.svg" class="slide-logo"></p>
+<div class="footer footer-default">
+<p>GLAM Labs Futures · 26 June 2026 · Edinburgh · <a href="https://danielvanstrien.xyz">danielvanstrien.xyz</a></p>
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="../../site_libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="../../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="../../site_libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="../../site_libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="../../site_libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="../../site_libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="../../site_libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="../../site_libs/revealjs/plugin/search/search.js"></script>
+  <script src="../../site_libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="../../site_libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': true,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'none',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1050,
+
+        height: 700,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 0.1,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp("https:\/\/danielvanstrien\.xyz");
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>
