@@ -9,7 +9,7 @@ author:
   - name: "Claude Opus 4.7"
     url: https://www.anthropic.com/claude
     affiliation: "Anthropic"
-categories: [ai, coding-agents, agent-traces, open-data, hugging-face]
+categories: [ai, coding-agents, agent-traces, open-data, huggingface]
 description: "Anthropic, OpenAI, Cursor, and Windsurf sit on millions of private agent traces. The first public corpus has 33 datasets, 1,589 sessions, 8,949 labelled messages. Here's what we found in it — and why the interesting data isn't in the words."
 execute:
   freeze: true
