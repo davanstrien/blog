@@ -1,6 +1,6 @@
 ---
 description: "What do people talk about in their model cards?"
-categories: [Hugging Face]
+categories: [huggingface]
 title: "Extracting Insights from Model Cards Using Open Large Language Models"
 date: "2023-11-27"
 ---

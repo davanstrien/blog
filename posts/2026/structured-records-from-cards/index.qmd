@@ -3,7 +3,7 @@ title: "How to turn catalogue card images into structured JSON with a 4B open mo
 subtitle: "A 4B open model turns catalogue-card images into schema-shaped JSON — the kind of structured data that can be ingested back into a library system."
 date: "2026-05-21"
 author: "Daniel van Strien"
-categories: [ocr, glam, hugging-face, structured-extraction, datasets]
+categories: [ocr, glam, huggingface, structured-extraction, datasets]
 description: "Re-OCR made digitised catalogue cards searchable as text. But libraries need structured records they can ingest into their catalogues. NuExtract3 (4B, Apache-2.0) extracts schema-shaped JSON from card images in one command — here's how it does, honestly."
 image: nls-card-to-json.png
 format:

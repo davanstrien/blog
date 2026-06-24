@@ -3,7 +3,7 @@ title: "All four agents tied at F1 ~0.95. The number was a mirage."
 subtitle: "Three harnesses, two driver models, four runs. The traces show why an outcome metric on this dataset doesn't mean what the agents reported it means — and a 22-point F1 gap when you actually test for generalisation."
 date: "2026-05-06"
 author: "Daniel van Strien"
-categories: [coding-agents, hugging-face, agent-traces, glam, datasets]
+categories: [coding-agents, huggingface, agent-traces, glam, datasets]
 description: "Same one-line prompt, three harnesses, two driver models. The headline F1 tied within 1.5pp. A source-stratified eval the agents didn't run shows the headline number was hiding a 22 F1-point generalisation gap."
 image: judgment-matrix.png
 execute:

@@ -2,7 +2,7 @@
 title: "Re-OCR Your Digitised Collections for ~$0.002/Page"
 date: "2026-02-19"
 author: "Daniel van Strien"
-categories: [ocr, glam, hugging-face, uv-scripts]
+categories: [ocr, glam, huggingface, uv-scripts]
 description: "A guide to re-processing digitised collections with open-source VLM-based OCR models."
 draft: false
 ---
