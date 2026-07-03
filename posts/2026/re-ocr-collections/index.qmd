@@ -7,6 +7,20 @@ description: "A guide to re-processing digitised collections with open-source VL
 draft: false
 ---
 
+::: {.callout-note title="Update (July 2026)"}
+Five months on, this number is holding up — and it was the conservative case. I recently
+reproduced it with a different model on different hardware: [Surya OCR 2](https://huggingface.co/datalab-to/surya-ocr-2)
+(650M) over 1920s Glasgow Post Office directories came out at ~$0.002/page on a $1/hr GPU,
+untuned — and that's full structured output (layout blocks, reading order, confidence), not
+just markdown ([runs + code](https://github.com/davanstrien/bucketbag/tree/main/experiments/ia-postoffice-ocr)).
+Newer, smaller models keep pushing quality per dollar in the same direction.
+
+Worth restating the scope: these figures are **compute cost only**. Staff time, pipeline
+building, and quality checking remain the real costs of a re-OCR programme — the point is
+that GPU compute is no longer one of them.
+:::
+
+
 ## Why re-OCR?
 
 This post is a quick-start guide to re-processing digitised collections with modern OCR models — not a full discussion of the pros and cons of VLM-based OCR. I'll cover more of the nuances in follow-up posts. For now, the goal is to get you from scanned images to structured text as quickly as possible.
