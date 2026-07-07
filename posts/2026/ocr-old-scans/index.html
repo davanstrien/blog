@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Daniel van Strien">
+<meta name="dcterms.date" content="2026-07-07">
+<meta name="description" content="I ran ten current OCR models on olmOCR-bench’s ‘old scans’ subset. The ranking flips depending on one thing: whether you want a model that keeps what’s on the page, or one that cleans it up. A note on what the headline score actually rewards — and how agents + Jobs made it cheap to run.">
+
+<title>Benchmarking OCR fairly is harder than it looks – Daniel van Strien</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../icons/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-bba5ebae505b5c03f3f0d8040a416a6b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script defer="" src="https://cloud.umami.is/script.js" data-website-id="85cb27d6-dbf9-43d7-97d0-be4e6724de7a"></script>
+<meta name="msvalidate.01" content="4246174F24A3CB7C9CBEAA94E1FF8E84">
+<meta name="google-site-verification" content="C7WoFOEuA4Msbvvk-kgDd_C6VGphZTp3awy_acXjZYU">
+
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Daniel van Strien</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://danielvanstrien.xyz/ai-patterns-for-glam/"> 
+<span class="menu-text">AI Patterns for GLAM</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../slides.html"> 
+<span class="menu-text">Slides</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../pages/memes/index.qmd"> 
+<span class="menu-text">Memes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text">GitHub</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../index.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Benchmarking OCR fairly is harder than it looks</h1>
+<p class="subtitle lead">Ten OCR models on olmOCR-bench’s hardest scans — and why a model that reads the page more faithfully can score lower.</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">ocr</div>
+    <div class="quarto-category">glam</div>
+    <div class="quarto-category">huggingface</div>
+    <div class="quarto-category">jobs</div>
+    <div class="quarto-category">evaluation</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    I ran ten current OCR models on olmOCR-bench’s ‘old scans’ subset. The ranking flips depending on one thing: whether you want a model that keeps what’s on the page, or one that cleans it up. A note on what the headline score actually rewards — and how agents + Jobs made it cheap to run.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Daniel van Strien </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">July 7, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Benchmarking OCR fairly is hard. I ran ten newer OCR models on the <code>old_scans</code> subset of <a href="https://huggingface.co/datasets/allenai/olmOCR-bench">olmOCR-bench</a> — 98 degraded Library-of-Congress scans, typewritten letters and carbon copies and faded stamps — and the ranking flips depending on one thing: whether you want a model that keeps what’s on the page, or one that cleans it up.</p>
+<p>It’s worth saying what these models are mostly <em>for</em>. Most of the current OCR and document models are built to turn a scanned page into clean, reading-order text — the kind of text you’d feed to a language model as training data. That purpose is baked into how they get scored, and it turns out to matter a lot for how they rank.</p>
+<p>Take two of them. On the benchmark’s headline score, PaddleOCR-VL edges out NuExtract3 — 38.6 to 37.8. But rank the same two models by how much of the page they actually read, and NuExtract3 is well ahead — 41.6 to 31.2. Same two models, opposite order, depending on what you measure. I found that surprising, and working out why meant looking at what the headline score is actually made of.</p>
+<p>So it’s worth a quick word on the benchmark itself. Rather than score OCR with a single similarity number, olmOCR-bench runs a set of small, unit-test-style checks over each page: is this particular bit of body text <em>present</em>, is this piece of boilerplate <em>absent</em>, does this line come before that one. A model’s score is just the share of those checks it passes. The <code>old_scans</code> subset is the hard end of it — 98 historical scans where the print is faded, skewed, or typed on an old machine, with no clean digital copy to fall back on.</p>
+<section id="the-models-ranked" class="level2">
+<h2 class="anchored" data-anchor-id="the-models-ranked">The models, ranked</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>params</th>
+<th style="text-align: right;">old_scans</th>
+<th style="text-align: right;">present</th>
+<th style="text-align: right;">absent</th>
+<th style="text-align: right;">order</th>
+<th style="text-align: right;">no-halluc</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>olmOCR-2</td>
+<td>7B</td>
+<td style="text-align: right;"><strong>46.8</strong></td>
+<td style="text-align: right;">45.5</td>
+<td style="text-align: right;">91.4</td>
+<td style="text-align: right;">31.1</td>
+<td style="text-align: right;">100.0</td>
+</tr>
+<tr class="even">
+<td>LightOnOCR-2</td>
+<td>1B</td>
+<td style="text-align: right;">42.2</td>
+<td style="text-align: right;"><strong>45.9</strong></td>
+<td style="text-align: right;">47.1</td>
+<td style="text-align: right;">34.5</td>
+<td style="text-align: right;">100.0</td>
+</tr>
+<tr class="odd">
+<td>dots.ocr</td>
+<td>1.7B</td>
+<td style="text-align: right;">41.6</td>
+<td style="text-align: right;">39.1</td>
+<td style="text-align: right;">81.4</td>
+<td style="text-align: right;">29.9</td>
+<td style="text-align: right;">96.9</td>
+</tr>
+<tr class="even">
+<td>GLM-OCR</td>
+<td>0.9B</td>
+<td style="text-align: right;">40.5</td>
+<td style="text-align: right;">36.9</td>
+<td style="text-align: right;">88.6</td>
+<td style="text-align: right;">27.1</td>
+<td style="text-align: right;">96.9</td>
+</tr>
+<tr class="odd">
+<td>PaddleOCR-VL 1.6</td>
+<td>0.9B</td>
+<td style="text-align: right;">38.6</td>
+<td style="text-align: right;">31.2</td>
+<td style="text-align: right;">95.7</td>
+<td style="text-align: right;">27.7</td>
+<td style="text-align: right;">84.7</td>
+</tr>
+<tr class="even">
+<td>PaddleOCR-VL 1</td>
+<td>0.9B</td>
+<td style="text-align: right;">38.2</td>
+<td style="text-align: right;">32.3</td>
+<td style="text-align: right;">95.7</td>
+<td style="text-align: right;">24.9</td>
+<td style="text-align: right;">88.8</td>
+</tr>
+<tr class="odd">
+<td>NuExtract3</td>
+<td>4.5B</td>
+<td style="text-align: right;">37.8</td>
+<td style="text-align: right;">41.6</td>
+<td style="text-align: right;">41.4</td>
+<td style="text-align: right;">30.5</td>
+<td style="text-align: right;">100.0</td>
+</tr>
+<tr class="even">
+<td>DeepSeek-OCR</td>
+<td>~3B</td>
+<td style="text-align: right;">34.6</td>
+<td style="text-align: right;">27.2</td>
+<td style="text-align: right;">92.9</td>
+<td style="text-align: right;">23.2</td>
+<td style="text-align: right;">100.0</td>
+</tr>
+<tr class="odd">
+<td>FireRed-OCR</td>
+<td>2.1B</td>
+<td style="text-align: right;">33.3</td>
+<td style="text-align: right;">30.8</td>
+<td style="text-align: right;">62.9</td>
+<td style="text-align: right;">25.4</td>
+<td style="text-align: right;">77.6</td>
+</tr>
+<tr class="even">
+<td>Unlimited-OCR</td>
+<td>3.3B</td>
+<td style="text-align: right;">30.6</td>
+<td style="text-align: right;">29.0</td>
+<td style="text-align: right;">50.0</td>
+<td style="text-align: right;">25.4</td>
+<td style="text-align: right;">89.8</td>
+</tr>
+</tbody>
+</table>
+<p><code>old_scans</code> is the headline column. <code>present</code> = did the model transcribe the body text; <code>absent</code> = did it <em>leave out</em> the boilerplate the bench wants dropped; <code>order</code> = reading order; <code>no-halluc</code> = an automatic check for junk or hallucinated characters. Parameter counts are vendor-reported and approximate.</p>
+</section>
+<section id="what-the-score-rewards" class="level2">
+<h2 class="anchored" data-anchor-id="what-the-score-rewards">What the score rewards</h2>
+<p>Of those three kinds of check, it’s the <code>absent</code> ones that make the ranking behave oddly. They reward a model for <em>not</em> transcribing things — the letterhead, the archival stamp, the page number. So a model that reads the page more faithfully, keeping all of that, can score <strong>lower</strong> than one that reads less of it but drops the boilerplate.</p>
+<p>That’s the reversal from the top. PaddleOCR-VL’s layout pipeline drops the running headers and footers for free (<code>absent</code> 95.7), so it scores well even though it reads less of the body text (<code>present</code> 31.2). NuExtract3 reads more of the page (<code>present</code> 41.6) but keeps the letterheads, so the <code>absent</code> tests mark it down. The two end up with almost the same headline score while doing quite different things to the page.</p>
+<p>It’s easier to see across all ten models if you line up the headline ranking next to the ranking by transcription alone:</p>
+<figure style="margin: 1.75rem auto; text-align: center;" class="figure">
+<svg viewbox="0 0 680 460" role="img" aria-labelledby="flip-title" style="max-width: 640px; width: 100%; height: auto; font-family: inherit;">
+<title id="flip-title">
+The same ten OCR models ranked by headline score versus by transcription; NuExtract3 rises and PaddleOCR-VL 1.6 falls.
+</title>
+<text x="248" y="30" text-anchor="end" font-size="13" font-weight="600" fill="currentColor">Ranked by headline score</text> <text x="432" y="30" text-anchor="start" font-size="13" font-weight="600" fill="currentColor">Ranked by transcription only</text> <line x1="255" y1="70" x2="425" y2="108" stroke="currentColor" stroke-opacity="0.22" stroke-width="1"></line> <line x1="255" y1="108" x2="425" y2="70" stroke="currentColor" stroke-opacity="0.22" stroke-width="1"></line> <line x1="255" y1="146" x2="425" y2="184" stroke="currentColor" stroke-opacity="0.22" stroke-width="1"></line> <line x1="255" y1="184" x2="425" y2="222" stroke="currentColor" stroke-opacity="0.22" stroke-width="1"></line> <line x1="255" y1="222" x2="425" y2="298" stroke="#cf222e" stroke-width="2.5"></line> <line x1="255" y1="260" x2="425" y2="260" stroke="currentColor" stroke-opacity="0.22" stroke-width="1"></line> <line x1="255" y1="298" x2="425" y2="146" stroke="#1a7f37" stroke-width="2.5"></line> <line x1="255" y1="336" x2="425" y2="412" stroke="currentColor" stroke-opacity="0.22" stroke-width="1"></line> <line x1="255" y1="374" x2="425" y2="336" stroke="currentColor" stroke-opacity="0.22" stroke-width="1"></line> <line x1="255" y1="412" x2="425" y2="374" stroke="currentColor" stroke-opacity="0.22" stroke-width="1"></line> <circle cx="255" cy="222" r="3" fill="#cf222e"></circle><circle cx="425" cy="298" r="3" fill="#cf222e"></circle> <circle cx="255" cy="298" r="3" fill="#1a7f37"></circle><circle cx="425" cy="146" r="3" fill="#1a7f37"></circle> <text x="245" y="74" text-anchor="end" font-size="13" fill="currentColor" fill-opacity="0.8">olmOCR-2 <tspan font-size="11" fill-opacity="0.5">7B</tspan></text> <text x="245" y="112" text-anchor="end" font-size="13" fill="currentColor" fill-opacity="0.8">LightOnOCR-2 <tspan font-size="11" fill-opacity="0.5">1B</tspan></text> <text x="245" y="150" text-anchor="end" font-size="13" fill="currentColor" fill-opacity="0.8">dots.ocr <tspan font-size="11" fill-opacity="0.5">1.7B</tspan></text> <text x="245" y="188" text-anchor="end" font-size="13" fill="currentColor" fill-opacity="0.8">GLM-OCR <tspan font-size="11" fill-opacity="0.5">0.9B</tspan></text> <text x="245" y="226" text-anchor="end" font-size="13" fill="#cf222e" font-weight="600">PaddleOCR-VL 1.6 <tspan font-size="11" font-weight="400" fill-opacity="0.65">0.9B</tspan></text> <text x="245" y="264" text-anchor="end" font-size="13" fill="currentColor" fill-opacity="0.8">PaddleOCR-VL 1 <tspan font-size="11" fill-opacity="0.5">0.9B</tspan></text> <text x="245" y="302" text-anchor="end" font-size="13" fill="#1a7f37" font-weight="600">NuExtract3 <tspan font-size="11" font-weight="400" fill-opacity="0.65">4.5B</tspan></text> <text x="245" y="340" text-anchor="end" font-size="13" fill="currentColor" fill-opacity="0.8">DeepSeek-OCR <tspan font-size="11" fill-opacity="0.5">~3B</tspan></text> <text x="245" y="378" text-anchor="end" font-size="13" fill="currentColor" fill-opacity="0.8">FireRed-OCR <tspan font-size="11" fill-opacity="0.5">2.1B</tspan></text> <text x="245" y="416" text-anchor="end" font-size="13" fill="currentColor" fill-opacity="0.8">Unlimited-OCR <tspan font-size="11" fill-opacity="0.5">3.3B</tspan></text> <text x="435" y="74" text-anchor="start" font-size="13" fill="currentColor" fill-opacity="0.8">LightOnOCR-2 <tspan font-size="11" fill-opacity="0.5">1B</tspan></text> <text x="435" y="112" text-anchor="start" font-size="13" fill="currentColor" fill-opacity="0.8">olmOCR-2 <tspan font-size="11" fill-opacity="0.5">7B</tspan></text> <text x="435" y="150" text-anchor="start" font-size="13" fill="#1a7f37" font-weight="600">NuExtract3 <tspan font-size="11" font-weight="400" fill-opacity="0.65">4.5B</tspan></text> <text x="435" y="188" text-anchor="start" font-size="13" fill="currentColor" fill-opacity="0.8">dots.ocr <tspan font-size="11" fill-opacity="0.5">1.7B</tspan></text> <text x="435" y="226" text-anchor="start" font-size="13" fill="currentColor" fill-opacity="0.8">GLM-OCR <tspan font-size="11" fill-opacity="0.5">0.9B</tspan></text> <text x="435" y="264" text-anchor="start" font-size="13" fill="currentColor" fill-opacity="0.8">PaddleOCR-VL 1 <tspan font-size="11" fill-opacity="0.5">0.9B</tspan></text> <text x="435" y="302" text-anchor="start" font-size="13" fill="#cf222e" font-weight="600">PaddleOCR-VL 1.6 <tspan font-size="11" font-weight="400" fill-opacity="0.65">0.9B</tspan></text> <text x="435" y="340" text-anchor="start" font-size="13" fill="currentColor" fill-opacity="0.8">FireRed-OCR <tspan font-size="11" fill-opacity="0.5">2.1B</tspan></text> <text x="435" y="378" text-anchor="start" font-size="13" fill="currentColor" fill-opacity="0.8">Unlimited-OCR <tspan font-size="11" fill-opacity="0.5">3.3B</tspan></text> <text x="435" y="416" text-anchor="start" font-size="13" fill="currentColor" fill-opacity="0.8">DeepSeek-OCR <tspan font-size="11" fill-opacity="0.5">~3B</tspan></text>
+</svg>
+<figcaption style="font-size: 0.85rem; opacity: 0.75; max-width: 540px; margin: 0.5rem auto 0;">
+The same ten models, ranked by the headline <code>old_scans</code> score (left) and by transcription alone (<code>present</code>, right). NuExtract3 climbs from 7th to 3rd once boilerplate removal stops counting; PaddleOCR-VL 1.6 slips the other way.
+</figcaption>
+</figure>
+</section>
+<section id="whether-thats-the-right-score-depends-on-what-youre-doing" class="level2">
+<h2 class="anchored" data-anchor-id="whether-thats-the-right-score-depends-on-what-youre-doing">Whether that’s the right score depends on what you’re doing</h2>
+<p>This is a perfectly reasonable score if you want clean, linearised reading-order text for LLM training — which is exactly what olmOCR is built for. There, the letterhead and the page number really are noise.</p>
+<p>But if you’re doing OCR of an archive, the letterhead, the stamp, and the marginal note are often part of the record, and you’d want them kept. Under that goal the same ranking works against you: the models that “over-extract” here are the ones you’d actually want. So which of these rankings is the right one depends on what you’re going to do with the text, and it’s worth being clear about that before reading much into a single number.</p>
+<p>There’s a more general point here about how much detail a score gives you. Most leaderboards report one top-line number per model. Breaking that down by subset — old scans, clean print, tables, handwriting — already helps a lot if you only care about one kind of document. But you can often go a level further, as here: splitting a subset’s score into what it’s actually testing — did the model read the text, did it drop the boilerplate, did it get the order right — is what tells you what you’re really getting. The more granular the score, the easier it is to work out whether a model fits the problem in front of you.</p>
+</section>
+<section id="a-few-other-things-i-noticed" class="level2">
+<h2 class="anchored" data-anchor-id="a-few-other-things-i-noticed">A few other things I noticed</h2>
+<ul>
+<li><strong>The bigger models don’t obviously win.</strong> On pure transcription (<code>present</code>), a 1B model — LightOnOCR-2 (45.9) — reads as much of the page as models four to seven times its size, and more than several of them.</li>
+<li><strong>PaddleOCR-VL-1.6 sometimes produces stray characters.</strong> On some English-only scans it emits Chinese and Japanese glyphs (场, 景, 民, 生) that aren’t on the page — you can see it in the no-hallucination column (84.7, against 100 for several others). I’d treat this as something to check rather than a firm result: I ran the model with its default pipeline and didn’t tune it, so some of this could be down to how I ran it rather than the model itself.</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="cjk-hallucination.png" class="img-fluid figure-img"></p>
+<figcaption>PaddleOCR-VL 1.6 on an English handwritten letter: it inserts the Chinese characters 场景 mid-sentence (“in the same 场景”). Source scan on the left, model output on the right.</figcaption>
+</figure>
+</div>
+<ul>
+<li><strong>olmOCR-2 scores highest</strong> (46.8), which isn’t very surprising — it’s the model olmOCR-bench was built alongside, trained for exactly this kind of output. Even so, it gets fewer than half the checks right, a fair reminder of how hard these scans still are.</li>
+</ul>
+</section>
+<section id="how-i-ran-this" class="level2">
+<h2 class="anchored" data-anchor-id="how-i-ran-this">How I ran this</h2>
+<p>The whole thing runs on the Hugging Face Hub, driven by an agent — no local GPU, and nothing done by hand. Each model is one <a href="https://huggingface.co/docs/huggingface_hub/guides/cli#hf-jobs">HF Job</a> that writes its transcriptions to a shared <a href="https://huggingface.co/docs/hub/storage-buckets">storage bucket</a>. olmOCR-2 I <a href="https://huggingface.co/docs/hub/jobs-serving">served with a single <code>vllm serve</code> command</a> on a Job with an exposed port, then hit it with an OpenAI client — using olmOCR’s own prompt and 1288px render, so the model runs the way it’s meant to. One CPU Job then scores every model’s output together with the stock <code>olmocr.bench.benchmark</code>.</p>
+<p>The scoring step is the part I keep coming back to. Normally, reproducing or extending a benchmark like this means sitting with a GPU: install the model, render the pages, run inference, collect the outputs, score them, then do it all again for the next model. Here, adding a model is just one more Job. I told an agent which model to run, and it launched the Job, waited for it, and re-scored everything together. Half the models in the table were already in the bucket from an earlier run, so re-scoring the whole set alongside the new ones took about a minute. Because the models, the outputs, and the scoring all live on the Hub — as Jobs and scripts rather than on my laptop — someone else can re-run this, or drop in a model I didn’t try, without redoing any of the setup.</p>
+<p>As a check that the setup measures what it should, I ran the original PaddleOCR-VL through it and got back its published old_scans figure, within the benchmark’s confidence interval.</p>
+<p>The scripts are here: <a href="https://github.com/davanstrien/ocr-bench/tree/main/experiments/olmocr-bench-oldscans">ocr-bench/experiments/olmocr-bench-oldscans</a>.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/danielvanstrien\.xyz");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
