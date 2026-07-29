@@ -7,8 +7,8 @@
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="../../site_libs/quarto-html/light-border.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.9.38">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.10.18">
 
   <meta name="author" content="Daniel van Strien">
   <meta name="dcterms.date" content="2026-05-05">
@@ -22,10 +22,13 @@
     /* Default styles provided by pandoc.
     ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
     */
-    code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
-    div.columns{display: flex; gap: min(4vw, 1.5em);}
-    div.column{flex: auto; overflow-x: auto;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
     ul.task-list{list-style: none;}
     ul.task-list li input[type="checkbox"] {
@@ -207,7 +210,7 @@
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
 <div class="quarto-title-author-name">
-Daniel van Strien 
+Daniel van Strien
 </div>
         <p class="quarto-title-affiliation">
             Hugging Face — Machine Learning Librarian
@@ -481,17 +484,17 @@ Daniel van Strien
 </section>
 <section id="the-full-prompt-ill-paste" class="slide level2 smaller">
 <h2>The full prompt I’ll paste</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb1-1"><a></a>Fine-tune a model on biglam/on_the_books to identify Jim Crow laws.</span>
-<span id="cb1-2"><a></a>Train via hf jobs and push the trained model to my namespace.</span>
-<span id="cb1-3"><a></a></span>
-<span id="cb1-4"><a></a>Run `hf --help` to understand the Hub CLI and `hf jobs uv run --help`</span>
-<span id="cb1-5"><a></a>to understand how to submit uv scripts. You can use `uv run --with`</span>
-<span id="cb1-6"><a></a>to run small scripts for exploring the dataset.</span>
-<span id="cb1-7"><a></a></span>
-<span id="cb1-8"><a></a>Start by exploring the dataset structure, then proceed to choose</span>
-<span id="cb1-9"><a></a>and fine-tune an appropriate model.</span>
-<span id="cb1-10"><a></a></span>
-<span id="cb1-11"><a></a>Push the final model to davanstrien/dhd-demo.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb1-1"><a aria-label="1"></a>Fine-tune a model on biglam/on_the_books to identify Jim Crow laws.</span>
+<span id="cb1-2"><a aria-label="2"></a>Train via hf jobs and push the trained model to my namespace.</span>
+<span id="cb1-3"><a aria-label="3"></a></span>
+<span id="cb1-4"><a aria-label="4"></a>Run `hf --help` to understand the Hub CLI and `hf jobs uv run --help`</span>
+<span id="cb1-5"><a aria-label="5"></a>to understand how to submit uv scripts. You can use `uv run --with`</span>
+<span id="cb1-6"><a aria-label="6"></a>to run small scripts for exploring the dataset.</span>
+<span id="cb1-7"><a aria-label="7"></a></span>
+<span id="cb1-8"><a aria-label="8"></a>Start by exploring the dataset structure, then proceed to choose</span>
+<span id="cb1-9"><a aria-label="9"></a>and fine-tune an appropriate model.</span>
+<span id="cb1-10"><a aria-label="10"></a></span>
+<span id="cb1-11"><a aria-label="11"></a>Push the final model to davanstrien/dhd-demo.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="fragment">
 <p><em>The extra lines point the agent at the right docs and naming. The core task is still the first line.</em></p>
 </div>

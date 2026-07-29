@@ -6,10 +6,11 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2026-06-02">
-<meta name="description" content="A quick look at using Hugging Face Jobs + Storage Buckets to filter a big dataset — DuckDB does the heavy scan, Polars picks up the result, a bucket is the handoff. ~1 TB filtered for about $2.40.">
+<meta name="author" content="Daniel van Strien">
+<meta name="dcterms.date" content="2026-07-28">
+<meta name="description" content="I pasted two links into Claude Code and asked for a training recipe with early smoke tests on HF Jobs. What came back — and why agent-legible infrastructure is what made it work.">
 
-<title>Filtering 1 TB of FineWeb-Edu for $2.40 using Buckets and Jobs – Daniel van Strien</title>
+<title>A model release became a training recipe the same day. I mostly watched. – Daniel van Strien</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -184,30 +185,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Filtering 1 TB of FineWeb-Edu for $2.40 using Buckets and Jobs</h1>
+<h1 class="title">A model release became a training recipe the same day. I mostly watched.</h1>
+<p class="subtitle lead">LiquidAI shipped new encoder models this morning. By the evening there was a fine-tuning recipe, a tutorial dataset, and a working classifier — built by an agent on HF Jobs for under $5 in GPU time.</p>
   <div class="quarto-categories">
     <div class="quarto-category">huggingface</div>
-    <div class="quarto-category">data-engineering</div>
-    <div class="quarto-category">polars</div>
-    <div class="quarto-category">duckdb</div>
     <div class="quarto-category">jobs</div>
+    <div class="quarto-category">agents</div>
+    <div class="quarto-category">fine-tuning</div>
+    <div class="quarto-category">classification</div>
   </div>
   </div>
 
 <div>
   <div class="description">
-    A quick look at using Hugging Face Jobs + Storage Buckets to filter a big dataset — DuckDB does the heavy scan, Polars picks up the result, a bucket is the handoff. ~1 TB filtered for about $2.40.
+    I pasted two links into Claude Code and asked for a training recipe with early smoke tests on HF Jobs. What came back — and why agent-legible infrastructure is what made it work.
   </div>
 </div>
 
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Daniel van Strien </p>
+          </div>
+  </div>
     
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">June 2, 2026</p>
+      <p class="date">July 28, 2026</p>
     </div>
   </div>
   
@@ -219,80 +227,66 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>I filtered ~1 TB of <a href="https://huggingface.co/datasets/HuggingFaceFW/fineweb-edu">FineWeb-Edu</a> down to its high-quality, long-context core for about <strong>$2.40</strong> — no cluster, no download, one command on <a href="https://huggingface.co/docs/huggingface_hub/guides/cli#hf-jobs">Hugging Face Jobs</a>.</p>
-<p>Here’s the quick version of how, because it’s a pattern you (or your agent) can reuse for almost any “filter a big dataset” job.</p>
-<section id="the-idea" class="level2">
-<h2 class="anchored" data-anchor-id="the-idea">The idea</h2>
-<p>The trick is a <a href="https://huggingface.co/docs/hub/storage-buckets">Hugging Face Storage Bucket</a>: S3-like, mutable storage on the Hub that any tool can read and write. That lets each stage of a pipeline use whichever engine fits and hand off through the bucket:</p>
+<p>This week LiquidAI released <a href="https://huggingface.co/blog/LiquidAI/lfm2-5-encoders">LFM2.5-Encoders</a>. They’re small bidirectional encoders (230M and 350M) that they report beating ModernBERT-base on GLUE/SuperGLUE, with an 8,192-token context. Since I’m still excited about smaller models that are very fast and cheap to run I wanted to see how this new encoder would do. I have had a previous idea of using the Hub’s <code>task_categories</code> metadata to train a classifier that could suggest task categories for datasets that don’t declare any, so I thought I’d try that.</p>
+<p>What I actually did was paste the blog post and their cookbook repo into Claude Code and say, more or less: <em>turn this into a recipe for my <a href="https://github.com/davanstrien/uv-scripts-for-ai">uv-scripts collection</a>, and smoke-test it on <a href="https://huggingface.co/docs/hub/jobs-overview">Jobs</a> early, before polishing anything</em>. Then I answered questions when asked and checked in occasionally.</p>
+<section id="what-came-back" class="level2">
+<h2 class="anchored" data-anchor-id="what-came-back">What came back</h2>
+<p>By the evening there was:</p>
 <ul>
-<li><strong>DuckDB</strong> does the heavy, out-of-core scan + filter of the ~1 TB and writes the result to the bucket.</li>
-<li><strong>Polars</strong> — the dataframe tool I reach for — reads that working set back and explores it.</li>
+<li><strong>A recipe</strong>: <a href="https://huggingface.co/datasets/uv-scripts/classification/blob/main/train-classifier.py"><code>train-classifier.py</code></a> — one self-contained file that fine-tunes an encoder on any Hub dataset and pushes the trained model back to the Hub. Single-label and multi-label, auto-detected from the label column. Defaults to the new LFM2.5 encoder but takes any encoder via <code>--model</code>.</li>
+<li><strong>A tutorial dataset</strong>: <a href="https://huggingface.co/datasets/davanstrien/dataset-cards-with-task-categories">dataset-cards-with-task-categories</a> — 21k Hub dataset cards labelled with their <code>task_categories</code> metadata. A nicely self-referential task: predict a dataset’s task categories from its card’s prose.</li>
+<li><strong>A working model</strong>: <a href="https://huggingface.co/davanstrien/dataset-card-task-classifier">dataset-card-task-classifier</a>, trained in 20 minutes on an A100 for about $0.80.</li>
 </ul>
-<p>Both run on Jobs: serverless compute, pay by the minute, nothing to set up.</p>
+<p>The whole thing reproduces with one command:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">hf</span> jobs uv run <span class="at">--flavor</span> a100-large <span class="at">--secrets</span> HF_TOKEN <span class="dt">\</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  https://huggingface.co/datasets/uv-scripts/classification/raw/main/train-classifier.py <span class="dt">\</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  davanstrien/dataset-cards-with-task-categories your-username/card-task-classifier <span class="dt">\</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--label-column</span> labels <span class="at">--max-length</span> 1024 <span class="at">--batch-size</span> 32</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The model isn’t a benchmark result — micro-F1 0.69 across 35 labels — but it has one property I care about: its confidence is honest.</p>
+<p><img src="confidence-bands.png" class="img-fluid"></p>
+<p>That’s the shape you want for the obvious application: suggesting <code>task_categories</code> for the roughly two-thirds of Hub datasets that don’t declare any, auto-applying only the confident ones, and sending the rest to a human. The label set is capped to the task categories that actually work as filters on <a href="https://huggingface.co/datasets">hf.co/datasets</a>, so every suggestion is a real, filterable tag.</p>
+<div class="callout callout-style-simple callout-note">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-body-container">
+<p>Everything in this post is public: the <a href="https://huggingface.co/datasets/uv-scripts/classification">recipe</a> (part of <a href="https://huggingface.co/uv-scripts">uv-scripts</a>, source on <a href="https://github.com/davanstrien/uv-scripts-for-ai">GitHub</a>), the <a href="https://huggingface.co/datasets/davanstrien/dataset-cards-with-task-categories">tutorial dataset</a>, and the <a href="https://huggingface.co/davanstrien/dataset-card-task-classifier">trained model</a>.</p>
+</div>
+</div>
+</div>
 </section>
-<section id="a-small-example" class="level2">
-<h2 class="anchored" data-anchor-id="a-small-example">A small example</h2>
-<p>DuckDB reads the dataset straight off the Hub, filters as it goes, and writes the matching rows to a bucket:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> duckdb</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>con <span class="op">=</span> duckdb.<span class="ex">connect</span>()</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>con.sql(<span class="st">"INSTALL httpfs; LOAD httpfs;"</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>con.sql(<span class="st">"""</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="st">  COPY (</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="st">    SELECT id, dump, score, token_count, text</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="st">    FROM read_parquet('hf://datasets/HuggingFaceFW/fineweb-edu/sample/350BT/*.parquet')</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="st">    WHERE int_score &gt;= 4 AND token_count &gt;= 4000 AND language_score &gt;= 0.95</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="st">  ) TO 'filtered.parquet' (FORMAT parquet)</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span>)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># push the result to a bucket</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> HfApi</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>HfApi().batch_bucket_files(<span class="st">"me/work"</span>, add<span class="op">=</span>[(<span class="st">"filtered.parquet"</span>, <span class="st">"hq/filtered.parquet"</span>)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Then Polars picks the working set back up from the bucket and you iterate — group, count, slice, whatever:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars_hf <span class="im">as</span> plhf  <span class="co"># tiny plugin: adds hf://buckets support to Polars</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>(</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    plhf.scan_bucket(<span class="st">"hf://buckets/me/work/hq/filtered.parquet"</span>)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"dump"</span>)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    .agg(pl.<span class="bu">len</span>().alias(<span class="st">"docs"</span>), pl.col(<span class="st">"token_count"</span>).<span class="bu">sum</span>().alias(<span class="st">"tokens"</span>))</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The whole thing is one Job — a uv script with inline dependencies, no environment to manage:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">hf</span> jobs uv run pipeline.py <span class="at">--secrets</span> HF_TOKEN <span class="at">--flavor</span> cpu-performance</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="what-the-smoke-tests-caught" class="level2">
+<h2 class="anchored" data-anchor-id="what-the-smoke-tests-caught">What the smoke tests caught</h2>
+<p>The agent’s smoke tests caught two real bugs I doubt I’d have found faster myself: a transformers v5 crash when a custom classification head doesn’t declare its config class, and a genuinely sneaky <code>datasets</code> behaviour where writing encoded labels back into a same-named column silently casts them to the <em>original</em> column’s schema — multi-hot floats became strings, and training fell over. It also caught the trap in the tutorial data: dataset cards <em>contain</em> their own <code>task_categories</code> in the YAML frontmatter, so training on raw cards would have been label leakage. The frontmatter gets stripped, and rows that still leak get dropped.</p>
+<p>None of that is heroic. It’s the ordinary debugging you’d do yourself — the point is that each iteration was a ~$0.25, ten-minute GPU job away, so the agent could just <em>run</em> the thing instead of reasoning about whether it would work.</p>
+<p>This worked because the infrastructure is legible to agents: every recipe in the collection is a single file that runs from a URL with the same <code>input output</code> argument shape; Jobs gives a disposable GPU with a cost cap and no environment to break; the Hub is the filesystem on both ends. I steered — precision over recall, which label taxonomy to target, where the recipe should live — and reviewed the results. The agent did the typing, the debugging, and the waiting.</p>
+<p>Total GPU spend, including every failed smoke test and a full retrain after I changed my mind about the labels: under $5.</p>
 </section>
-<section id="what-you-get" class="level2">
-<h2 class="anchored" data-anchor-id="what-you-get">What you get</h2>
-<table class="caption-top table">
-<tbody>
-<tr class="odd">
-<td>In</td>
-<td>~946 GiB / ~339 M rows of FineWeb-Edu</td>
-</tr>
-<tr class="even">
-<td>Out</td>
-<td>607,190 high-quality long-context docs (4.81 B tokens)</td>
-</tr>
-<tr class="odd">
-<td>Time / cost</td>
-<td>~73 min, <strong>~$2.40</strong>, one Job, no standing infra</td>
-</tr>
-</tbody>
-</table>
-<p>The filtered slice is public if you want to poke at it: <a href="https://huggingface.co/buckets/davanstrien/fineweb-edu-long-hq-350bt">davanstrien/fineweb-edu-long-hq-350bt</a> — a bucket with the parquet and a README (which buckets render, so it doubles as the dataset card).</p>
-<p>And the 1 TB scan happens <strong>once</strong>. After that the slice lives in the bucket, so every follow-up question is a one-second Polars query — not another terabyte scan.</p>
-</section>
-<section id="the-agent-angle" class="level2">
-<h2 class="anchored" data-anchor-id="the-agent-angle">The agent angle</h2>
-<p>This whole pipeline was built and run by an agent on Jobs. I pointed it at the problem; it wrote the DuckDB and Polars scripts, launched them, read the logs, and iterated — with the bucket as the shared scratch space between attempts.</p>
-<p>That’s the real point. An agent doesn’t need one library that does everything. It reaches for whatever fits each step, as long as there’s a consistent place to put the data in between. On the Hub, that place is a bucket — and Jobs is the compute.</p>
-</section>
-<section id="try-it" class="level2">
-<h2 class="anchored" data-anchor-id="try-it">Try it</h2>
-<p>Hand your agent (or yourself) the building blocks and let it work out the rest:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">hf</span> jobs uv run <span class="at">--help</span>     <span class="co"># run any uv script on Hugging Face compute</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">hf</span> buckets <span class="at">--help</span>         <span class="co"># mutable, S3-like storage on the Hub</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Docs: <a href="https://huggingface.co/docs/huggingface_hub/guides/cli#hf-jobs">Jobs</a> · <a href="https://huggingface.co/docs/hub/storage-buckets">Storage Buckets</a>. The Polars bucket plugin (alpha, a stopgap until native support lands) is <a href="https://github.com/davanstrien/polars-hf"><code>polars-hf</code></a>.</p>
-<p>If you try the pattern on your own pipeline, I’d love to hear how it goes.</p>
+<section id="try-it-with-your-own-agent" class="level2">
+<h2 class="anchored" data-anchor-id="try-it-with-your-own-agent">Try it with your own agent</h2>
+<p>If you want the same loop on your own data, you don’t need to write anything — hand your agent a prompt along these lines:</p>
+<pre><code>I want to train a text classifier using LiquidAI's LFM2.5 encoder on
+Hugging Face Jobs.
+
+- First run `hf --help` and `hf jobs --help` to learn the CLI, and check
+  I'm logged in with `hf auth whoami`.
+- Read the base model's card with
+  `hf models card LiquidAI/LFM2.5-Encoder-350M` so you know its context
+  length and languages.
+- Use this uv-scripts recipe as the starting point — read its docstring
+  before running anything:
+  https://huggingface.co/datasets/uv-scripts/classification/raw/main/train-classifier.py
+- Ask me which Hub dataset I want to train on, then inspect it and
+  confirm the text and label columns with me (single- and multi-label
+  are auto-detected from the label column).
+- Run a cheap smoke test first (--max-samples 1000 --epochs 1 on
+  a10g-small), show me the metrics from the job logs, and ask before
+  launching the full run.
+- When the full run finishes, read the pushed model's card with
+  `hf models card &lt;output-repo&gt;` and give me the link plus a summary of
+  the eval metrics.</code></pre>
+<p>The recipe’s docstring carries the rest — flavors, long-context flags, and what the pushed model card contains.</p>
 
 
 </section>
