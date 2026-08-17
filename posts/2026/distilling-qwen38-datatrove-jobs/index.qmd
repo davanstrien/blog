@@ -1,0 +1,250 @@
+---
+title: "Distilling Qwen3.8 with datatrove on Hugging Face Jobs"
+subtitle: "35,000 card summaries for $16, no local GPU. Part 1: the data."
+date: "2026-08-17"
+author: "Daniel van Strien"
+categories: [synthetic-data, hf-jobs, datatrove, datasets]
+description: "datatrove's new Jobs backend plus a days-old 27B teacher: regenerating a 35,837-summary training dataset in one afternoon for $15.58, with a calibration-first workflow and length-controllable outputs."
+format:
+  html:
+    toc: false
+---
+
+Datatrove just had a [new release](https://github.com/huggingface/datatrove/releases/tag/v0.10.0) which added support for a Jobs backend. In this blog post I'll show how we can use this to create a dataset for fine-tuning a small task-specific model with zero local GPU required!
+
+[datatrove](https://github.com/huggingface/datatrove) is Hugging Face's library for large-scale data processing — the same pipelines behind [FineWeb](https://huggingface.co/datasets/HuggingFaceFW/fineweb) — built from small composable steps: readers, filters, writers.
+
+[Hugging Face Jobs](https://huggingface.co/docs/huggingface_hub/guides/jobs) provide compute for AI and data workflows, allowing you to run workloads on Hugging Face infrastructure with a familiar UV & Docker-like interface.
+
+In this post I'll use both to run a 27B teacher ([Qwen/Qwen3.8-27B-FP8](https://huggingface.co/Qwen/Qwen3.8-27B-FP8)) over ~36,000 model and dataset cards and produce the training data for a small summarisation model. The whole thing ran in an afternoon, cost about $16, and never touched a local GPU.
+
+## The use case
+
+There are currently over 3 million models and 1 million datasets on the Hub. Finding the right model or dataset for you can be tricky. One way to help with this is via semantic search or similarity search. I've experimented with this quite a bit and tried different approaches. When using an existing embedding model I've found using a summary of the card to work better as the input for embeddings vs the raw cards. These short "tl;dr" summaries can also be another useful way of seeing quickly what a model or dataset is about too. I've been running a version of this for a while — the earlier models and datasets are in the [hub-tldr collection](https://huggingface.co/collections/davanstrien/hub-tldr-67af533f604b45432f3b82a5).
+
+How can we create this kind of model? The approach is distillation: run a strong open model over the cards to generate summaries, then fine-tune a small model on the output. This post covers the data generation. Training the student is part 2.
+
+```{mermaid}
+%%{init: {"theme": "neutral", "themeVariables": {"fontFamily": "sans-serif"}}}%%
+flowchart LR
+    dumps[("card dumps<br/>(librarian-bots)")] --> prep["corpus prep<br/>CPU, polars"]
+    prep --> corpus[("37,837 cards")]
+    subgraph jobs["HF Jobs — 4 × a100"]
+        reader["reader<br/>(slice per arm)"] --> filter["stub filter<br/>(CPU)"]
+        filter --> teacher["Qwen3.8-27B<br/>(sglang)"]
+    end
+    corpus --> reader
+    teacher --> bucket[("bucket<br/>rotated parquet")]
+    bucket --> ds[("hub-tldr-v4<br/>35,837 summaries")]
+    classDef default fill:#ffffff,stroke:#8a8a8a,color:#222222;
+    classDef store fill:#f4f4f0,stroke:#8a8a8a,color:#222222;
+    class dumps,corpus,bucket,ds store;
+    style jobs fill:#fbfbf8,stroke:#b5b5b0,color:#555555;
+```
+
+## Multi-step pipelines in datatrove
+
+For a small model like a card summary model we often deploy it with certain constraints. One of these is that we want to remove very short cards with too little info to really summarise.
+
+We can use a cheap CPU step in datatrove to do this. The corpus prep already flags these stub cards, so filtering them is one line in the pipeline:
+
+```python
+# one line between the reader and the GPU stage:
+LambdaFilter(lambda doc: doc.metadata.get("stratum") != "stub"),
+# don't pay a 27B to say NOT ENOUGH INFORMATION two thousand times
+```
+
+You don't need to put everything in one giant script. The corpus prep here ran as its own CPU-only step, and the rule of thumb is simple: stage cheap CPU work in front of the GPU stage, and split scripts wherever the intermediate output is worth keeping.
+
+## Tuning the prompt against a live Job
+
+The goal is essentially to distil a stronger model into a smaller task-specific model with one job. However, even for the strong model we should think about what prompts make sense for our requirements. For this kind of workload it can be more useful for a dev workflow to spin up a server and iterate on the prompt live. I had an agent build me a small annotation UI — one pair of outputs at a time, blind, keyboard shortcuts — and ranked twelve pairs without knowing which prompt produced which.
+
+The lean variant won 5–3, with four ties. The surprise was what the 27B didn't need: no rules about copying tag strings, no rules banning preamble. The bigger model needed a shorter prompt.
+
+```bash
+# serve the model on a Job, hit it from the laptop with any OpenAI client
+hf jobs run --detach --expose 8000 -s HF_TOKEN --flavor a100-large \
+  lmsysorg/sglang:qwen38-27b \
+  python3 -m sglang.launch_server --model-path Qwen/Qwen3.8-27B-FP8 \
+  --host 0.0.0.0 --port 8000 --reasoning-parser qwen3 --context-length 32768
+```
+
+(See the [Jobs guide](https://huggingface.co/docs/huggingface_hub/guides/jobs) for `hf jobs run` and `--expose`.)
+
+One thing to watch: Qwen3.8 thinks by default, at the highest effort setting. For data generation that's just paying for reasoning tokens on every card, so I turn it off per request. The sampling settings come from the model card.
+
+```python
+# model-card instruct sampling; thinking off per request
+r = client.chat.completions.create(
+    model="Qwen/Qwen3.8-27B-FP8",
+    messages=[{"role": "user", "content": prompt}],
+    temperature=0.7, top_p=0.8, presence_penalty=1.5,
+    extra_body={"top_k": 20, "chat_template_kwargs": {"enable_thinking": False}},
+)
+```
+
+The winning prompt ended up being rather short:
+
+::: {.callout-note collapse="true" title="The full teacher prompt"}
+```text
+Write a TL;DR of this {repo_type} from the Hugging Face Hub, in exactly
+{n_word} sentence{plural}. It will be shown to people scanning repo listings,
+and embedded for semantic search.
+
+<METADATA>{metadata}</METADATA>
+<CARD>{card}</CARD>
+
+Rules:
+- Exactly {n_word} sentence{plural}, {max_words} words maximum in total, in English.
+- Say what the {repo_type} is and what it is for; include domain, data source
+  or provenance, method, languages, and distinctive capabilities when stated.
+- The reader already sees the repo name, tags, license, and download stats —
+  never restate the license, install/usage instructions, or popularity.
+- For derived repos (quantizations, finetunes, adapters, merges), state the
+  relationship and the base model.
+- Do not invent anything, and no quality judgements like "high-quality"
+  unless the card reports a specific measured result.
+- If the card body is uninformative but the metadata identifies what the
+  {repo_type} is, write what can honestly be said from metadata alone.
+- Only if neither says what the {repo_type} is, reply exactly:
+  NOT ENOUGH INFORMATION
+
+Reply with the summary only — no preamble. Start directly with the substance
+as a noun phrase ("A parallel corpus of…", "GGUF quantization of…"), never
+with lead-ins like "This {repo_type} is" or "Here is".
+```
+:::
+
+## Exactly N sentences
+
+I also wanted summary length to be a knob rather than a constant: the same pipeline emits one-, two-, and three-sentence versions (60/25/15), so I can test later how length affects embedding quality. It also happens to make sentence count a verifiable reward, if I ever want to train a student against it.
+
+```python
+def pick_n(repo_id: str) -> int:
+    # deterministic per repo: same N on any retry/resume. 60/25/15.
+    h = int(hashlib.md5(repo_id.encode()).hexdigest(), 16) % 100
+    return 1 if h < 60 else (2 if h < 85 else 3)
+```
+
+## The pipeline
+
+The full pipeline is a reader, the stub filter, and an inference step that runs the teacher on the Job itself. This is the executor for one arm:
+
+```python
+JobsPipelineExecutor(
+    job_name=f"tldrq38-{run_id}",
+    pipeline=[
+        HuggingFaceDatasetReader(
+            CORPUS,
+            dataset_options={"split": f"train[{skip}:{skip + rows}]"},
+            text_key="card_text",
+        ),
+        LambdaFilter(lambda doc: doc.metadata.get("stratum") != "stub"),
+        InferenceRunner(
+            rollout_fn=make_rollout(),
+            config=InferenceConfig(
+                server_type="sglang",
+                model_name_or_path="Qwen/Qwen3.8-27B-FP8",
+                model_max_context=32768,
+                max_concurrent_generations=64,
+                model_kwargs={"attention-backend": "triton",
+                              "sampling-backend": "pytorch",
+                              "cuda-graph-backend-prefill": "disabled"},
+            ),
+            output_writer=ParquetWriter(
+                f"{BUCKET}/{run_id}/gen", batch_size=200, max_file_size=4 * 2**20
+            ),
+        ),
+    ],
+    tasks=1, workers=1,
+    flavor="a100-large",
+    image="lmsysorg/sglang:qwen38-27b", python="3.12",
+    dependencies=["datatrove[io,processing]==0.10.0", "sglang==0.5.17",
+                  "datasets", "orjson", "aiosqlite", "aiofiles"],
+    logging_dir=f"{BUCKET}/{run_id}/logs",
+    timeout="3h", max_retries=0,
+).run()
+```
+
+Launching is one command — the coordinator is not a PEP 723 script; deps go on the CLI so laptop and worker resolve the identical datatrove:
+
+```bash
+uv run --python 3.12 --with "datatrove[io,processing]==0.10.0" \
+    --with datasets --with orjson \
+    pipeline/tldr_gen_qwen38.py --slug vol --skip 0 --rows 9460 --timeout 3h
+```
+
+Three settings do most of the work of making these runs recoverable:
+
+`max_retries=0`. A retry on an inference stage re-runs the whole rank, which means paying twice for GPU time you already spent. Retries are for cheap CPU stages, not for this.
+
+The `max_file_size` on the writer. Streaming to a bucket only protects you if the files rotate: a parquet file without its footer is unreadable, so if the job dies you get nothing back from the open file. Rotating at 4 MB means every closed file survives, and I have twice recovered work from a job that died mid-run because of it.
+
+All constants live inside the rollout closure. dill ships the function, not the module, so module-level globals simply do not exist on the worker. Prompts, regexes, even `import re` go inside. Related: never return `None` from the rollout dict. The parquet writer infers its schema from the first batch, and a `None` appearing later flips the schema mid-file and fails the write after the GPU work is done. Coerce everything, `x or ""`.
+
+## Calibrate before you scale
+
+It makes sense to start small, so I first ran the same script over 50 rows. That one job answers most of the questions that matter before spending real money: does the server start, do the outputs parse, what's the actual token throughput.
+
+The 50-row run isn't only about throughput — it's what catches a mismatched serving stack before it costs real GPU-hours. Serving libraries move fast; the engine version and backends are pinned explicitly in the config.
+
+```bash
+# same script, 50 rows — the whole point is that nothing changes but the args
+uv run --python 3.12 --with "datatrove[io,processing]==0.10.0" \
+    --with datasets --with orjson \
+    pipeline/tldr_gen_qwen38.py --slug calib1 --rows 50 --timeout 45m
+```
+
+Measured from the real calibration:
+
+- 48/48 rollouts (2 stubs filtered), 0 failures
+- prompt tokens: mean 1,312 · max 6,455 (full cards) · completion mean 54
+- prefill-bound at 3–4k tok/s; generation was ~50s of an ~8-min job — startup dominates small jobs
+
+Sizing: 35,837 cards × ~1,312 tokens ≈ 47M prefill tokens ÷ ~3.5k tok/s ≈ 4–5 GPU-hours ≈ $11–14 at $2.50/h → 4 parallel arms of ~9.5k rows, ~1h wall-clock, startup overhead ~$0.30/arm.
+
+```bash
+# fan out with --skip/--rows; per-arm run ids keep state separate,
+# incomplete arms resume free (completed ranks are skipped)
+for skip in 0 9460 18920 28380; do
+  ... --slug vol --skip $skip --rows 9460 ...
+done
+```
+
+## What came out
+
+Final numbers, verified over the full output:
+
+- **35,837 generations** (37,837 corpus rows − 2,000 filtered stubs), **0 failed rollouts** across all 4 arms
+- Sentence-count compliance: **98.5% exact** overall (N=1: 99.4% · N=2: 97.6% · N=3: 96.5%)
+- N distribution landed on target: 60.0 / 25.0 / 15.1
+- 198 graded refusals (0.55%) · 0 reasoning leaks · 0 truncated generations
+- Preamble failures: 19 of 35,837 (0.05%) start "This/Here" — droppable in the SFT build
+- 10 duplicate repo_ids (corpus artifact) — dedup at SFT build
+- Mean completion: 53 tokens
+
+Samples:
+
+- (N=1) `vivasoft/whisper-small-bn`: "A fine-tuned Whisper Small model for Bengali speech recognition, trained on OpenSLR37 data with 2000 steps to achieve an evaluation word error rate of 0.31."
+- (N=1) `DynamicSuperb/EnvironmentalSoundClassification_ESC50-Animals`: "A small audio and text dataset in parquet format for environmental sound classification of animals, derived from the ESC50 source."
+- (N=3) `FabioTrindade/Llama-3.1-8B-Instruct-W8A8KV8-...`: "W8A8KV8 quantization of Meta's Llama-3.1-8B-Instruct, built with the compressed-tensors library for efficient deployment. The model reduces weight and activation precision to 8-bit while maintaining 8-bit key-value cache storage to optimize memory usage during inference. It retains the original instruction-following capabilities of the base Llama 3.1 architecture for general-purpose language tasks."
+
+The full dataset is public at [davanstrien/hub-tldr-v4](https://huggingface.co/datasets/davanstrien/hub-tldr-v4). Training the student on it is part 2.
+
+## What it cost
+
+All on a100-large at $2.50/h (billed durations from `hf jobs inspect`):
+
+| Step | Time | Cost |
+|---|---|---|
+| Prompt dev (served Job, incl. idle) | ~102 min | ~$4.25 |
+| Calibration (3 attempts, 2 failed) | 19.4 min | $0.81 |
+| Volume run (4 parallel arms) | 6.23 GPU-h | $15.58 |
+| **Total** | | **~$20.60** |
+
+The 122B recipe ran $0.86 per 1,000 summaries; this is **$0.43/1k** on a single a100 with a 27B — half the unit cost, no tensor parallelism, and the arms fit a 1-GPU flavor.
+
+## Run it on your own corpus
+
+The pipeline scripts are short enough to read in one sitting, and swapping the corpus and the prompt is most of what it takes to point them at your own data. The dataset from this run is at [davanstrien/hub-tldr-v4](https://huggingface.co/datasets/davanstrien/hub-tldr-v4). The pipeline is the demo, not the model — part 2 will train the student.
