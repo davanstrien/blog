@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Daniel van Strien">
+<meta name="dcterms.date" content="2026-08-17">
+<meta name="description" content="datatrove’s new Jobs backend plus a days-old 27B teacher: regenerating a 35,837-summary training dataset in one afternoon for $15.58, with a calibration-first workflow and length-controllable outputs.">
+
+<title>Distilling Qwen3.8 with datatrove on Hugging Face Jobs – Daniel van Strien</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../icons/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e3adbaa939bcd423dddc8c8a834270b4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="../../../site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="../../../site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="../../../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
+<script defer="" src="https://cloud.umami.is/script.js" data-website-id="85cb27d6-dbf9-43d7-97d0-be4e6724de7a"></script>
+<meta name="msvalidate.01" content="4246174F24A3CB7C9CBEAA94E1FF8E84">
+<meta name="google-site-verification" content="C7WoFOEuA4Msbvvk-kgDd_C6VGphZTp3awy_acXjZYU">
+
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Daniel van Strien</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://danielvanstrien.xyz/ai-patterns-for-glam/"> 
+<span class="menu-text">AI Patterns for GLAM</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../slides.html"> 
+<span class="menu-text">Slides</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../pages/memes/index.qmd"> 
+<span class="menu-text">Memes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/davanstrien"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text">GitHub</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/vanstriendaniel"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../index.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Distilling Qwen3.8 with datatrove on Hugging Face Jobs</h1>
+<p class="subtitle lead">35,000 card summaries for $16, no local GPU. Part 1: the data.</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">synthetic-data</div>
+    <div class="quarto-category">hf-jobs</div>
+    <div class="quarto-category">datatrove</div>
+    <div class="quarto-category">datasets</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    datatrove’s new Jobs backend plus a days-old 27B teacher: regenerating a 35,837-summary training dataset in one afternoon for $15.58, with a calibration-first workflow and length-controllable outputs.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Daniel van Strien </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">August 17, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Datatrove just had a <a href="https://github.com/huggingface/datatrove/releases/tag/v0.10.0">new release</a> which added support for a Jobs backend. In this blog post I’ll show how we can use this to create a dataset for fine-tuning a small task-specific model with zero local GPU required!</p>
+<p><a href="https://github.com/huggingface/datatrove">datatrove</a> is Hugging Face’s library for large-scale data processing — the same pipelines behind <a href="https://huggingface.co/datasets/HuggingFaceFW/fineweb">FineWeb</a> — built from small composable steps: readers, filters, writers.</p>
+<p><a href="https://huggingface.co/docs/huggingface_hub/guides/jobs">Hugging Face Jobs</a> provide compute for AI and data workflows, allowing you to run workloads on Hugging Face infrastructure with a familiar UV &amp; Docker-like interface.</p>
+<p>In this post I’ll use both to run a 27B teacher (<a href="https://huggingface.co/Qwen/Qwen3.8-27B-FP8">Qwen/Qwen3.8-27B-FP8</a>) over ~36,000 model and dataset cards and produce the training data for a small summarisation model. The whole thing ran in an afternoon, cost about $16, and never touched a local GPU.</p>
+<section id="the-use-case" class="level2">
+<h2 class="anchored" data-anchor-id="the-use-case">The use case</h2>
+<p>There are currently over 3 million models and 1 million datasets on the Hub. Finding the right model or dataset for you can be tricky. One way to help with this is via semantic search or similarity search. I’ve experimented with this quite a bit and tried different approaches. When using an existing embedding model I’ve found using a summary of the card to work better as the input for embeddings vs the raw cards. These short “tl;dr” summaries can also be another useful way of seeing quickly what a model or dataset is about too. I’ve been running a version of this for a while — the earlier models and datasets are in the <a href="https://huggingface.co/collections/davanstrien/hub-tldr-67af533f604b45432f3b82a5">hub-tldr collection</a>.</p>
+<p>How can we create this kind of model? The approach is distillation: run a strong open model over the cards to generate summaries, then fine-tune a small model on the output. This post covers the data generation. Training the student is part 2.</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {"theme": "neutral", "themeVariables": {"fontFamily": "sans-serif"}}}%%
+flowchart LR
+    dumps[("card dumps&lt;br/&gt;(librarian-bots)")] --&gt; prep["corpus prep&lt;br/&gt;CPU, polars"]
+    prep --&gt; corpus[("37,837 cards")]
+    subgraph jobs["HF Jobs — 4 × a100"]
+        reader["reader&lt;br/&gt;(slice per arm)"] --&gt; filter["stub filter&lt;br/&gt;(CPU)"]
+        filter --&gt; teacher["Qwen3.8-27B&lt;br/&gt;(sglang)"]
+    end
+    corpus --&gt; reader
+    teacher --&gt; bucket[("bucket&lt;br/&gt;rotated parquet")]
+    bucket --&gt; ds[("hub-tldr-v4&lt;br/&gt;35,837 summaries")]
+    classDef default fill:#ffffff,stroke:#8a8a8a,color:#222222;
+    classDef store fill:#f4f4f0,stroke:#8a8a8a,color:#222222;
+    class dumps,corpus,bucket,ds store;
+    style jobs fill:#fbfbf8,stroke:#b5b5b0,color:#555555;
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</section>
+<section id="multi-step-pipelines-in-datatrove" class="level2">
+<h2 class="anchored" data-anchor-id="multi-step-pipelines-in-datatrove">Multi-step pipelines in datatrove</h2>
+<p>For a small model like a card summary model we often deploy it with certain constraints. One of these is that we want to remove very short cards with too little info to really summarise.</p>
+<p>We can use a cheap CPU step in datatrove to do this. The corpus prep already flags these stub cards, so filtering them is one line in the pipeline:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># one line between the reader and the GPU stage:</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>LambdaFilter(<span class="kw">lambda</span> doc: doc.metadata.get(<span class="st">"stratum"</span>) <span class="op">!=</span> <span class="st">"stub"</span>),</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># don't pay a 27B to say NOT ENOUGH INFORMATION two thousand times</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>You don’t need to put everything in one giant script. The corpus prep here ran as its own CPU-only step, and the rule of thumb is simple: stage cheap CPU work in front of the GPU stage, and split scripts wherever the intermediate output is worth keeping.</p>
+</section>
+<section id="tuning-the-prompt-against-a-live-job" class="level2">
+<h2 class="anchored" data-anchor-id="tuning-the-prompt-against-a-live-job">Tuning the prompt against a live Job</h2>
+<p>The goal is essentially to distil a stronger model into a smaller task-specific model with one job. However, even for the strong model we should think about what prompts make sense for our requirements. For this kind of workload it can be more useful for a dev workflow to spin up a server and iterate on the prompt live. I had an agent build me a small annotation UI — one pair of outputs at a time, blind, keyboard shortcuts — and ranked twelve pairs without knowing which prompt produced which.</p>
+<p>The lean variant won 5–3, with four ties. The surprise was what the 27B didn’t need: no rules about copying tag strings, no rules banning preamble. The bigger model needed a shorter prompt.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># serve the model on a Job, hit it from the laptop with any OpenAI client</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">hf</span> jobs run <span class="at">--detach</span> <span class="at">--expose</span> 8000 <span class="at">-s</span> HF_TOKEN <span class="at">--flavor</span> a100-large <span class="dt">\</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  lmsysorg/sglang:qwen38-27b <span class="dt">\</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  python3 <span class="at">-m</span> sglang.launch_server <span class="at">--model-path</span> Qwen/Qwen3.8-27B-FP8 <span class="dt">\</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--host</span> 0.0.0.0 <span class="at">--port</span> 8000 <span class="at">--reasoning-parser</span> qwen3 <span class="at">--context-length</span> 32768</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>(See the <a href="https://huggingface.co/docs/huggingface_hub/guides/jobs">Jobs guide</a> for <code>hf jobs run</code> and <code>--expose</code>.)</p>
+<p>One thing to watch: Qwen3.8 thinks by default, at the highest effort setting. For data generation that’s just paying for reasoning tokens on every card, so I turn it off per request. The sampling settings come from the model card.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># model-card instruct sampling; thinking off per request</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> client.chat.completions.create(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    model<span class="op">=</span><span class="st">"Qwen/Qwen3.8-27B-FP8"</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    messages<span class="op">=</span>[{<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: prompt}],</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    temperature<span class="op">=</span><span class="fl">0.7</span>, top_p<span class="op">=</span><span class="fl">0.8</span>, presence_penalty<span class="op">=</span><span class="fl">1.5</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    extra_body<span class="op">=</span>{<span class="st">"top_k"</span>: <span class="dv">20</span>, <span class="st">"chat_template_kwargs"</span>: {<span class="st">"enable_thinking"</span>: <span class="va">False</span>}},</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The winning prompt ended up being rather short:</p>
+<div class="callout callout-style-default callout-note callout-titled" title="The full teacher prompt">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>The full teacher prompt
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<pre class="text"><code>Write a TL;DR of this {repo_type} from the Hugging Face Hub, in exactly
+{n_word} sentence{plural}. It will be shown to people scanning repo listings,
+and embedded for semantic search.
+
+&lt;METADATA&gt;{metadata}&lt;/METADATA&gt;
+&lt;CARD&gt;{card}&lt;/CARD&gt;
+
+Rules:
+- Exactly {n_word} sentence{plural}, {max_words} words maximum in total, in English.
+- Say what the {repo_type} is and what it is for; include domain, data source
+  or provenance, method, languages, and distinctive capabilities when stated.
+- The reader already sees the repo name, tags, license, and download stats —
+  never restate the license, install/usage instructions, or popularity.
+- For derived repos (quantizations, finetunes, adapters, merges), state the
+  relationship and the base model.
+- Do not invent anything, and no quality judgements like "high-quality"
+  unless the card reports a specific measured result.
+- If the card body is uninformative but the metadata identifies what the
+  {repo_type} is, write what can honestly be said from metadata alone.
+- Only if neither says what the {repo_type} is, reply exactly:
+  NOT ENOUGH INFORMATION
+
+Reply with the summary only — no preamble. Start directly with the substance
+as a noun phrase ("A parallel corpus of…", "GGUF quantization of…"), never
+with lead-ins like "This {repo_type} is" or "Here is".</code></pre>
+</div>
+</div>
+</div>
+</section>
+<section id="exactly-n-sentences" class="level2">
+<h2 class="anchored" data-anchor-id="exactly-n-sentences">Exactly N sentences</h2>
+<p>I also wanted summary length to be a knob rather than a constant: the same pipeline emits one-, two-, and three-sentence versions (60/25/15), so I can test later how length affects embedding quality. It also happens to make sentence count a verifiable reward, if I ever want to train a student against it.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pick_n(repo_id: <span class="bu">str</span>) <span class="op">-&gt;</span> <span class="bu">int</span>:</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># deterministic per repo: same N on any retry/resume. 60/25/15.</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    h <span class="op">=</span> <span class="bu">int</span>(hashlib.md5(repo_id.encode()).hexdigest(), <span class="dv">16</span>) <span class="op">%</span> <span class="dv">100</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">1</span> <span class="cf">if</span> h <span class="op">&lt;</span> <span class="dv">60</span> <span class="cf">else</span> (<span class="dv">2</span> <span class="cf">if</span> h <span class="op">&lt;</span> <span class="dv">85</span> <span class="cf">else</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="the-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="the-pipeline">The pipeline</h2>
+<p>The full pipeline is a reader, the stub filter, and an inference step that runs the teacher on the Job itself. This is the executor for one arm:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>JobsPipelineExecutor(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    job_name<span class="op">=</span><span class="ss">f"tldrq38-</span><span class="sc">{</span>run_id<span class="sc">}</span><span class="ss">"</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    pipeline<span class="op">=</span>[</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        HuggingFaceDatasetReader(</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>            CORPUS,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>            dataset_options<span class="op">=</span>{<span class="st">"split"</span>: <span class="ss">f"train[</span><span class="sc">{</span>skip<span class="sc">}</span><span class="ss">:</span><span class="sc">{</span>skip <span class="op">+</span> rows<span class="sc">}</span><span class="ss">]"</span>},</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>            text_key<span class="op">=</span><span class="st">"card_text"</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        LambdaFilter(<span class="kw">lambda</span> doc: doc.metadata.get(<span class="st">"stratum"</span>) <span class="op">!=</span> <span class="st">"stub"</span>),</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        InferenceRunner(</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>            rollout_fn<span class="op">=</span>make_rollout(),</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>            config<span class="op">=</span>InferenceConfig(</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>                server_type<span class="op">=</span><span class="st">"sglang"</span>,</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>                model_name_or_path<span class="op">=</span><span class="st">"Qwen/Qwen3.8-27B-FP8"</span>,</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>                model_max_context<span class="op">=</span><span class="dv">32768</span>,</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>                max_concurrent_generations<span class="op">=</span><span class="dv">64</span>,</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>                model_kwargs<span class="op">=</span>{<span class="st">"attention-backend"</span>: <span class="st">"triton"</span>,</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>                              <span class="st">"sampling-backend"</span>: <span class="st">"pytorch"</span>,</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>                              <span class="st">"cuda-graph-backend-prefill"</span>: <span class="st">"disabled"</span>},</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>            ),</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>            output_writer<span class="op">=</span>ParquetWriter(</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>                <span class="ss">f"</span><span class="sc">{</span>BUCKET<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>run_id<span class="sc">}</span><span class="ss">/gen"</span>, batch_size<span class="op">=</span><span class="dv">200</span>, max_file_size<span class="op">=</span><span class="dv">4</span> <span class="op">*</span> <span class="dv">2</span><span class="op">**</span><span class="dv">20</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>            ),</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    ],</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    tasks<span class="op">=</span><span class="dv">1</span>, workers<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    flavor<span class="op">=</span><span class="st">"a100-large"</span>,</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span><span class="st">"lmsysorg/sglang:qwen38-27b"</span>, python<span class="op">=</span><span class="st">"3.12"</span>,</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>    dependencies<span class="op">=</span>[<span class="st">"datatrove[io,processing]==0.10.0"</span>, <span class="st">"sglang==0.5.17"</span>,</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"datasets"</span>, <span class="st">"orjson"</span>, <span class="st">"aiosqlite"</span>, <span class="st">"aiofiles"</span>],</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    logging_dir<span class="op">=</span><span class="ss">f"</span><span class="sc">{</span>BUCKET<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>run_id<span class="sc">}</span><span class="ss">/logs"</span>,</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>    timeout<span class="op">=</span><span class="st">"3h"</span>, max_retries<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>).run()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Launching is one command — the coordinator is not a PEP 723 script; deps go on the CLI so laptop and worker resolve the identical datatrove:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run <span class="at">--python</span> 3.12 <span class="at">--with</span> <span class="st">"datatrove[io,processing]==0.10.0"</span> <span class="dt">\</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">--with</span> datasets <span class="at">--with</span> orjson <span class="dt">\</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    pipeline/tldr_gen_qwen38.py <span class="at">--slug</span> vol <span class="at">--skip</span> 0 <span class="at">--rows</span> 9460 <span class="at">--timeout</span> 3h</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Three settings do most of the work of making these runs recoverable:</p>
+<p><code>max_retries=0</code>. A retry on an inference stage re-runs the whole rank, which means paying twice for GPU time you already spent. Retries are for cheap CPU stages, not for this.</p>
+<p>The <code>max_file_size</code> on the writer. Streaming to a bucket only protects you if the files rotate: a parquet file without its footer is unreadable, so if the job dies you get nothing back from the open file. Rotating at 4 MB means every closed file survives, and I have twice recovered work from a job that died mid-run because of it.</p>
+<p>All constants live inside the rollout closure. dill ships the function, not the module, so module-level globals simply do not exist on the worker. Prompts, regexes, even <code>import re</code> go inside. Related: never return <code>None</code> from the rollout dict. The parquet writer infers its schema from the first batch, and a <code>None</code> appearing later flips the schema mid-file and fails the write after the GPU work is done. Coerce everything, <code>x or ""</code>.</p>
+</section>
+<section id="calibrate-before-you-scale" class="level2">
+<h2 class="anchored" data-anchor-id="calibrate-before-you-scale">Calibrate before you scale</h2>
+<p>It makes sense to start small, so I first ran the same script over 50 rows. That one job answers most of the questions that matter before spending real money: does the server start, do the outputs parse, what’s the actual token throughput.</p>
+<p>The 50-row run isn’t only about throughput — it’s what catches a mismatched serving stack before it costs real GPU-hours. Serving libraries move fast; the engine version and backends are pinned explicitly in the config.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># same script, 50 rows — the whole point is that nothing changes but the args</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run <span class="at">--python</span> 3.12 <span class="at">--with</span> <span class="st">"datatrove[io,processing]==0.10.0"</span> <span class="dt">\</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--with</span> datasets <span class="at">--with</span> orjson <span class="dt">\</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    pipeline/tldr_gen_qwen38.py <span class="at">--slug</span> calib1 <span class="at">--rows</span> 50 <span class="at">--timeout</span> 45m</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Measured from the real calibration:</p>
+<ul>
+<li>48/48 rollouts (2 stubs filtered), 0 failures</li>
+<li>prompt tokens: mean 1,312 · max 6,455 (full cards) · completion mean 54</li>
+<li>prefill-bound at 3–4k tok/s; generation was ~50s of an ~8-min job — startup dominates small jobs</li>
+</ul>
+<p>Sizing: 35,837 cards × ~1,312 tokens ≈ 47M prefill tokens ÷ ~3.5k tok/s ≈ 4–5 GPU-hours ≈ $11–14 at $2.50/h → 4 parallel arms of ~9.5k rows, ~1h wall-clock, startup overhead ~$0.30/arm.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># fan out with --skip/--rows; per-arm run ids keep state separate,</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># incomplete arms resume free (completed ranks are skipped)</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> skip <span class="kw">in</span> 0 9460 18920 28380<span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="ex">...</span> <span class="at">--slug</span> vol <span class="at">--skip</span> <span class="va">$skip</span> <span class="at">--rows</span> 9460 ...</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="what-came-out" class="level2">
+<h2 class="anchored" data-anchor-id="what-came-out">What came out</h2>
+<p>Final numbers, verified over the full output:</p>
+<ul>
+<li><strong>35,837 generations</strong> (37,837 corpus rows − 2,000 filtered stubs), <strong>0 failed rollouts</strong> across all 4 arms</li>
+<li>Sentence-count compliance: <strong>98.5% exact</strong> overall (N=1: 99.4% · N=2: 97.6% · N=3: 96.5%)</li>
+<li>N distribution landed on target: 60.0 / 25.0 / 15.1</li>
+<li>198 graded refusals (0.55%) · 0 reasoning leaks · 0 truncated generations</li>
+<li>Preamble failures: 19 of 35,837 (0.05%) start “This/Here” — droppable in the SFT build</li>
+<li>10 duplicate repo_ids (corpus artifact) — dedup at SFT build</li>
+<li>Mean completion: 53 tokens</li>
+</ul>
+<p>Samples:</p>
+<ul>
+<li>(N=1) <code>vivasoft/whisper-small-bn</code>: “A fine-tuned Whisper Small model for Bengali speech recognition, trained on OpenSLR37 data with 2000 steps to achieve an evaluation word error rate of 0.31.”</li>
+<li>(N=1) <code>DynamicSuperb/EnvironmentalSoundClassification_ESC50-Animals</code>: “A small audio and text dataset in parquet format for environmental sound classification of animals, derived from the ESC50 source.”</li>
+<li>(N=3) <code>FabioTrindade/Llama-3.1-8B-Instruct-W8A8KV8-...</code>: “W8A8KV8 quantization of Meta’s Llama-3.1-8B-Instruct, built with the compressed-tensors library for efficient deployment. The model reduces weight and activation precision to 8-bit while maintaining 8-bit key-value cache storage to optimize memory usage during inference. It retains the original instruction-following capabilities of the base Llama 3.1 architecture for general-purpose language tasks.”</li>
+</ul>
+<p>The full dataset is public at <a href="https://huggingface.co/datasets/davanstrien/hub-tldr-v4">davanstrien/hub-tldr-v4</a>. Training the student on it is part 2.</p>
+</section>
+<section id="what-it-cost" class="level2">
+<h2 class="anchored" data-anchor-id="what-it-cost">What it cost</h2>
+<p>All on a100-large at $2.50/h (billed durations from <code>hf jobs inspect</code>):</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Step</th>
+<th>Time</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Prompt dev (served Job, incl.&nbsp;idle)</td>
+<td>~102 min</td>
+<td>~$4.25</td>
+</tr>
+<tr class="even">
+<td>Calibration (3 attempts, 2 failed)</td>
+<td>19.4 min</td>
+<td>$0.81</td>
+</tr>
+<tr class="odd">
+<td>Volume run (4 parallel arms)</td>
+<td>6.23 GPU-h</td>
+<td>$15.58</td>
+</tr>
+<tr class="even">
+<td><strong>Total</strong></td>
+<td></td>
+<td><strong>~$20.60</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The 122B recipe ran $0.86 per 1,000 summaries; this is <strong>$0.43/1k</strong> on a single a100 with a 27B — half the unit cost, no tensor parallelism, and the arms fit a 1-GPU flavor.</p>
+</section>
+<section id="run-it-on-your-own-corpus" class="level2">
+<h2 class="anchored" data-anchor-id="run-it-on-your-own-corpus">Run it on your own corpus</h2>
+<p>The pipeline scripts are short enough to read in one sitting, and swapping the corpus and the prompt is most of what it takes to point them at your own data. The dataset from this run is at <a href="https://huggingface.co/datasets/davanstrien/hub-tldr-v4">davanstrien/hub-tldr-v4</a>. The pipeline is the demo, not the model — part 2 will train the student.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/danielvanstrien\.xyz");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
