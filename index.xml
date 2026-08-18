@@ -35,19 +35,27 @@
 <div>
 <pre class="mermaid mermaid-js">%%{init: {"theme": "neutral", "themeVariables": {"fontFamily": "sans-serif"}}}%%
 flowchart LR
-    dumps[("card dumps&lt;br/&gt;(librarian-bots)")] --&gt; prep["corpus prep&lt;br/&gt;CPU, polars"]
-    prep --&gt; corpus[("37,837 cards")]
-    subgraph jobs["HF Jobs — 4 × a100"]
-        reader["reader&lt;br/&gt;(slice per arm)"] --&gt; filter["stub filter&lt;br/&gt;(CPU)"]
-        filter --&gt; teacher["Qwen3.8-27B&lt;br/&gt;(sglang)"]
+    subgraph laptop["laptop — CPU only"]
+        prep["corpus prep&lt;br/&gt;polars"]
+        coord["coordinator&lt;br/&gt;tldr_gen_qwen38.py"]
     end
+    dumps[("card dumps&lt;br/&gt;(librarian-bots)")] --&gt; prep
+    prep --&gt; corpus[("37,837 cards")]
+    subgraph arm["each Job: one A100 machine — ×4 in parallel"]
+        reader["reader (CPU)&lt;br/&gt;rows slice"] --&gt; filter["stub filter (CPU)"]
+        filter --&gt; teacher["Qwen3.8-27B (GPU)&lt;br/&gt;sglang"]
+    end
+    coord -. "submits ×4" .-&gt; arm
     corpus --&gt; reader
     teacher --&gt; bucket[("bucket&lt;br/&gt;rotated parquet")]
     bucket --&gt; ds[("hub-tldr-v4&lt;br/&gt;35,837 summaries")]
     classDef default fill:#ffffff,stroke:#8a8a8a,color:#222222;
     classDef store fill:#f4f4f0,stroke:#8a8a8a,color:#222222;
+    classDef gpu fill:#e8eef7,stroke:#5b7fa6,color:#1c2b3a;
     class dumps,corpus,bucket,ds store;
-    style jobs fill:#fbfbf8,stroke:#b5b5b0,color:#555555;
+    class teacher gpu;
+    style laptop fill:#fbfbf8,stroke:#b5b5b0,color:#555555;
+    style arm fill:#fbfbf8,stroke:#b5b5b0,color:#555555;
 </pre>
 </div>
 <p></p></figure><p></p>
