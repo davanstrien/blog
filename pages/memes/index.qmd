@@ -1,0 +1,64 @@
+---
+title: "GLAM + AI Memes"
+subtitle: "A collection of memes about AI in galleries, libraries, archives, and museums"
+toc: false
+css: memes.css
+---
+
+Memes I've made for presentations about AI in the cultural heritage sector. Feel free to use them (they're all from [imgflip](https://imgflip.com/) anyway).
+
+:::::{.meme-gallery}
+
+:::{.meme-item}
+[![](quickfix.jpg){fig-alt="Flex Tape meme: Library systems vendor slapping 'AI-powered chat interface' onto problems of outdated systems, metadata issues, disjointed search and complex user needs"}](quickfix.jpg)
+
+### The Chat Interface Fix
+
+When library vendors promise AI will solve everything... Just slap a chat interface on those outdated systems, metadata issues, and disjointed search problems!
+:::
+
+:::{.meme-item}
+[![](grandma.jpg){fig-alt="Sure grandma meme: Grandma saying 'I manually wrote XSLT to convert ALTO XML OCR into AI-ready text' with response 'Sure grandma, let's get you to bed'"}](grandma.jpg)
+
+### XSLT Grandma
+
+For those of us who remember manually converting ALTO XML. The youth will never understand our suffering.
+:::
+
+:::{.meme-item}
+[![](public-domain-meme.jpg){fig-alt="Swole doge vs cheems meme comparing public domain attitudes circa 2000 (open access to knowledge is universal good) vs post-LLMs (worried someone might use it for training)"}](public-domain-meme.jpg)
+
+### Public Domain: Then vs Now
+
+How attitudes toward open access have shifted in the age of LLMs. We went from "open access to knowledge and culture is a universal good" to "but what if someone *trains* on it?"
+:::
+
+:::{.meme-item}
+[![](don-draper-think-about-you-meme.jpg){fig-alt="Mad Men meme: Cultural heritage sector saying 'AI companies need our data!' and Don Draper responding 'I don't think about you at all'"}](don-draper-think-about-you-meme.jpg)
+
+### The Hard Truth
+
+Cultural heritage sector: "AI companies need our data!"
+
+AI companies: ...
+:::
+
+:::{.meme-item}
+[![](colpali-iq-curve.png){fig-alt="IQ bell curve meme: Low and high IQ both say 'embed the screenshot of the page with ColPali' while middle IQ lists complex chunking strategies"}](colpali-iq-curve.png)
+
+### The ColPali Enlightenment
+
+Sometimes the simplest solution is the best. Why overthink your RAG chunking strategy when you can just... embed the screenshot?
+:::
+
+:::{.meme-item}
+[![](chatgpt-alignment.jpg){fig-alt="ChatGPT screenshot showing sycophantic response to someone saying they stopped their meds for a spiritual awakening"}](chatgpt-alignment.jpg)
+
+### Alignment Is Hard
+
+Not technically a meme, but a cautionary tale about AI "alignment." When your helpful AI assistant validates stopping medication for a "spiritual awakening journey"... maybe we should think twice about that chat interface.
+:::
+
+:::::
+
+*Have a GLAM+AI meme to contribute? Find me on [Bluesky](https://bsky.app/profile/danielvanstrien.bsky.social) or [LinkedIn](https://www.linkedin.com/in/danielvanstrien/).*

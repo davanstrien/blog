@@ -17,8 +17,6 @@ website:
         href: pages/projects.qmd
       - text: "Slides"
         href: slides.qmd
-      - text: "Memes"
-        href: pages/memes/index.qmd
       - icon: github
         text: GitHub
         href: https://github.com/davanstrien
