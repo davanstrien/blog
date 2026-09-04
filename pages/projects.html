@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Selected projects – Daniel van Strien</title>
+<title>Selected work – Daniel van Strien</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -46,7 +46,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-e3adbaa939bcd423dddc8c8a834270b4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-3e9b1289f5f353c49b617ce48ad2bc38.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -77,6 +77,11 @@ ul.task-list li input[type="checkbox"] {
 <script defer="" src="https://cloud.umami.is/script.js" data-website-id="85cb27d6-dbf9-43d7-97d0-be4e6724de7a"></script>
 <meta name="msvalidate.01" content="4246174F24A3CB7C9CBEAA94E1FF8E84">
 <meta name="google-site-verification" content="C7WoFOEuA4Msbvvk-kgDd_C6VGphZTp3awy_acXjZYU">
+<style>
+main.content h2 {
+  font-size: 1.4rem;
+}
+</style>
 
 
 <link rel="stylesheet" href="../styles.css">
@@ -106,6 +111,10 @@ ul.task-list li input[type="checkbox"] {
   <li class="nav-item">
     <a class="nav-link" href="../about.html"> 
 <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../pages/projects.html" aria-current="page"> 
+<span class="menu-text">Selected work</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="../slides.html"> 
@@ -146,22 +155,10 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#machine-learning-projects" id="toc-machine-learning-projects" class="nav-link active" data-scroll-target="#machine-learning-projects">Machine learning projects</a>
-  <ul class="collapse">
-  <li><a href="#flyswot-using-computer-vision-to-detect-fake-flysheets" id="toc-flyswot-using-computer-vision-to-detect-fake-flysheets" class="nav-link" data-scroll-target="#flyswot-using-computer-vision-to-detect-fake-flysheets">flyswot: using computer vision to detect ‘fake flysheets’</a></li>
-  <li><a href="#book-genre-detection" id="toc-book-genre-detection" class="nav-link" data-scroll-target="#book-genre-detection">Book Genre Detection</a></li>
-  </ul></li>
-  <li><a href="#datasets" id="toc-datasets" class="nav-link" data-scroll-target="#datasets">Datasets</a>
-  <ul class="collapse">
-  <li><a href="#british-library-books" id="toc-british-library-books" class="nav-link" data-scroll-target="#british-library-books">British Library books</a></li>
-  <li><a href="#british-library-books-genre-data" id="toc-british-library-books-genre-data" class="nav-link" data-scroll-target="#british-library-books-genre-data">British Library Books Genre data</a></li>
-  <li><a href="#datasets-to-support-programming-historian-lessons" id="toc-datasets-to-support-programming-historian-lessons" class="nav-link" data-scroll-target="#datasets-to-support-programming-historian-lessons">Datasets to support programming historian lessons</a></li>
-  <li><a href="#workshop-datasets" id="toc-workshop-datasets" class="nav-link" data-scroll-target="#workshop-datasets">Workshop datasets</a></li>
-  </ul></li>
-  <li><a href="#workshop-materials" id="toc-workshop-materials" class="nav-link" data-scroll-target="#workshop-materials">Workshop materials</a></li>
-  <li><a href="#tutorials" id="toc-tutorials" class="nav-link" data-scroll-target="#tutorials">Tutorials</a></li>
-  <li><a href="#code" id="toc-code" class="nav-link" data-scroll-target="#code">Code</a></li>
-  <li><a href="#publications" id="toc-publications" class="nav-link" data-scroll-target="#publications">Publications</a></li>
+  <li><a href="#making-ai-tools-easier-to-use" id="toc-making-ai-tools-easier-to-use" class="nav-link active" data-scroll-target="#making-ai-tools-easier-to-use">Making AI tools easier to use</a></li>
+  <li><a href="#opening-cultural-collections-to-new-uses" id="toc-opening-cultural-collections-to-new-uses" class="nav-link" data-scroll-target="#opening-cultural-collections-to-new-uses">Opening cultural collections to new uses</a></li>
+  <li><a href="#understanding-what-makes-models-and-data-useful" id="toc-understanding-what-makes-models-and-data-useful" class="nav-link" data-scroll-target="#understanding-what-makes-models-and-data-useful">Understanding what makes models and data useful</a></li>
+  <li><a href="#sharing-practical-methods" id="toc-sharing-practical-methods" class="nav-link" data-scroll-target="#sharing-practical-methods">Sharing practical methods</a></li>
   </ul>
 </nav>
     </div>
@@ -170,7 +167,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Selected projects</h1>
+<h1 class="title">Selected work</h1>
 </div>
 
 
@@ -187,101 +184,33 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>This page collects selected projects that I have worked on.</p>
-<section id="machine-learning-projects" class="level2">
-<h2 class="anchored" data-anchor-id="machine-learning-projects">Machine learning projects</h2>
-<section id="flyswot-using-computer-vision-to-detect-fake-flysheets" class="level3">
-<h3 class="anchored" data-anchor-id="flyswot-using-computer-vision-to-detect-fake-flysheets">flyswot: using computer vision to detect ‘fake flysheets’</h3>
-<p><a href="https://danielvanstrien.xyz/categories/#flyswot"><strong>Related Posts</strong></a></p>
-<p>An increasing challenge for libraries is managing the scale of digitised material resulting from digitisation projects and ‘born digital’ materials. This project aims to detect mislabelled digitised manuscript pages.</p>
-<figure class="figure">
-<img src="https://api.bl.uk/image/iiif/ark:/81055/vdc_100056093448.0x000179/full/400,/0/default.jpg" class="figure-img">
-<figcaption>
-A manuscript page with the correct label “fse.ivr”
-</figcaption>
-</figure>
-<p>As a result of the limitations of a previous system for hosting digitised manuscript images, many images have incorrect page metadata associated with the image. An image has been correctly labelled as an ‘end flysheet’ in the example above. This label is represented by the <code>fse</code> label, which is included in the filename for the image. However other types of manuscript pages also have this label incorrectly assigned, i.e.&nbsp;a ‘cover’ has <code>fse</code> in the filename. There is around a petabyte of images to review before ingesting a new library system. This project uses computer vision to support library staff in processing this collection. At the moment, this project does the following:</p>
-<ul>
-<li>pulls in an updated dataset of training examples</li>
-<li>trains a model on these images</li>
-<li>the model architecture has multiple heads to allow the model to make both a ‘crude’ prediction for whether the image is incorrectly labelled and a ‘full’ prediction for the true label.</li>
-<li>once a new version of the model has been trained, it is pushed to the 🤗 model hub.</li>
-<li>the end-user uses the model through a command-line tool which is pointed at a directory of images to be checked.</li>
-</ul>
-<p>The code for the command-line tool is available here: <a href="">github.com/davanstrien/flyswot/</a></p>
-<p><strong>Some of the tools used:</strong> <a href="https://docs.fast.ai/">fastai</a>, <a href="https://dvc.org/">DVC</a>, <a href="https://wandb.ai/">Weights and Biases</a>, <a href="huggingface.co/models">🤗 model hub</a>, <a href="https://docs.pytest.org/en/7.0.x/">pytest</a>, <a href="https://nox.thea.codes/en/stable/">nox</a>, <a href="https://python-poetry.org/">poetry</a></p>
+<p>A selection of projects, research and teaching that reflect how I work with AI, data and cultural collections.</p>
+<section id="making-ai-tools-easier-to-use" class="level2">
+<h2 class="anchored" data-anchor-id="making-ai-tools-easier-to-use">Making AI tools easier to use</h2>
+<p>I build tools and workflows that help people—and AI agents—work with models, datasets and compute.</p>
+<p>My <a href="https://huggingface.co/uv-scripts">UV scripts</a> provide self-contained recipes for tasks such as training classifiers, evaluating models and processing data. They run locally or on <a href="https://huggingface.co/docs/hub/jobs-overview">Hugging Face Jobs</a>, making it easier to move from an experiment to a repeatable workflow.</p>
+<p>I also contribute to Hugging Face’s command-line tools and documentation, including improvements to running Jobs, inspecting logs and understanding what to do next. My <a href="https://github.com/huggingface/datatrove/pull/497">DataTrove Jobs executor</a> connects data-processing pipelines to the same infrastructure.</p>
 </section>
-<section id="book-genre-detection" class="level3">
-<h3 class="anchored" data-anchor-id="book-genre-detection">Book Genre Detection</h3>
-<p><img src="../images/genre-gradio.png" class="img-fluid"></p>
-<p>This project created machine learning models which would predict whether a book was ‘fiction’ or ‘non- fiction’ based on the book title:</p>
-<ul>
-<li>The project was developed to address a gap in metadata in a large scale digitised book collection.</li>
-<li>The project used weak supervision to generate a more extensive training set beyond the initial human-generated annotations.</li>
-<li>Currently, two models are publicly available, one via the 🤗 <a href="https://huggingface.co/BritishLibraryLabs/bl-books-genre">Model Hub</a> and one via <a href="https://doi.org/10.5281/zenodo.5245175">Zenodo</a>.</li>
-<li>The process of creating the models is documented in a <a href="https://living-with-machines.github.io/genre-classification/intro.html">Jupyter Book</a>. This documentation aims to communicate the critical steps in the machine learning pipeline to aid other people in the sector develop similar models. https://huggingface.co/spaces https://huggingface.co/spaces/BritishLibraryLabs/British-Library-books-genre-classifier-v2</li>
-</ul>
-<p><strong>Some of the tools used:</strong> <a href="https://docs.fast.ai/">fastai</a>, <a href="https://huggingface.co/docs/transformers/">transformers</a>, <a href="https://github.com/ohmeow/blurr">blurr</a>, <a href="https://huggingface.co/models">Hugging face model hub</a>, <a href="https://jupyterbook.org/">Jupyter Book</a>, <a href="https://github.com/snorkel-team/snorkel">Snorkel</a>, <a href="https://gradio.app/">Gradio</a></p>
+<section id="opening-cultural-collections-to-new-uses" class="level2">
+<h2 class="anchored" data-anchor-id="opening-cultural-collections-to-new-uses">Opening cultural collections to new uses</h2>
+<p>I’m excited by what happens when people can build on openly shared data—often years later, in ways its publishers hadn’t anticipated.</p>
+<p>I started <a href="https://huggingface.co/biglam">BigLAM</a> in 2022 to help make library, archive and museum collections easier to discover and use for machine learning. British Library book text I shared then later became <a href="https://www.linkedin.com/posts/danielvanstrien_you-never-know-what-data-will-be-used-for-activity-7444331246907850752-BEwk">training data for a Victorian-language chatbot</a>.</p>
+<p>This work goes beyond putting files online. Recent projects include making over a million <a href="https://huggingface.co/datasets/biglam/british-library-book-images">British Library book images</a> searchable and using small models to identify and extract illustrations from <a href="https://huggingface.co/datasets/biglam/britannica-illustrated-pages">digitised Encyclopaedia Britannica volumes</a>. I share the resulting datasets, models and tools so others can explore the collections and build on the work.</p>
+<p>Through <a href="https://huggingface.co/small-models-for-glam">Small Models for GLAM</a>, which I co-maintain with William Mattingly, I’m extending this approach to reusable, task-specific models for cultural collections.</p>
 </section>
+<section id="understanding-what-makes-models-and-data-useful" class="level2">
+<h2 class="anchored" data-anchor-id="understanding-what-makes-models-and-data-useful">Understanding what makes models and data useful</h2>
+<p>A recurring question in my work is whether a model or dataset is useful for the task someone actually needs to do.</p>
+<p>My research on <a href="https://www.turing.ac.uk/news/publications/assessing-impact-ocr-quality-downstream-nlp-tasks">the impact of OCR quality on downstream NLP tasks</a> examined how recognition errors affect subsequent analysis. Today, I develop <a href="https://github.com/davanstrien/ocr-bench">OCR Bench</a> for collection-specific comparisons using model judges and human review. Through <a href="https://huggingface.co/finebooks">FineBooks</a>, I also work on the <a href="https://huggingface.co/spaces/finebooks/bhl-ocr-leaderboard">BHL OCR leaderboard</a>, evaluating open models against expert transcriptions of historical books. Our <a href="https://huggingface.co/blog/finebooks/historical-books-ocr-leaderboard">write-up</a> explains the methods, findings and limitations.</p>
+<p>I also co-authored <a href="https://openhumanitiesdata.metajnl.com/articles/10.5334/johd.124">Datasheets for Digital Cultural Heritage Datasets</a>, helping document the context and limitations that matter when reusing collections.</p>
+<p>Beyond cultural heritage, I contributed to BigScience’s collaborative data work for <a href="https://arxiv.org/abs/2303.03915">ROOTS</a> and <a href="https://arxiv.org/abs/2211.05100">BLOOM</a>. My work on <a href="https://huggingface.co/blog/dibt">Data is Better Together</a> and <a href="https://huggingface.co/blog/davanstrien/fineweb-c">FineWeb-C</a> explores community participation in annotating and improving multilingual datasets.</p>
 </section>
-<section id="datasets" class="level2">
-<h2 class="anchored" data-anchor-id="datasets">Datasets</h2>
-<section id="british-library-books" class="level3">
-<h3 class="anchored" data-anchor-id="british-library-books">British Library books</h3>
-<ul>
-<li>Extracted plain text and other metadata files from ALTO XML <a href="">https://github.com/davanstrien/digitised-books-ocr-and-metadata</a></li>
-<li>Added the dataset to the <a href="https://huggingface.co/datasets/blbooks">🤗 datasets hub</a></li>
-</ul>
-</section>
-<section id="british-library-books-genre-data" class="level3">
-<h3 class="anchored" data-anchor-id="british-library-books-genre-data">British Library Books Genre data</h3>
-<ul>
-<li>Created a datasets loading script and prepared a Dataset card for a dataset supporting book genre detection using machine learning: <a href="">https://huggingface.co/datasets/blbooksgenre</a></li>
-</ul>
-</section>
-<section id="datasets-to-support-programming-historian-lessons" class="level3">
-<h3 class="anchored" data-anchor-id="datasets-to-support-programming-historian-lessons">Datasets to support programming historian lessons</h3>
-<p>I think having more realistic datasets is important for teaching machine learning effectively. As a result, I created two datasets for two under review <a href="https://programminghistorian.org/">Programming Historian</a> lessons.</p>
-<ul>
-<li><p><a href="https://doi.org/10.5281/zenodo.5838410">19th Century United States Newspaper Advert images with ‘illustrated’ or ‘non illustrated’ labels</a></p></li>
-<li><p><a href="https://doi.org/10.5281/zenodo.4487141">19th Century United States Newspaper images predicted as Photographs with labels for “human”, “animal”, “human-structure” and “landscape”</a></p></li>
-</ul>
-</section>
-<section id="workshop-datasets" class="level3">
-<h3 class="anchored" data-anchor-id="workshop-datasets">Workshop datasets</h3>
-<ul>
-<li><a href="https://doi.org/10.5281/zenodo.4156510">Images from Newspaper Navigator predicted as maps, with human corrected labels</a></li>
-</ul>
-</section>
-</section>
-<section id="workshop-materials" class="level2">
-<h2 class="anchored" data-anchor-id="workshop-materials">Workshop materials</h2>
-<ul>
-<li><a href="https://github.com/Living-with-machines/Computer-Vision-for-the-Humanities-workshop">Computer Vision for the Humanities workshop</a>: This workshop aims to provide an introduction to computer vision aimed for humanities applications. In particular this workshop focuses on providing a high level overivew of machine learning based approaches to computer vision focusing on supervised learning. The workshop includes discussion on working with historical data. The materials are based on in progress Programming Historian lessons.</li>
-<li><a href="https://github.com/Living-with-machines/maps-at-scale-using-computer-vision-and-jupyter-notebooks">Working with maps at scale using Computer Vision and Jupyter notebooks</a></li>
-<li><a href="https://github.com/Living-with-machines/Jupyter-Notebooks-The-Weird-and-Wonderful">Introduction to Jupyter Notebooks: the weird and the wonderful</a></li>
-<li><a href="https://github.com/Living-with-machines/image-search">Image Search</a>: Materials for a workshop on image search with a focus on heritage data. The workshop is based on a blog post Image search with 🤗 datasets but goes into a little bit more detail.</li>
-</ul>
-</section>
-<section id="tutorials" class="level2">
-<h2 class="anchored" data-anchor-id="tutorials">Tutorials</h2>
-<ul>
-<li><a href="https://living-with-machines.github.io/genre-classification/intro.html">Jupyter book showing how to build an ML powered book genre classifier</a></li>
-<li><a href="https://living-with-machines.github.io/nnanno/intro.html">A (brief) history of advertising in US Newspapers using computer vision</a></li>
-<li>(<strong>Under review</strong>) <a href="https://github.com/programminghistorian/ph-submissions/issues/343">Computer Vision for the Humanities: An Introduction to Deep Learning for Image Classification, Programming Historian lessons</a></li>
-<li>(<strong>Under development</strong>) <a href="https://carpentries-incubator.github.io/machine-learning-librarians-archivists/index.html">Intro to AI for GLAM, Carpentries Lesson</a></li>
-</ul>
-</section>
-<section id="code" class="level1">
-<h1>Code</h1>
-<p>You can view much of my code related activity on <a href="https://github.com/davanstrien">GitHub</a></p>
-</section>
-<section id="publications" class="level1">
-<h1>Publications</h1>
-<ul>
-<li><a href="https://www.semanticscholar.org/author/Daniel-Alexander-van-Strien/71075073">Semantic Scholar page</a></li>
-<li><a href="https://orcid.org/0000-0003-1684-6556">OCRCID page</a></li>
-</ul>
+<section id="sharing-practical-methods" class="level2">
+<h2 class="anchored" data-anchor-id="sharing-practical-methods">Sharing practical methods</h2>
+<p>I write teaching materials that help people apply machine learning to their own questions and collections.</p>
+<p>These include the co-authored <a href="https://programminghistorian.org/en/lessons/computer-vision-deep-learning-pt1">Computer Vision for the Humanities</a> lessons for <em>The Programming Historian</em> and <a href="https://proceedings.mlr.press/v170/strien22a.html">An Introduction to AI for GLAM</a>.</p>
+<p>The co-authored <a href="https://flyswot.github.io/book/">Flyswot book</a> documents how we built a machine-learning pipeline to identify mislabelled manuscript pages as part of a library workflow.</p>
+<p>I’m also writing <a href="https://danielvanstrien.xyz/ai-patterns-for-glam/">AI Design Patterns for Information Professionals</a>, a book in progress connecting practical techniques with decisions about data, evaluation and use.</p>
 
 
 </section>
