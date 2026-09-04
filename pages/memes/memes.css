@@ -1,0 +1,62 @@
+/* Page-local gallery: let the images carry the colour and personality. */
+main.content .subtitle {
+  max-width: 48rem;
+  font-size: 1.1rem;
+}
+
+.meme-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3rem 2rem;
+  margin-block: 2.5rem;
+}
+
+.meme-item {
+  min-width: 0;
+}
+
+.meme-item > p:first-child {
+  margin: 0 0 1rem;
+}
+
+.meme-item > p:first-child a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 22rem;
+}
+
+.meme-item img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 22rem;
+  object-fit: contain;
+}
+
+main.content .meme-item h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.15rem;
+}
+
+.meme-item p {
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.meme-item a:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 5px;
+}
+
+@media (max-width: 640px) {
+  .meme-gallery {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+
+  .meme-item > p:first-child a {
+    height: auto;
+  }
+}
