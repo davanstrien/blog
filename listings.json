@@ -1,14 +1,5 @@
 [
   {
-    "listing": "/slides.html",
-    "items": [
-      "/slides/glam-labs-futures-2026/index.html",
-      "/slides/dhd-webinar-2026-may-05/index.html",
-      "/slides/iiif-illustration-detector/index.html",
-      "/slides/open-source-ai-glams/index.html"
-    ]
-  },
-  {
     "listing": "/index.html",
     "items": [
       "/posts/2026/distilling-qwen38-datatrove-jobs/index.html",
@@ -55,6 +46,15 @@
       "/posts/post-with-code/2020-10-12-labelling_vs_classification_models.html",
       "/posts/post-with-code/optuna/2020-07-01-optuna.html",
       "/posts/post-with-code/2020-05-03-multi-model.html"
+    ]
+  },
+  {
+    "listing": "/slides.html",
+    "items": [
+      "/slides/glam-labs-futures-2026/index.html",
+      "/slides/dhd-webinar-2026-may-05/index.html",
+      "/slides/iiif-illustration-detector/index.html",
+      "/slides/open-source-ai-glams/index.html"
     ]
   }
 ]
