@@ -1,91 +1,51 @@
 ---
-title: Selected projects
+title: Selected work
 permalink: /projects/
 toc: true
+header-includes: |
+  <style>
+  main.content h2 {
+    font-size: 1.4rem;
+  }
+  </style>
 ---
 
-This page collects selected projects that I have worked on.
+A selection of projects, research and teaching that reflect how I work with AI, data and cultural collections.
 
-## Machine learning projects
+## Making AI tools easier to use
 
-### flyswot: using computer vision to detect 'fake flysheets'
-[**Related Posts**](https://danielvanstrien.xyz/categories/#flyswot)
+I build tools and workflows that help people—and AI agents—work with models, datasets and compute.
 
-An increasing challenge for libraries is managing the scale of digitised material resulting from digitisation projects and 'born digital' materials. This project aims to detect mislabelled digitised manuscript pages. 
+My [UV scripts](https://huggingface.co/uv-scripts) provide self-contained recipes for tasks such as training classifiers, evaluating models and processing data. They run locally or on [Hugging Face Jobs](https://huggingface.co/docs/hub/jobs-overview), making it easier to move from an experiment to a repeatable workflow.
 
-<figure>
-    <img src="https://api.bl.uk/image/iiif/ark:/81055/vdc_100056093448.0x000179/full/400,/0/default.jpg"/>
-    <figcaption>A manuscript page with the correct label "fse.ivr"</figcaption>
-</figure>
+I also contribute to Hugging Face’s command-line tools and documentation, including improvements to running Jobs, inspecting logs and understanding what to do next. My [DataTrove Jobs executor](https://github.com/huggingface/datatrove/pull/497) connects data-processing pipelines to the same infrastructure.
 
-As a result of the limitations of a previous system for hosting digitised manuscript images, many images have incorrect page metadata associated with the image. An image has been correctly labelled as an 'end flysheet' in the example above. This label is represented by the `fse` label, which is included in the filename for the image. However other types of manuscript pages also have this label incorrectly assigned, i.e. a 'cover' has `fse` in the filename. There is around a petabyte of images to review before ingesting a new library system. This project uses computer vision to support library staff in processing this collection. At the moment, this project does the following:
+## Opening cultural collections to new uses
 
-- pulls in an updated dataset of training examples
-- trains a model on these images
-- the model architecture has multiple heads to allow the model to make both a 'crude' prediction for whether the image is incorrectly labelled and a 'full' prediction for the true label.
-- once a new version of the model has been trained, it is pushed to the 🤗 model hub.
-- the end-user uses the model through a command-line tool which is pointed at a directory of images to be checked.
+I’m excited by what happens when people can build on openly shared data—often years later, in ways its publishers hadn’t anticipated.
 
-The code for the command-line tool is available here: [github.com/davanstrien/flyswot/]()
+I started [BigLAM](https://huggingface.co/biglam) in 2022 to help make library, archive and museum collections easier to discover and use for machine learning. British Library book text I shared then later became [training data for a Victorian-language chatbot](https://www.linkedin.com/posts/danielvanstrien_you-never-know-what-data-will-be-used-for-activity-7444331246907850752-BEwk).
 
-**Some of the tools used:** [fastai](https://docs.fast.ai/), [DVC](https://dvc.org/), [Weights and Biases](https://wandb.ai/), [🤗 model hub](huggingface.co/models), [pytest](https://docs.pytest.org/en/7.0.x/), [nox](https://nox.thea.codes/en/stable/), [poetry](https://python-poetry.org/)
+This work goes beyond putting files online. Recent projects include making over a million [British Library book images](https://huggingface.co/datasets/biglam/british-library-book-images) searchable and using small models to identify and extract illustrations from [digitised Encyclopaedia Britannica volumes](https://huggingface.co/datasets/biglam/britannica-illustrated-pages). I share the resulting datasets, models and tools so others can explore the collections and build on the work.
 
-### Book Genre Detection
+Through [Small Models for GLAM](https://huggingface.co/small-models-for-glam), which I co-maintain with William Mattingly, I’m extending this approach to reusable, task-specific models for cultural collections.
 
-![](../images/genre-gradio.png)
+## Understanding what makes models and data useful
 
-This project created machine learning models which would predict whether a book was 'fiction' or 'non- fiction' based on the book title:
+A recurring question in my work is whether a model or dataset is useful for the task someone actually needs to do.
 
-- The project was developed to address a gap in metadata in a large scale digitised book collection.
-- The project used weak supervision to generate a more extensive training set beyond the initial human-generated annotations.
-- Currently, two models are publicly available, one via the 🤗 [Model Hub](https://huggingface.co/BritishLibraryLabs/bl-books-genre) and one via [Zenodo](https://doi.org/10.5281/zenodo.5245175).
-- The process of creating the models is documented in a [Jupyter Book](https://living-with-machines.github.io/genre-classification/intro.html). This documentation aims to communicate the critical steps in the machine learning pipeline to aid other people in the sector develop similar models.
-https://huggingface.co/spaces https://huggingface.co/spaces/BritishLibraryLabs/British-Library-books-genre-classifier-v2
+My research on [the impact of OCR quality on downstream NLP tasks](https://www.turing.ac.uk/news/publications/assessing-impact-ocr-quality-downstream-nlp-tasks) examined how recognition errors affect subsequent analysis. Today, I develop [OCR Bench](https://github.com/davanstrien/ocr-bench) for collection-specific comparisons using model judges and human review. Through [FineBooks](https://huggingface.co/finebooks), I also work on the [BHL OCR leaderboard](https://huggingface.co/spaces/finebooks/bhl-ocr-leaderboard), evaluating open models against expert transcriptions of historical books. Our [write-up](https://huggingface.co/blog/finebooks/historical-books-ocr-leaderboard) explains the methods, findings and limitations.
 
-**Some of the tools used:** [fastai](https://docs.fast.ai/), [transformers](https://huggingface.co/docs/transformers/), [blurr](https://github.com/ohmeow/blurr), [Hugging face model hub](https://huggingface.co/models), [Jupyter Book](https://jupyterbook.org/), [Snorkel](https://github.com/snorkel-team/snorkel), [Gradio](https://gradio.app/)
+I also co-authored [Datasheets for Digital Cultural Heritage Datasets](https://openhumanitiesdata.metajnl.com/articles/10.5334/johd.124), helping document the context and limitations that matter when reusing collections.
 
+Beyond cultural heritage, I contributed to BigScience’s collaborative data work for [ROOTS](https://arxiv.org/abs/2303.03915) and [BLOOM](https://arxiv.org/abs/2211.05100). My work on [Data is Better Together](https://huggingface.co/blog/dibt) and [FineWeb-C](https://huggingface.co/blog/davanstrien/fineweb-c) explores community participation in annotating and improving multilingual datasets.
 
-## Datasets
+## Sharing practical methods
 
+I write teaching materials that help people apply machine learning to their own questions and collections.
 
-### British Library books
+These include the co-authored [Computer Vision for the Humanities](https://programminghistorian.org/en/lessons/computer-vision-deep-learning-pt1) lessons for *The Programming Historian* and [An Introduction to AI for GLAM](https://proceedings.mlr.press/v170/strien22a.html).
 
-- Extracted plain text and other metadata files from ALTO XML [https://github.com/davanstrien/digitised-books-ocr-and-metadata]()
-- Added the dataset to the [🤗 datasets hub](https://huggingface.co/datasets/blbooks)
+The co-authored [Flyswot book](https://flyswot.github.io/book/) documents how we built a machine-learning pipeline to identify mislabelled manuscript pages as part of a library workflow.
 
-### British Library Books Genre data
-- Created a datasets loading script and prepared a Dataset card for a dataset supporting book genre detection using machine learning: [https://huggingface.co/datasets/blbooksgenre]()
-
-### Datasets to support programming historian lessons
-I think having more realistic datasets is important for teaching machine learning effectively. As a result, I created two datasets for two under review [Programming Historian](https://programminghistorian.org/) lessons.
-
-- [19th Century United States Newspaper Advert images with 'illustrated' or 'non illustrated' labels](https://doi.org/10.5281/zenodo.5838410)
-
-- [19th Century United States Newspaper images predicted as Photographs with labels for "human", "animal", "human-structure" and "landscape"](https://doi.org/10.5281/zenodo.4487141)
-
-### Workshop datasets 
-
-- [Images from Newspaper Navigator predicted as maps, with human corrected labels](https://doi.org/10.5281/zenodo.4156510)
-
-## Workshop materials
-
-- [Computer Vision for the Humanities workshop](https://github.com/Living-with-machines/Computer-Vision-for-the-Humanities-workshop): This workshop aims to provide an introduction to computer vision aimed for humanities applications. In particular this workshop focuses on providing a high level overivew of machine learning based approaches to computer vision focusing on supervised learning. The workshop includes discussion on working with historical data. The materials are based on in progress Programming Historian lessons.
-- [Working with maps at scale using Computer Vision and Jupyter notebooks](https://github.com/Living-with-machines/maps-at-scale-using-computer-vision-and-jupyter-notebooks)
-- [Introduction to Jupyter Notebooks: the weird and the wonderful](https://github.com/Living-with-machines/Jupyter-Notebooks-The-Weird-and-Wonderful)
-- [Image Search](https://github.com/Living-with-machines/image-search): Materials for a workshop on image search with a focus on heritage data. The workshop is based on a blog post Image search with 🤗 datasets but goes into a little bit more detail.
-
-## Tutorials
-
-- [Jupyter book showing how to build an ML powered book genre classifier](https://living-with-machines.github.io/genre-classification/intro.html)
-- [A (brief) history of advertising in US Newspapers using computer vision](https://living-with-machines.github.io/nnanno/intro.html)
-- (**Under review**)  [Computer Vision for the Humanities: An Introduction to Deep Learning for Image Classification, Programming Historian lessons](https://github.com/programminghistorian/ph-submissions/issues/343)
-- (**Under development**) [Intro to AI for GLAM, Carpentries Lesson](https://carpentries-incubator.github.io/machine-learning-librarians-archivists/index.html)
-
-# Code
-
-You can view much of my code related activity on [GitHub](https://github.com/davanstrien)
-
-# Publications
-
-- [Semantic Scholar page](https://www.semanticscholar.org/author/Daniel-Alexander-van-Strien/71075073)
-- [OCRCID page](https://orcid.org/0000-0003-1684-6556)
+I’m also writing [AI Design Patterns for Information Professionals](https://danielvanstrien.xyz/ai-patterns-for-glam/), a book in progress connecting practical techniques with decisions about data, evaluation and use.

@@ -20,10 +20,10 @@ about:
 
 Hi, I’m Daniel van Strien, a Machine Learning Librarian at [Hugging Face](https://huggingface.co/).
 
-Most of my work splits between two threads: making the Hugging Face Hub a better place to work with data, and helping libraries, archives, and museums use AI on their actual collections.
+I work on practical AI and the tools that make it easier to use. That includes building datasets, training and evaluating models, and contributing to the command-line tools, infrastructure and documentation that people and AI agents use to get things done.
 
-I started my career in libraries and digital humanities, including work at the British Library on the [Living with Machines](https://livingwithmachines.ac.uk/) project, and spent time supporting open access in academic libraries before moving into AI as the world’s first Machine Learning Librarian.
+I’m particularly interested in small, task-specific models, and how AI agents can help people build, evaluate and use them. A recurring question in my work is how to tell whether a model is actually useful for a particular task—not just whether it scores well on a benchmark.
 
-My work lives at the intersection of open-source technology, information management, and applied AI. Whether I’m building tools, writing tutorials, or contributing to community projects, I’m focused on making complex systems more usable, transparent, and inclusive.
+Before Hugging Face, I worked in libraries and digital humanities, including on the British Library’s [Living with Machines](https://livingwithmachines.ac.uk/) project. Documents and cultural collections remain a recurring focus—from evaluating optical character recognition (OCR) on historical scans to extracting structured information and making images easier to discover and reuse. That background also shapes my interest in building technology with the people who know the material and understand what would make it useful.
 
-At Hugging Face, I focus on the foundation of machine learning: data and datasets.
+I share experiments, practical guides and findings on this blog. I’m also writing [AI Design Patterns for Information Professionals](https://danielvanstrien.xyz/ai-patterns-for-glam/), a book in progress. You can find examples of my work on the [Selected work](pages/projects.qmd) page.
