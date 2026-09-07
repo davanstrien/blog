@@ -1,0 +1,134 @@
+---
+title: "How to train a specialist model on Hugging Face Jobs: a 122B teacher, a 350M student, about $25"
+subtitle: "A 122B teacher on HF Jobs, a groundedness filter that dropped 4.9% of the data, and a 350M model that wins 73% of blind pairwise judgments against what I had in production."
+date: 2026-08-13
+author: "Daniel van Strien"
+categories: [synthetic-data, hf-jobs, datatrove, fine-tuning]
+description: "Renting a 122B teacher on Hugging Face Jobs to train a 350M student with datatrove: the pipeline, the teacher bake-off, the groundedness audit, and what it cost."
+draft: true
+format:
+  html:
+    toc: false
+execute:
+  eval: false
+---
+
+In 2026 we're seeing a flurry of small models working efficiently on a specific task. A use case I've been running a small model for is summarising Hugging Face model and dataset cards to one sentence. The Hub has roughly 1.3 million repos, and embedding the raw cards is expensive and ineffective. A small model that produces a one-sentence summary which can help quickly understand what a repo is about and can also serve as a small text string to embed for search is a good solution. This post describes how I trained a 350M model to do that, using a 122B teacher on Hugging Face Jobs to generate the training data.
+
+The approach is roughly this: take a corpus you already have on the Hub. Run a large open-weights teacher over a slice of it on a rented GPU, using datatrove's `JobsPipelineExecutor` to do the fan-out and the streaming writes. Filter the output with cheap mechanical screens. Train a small student on what survives. Measure the student against whatever you are currently deploying, blind.
+
+Run end to end, this produced 28,100 raw generations from a 122B teacher, a 25,294-row SFT training set, and a 350M student that beats the model I had deployed in 73% of blind pairwise judgments. The generation step costs about $0.86 per 1,000 summaries.
+
+## Why one-sentence summaries
+
+Search over the Hub's repos is a retrieval problem, and the obvious approach is to embed the cards. This seems to not work so well from my experiments. Cards are long, structurally repetitive, and frequently padded with install snippets and licence boilerplate that describes nothing about the artifact. Embedding all of that often buries the signal in template text.
+
+Summarising first and embedding the summary is both better and cheaper. Embedding the summaries of the full corpus works out at roughly $0.19 per million documents, about 18 times cheaper than embedding the raw cards, because you are embedding 40 tokens instead of several thousand. The summarisation itself becomes the dominant cost, which is exactly why it is worth doing with a small model you own rather than an API you rent.
+
+The summaries have two consumers. A human scanning a listing wants to know what the thing is. An embedding model wants distinctive terms it can match a query against. Both want the same sentence, and neither wants the licence or the download count, which are already on the screen next to it. That constraint went straight into the teacher prompt.
+
+## The pipeline
+
+datatrove's `JobsPipelineExecutor` landed in main earlier this year, still marked experimental, so expect the API to move. The shape is: a coordinator script runs on my laptop, builds the pipeline object, and calls `.run()`. That submits a Job. The worker on the Job re-materialises the pipeline and streams results into a bucket. My laptop is an orchestrator with a terminal, not a compute node, which matters when the wifi is bad.
+
+The coordinator is not a PEP 723 script. Dependencies go on the command line so that the coordinator and the worker install the identical pinned datatrove:
+
+```bash
+PIN="datatrove[io,processing] @ https://github.com/huggingface/datatrove/archive/<SHA>.tar.gz"
+uv run --python 3.12 --with "$PIN" --with datasets --with orjson \
+    pipeline/tldr_gen.py --slug vol-arm1 --flavor a100-large --tp 4 \
+    --rows 8000 --timeout 180m
+```
+
+Two details make this reproducible: pin datatrove by tarball SHA rather than `git+`, and pass `--python 3.12` on both sides — datatrove ships the rollout function to the worker with dill, so the two ends need matching Python versions.
+
+The executor config is short, and most of its settings are scar tissue:
+
+```python
+JobsPipelineExecutor(
+    job_name=f"tldrgen-{slug}",
+    pipeline=[
+        HuggingFaceDatasetReader(CORPUS, text_key="card_text", dataset_options=...),
+        InferenceRunner(
+            rollout_fn=make_rollout(),
+            config=InferenceConfig(
+                server_type="sglang",
+                model_name_or_path=model,
+                model_max_context=16384,
+                max_concurrent_generations=128,
+                tp=4,
+            ),
+            output_writer=ParquetWriter(
+                f"{BUCKET}/{slug}/gen", batch_size=200, max_file_size=4 * 2**20
+            ),
+        ),
+    ],
+    tasks=1, workers=1, flavor="a100-large", image=IMAGE, python="3.12",
+    dependencies=[PIN, "sglang", "datasets", "orjson"],
+    logging_dir=f"{BUCKET}/{slug}/logs",
+    timeout="180m",
+    max_retries=0,
+).run()
+```
+
+Three of those lines are worth explaining a bit more:
+
+`max_retries=0`. A retry on an inference stage re-runs the whole rank, which means paying twice for GPU time you already spent. Retries are for cheap CPU stages, not for this.
+
+The `max_file_size` on the writer. Streaming to a bucket only protects you if the files rotate: a parquet file without its footer is unreadable, so if the job dies you get nothing back from the open file. Rotating at 4 MB means every closed file survives, and I have twice recovered work from a job that died mid-run because of it.
+
+All constants live inside the rollout closure. dill ships the function, not the module, so module-level globals simply do not exist on the worker. Prompts, regexes, even `import re` go inside. Related: never return `None` from the rollout dict. The parquet writer infers its schema from the first batch, and a `None` appearing later flips the schema mid-file and fails the write after the GPU work is done. Coerce everything, `x or ""`.
+
+## Choosing the teacher by measurement
+
+I ran a comparison rather than picking on reputation alone. Three candidates in the 80B to 122B range, the same 2,000-row slice of the corpus through each, about $2 to $3 per candidate.
+
+The results were not what I would have guessed. One candidate was unstable under sustained concurrent load and failed part way through its run, which the earlier 50-row smoke test had not surfaced because a single wave never stresses the server. Another was a reasoning model, and reasoning models burn five to ten times the completion tokens on a task that needs no reasoning at all, so it was several times more expensive for no measured quality gain.
+
+The winner did 2,000 generations in 8 minutes 22 seconds on four A100s with tensor parallelism, 49 tokens per generation, 99.6% of outputs correctly a single sentence. At volume that settles at roughly 200 generations per minute and $0.86 per 1,000 summaries, with a fixed model-load tax of about seven minutes per job.
+
+Two hours and $8 of comparison changed which model produced 28,100 generations. The harness is reusable: when a new candidate model drops, running it through the same 2,000-row comparison costs another $2 to $3.
+
+## Filtering: what the teacher got wrong
+
+My worry going in was parametric knowledge. A 122B model has seen the Hub. When it summarises a famous repo, is it reading the card or reciting what it already knows?
+
+I ran an unmatched-number and unmatched-entity sweep over the full generation set, which flagged 37% of rows, then had two agents blind-adjudicate a 30-row sample of the flags. The famous-repo worry was wrong: 15 out of 15 checked were grounded in the input. Most of the flags were detector noise, things like the model expanding a language tag or hyphenating a compound.
+
+The real failure mode was elsewhere, on obscure repos, and it was fabricated numeric aggregation. The worst example invented "15 languages via M2M100" for a dataset whose card said nothing of the sort. Roughly one serious case per 30 flagged rows.
+
+The fix is mechanical. Drop any row whose summary contains a number that does not appear in its input. That removed 1,292 rows, 4.9% of the dataset. It is a blunt filter and it certainly discards some correct summaries, but a fabricated count in a search index is worse than a missing one.
+
+The rest of the filter chain is similarly unglamorous: drop truncated generations, multi-sentence outputs, anything over 50 words, boilerplate phrasing, markdown artifacts. Dedupe on the normalised summary text, keeping the most-downloaded repo of each duplicate group. Cap any opening four-gram at 300 rows, which mostly trims robotics datasets that all begin the same way. Yield before the groundedness filter was 97%, which tells you the prompt was doing most of the work. The refusals stay in: a model that never learns to say NOT ENOUGH INFORMATION will confabulate on every empty card.
+
+Final dataset: 25,294 train and 500 test rows, published as `davanstrien/hub-tldr-v3-sft`.
+
+## The student
+
+LFM2.5-350M, two epochs of SFT on an L40S, about $2 and under an hour. Train loss 0.726, eval 0.831. The input format is the same assembly used at inference: a `<MODEL_CARD>` or `<DATASET_CARD>` prefix, a rendered metadata block, then the card body with its YAML frontmatter stripped.
+
+For evaluation I used blind pairwise comparison with position swapping, 120 judgments across four judges and two lenses, covering both the v1 and teacher comparisons. One lens judges as a human scanning a listing, the other as a search index. Position swapping matters more than the judge model does: without it you are measuring which slot the judge prefers.
+
+Against the deployed v1 model, the student wins 73% of decisive judgments (46 wins, 17 losses, 3 ties). Both lenses agree.
+
+Against its own teacher, the student wins 16%. That gap is real and I am not going to dress it up. A 350M model is not a 122B model. What the eval does tell me is where the gap lives: the judges repeatedly cited invented counts and parameter figures as the student's losing pattern.
+
+That is the same failure class the groundedness audit found in the teacher's raw output. I filtered it out of the training data and the small model reinvented it. Filtering fixes your dataset; it does not change what a small model does when it runs out of certainty.
+
+Refusal calibration went the other way, in the student's favour. On 480 test cards with real content, the student gave zero false refusals; v1 gave 32. On 20 genuinely empty cards, the student correctly refused 9 and v1 refused 15. So the student under-refuses on true stubs and never gives up on real content. For a listing that people browse, that is the right trade.
+
+## What it cost
+
+The recipe costs $3 to $5 to try at a useful scale, and about $25 to run at volume: roughly $22 of teacher inference for 25k generations, $2 to train the student, $1 to evaluate.
+
+The campaign cost about $45. The difference is the model comparison, the groundedness audit, one training run on a second student candidate that turned out to be 11 times slower than expected and got abandoned, and the general cost of not knowing what you are doing yet. That $20 delta is what it cost to find the recipe. You do not have to pay it again and you could also be less wasteful if you are more confident in your model selection and filtering.
+
+## Run it on your own corpus
+
+The dataset is at `davanstrien/hub-tldr-v3-sft` and the student at `davanstrien/hub-tldr-v3-lfm25-350m`. The pipeline scripts are short enough to read in one sitting, and swapping the corpus and the prompt is most of what it takes to point them at your own data.
+
+The pipeline is the demo, not the model. The next piece is a scheduled Job that runs the student over newly trending repos each day and appends to a dataset that a Space reads. Incremental refresh at this corpus size costs six to ten cents a day. Every layer of it, the generation, the training, the refresh, the serving, runs on Hub infrastructure, which is the part I actually wanted to prove.
+
+::: {.callout-note appearance="simple"}
+Everything in this post is public: the [training dataset](https://huggingface.co/datasets/davanstrien/hub-tldr-v3-sft) and the [trained student model](https://huggingface.co/davanstrien/hub-tldr-v3-lfm25-350m).
+:::
